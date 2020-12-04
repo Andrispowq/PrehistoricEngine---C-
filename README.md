@@ -10,6 +10,7 @@ A working 3D rendering pipeline with Physically Based Shading:
 
 A work-in-progress Atmosphere renderer with light scattering simulations:
 ![](/images/atmosphere_1.png)
+![](/images/atmosphere_2.png)
 
 A functional, customisable Terrain rendering system:
 ![](/images/terrain.png)
