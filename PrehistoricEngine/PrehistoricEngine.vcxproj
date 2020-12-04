@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\engine\prehistoric\application\Application.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\config\AtmosphereConfig.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\config\EngineConfig.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\config\EnvironmentMapConfig.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\config\FrameworkConfig.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\config\TerrainConfig.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\model\obj\OBJLoader.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\node\component\light\Light.cpp" />
+    <ClCompile Include="src\engine\prehistoric\CoreEngine.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\buffer\GLMeshVertexBuffer.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\buffer\GLPatchVertexBuffer.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\buffer\GLShaderStorageBuffer.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\capabilities\GLCapabilities.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\framework\context\GLContext.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\framework\swapchain\GLSwapchain.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\framebuffer\GLFramebuffer.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\GLRenderer.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\pipeline\GLComputePipeline.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\pipeline\GLGraphicsPipeline.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\pipeline\GLPipeline.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereScatteringShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\basic\GLBasicShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLBRDFIntegrateShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLEnvironmentMapShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLEnvironmentShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLIrradianceShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLPrefilterShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\GLShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\gpgpu\GLNormalmapShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\gpgpu\GLSplatmapShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\gpgpu\GLTerrainHeightsShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\gui\GLGUIShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\pbr\GLPBRShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainWireframeShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\texture\GLTexture.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\buffer\VKBuffer.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\buffer\VKMeshVertexBuffer.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\capabilities\VKCapabilities.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\framework\context\VKContext.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\framework\context\VkDebugMessenger.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\framework\context\VKInstance.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\framework\device\VKDevice.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\framework\device\VKPhysicalDevice.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\framework\queue\VKQueue.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\framework\surface\VKSurface.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\framework\swapchain\VkSwapChain.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\rendering\command\VKCommandBuffer.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\rendering\command\VKCommandPool.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\rendering\descriptors\VKDescriptorPool.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\rendering\descriptors\VKDescriptorSet.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\rendering\descriptors\VKDescriptorSetBinding.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\rendering\framebuffer\VKFramebuffer.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\rendering\pipeline\VKGraphicsPipeline.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\rendering\pipeline\VkPipeline.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\rendering\renderpass\VKRenderpass.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\rendering\shaders\basic\VKBasicShader.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\rendering\shaders\pbr\VKPBRShader.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\rendering\shaders\VkShader.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\rendering\synchronisation\VKFence.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\rendering\synchronisation\VKSemaphore.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\rendering\VKRenderer.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\texture\VKTexture.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\util\VKUtil.cpp" />
+    <ClCompile Include="src\engine\platform\windows\WindowsInput.cpp" />
+    <ClCompile Include="src\engine\platform\windows\WindowsWindow.cpp" />
+    <ClCompile Include="src\engine\prehistoric\common\buffer\MeshVertexBuffer.cpp" />
+    <ClCompile Include="src\engine\prehistoric\common\buffer\PatchVertexBuffer.cpp" />
+    <ClCompile Include="src\engine\prehistoric\common\buffer\ShaderStorageBuffer.cpp" />
+    <ClCompile Include="src\engine\prehistoric\common\buffer\VertexBuffer.cpp" />
+    <ClCompile Include="src\engine\prehistoric\common\capabilities\Capabilities.cpp" />
+    <ClCompile Include="src\engine\prehistoric\common\framework\context\Context.cpp" />
+    <ClCompile Include="src\engine\prehistoric\common\framework\Input.cpp" />
+    <ClCompile Include="src\engine\prehistoric\common\framework\swapchain\Swapchain.cpp" />
+    <ClCompile Include="src\engine\prehistoric\common\framework\Window.cpp" />
+    <ClCompile Include="src\engine\prehistoric\common\rendering\command\CommandBuffer.cpp" />
+    <ClCompile Include="src\engine\prehistoric\common\rendering\framebuffer\Framebuffer.cpp" />
+    <ClCompile Include="src\engine\prehistoric\common\rendering\pipeline\ComputePipeline.cpp" />
+    <ClCompile Include="src\engine\prehistoric\common\rendering\pipeline\GraphicsPipeline.cpp" />
+    <ClCompile Include="src\engine\prehistoric\common\rendering\pipeline\Pipeline.cpp" />
+    <ClCompile Include="src\engine\prehistoric\common\rendering\pipeline\RayTracingPipeline.cpp" />
+    <ClCompile Include="src\engine\prehistoric\common\rendering\Renderer.cpp" />
+    <ClCompile Include="src\engine\prehistoric\common\rendering\shaders\Shader.cpp" />
+    <ClCompile Include="src\engine\prehistoric\common\texture\Texture.cpp" />
+    <ClCompile Include="src\engine\prehistoric\common\util\DeviceProperties.cpp" />
+    <ClCompile Include="src\engine\prehistoric\common\util\InitDevice.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\node\component\audio\AudioComponent.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\node\component\renderer\RenderableComponent.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\node\component\renderer\RendererComponent.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\Engine.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\node\GameObject.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\node\Node.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\util\log\Log.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\util\math\Math.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\model\material\Material.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\model\Mesh.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\model\Transform.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\model\Vertex.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\node\movement\Camera.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\util\Includes.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\common\texture\TextureLoader.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\util\ModelFabricator.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\util\time\Time.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\util\time\Timer.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\util\Util.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\engines\AudioEngine.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\engines\RenderingEngine.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\modules\atmosphere\Atmosphere.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\modules\environmentMapRenderer\EnvironmentMapRenderer.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\modules\gpgpu\NormalMapRenderer.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\modules\gpgpu\SplatMapRenderer.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\modules\gpgpu\TerrainHeightsQuery.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\modules\gui\button\GUIButton.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\modules\gui\GUIElement.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\modules\gui\slider\GUISlider.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\modules\terrain\Terrain.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\modules\terrain\TerrainMaps.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\modules\terrain\TerrainNode.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\modules\terrain\TerrainQuadtree.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\resources\AssembledAssetManager.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\resources\AssetManager.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\scene\Scene.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\scene\world\WorldLoader.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\engine\prehistoric\application\Application.h" />
+    <ClInclude Include="src\engine\prehistoric\application\EntryPoint.h" />
+    <ClInclude Include="src\engine\prehistoric\core\config\AtmosphereConfig.h" />
+    <ClInclude Include="src\engine\prehistoric\core\config\EngineConfig.h" />
+    <ClInclude Include="src\engine\prehistoric\core\config\EnvironmentMapConfig.h" />
+    <ClInclude Include="src\engine\prehistoric\core\config\FrameworkConfig.h" />
+    <ClInclude Include="src\engine\prehistoric\core\config\TerrainConfig.h" />
+    <ClInclude Include="src\engine\Prehistoric.h" />
+    <ClInclude Include="src\engine\prehistoric\CoreEngine.h" />
+    <ClInclude Include="src\engine\platform\opengl\buffer\GLMeshVertexBuffer.h" />
+    <ClInclude Include="src\engine\platform\opengl\buffer\GLPatchVertexBuffer.h" />
+    <ClInclude Include="src\engine\platform\opengl\buffer\GLShaderStorageBuffer.h" />
+    <ClInclude Include="src\engine\platform\opengl\capabilities\GLCapabilities.h" />
+    <ClInclude Include="src\engine\platform\opengl\framework\context\GLContext.h" />
+    <ClInclude Include="src\engine\platform\opengl\framework\swapchain\GLSwapchain.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\framebuffer\GLFramebuffer.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\GLRenderer.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLComputePipeline.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLGraphicsPipeline.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLPipeline.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereScatteringShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\basic\GLBasicShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLBRDFIntegrateShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLEnvironmentMapShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLEnvironmentShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLIrradianceShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLPrefilterShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\GLShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\gpgpu\GLNormalmapShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\gpgpu\GLSplatmapShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\gpgpu\GLTerrainHeightsShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\gui\GLGUIShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\pbr\GLPBRShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainWireframeShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\texture\GLTexture.h" />
+    <ClInclude Include="src\engine\platform\Platform.h" />
+    <ClInclude Include="src\engine\platform\vulkan\buffer\VKBuffer.h" />
+    <ClInclude Include="src\engine\platform\vulkan\buffer\VKMeshVertexBuffer.h" />
+    <ClInclude Include="src\engine\platform\vulkan\capabilities\VKCapabilities.h" />
+    <ClInclude Include="src\engine\platform\vulkan\framework\context\VKContext.h" />
+    <ClInclude Include="src\engine\platform\vulkan\framework\context\VKDebugMessenger.h" />
+    <ClInclude Include="src\engine\platform\vulkan\framework\context\VKInstance.h" />
+    <ClInclude Include="src\engine\platform\vulkan\framework\device\VKDevice.h" />
+    <ClInclude Include="src\engine\platform\vulkan\framework\device\VKPhysicalDevice.h" />
+    <ClInclude Include="src\engine\platform\vulkan\framework\queue\VKQueue.h" />
+    <ClInclude Include="src\engine\platform\vulkan\framework\surface\VKSurface.h" />
+    <ClInclude Include="src\engine\platform\vulkan\framework\swapchain\VkSwapChain.h" />
+    <ClInclude Include="src\engine\platform\vulkan\rendering\command\VKCommandBuffer.h" />
+    <ClInclude Include="src\engine\platform\vulkan\rendering\command\VKCommandPool.h" />
+    <ClInclude Include="src\engine\platform\vulkan\rendering\descriptors\VKDescriptorPool.h" />
+    <ClInclude Include="src\engine\platform\vulkan\rendering\descriptors\VKDescriptorSet.h" />
+    <ClInclude Include="src\engine\platform\vulkan\rendering\descriptors\VKDescriptorSetBinding.h" />
+    <ClInclude Include="src\engine\platform\vulkan\rendering\framebuffer\VKFramebuffer.h" />
+    <ClInclude Include="src\engine\platform\vulkan\rendering\pipeline\VKGraphicsPipeline.h" />
+    <ClInclude Include="src\engine\platform\vulkan\rendering\pipeline\VkPipeline.h" />
+    <ClInclude Include="src\engine\platform\vulkan\rendering\renderpass\VKRenderpass.h" />
+    <ClInclude Include="src\engine\platform\vulkan\rendering\shaders\basic\VKBasicShader.h" />
+    <ClInclude Include="src\engine\platform\vulkan\rendering\shaders\pbr\VKPBRShader.h" />
+    <ClInclude Include="src\engine\platform\vulkan\rendering\shaders\VkShader.h" />
+    <ClInclude Include="src\engine\platform\vulkan\rendering\synchronisation\VKFence.h" />
+    <ClInclude Include="src\engine\platform\vulkan\rendering\synchronisation\VKSemaphore.h" />
+    <ClInclude Include="src\engine\platform\vulkan\rendering\VKRenderer.h" />
+    <ClInclude Include="src\engine\platform\vulkan\texture\VKTexture.h" />
+    <ClInclude Include="src\engine\platform\vulkan\util\VKUtil.h" />
+    <ClInclude Include="src\engine\platform\windows\WindowsInput.h" />
+    <ClInclude Include="src\engine\platform\windows\WindowsWindow.h" />
+    <ClInclude Include="src\engine\prehistoric\common\buffer\MeshVertexBuffer.h" />
+    <ClInclude Include="src\engine\prehistoric\common\buffer\PatchVertexBuffer.h" />
+    <ClInclude Include="src\engine\prehistoric\common\buffer\ShaderStorageBuffer.h" />
+    <ClInclude Include="src\engine\prehistoric\common\buffer\VertexBuffer.h" />
+    <ClInclude Include="src\engine\prehistoric\common\capabilities\Capabilities.h" />
+    <ClInclude Include="src\engine\prehistoric\common\framework\CameraInput.h" />
+    <ClInclude Include="src\engine\prehistoric\common\framework\context\Context.h" />
+    <ClInclude Include="src\engine\prehistoric\common\framework\Input.h" />
+    <ClInclude Include="src\engine\prehistoric\common\framework\swapchain\Swapchain.h" />
+    <ClInclude Include="src\engine\prehistoric\common\framework\Window.h" />
+    <ClInclude Include="src\engine\prehistoric\common\rendering\command\CommandBuffer.h" />
+    <ClInclude Include="src\engine\prehistoric\common\rendering\framebuffer\Framebuffer.h" />
+    <ClInclude Include="src\engine\prehistoric\common\rendering\pipeline\ComputePipeline.h" />
+    <ClInclude Include="src\engine\prehistoric\common\rendering\pipeline\GraphicsPipeline.h" />
+    <ClInclude Include="src\engine\prehistoric\common\rendering\pipeline\Pipeline.h" />
+    <ClInclude Include="src\engine\prehistoric\common\rendering\pipeline\RayTracingPipeline.h" />
+    <ClInclude Include="src\engine\prehistoric\common\rendering\Renderer.h" />
+    <ClInclude Include="src\engine\prehistoric\common\rendering\shaders\Shader.h" />
+    <ClInclude Include="src\engine\prehistoric\common\texture\Texture.h" />
+    <ClInclude Include="src\engine\prehistoric\common\util\DeviceProperties.h" />
+    <ClInclude Include="src\engine\prehistoric\common\util\InitDevice.h" />
+    <ClInclude Include="src\engine\prehistoric\common\util\RenderUtils.h" />
+    <ClInclude Include="src\engine\prehistoric\core\model\obj\OBJLoader.h" />
+    <ClInclude Include="src\engine\prehistoric\core\node\component\audio\AudioComponent.h" />
+    <ClInclude Include="src\engine\prehistoric\core\node\component\Component.h" />
+    <ClInclude Include="src\engine\prehistoric\core\node\component\light\Light.h" />
+    <ClInclude Include="src\engine\prehistoric\core\node\component\renderer\RenderableComponent.h" />
+    <ClInclude Include="src\engine\prehistoric\core\node\component\renderer\RendererComponent.h" />
+    <ClInclude Include="src\engine\prehistoric\core\Engine.h" />
+    <ClInclude Include="src\engine\prehistoric\core\node\GameObject.h" />
+    <ClInclude Include="src\engine\prehistoric\core\node\Node.h" />
+    <ClInclude Include="src\engine\prehistoric\core\util\log\ColourCodes.h" />
+    <ClInclude Include="src\engine\prehistoric\core\util\log\Log.h" />
+    <ClInclude Include="src\engine\prehistoric\core\util\math\Math.h" />
+    <ClInclude Include="src\engine\prehistoric\core\util\math\MathT.h" />
+    <ClInclude Include="src\engine\prehistoric\core\model\material\Material.h" />
+    <ClInclude Include="src\engine\prehistoric\core\model\Mesh.h" />
+    <ClInclude Include="src\engine\prehistoric\core\model\Transform.h" />
+    <ClInclude Include="src\engine\prehistoric\core\model\Vertex.h" />
+    <ClInclude Include="src\engine\prehistoric\core\node\movement\Camera.h" />
+    <ClInclude Include="src\engine\prehistoric\core\util\codes\InputCode.h" />
+    <ClInclude Include="src\engine\prehistoric\core\util\Constants.h" />
+    <ClInclude Include="src\engine\prehistoric\core\util\Includes.hpp" />
+    <ClInclude Include="src\engine\prehistoric\common\texture\TextureLoader.h" />
+    <ClInclude Include="src\engine\prehistoric\core\util\ModelFabricator.h" />
+    <ClInclude Include="src\engine\prehistoric\core\util\time\Time.h" />
+    <ClInclude Include="src\engine\prehistoric\core\util\time\Timer.h" />
+    <ClInclude Include="src\engine\prehistoric\core\util\Util.h" />
+    <ClInclude Include="src\engine\prehistoric\core\engines\AudioEngine.h" />
+    <ClInclude Include="src\engine\prehistoric\core\engines\RenderingEngine.h" />
+    <ClInclude Include="src\engine\prehistoric\core\modules\atmosphere\Atmosphere.h" />
+    <ClInclude Include="src\engine\prehistoric\core\modules\environmentMapRenderer\EnvironmentMapRenderer.h" />
+    <ClInclude Include="src\engine\prehistoric\core\modules\gpgpu\NormalMapRenderer.h" />
+    <ClInclude Include="src\engine\prehistoric\core\modules\gpgpu\SplatMapRenderer.h" />
+    <ClInclude Include="src\engine\prehistoric\core\modules\gpgpu\TerrainHeightsQuery.h" />
+    <ClInclude Include="src\engine\prehistoric\core\modules\gui\button\GUIButton.h" />
+    <ClInclude Include="src\engine\prehistoric\core\modules\gui\GUIElement.h" />
+    <ClInclude Include="src\engine\prehistoric\core\modules\gui\slider\GUISlider.h" />
+    <ClInclude Include="src\engine\prehistoric\core\modules\terrain\Terrain.h" />
+    <ClInclude Include="src\engine\prehistoric\core\modules\terrain\TerrainMaps.h" />
+    <ClInclude Include="src\engine\prehistoric\core\modules\terrain\TerrainNode.h" />
+    <ClInclude Include="src\engine\prehistoric\core\modules\terrain\TerrainQuadtree.h" />
+    <ClInclude Include="src\engine\prehistoric\core\resources\AssembledAssetManager.h" />
+    <ClInclude Include="src\engine\prehistoric\core\resources\AssetManager.h" />
+    <ClInclude Include="src\engine\prehistoric\core\resources\Factory.h" />
+    <ClInclude Include="src\engine\prehistoric\core\scene\Scene.h" />
+    <ClInclude Include="src\engine\prehistoric\core\scene\world\WorldLoader.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{78a682f1-5b75-49a2-b246-3f35deeedcba}</ProjectGuid>
+    <RootNamespace>PrehistoricEngine</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>PrehistoricEngine</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)\bin\$(ProjectName)\$(Configuration) - $(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)\bin-int\$(ProjectName)\$(Configuration) - $(Platform)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)\bin\$(ProjectName)\$(Configuration) - $(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)\bin-int\$(ProjectName)\$(Configuration) - $(Platform)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(ProjectDir)\bin\$(Configuration) - $(Platform)\</OutDir>
+    <IntDir>$(ProjectDir)\bin\$(Configuration) - $(Platform)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(ProjectDir)\bin\$(Configuration) - $(Platform)\</OutDir>
+    <IntDir>$(ProjectDir)\bin\$(Configuration) - $(Platform)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>PR_DEBUG;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);PR_FAST_MATH;GLEW_STATIC;PR_BUILD_DLL</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\include\AL;$(SolutionDir)Dependencies\include\GL;$(SolutionDir)Dependencies\include\stb;$(SolutionDir)Dependencies\include\Vulkan;$(SolutionDir)Dependencies\include\GLFW;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>engine/prehistoric/core/util/Includes.hpp</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)\PrehistoricEngine\bin\$(Configuration) - $(Platform);$(SolutionDir)Dependencies\lib\AL;$(SolutionDir)Dependencies\lib\GL\64 bit;$(SolutionDir)Dependencies\lib\Vulkan;$(SolutionDir)Dependencies\lib\GLFW;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;glew32s.lib;vulkan-1.lib;OpenAL32.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>PR_RELEASE;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);PR_FAST_MATH;GLEW_STATIC;PR_BUILD_DLL</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\include\AL;$(SolutionDir)Dependencies\include\GL;$(SolutionDir)Dependencies\include\stb;$(SolutionDir)Dependencies\include\Vulkan;$(SolutionDir)Dependencies\include\GLFW;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>engine/prehistoric/core/util/Includes.hpp</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)\PrehistoricEngine\bin\$(Configuration) - $(Platform);$(SolutionDir)Dependencies\lib\AL;$(SolutionDir)Dependencies\lib\GL\64 bit;$(SolutionDir)Dependencies\lib\Vulkan;$(SolutionDir)Dependencies\lib\GLFW;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;glew32s.lib;vulkan-1.lib;OpenAL32.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

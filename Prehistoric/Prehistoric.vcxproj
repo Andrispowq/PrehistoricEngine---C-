@@ -44,28 +44,28 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(ProjectDir)\bin\$(Configuration) - $(Platform)\</OutDir>
-    <IntDir>$(ProjectDir)\bin-int\$(Configuration) - $(Platform)\</IntDir>
+    <OutDir>$(SolutionDir)\bin\$(ProjectName)\$(Configuration) - $(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)\bin-int\$(ProjectName)\$(Configuration) - $(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(ProjectDir)\bin\$(Configuration) - $(Platform)\</OutDir>
-    <IntDir>$(ProjectDir)\bin-int\$(Configuration) - $(Platform)\</IntDir>
+    <OutDir>$(SolutionDir)\bin\$(ProjectName)\$(Configuration) - $(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)\bin-int\$(ProjectName)\$(Configuration) - $(Platform)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);GLEW_STATIC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);GLEW_STATIC; PR_FAST_MATH;PR_LOAD_DLL</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\include\AL;$(SolutionDir)Dependencies\include\GL;$(SolutionDir)Dependencies\include\stb;$(SolutionDir)Dependencies\include\Vulkan;$(SolutionDir)Dependencies\include\GLFW;$(SolutionDir)Prehistoric Engine\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\include\AL;$(SolutionDir)Dependencies\include\GL;$(SolutionDir)Dependencies\include\stb;$(SolutionDir)Dependencies\include\Vulkan;$(SolutionDir)Dependencies\include\GLFW;$(SolutionDir)PrehistoricEngine\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\Prehistoric Engine\bin\$(Configuration) - $(Platform);$(SolutionDir)Dependencies\lib\AL;$(SolutionDir)Dependencies\lib\GL\64 bit;$(SolutionDir)Dependencies\lib\Vulkan;$(SolutionDir)Dependencies\lib\GLFW;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Prehistoric Engine.lib;glfw3.lib;glew32s.lib;vulkan-1.lib;OpenAL32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -74,22 +74,30 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);GLEW_STATIC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);GLEW_STATIC; PR_FAST_MATH;PR_LOAD_DLL</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\include\AL;$(SolutionDir)Dependencies\include\GL;$(SolutionDir)Dependencies\include\stb;$(SolutionDir)Dependencies\include\Vulkan;$(SolutionDir)Dependencies\include\GLFW;$(SolutionDir)Prehistoric Engine\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\include\AL;$(SolutionDir)Dependencies\include\GL;$(SolutionDir)Dependencies\include\stb;$(SolutionDir)Dependencies\include\Vulkan;$(SolutionDir)Dependencies\include\GLFW;$(SolutionDir)PrehistoricEngine\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\Prehistoric Engine\bin\$(Configuration) - $(Platform);$(SolutionDir)Dependencies\lib\AL;$(SolutionDir)Dependencies\lib\GL\64 bit;$(SolutionDir)Dependencies\lib\Vulkan;$(SolutionDir)Dependencies\lib\GLFW;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Prehistoric Engine.lib;glfw3.lib;glew32s.lib;vulkan-1.lib;OpenAL32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Application.cpp" />
+    <ClCompile Include="PrehistoricApp.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Prehistoric Engine\Prehistoric Engine.vcxproj">
+      <Project>{78a682f1-5b75-49a2-b246-3f35deeedcba}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\PrehistoricEngine\PrehistoricEngine.vcxproj">
+      <Project>{78a682f1-5b75-49a2-b246-3f35deeedcba}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
