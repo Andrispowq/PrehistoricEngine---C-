@@ -6,6 +6,8 @@
 # My files
 bin/
 bin-int/
+*.vxproj
+*.filters
 
 # User-specific files
 *.rsuser
