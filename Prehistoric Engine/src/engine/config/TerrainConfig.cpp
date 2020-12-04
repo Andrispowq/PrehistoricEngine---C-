@@ -38,43 +38,40 @@ namespace TerrainConfig
 				{
 					continue; //This line is a comment then
 				}
-
-				if (nameTokens[0] == "scale")
+				else if (nameTokens[0] == "scale")
 				{
 					if (nameTokens[1] == "y")
 					{
 						scaleY = (float)std::atof(tokens[1].c_str());
 					}
-					if (nameTokens[1] == "xz")
+					else if (nameTokens[1] == "xz")
 					{
 						scaleXZ = (float)std::atof(tokens[1].c_str());
 					}
 				}
-
-				if (nameTokens[0] == "tessellation")
+				else if (nameTokens[0] == "tessellation")
 				{
 					if (nameTokens[1] == "factor")
 					{
 						tessellationFactor = std::atoi(tokens[1].c_str());
 					}
-					if (nameTokens[1] == "slope")
+					else if (nameTokens[1] == "slope")
 					{
 						tessellationSlope = (float) std::atof(tokens[1].c_str());
 					}
-					if (nameTokens[1] == "shift")
+					else if (nameTokens[1] == "shift")
 					{
 						tessellationShift = (float) std::atof(tokens[1].c_str());
 					}
 				}
-
-				if (nameTokens[0] == "lod")
+				else if (nameTokens[0] == "lod")
 				{
 					if (nameTokens[1] == "ranges")
 					{
 						lodRanges.resize(std::atoi(tokens[1].c_str()));
 						lodMorphingAreas.resize(std::atoi(tokens[1].c_str()));
 					}
-					if (nameTokens[1] == "range")
+					else if (nameTokens[1] == "range")
 					{
 						int index = std::atoi(tokens[1].c_str());
 						int range = std::atoi(tokens[2].c_str());
@@ -85,15 +82,13 @@ namespace TerrainConfig
 						else
 							lodMorphingAreas[index] = range - UpdateMorphingArea(index + 1);
 					}
-				}
-				
+				}				
 				//TODO: make the per-terrain data be in the world files, not in the general terrain-file
-				if (nameTokens[0] == "heightmap")
+				else if (nameTokens[0] == "heightmap")
 				{
 					heightmap = tokens[1];
 				}
-
-				if (nameTokens[0] == "materials")
+				else if (nameTokens[0] == "materials")
 				{
 					if (nameTokens[1] == "add")
 					{

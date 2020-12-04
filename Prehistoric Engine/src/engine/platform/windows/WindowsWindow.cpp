@@ -51,6 +51,7 @@ bool WindowsWindow::Create()
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	}
 
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, FrameworkConfig::apiVersion.x);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, FrameworkConfig::apiVersion.y);
 	glfwWindowHint(GLFW_RESIZABLE, FrameworkConfig::windowResizable);

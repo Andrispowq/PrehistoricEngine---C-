@@ -6,6 +6,25 @@
 
 #include "engine/prehistoric/modules/terrain/Terrain.h"
 
+#include "engine/platform/vulkan/rendering/pipeline/VKPipeline.h"
+#include "engine/platform/vulkan/buffer/VKMeshVertexBuffer.h"
+#include "engine/platform/vulkan/texture/VkTexture.h"
+#include "engine/platform/vulkan/rendering/shaders/pbr/VKPBRShader.h"
+
+#include "engine/prehistoric/modules/gui/GUIElement.h"
+#include "engine/prehistoric/modules/gui/button/GUIButton.h"
+#include "engine/prehistoric/modules/gui/slider/GUISlider.h"
+
+#include "engine/prehistoric/modules/atmosphere/Atmosphere.h"
+
+#include "engine/prehistoric/resources/AssembledAssetManager.h"
+
+#include "engine/prehistoric/modules/environmentMapRenderer/EnvironmentMapRenderer.h"
+#include "engine/prehistoric/component/audio/AudioComponent.h"
+
+/*
+	TODO: the scene will have a function later on, but it is just some legacy code right now
+*/
 class Scene
 {
 public:

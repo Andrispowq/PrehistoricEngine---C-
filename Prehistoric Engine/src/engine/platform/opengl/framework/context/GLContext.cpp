@@ -1,6 +1,6 @@
 #include "engine/prehistoric/core/util/Includes.hpp"
 #include "GLContext.h"
-#include "engine/platform/Prehistoric.h"
+#include "engine/platform/Platform.h"
 
 static void OpenGLMessageCallback(
 	unsigned source,

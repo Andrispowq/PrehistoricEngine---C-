@@ -2,7 +2,7 @@
 #define MATH_H
 
 #include "engine/prehistoric/core/util/Includes.hpp"
-#include "engine/platform/Prehistoric.h"
+#include "engine/platform/Platform.h"
 
 #include <xmmintrin.h>
 

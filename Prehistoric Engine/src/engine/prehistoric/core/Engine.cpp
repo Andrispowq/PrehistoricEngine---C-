@@ -41,6 +41,11 @@ Engine::~Engine()
 	delete renderingEngine.release();
 }
 
+void Engine::LoadScene(CreateSceneFunction function)
+{
+	function(root.get(), renderingEngine->getWindow(), manager.get(), renderingEngine->getCamera());
+}
+
 void Engine::Input()
 {
 	InputInstance.Update();

@@ -267,9 +267,6 @@
     <ClCompile Include="src\engine\prehistoric\component\audio\AudioComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\component\light\Light.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\engine\prehistoric\component\renderer\RenderableComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -381,10 +378,13 @@
     <ClCompile Include="src\engine\prehistoric\world\WorldLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\CoreEngine.cpp">
+    <ClCompile Include="src\engine\prehistoric\CoreEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\game\Application.cpp">
+    <ClCompile Include="src\engine\PrehistoricEngine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\component\light\Light.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -576,9 +576,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\platform\windows\WindowsWindow.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\Prehistoric.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\prehistoric\common\buffer\MeshVertexBuffer.h">
@@ -782,10 +779,13 @@
     <ClInclude Include="src\engine\prehistoric\world\WorldLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\CoreEngine.h">
+    <ClInclude Include="src\engine\prehistoric\CoreEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\game\Application.h">
+    <ClInclude Include="src\engine\PrehistoricEngine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\Platform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

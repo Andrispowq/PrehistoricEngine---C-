@@ -1,14 +1,10 @@
 #include "engine/prehistoric/core/util/Includes.hpp"
 #include "Light.h"
 
-#include "engine/prehistoric/core/Engine.h"
+#include "engine/prehistoric/common/rendering/Renderer.h"
 
 Light::Light(const Vector3f& colour, const Vector3f& intensity, bool sun)
 	: colour(colour), intensity(intensity), sun(sun)
-{
-}
-
-void Light::PreUpdate(Engine* engine)
 {
 }
 

@@ -1,6 +1,6 @@
 #include "engine/prehistoric/core/util/Includes.hpp"
 #include "Input.h"
-#include "engine/platform/Prehistoric.h"
+#include "engine/platform/Platform.h"
 #include "engine/platform/windows/WindowsInput.h"
 
 Input* Input::instance = nullptr;

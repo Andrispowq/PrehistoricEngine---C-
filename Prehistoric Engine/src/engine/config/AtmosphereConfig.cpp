@@ -45,89 +45,84 @@ namespace AtmosphereConfig
 				{
 					continue; //This line is a comment then
 				}
-
-				if (nameTokens[0] == "sun")
+				else if (nameTokens[0] == "sun")
 				{
 					if (nameTokens[1] == "position")
 					{
 						sunPosition = Vector3f((float)std::atof(tokens[1].c_str()), (float)std::atof(tokens[2].c_str()) , (float)std::atof(tokens[3].c_str()));
 					}
-					if (nameTokens[1] == "radius")
+					else if (nameTokens[1] == "radius")
 					{
 						sunRadius = (float)std::atof(tokens[1].c_str());
 					}
-					if (nameTokens[1] == "colour")
+					else if (nameTokens[1] == "colour")
 					{
 						sunColour = Vector3f((float)std::atof(tokens[1].c_str()), (float)std::atof(tokens[2].c_str()), (float)std::atof(tokens[3].c_str()));
 					}
-					if (nameTokens[1] == "intensity")
+					else if (nameTokens[1] == "intensity")
 					{
 						sunIntensity = (float)std::atof(tokens[1].c_str());
 					}
 				}
-
-				if (nameTokens[0] == "fog")
+				else if (nameTokens[0] == "fog")
 				{
 					if (nameTokens[1] == "colour")
 					{
 						fogColour = Vector3f((float)std::atof(tokens[1].c_str()), (float)std::atof(tokens[2].c_str()), (float)std::atof(tokens[3].c_str()));
 					}
-					if (nameTokens[1] == "brightness")
+					else if (nameTokens[1] == "brightness")
 					{
 						fogBrightness = (float)std::atof(tokens[1].c_str());
 					}
 				}
-
-				if (nameTokens[0] == "planetRadius")
+				else if (nameTokens[0] == "planetRadius")
 				{
 					planetRadius = (float)std::atof(tokens[1].c_str());
 				}
-				if (nameTokens[0] == "atmosphereRadius")
+				else if (nameTokens[0] == "atmosphereRadius")
 				{
 					atmosphereRadius = (float)std::atof(tokens[1].c_str());
 				}
-
-				if (nameTokens[0] == "coefficients")
+				else if (nameTokens[0] == "coefficients")
 				{
 					if (nameTokens[1] == "rayleigh")
 					{
 						rayleigh = Vector3f((float)std::atof(tokens[1].c_str()), (float)std::atof(tokens[2].c_str()), (float)std::atof(tokens[3].c_str()));
 					}
-					if (nameTokens[1] == "rayleighHeightScale")
+					else if (nameTokens[1] == "rayleighHeightScale")
 					{
 						rayleighHeightScale = (float)std::atof(tokens[1].c_str());
 					}
-					if (nameTokens[1] == "mie")
+					else if (nameTokens[1] == "mie")
 					{
 						mie = (float)std::atof(tokens[1].c_str());
 					}
-					if (nameTokens[1] == "mieHeightScale")
+					else if (nameTokens[1] == "mieHeightScale")
 					{
 						mieHeightScale = (float)std::atof(tokens[1].c_str());
 					}
-					if (nameTokens[1] == "mieDirection")
+					else if (nameTokens[1] == "mieDirection")
 					{
 						mieDirection = (float)std::atof(tokens[1].c_str());
 					}
 				}
-
-				if (nameTokens[0] == "sightRange")
+				else if (nameTokens[0] == "sightRange")
 				{
 					sightRange = (float)std::atof(tokens[1].c_str());
 				}
-				if (nameTokens[0] == "ambient")
+				else if (nameTokens[0] == "ambient")
 				{
 					ambient = (float)std::atof(tokens[1].c_str());
 				}
-				if (nameTokens[0] == "horizontalVerticalShift")
+				else if (nameTokens[0] == "horizontalVerticalShift")
 				{
 					horizontalVerticalShift = (float)std::atof(tokens[1].c_str());
 				}
-				if (nameTokens[0] == "bloomFactor")
+				else if (nameTokens[0] == "bloomFactor")
 				{
 					bloomFactor = (float)std::atof(tokens[1].c_str());
 				}
-				if (nameTokens[0] == "scatteringEnabled")
+				else if (nameTokens[0] == "scatteringEnabled")
 				{
 					scatteringEnabled = (float)std::atof(tokens[1].c_str());
 				}

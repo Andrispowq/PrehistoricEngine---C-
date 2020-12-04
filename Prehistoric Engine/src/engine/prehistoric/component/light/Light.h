@@ -9,7 +9,6 @@ public:
 	Light(const Vector3f& colour = 0, const Vector3f& intensity = 1, bool sun = false);
 	virtual ~Light() {}
 
-	virtual void PreUpdate(Engine* engine) override;
 	virtual void PreRender(Renderer* renderer) override;
 
 	inline Vector3f getColour() const { return colour; }

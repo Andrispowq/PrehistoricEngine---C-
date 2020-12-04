@@ -2,6 +2,7 @@
 #define FRAMEWORKCONFIG_H
 
 #include <fstream>
+#include <map>
 
 #include "engine/prehistoric/core/util/Util.h"
 #include "engine/prehistoric/core/math/Math.h"
@@ -32,6 +33,8 @@ namespace FrameworkConfig
 	extern bool windowVSync;
 	extern uint32_t windowNumSamples;
 	extern uint32_t windowMaxFPS;
+
+	extern std::map<API, Vector2i> apiVersions;
 
 	extern API api;
 	extern Vector2i apiVersion;

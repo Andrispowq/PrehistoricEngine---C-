@@ -1,22 +1,6 @@
 #include "engine/prehistoric/core/util/Includes.hpp"
 #include "Scene.h"
 
-#include "engine/platform/vulkan/rendering/pipeline/VKPipeline.h"
-#include "engine/platform/vulkan/buffer/VKMeshVertexBuffer.h"
-#include "engine/platform/vulkan/texture/VkTexture.h"
-#include "engine/platform/vulkan/rendering/shaders/pbr/VKPBRShader.h"
-
-#include "engine/prehistoric/modules/gui/GUIElement.h"
-#include "engine/prehistoric/modules/gui/button/GUIButton.h"
-#include "engine/prehistoric/modules/gui/slider/GUISlider.h"
-
-#include "engine/prehistoric/modules/atmosphere/Atmosphere.h"
-
-#include "engine/prehistoric/resources/AssembledAssetManager.h"
-
-#include "engine/prehistoric/modules/environmentMapRenderer/EnvironmentMapRenderer.h"
-#include "engine/prehistoric/component/audio/AudioComponent.h"
-
 //We go around in a circle, from -range to range on the y and z axes
 static void sun_move_function(GameObject* object, float frameTime)
 {
@@ -41,7 +25,7 @@ Scene::Scene(GameObject* root, Window* window, AssembledAssetManager* manager, C
 		size_t vboID = manager->getAssetManager()->getResource<VertexBuffer>("quad.obj");
 		manager->getAssetManager()->getResourceByID<VertexBuffer>(vboID)->setFrontFace(FrontFace::COUNTER_CLOCKWISE);
 		size_t shaderID = manager->getAssetManager()->getResource<Shader>("pbr");
-		
+
 		size_t pipelineID = manager->loadResource<Pipeline>(new VKGraphicsPipeline(window, manager->getAssetManager(), shaderID, vboID));
 
 		Material* material = new Material(manager->getAssetManager(), window);

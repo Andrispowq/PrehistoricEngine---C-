@@ -33,8 +33,7 @@ namespace EnvironmentMapConfig
 				{
 					continue; //This line is a comment then
 				}
-
-				if (nameTokens[0] == "environment")
+				else if (nameTokens[0] == "environment")
 				{
 					if (nameTokens[1] == "map")
 					{
@@ -42,13 +41,13 @@ namespace EnvironmentMapConfig
 						{
 							environmentMapLocation = tokens[1];
 						}
-						if (nameTokens[2] == "resolution")
+						else if (nameTokens[2] == "resolution")
 						{
 							environmentMapResolution = std::atoi(tokens[1].c_str());
 						}
 					}
 				}
-				if (nameTokens[0] == "irradiance")
+				else if (nameTokens[0] == "irradiance")
 				{
 					if (nameTokens[1] == "map")
 					{
@@ -58,7 +57,7 @@ namespace EnvironmentMapConfig
 						}
 					}
 				}
-				if (nameTokens[0] == "prefilter")
+				else if (nameTokens[0] == "prefilter")
 				{
 					if (nameTokens[1] == "map")
 					{
@@ -67,7 +66,7 @@ namespace EnvironmentMapConfig
 							prefilterMapResolution = std::atoi(tokens[1].c_str());
 						}
 					}
-					if (nameTokens[1] == "levels")
+					else if (nameTokens[1] == "levels")
 					{
 						prefilterLevels = std::atoi(tokens[1].c_str());
 					}

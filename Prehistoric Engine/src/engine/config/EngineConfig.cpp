@@ -29,33 +29,32 @@ namespace EngineConfig
 				{
 					continue; //This line is a comment then
 				}
-
-				if (nameTokens[0] == "lights")
+				else if (nameTokens[0] == "lights")
 				{
 					if (nameTokens[1] == "maxNumber")
 					{
 						lightsMaxNumber = std::atoi(tokens[1].c_str());
 					}
 				}
-				if (nameTokens[0] == "renderer")
+				else if (nameTokens[0] == "renderer")
 				{
 					if (nameTokens[1] == "gamma")
 					{
 						rendererGamma = (float) std::atof(tokens[1].c_str());
 					}
-					if (nameTokens[1] == "exposure")
+					else if (nameTokens[1] == "exposure")
 					{
 						rendererExposure = (float)std::atof(tokens[1].c_str());
 					}
-					if (nameTokens[1] == "highDetailRange")
+					else if (nameTokens[1] == "highDetailRange")
 					{
 						rendererHighDetailRange = std::atoi(tokens[1].c_str());
 					}
-					if (nameTokens[1] == "nearPlane")
+					else if (nameTokens[1] == "nearPlane")
 					{
 						rendererNearPlane = (float)std::atof(tokens[1].c_str());
 					}
-					if (nameTokens[1] == "farPlane")
+					else if (nameTokens[1] == "farPlane")
 					{
 						rendererFarPlane = (float)std::atof(tokens[1].c_str());
 					}

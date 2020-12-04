@@ -16,12 +16,16 @@
 
 #include "engine/prehistoric/resources/AssembledAssetManager.h"
 
+typedef void(*CreateSceneFunction)(GameObject* root, Window* window, AssembledAssetManager* manager, Camera* camera);
+
 class Engine
 {
 public:
 	Engine();
 	~Engine();
 
+	void LoadScene(CreateSceneFunction function);
+	
 	void Input();
 	void Update(float frameTime);
 	void Render();

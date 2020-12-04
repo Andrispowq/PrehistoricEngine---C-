@@ -8,7 +8,7 @@
 
 #include "engine/prehistoric/core/util/loader/TextureLoader.h"
 #include "engine/config/FrameworkConfig.h"
-#include "engine/platform/Prehistoric.h"
+#include "engine/platform/Platform.h"
 
 class WindowsWindow : public Window
 {

@@ -16,7 +16,8 @@
     <ClCompile Include="src\engine\config\EnvironmentMapConfig.cpp" />
     <ClCompile Include="src\engine\config\FrameworkConfig.cpp" />
     <ClCompile Include="src\engine\config\TerrainConfig.cpp" />
-    <ClCompile Include="src\engine\CoreEngine.cpp" />
+    <ClCompile Include="src\engine\prehistoric\component\light\Light.cpp" />
+    <ClCompile Include="src\engine\prehistoric\CoreEngine.cpp" />
     <ClCompile Include="src\engine\platform\opengl\buffer\GLMeshVertexBuffer.cpp" />
     <ClCompile Include="src\engine\platform\opengl\buffer\GLPatchVertexBuffer.cpp" />
     <ClCompile Include="src\engine\platform\opengl\buffer\GLShaderStorageBuffer.cpp" />
@@ -96,7 +97,6 @@
     <ClCompile Include="src\engine\prehistoric\common\util\DeviceProperties.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\util\InitDevice.cpp" />
     <ClCompile Include="src\engine\prehistoric\component\audio\AudioComponent.cpp" />
-    <ClCompile Include="src\engine\prehistoric\component\light\Light.cpp" />
     <ClCompile Include="src\engine\prehistoric\component\renderer\RenderableComponent.cpp" />
     <ClCompile Include="src\engine\prehistoric\component\renderer\RendererComponent.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\Engine.cpp" />
@@ -130,11 +130,11 @@
     <ClCompile Include="src\engine\prehistoric\modules\terrain\TerrainMaps.cpp" />
     <ClCompile Include="src\engine\prehistoric\modules\terrain\TerrainNode.cpp" />
     <ClCompile Include="src\engine\prehistoric\modules\terrain\TerrainQuadtree.cpp" />
+    <ClCompile Include="src\engine\PrehistoricEngine.cpp" />
     <ClCompile Include="src\engine\prehistoric\resources\AssembledAssetManager.cpp" />
     <ClCompile Include="src\engine\prehistoric\resources\AssetManager.cpp" />
     <ClCompile Include="src\engine\prehistoric\scene\Scene.cpp" />
     <ClCompile Include="src\engine\prehistoric\world\WorldLoader.cpp" />
-    <ClCompile Include="src\game\Application.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\config\AtmosphereConfig.h" />
@@ -142,7 +142,8 @@
     <ClInclude Include="src\engine\config\EnvironmentMapConfig.h" />
     <ClInclude Include="src\engine\config\FrameworkConfig.h" />
     <ClInclude Include="src\engine\config\TerrainConfig.h" />
-    <ClInclude Include="src\engine\CoreEngine.h" />
+    <ClInclude Include="src\engine\PrehistoricEngine.h" />
+    <ClInclude Include="src\engine\prehistoric\CoreEngine.h" />
     <ClInclude Include="src\engine\platform\opengl\buffer\GLMeshVertexBuffer.h" />
     <ClInclude Include="src\engine\platform\opengl\buffer\GLPatchVertexBuffer.h" />
     <ClInclude Include="src\engine\platform\opengl\buffer\GLShaderStorageBuffer.h" />
@@ -171,7 +172,7 @@
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainWireframeShader.h" />
     <ClInclude Include="src\engine\platform\opengl\texture\GLTexture.h" />
-    <ClInclude Include="src\engine\platform\Prehistoric.h" />
+    <ClInclude Include="src\engine\platform\Platform.h" />
     <ClInclude Include="src\engine\platform\vulkan\buffer\VKBuffer.h" />
     <ClInclude Include="src\engine\platform\vulkan\buffer\VKMeshVertexBuffer.h" />
     <ClInclude Include="src\engine\platform\vulkan\capabilities\VKCapabilities.h" />
@@ -269,7 +270,6 @@
     <ClInclude Include="src\engine\prehistoric\resources\Factory.h" />
     <ClInclude Include="src\engine\prehistoric\scene\Scene.h" />
     <ClInclude Include="src\engine\prehistoric\world\WorldLoader.h" />
-    <ClInclude Include="src\game\Application.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

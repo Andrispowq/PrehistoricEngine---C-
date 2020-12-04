@@ -12,6 +12,8 @@ namespace FrameworkConfig
 	uint32_t FrameworkConfig::windowNumSamples;
 	uint32_t FrameworkConfig::windowMaxFPS;
 
+	std::map<API, Vector2i> apiVersions;
+
 	API FrameworkConfig::api;
 	Vector2i FrameworkConfig::apiVersion;
 	bool FrameworkConfig::apiVulkanUseValidationLayers;
@@ -35,8 +37,7 @@ namespace FrameworkConfig
 				{
 					continue; //This line is a comment then
 				}
-
-				if (nameTokens[0] == "window")
+				else if (nameTokens[0] == "window")
 				{
 					if (nameTokens[1] == "name")
 					{
@@ -49,60 +50,87 @@ namespace FrameworkConfig
 
 						windowName = name;
 					}
-					if (nameTokens[1] == "width")
+					else if (nameTokens[1] == "width")
 					{
 						windowWidth = (uint32_t) std::atoi(tokens[1].c_str());
 					}
-					if (nameTokens[1] == "height")
+					else if(nameTokens[1] == "height")
 					{
-						windowHeight = (uint32_t) std::atoi(tokens[1].c_str());
+						windowHeight = (uint32_t)std::atoi(tokens[1].c_str());
 					}
-					if (nameTokens[1] == "fullScreen")
+					else if(nameTokens[1] == "fullScreen")
 					{
 						windowFullScreen = std::atoi(tokens[1].c_str()) != 0;
 					}
-					if (nameTokens[1] == "resizable")
+					else if(nameTokens[1] == "resizable")
 					{
 						windowResizable = std::atoi(tokens[1].c_str()) != 0;
 					}
-					if (nameTokens[1] == "vSync")
+					else if(nameTokens[1] == "vSync")
 					{
 						windowVSync = std::atoi(tokens[1].c_str()) != 0;
 					}
-					if (nameTokens[1] == "numSamples")
+					else if(nameTokens[1] == "numSamples")
 					{
 						windowNumSamples = std::atoi(tokens[1].c_str());
 					}
-					if (nameTokens[1] == "maxFPS")
+					else if (nameTokens[1] == "maxFPS")
 					{
 						windowMaxFPS = std::atoi(tokens[1].c_str());
 					}
 				}
-				if (nameTokens[0] == "api")
+				else if (nameTokens[0] == "api")
 				{
-					if (nameTokens[1] == "name")
+					if (nameTokens[1] == "use")
 					{
-						if (tokens[1] == "OpenGL")
+						std::string name = nameTokens[1];
+						API api = NO_API;
+
+						switch (api)
 						{
+						case OpenGL:
 							api = OpenGL;
-						}
-						else if (tokens[1] == "Vulkan")
-						{
+						case Vulkan:
 							api = Vulkan;
+						case Vulkan_RTX:
+							api = Vulkan_RTX;
+						case DirectX_11:
+							api = DirectX_11;
+						case DirectX_12:
+							api = DirectX_12;
+						case DirectX_DXR:
+							api = DirectX_DXR;
 						}
-						else
+
+						apiVersion = apiVersions[api];
+					}
+					else
+					{
+						std::string name = nameTokens[1];
+						API api = NO_API;
+
+						switch (api)
 						{
-							PR_LOG_ERROR("Specify a valid API (OpenGL or Vulkan) under res/config/framework.cfg!\n");
-							api = NO_API;
+						case OpenGL:
+							api = OpenGL;
+						case Vulkan:
+							api = Vulkan;
+						case Vulkan_RTX:
+							api = Vulkan_RTX;
+						case DirectX_11:
+							api = DirectX_11;
+						case DirectX_12:
+							api = DirectX_12;
+						case DirectX_DXR:
+							api = DirectX_DXR;
 						}
-					}
-					if (nameTokens[1] == "version")
-					{
-						apiVersion = { std::atoi(tokens[1].c_str()), std::atoi(tokens[2].c_str()) };
-					}
-					if (nameTokens[1] == "vulkan")
-					{
-						if (nameTokens[2] == "useValidationLayers")
+
+						if (nameTokens[2] == "version")
+						{
+							Vector2i version{ std::atoi(tokens[1].c_str()), std::atoi(tokens[2].c_str()) };
+							apiVersions.insert(std::make_pair(api, version));
+						}
+						else if (nameTokens[2] == "useValidationLayers")
 						{
 							apiVulkanUseValidationLayers = std::atoi(tokens[1].c_str()) != 0;
 						}
