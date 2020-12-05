@@ -89,12 +89,12 @@ namespace Prehistoric
 
 		if (InputInstance.IsKeyPushed(PR_KEY_F11))
 		{
-			window->SetFullscreen(window->IsFullscreen() xor 0x1);
+			window->SetFullscreen(!window->IsFullscreen());
 		}
 
 		if (InputInstance.IsKeyPushed(PR_KEY_E))
 		{
-			renderer->setWireframeMode(renderer->isWireframeMode() xor 0x1);
+			renderer->setWireframeMode(!renderer->isWireframeMode());
 		}
 
 		camera->Update(window.get(), delta);

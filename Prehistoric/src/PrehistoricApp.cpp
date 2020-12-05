@@ -5,12 +5,10 @@ class PrehistoricApp : public Prehistoric::Application
 public:
 	PrehistoricApp()
 	{
-
 	}
 
 	~PrehistoricApp()
 	{
-
 	}
 };
 

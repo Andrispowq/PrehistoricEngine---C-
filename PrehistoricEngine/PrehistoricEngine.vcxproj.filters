@@ -1,798 +1,1036 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="platform">
+      <UniqueIdentifier>{4A63C33C-3630-1E48-5F49-0CF04B7553D6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    <Filter Include="platform\opengl">
+      <UniqueIdentifier>{9E4DBFD0-0AD9-2C95-13EA-AF897FF48895}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="platform\opengl\buffer">
+      <UniqueIdentifier>{E7A59150-D39F-BAA2-BC0C-51B3A8A5200F}</UniqueIdentifier>
     </Filter>
+    <Filter Include="platform\opengl\capabilities">
+      <UniqueIdentifier>{37D9FFA9-2394-EF55-CC4B-68A0B8E539E6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\opengl\framework">
+      <UniqueIdentifier>{BB078CCA-27CA-BF54-707A-4EE1DC7B9832}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\opengl\framework\context">
+      <UniqueIdentifier>{6FA55944-DB13-AFC3-24FD-69C390AAA45F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\opengl\framework\swapchain">
+      <UniqueIdentifier>{0882F778-743B-6223-FD9A-7CFD69531893}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\opengl\rendering">
+      <UniqueIdentifier>{8B54BD14-F716-F19E-40C7-7F2BACC8C97C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\opengl\rendering\framebuffer">
+      <UniqueIdentifier>{5F564953-CB1A-4843-9480-780D0004E478}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\opengl\rendering\pipeline">
+      <UniqueIdentifier>{30E5A3C1-1C21-A72B-8533-BF22718E4F46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\opengl\rendering\shaders">
+      <UniqueIdentifier>{846C8E84-F0DA-E303-39C4-9E03A571D99F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\opengl\rendering\shaders\atmosphere">
+      <UniqueIdentifier>{4B430792-3756-07EB-E03F-E4D7CC31A438}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\opengl\rendering\shaders\basic">
+      <UniqueIdentifier>{55BE7DEE-C14D-3FD9-CA49-20F136587AE5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\opengl\rendering\shaders\environmentMap">
+      <UniqueIdentifier>{2645CD03-12EE-3433-3B84-50B2278C4F74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\opengl\rendering\shaders\gpgpu">
+      <UniqueIdentifier>{7640E0EE-E2CF-A1D9-EBCB-82F157DADCE5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\opengl\rendering\shaders\gui">
+      <UniqueIdentifier>{F89954C7-645E-53B7-2DC4-83819947EFEC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\opengl\rendering\shaders\pbr">
+      <UniqueIdentifier>{D7BD54C7-4382-53B7-0CE8-8381786BEFEC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\opengl\rendering\shaders\terrain">
+      <UniqueIdentifier>{086CC6F7-7486-2999-BDA8-392D290251A0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\opengl\texture">
+      <UniqueIdentifier>{1EC959A8-8A00-A23F-930A-0663FFC0C838}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\vulkan">
+      <UniqueIdentifier>{AAAD71E1-1639-DFA5-1F4A-629A8B543BA6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\vulkan\buffer">
+      <UniqueIdentifier>{7300EE27-5FFA-167A-4867-AD8A34007DE6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\vulkan\capabilities">
+      <UniqueIdentifier>{C3EC90A8-AFA7-8054-585F-F99E44F9CAE4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\vulkan\framework">
+      <UniqueIdentifier>{C7E60EE6-33A9-4270-7C59-D1FCE85A1B4E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\vulkan\framework\context">
+      <UniqueIdentifier>{7BD0209E-E73E-761D-3028-311D9CD56BB9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\vulkan\framework\device">
+      <UniqueIdentifier>{A6D257A9-9223-43EB-BB87-31ADA737D654}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\vulkan\framework\queue">
+      <UniqueIdentifier>{FBCB89D7-67AF-9817-70B2-C653DC145F68}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\vulkan\framework\surface">
+      <UniqueIdentifier>{3F31047C-AB9F-59FB-F488-14FB60364F97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\vulkan\framework\swapchain">
+      <UniqueIdentifier>{14A03561-8059-A00B-09B9-BAE57571567B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\vulkan\rendering">
+      <UniqueIdentifier>{97334030-03F6-73BA-4CA6-0247B8A74C98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\vulkan\rendering\command">
+      <UniqueIdentifier>{C5EBE31F-315A-399F-7A43-F49EE6F02E3B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\vulkan\rendering\descriptors">
+      <UniqueIdentifier>{788C28F3-E450-27E3-ADB6-57AD193AC318}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\vulkan\rendering\framebuffer">
+      <UniqueIdentifier>{6B278743-D7EB-8533-A051-B6FD0CD52169}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\vulkan\rendering\pipeline">
+      <UniqueIdentifier>{BC715054-A8AD-53BE-11C0-6BB5FD1AFCD8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\vulkan\rendering\renderpass">
+      <UniqueIdentifier>{9D1F29AB-8906-EBA2-3257-51C01E1D6409}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\vulkan\rendering\shaders">
+      <UniqueIdentifier>{909755DE-FC05-AB5D-45EF-655DB19CA0F9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\vulkan\rendering\shaders\basic">
+      <UniqueIdentifier>{610274E5-CD91-35D0-D68D-16E8429C70DC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\vulkan\rendering\shaders\pbr">
+      <UniqueIdentifier>{E38E92B7-4F53-91A7-18B9-C171843C2DDD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\vulkan\rendering\synchronisation">
+      <UniqueIdentifier>{91CB8EFE-FDE5-F19F-4608-0234B26119A7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\vulkan\texture">
+      <UniqueIdentifier>{2A75416B-96AC-8902-9FB6-ED250B6DB0FB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\vulkan\util">
+      <UniqueIdentifier>{576BA78C-43FA-3056-EC18-4551D88641FC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\windows">
+      <UniqueIdentifier>{A44FC440-9048-E392-B97A-C817A5D2C29E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric">
+      <UniqueIdentifier>{B1DCDAA7-1D92-539D-A686-4D74123B4AA1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\application">
+      <UniqueIdentifier>{14520E38-8089-56CF-8993-BAF2F5497DC8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\common">
+      <UniqueIdentifier>{E9AC050C-D590-C661-3EF1-C0B42AF4B0E3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\common\buffer">
+      <UniqueIdentifier>{D2826006-3E45-9490-87F5-221DF3F66C6E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\common\capabilities">
+      <UniqueIdentifier>{627A39B8-CE5D-48F8-D760-763443C30E49}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\common\framework">
+      <UniqueIdentifier>{C640BECE-B2FB-AD7A-5BB3-26C5474DF80A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\common\framework\context">
+      <UniqueIdentifier>{7AB90D11-66A0-CF08-0FF1-3526FBB6486F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\common\framework\swapchain">
+      <UniqueIdentifier>{D3C40043-BF16-D832-A835-15439426F11B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\common\rendering">
+      <UniqueIdentifier>{968DEF18-8248-DFC4-2B00-580F179A2955}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\common\rendering\command">
+      <UniqueIdentifier>{C4D4D092-B0BB-928A-590C-F9A745D20BF1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\common\rendering\framebuffer">
+      <UniqueIdentifier>{EA77AEC4-D6F4-A107-FF71-A21BEB4D3E9B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\common\rendering\pipeline">
+      <UniqueIdentifier>{9B7ADA24-073F-D914-D0A4-09DF3C28754A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\common\rendering\shaders">
+      <UniqueIdentifier>{8F804251-7B67-0449-24B8-6A66107E7DAF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\common\texture">
+      <UniqueIdentifier>{69430418-5553-B0E8-BE0C-1507AA3B9F81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\common\util">
+      <UniqueIdentifier>{F6C987B1-6201-D048-6B0B-346CD7C1F641}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core">
+      <UniqueIdentifier>{C923706F-B51C-8FC1-DE4E-7446CAA66ECD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\config">
+      <UniqueIdentifier>{CE763142-3AAE-79D9-43B8-DDFCAF6EA0D2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\engines">
+      <UniqueIdentifier>{81B0821F-6DD5-D19F-9620-B72F82A4D0BD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\model">
+      <UniqueIdentifier>{E98FCD5F-D589-F6B1-BEF6-8CC2AA8F5C1E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\model\material">
+      <UniqueIdentifier>{C750C846-3334-D786-3C37-05C3A8999DD7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\model\obj">
+      <UniqueIdentifier>{730791AA-5F17-3D7B-C8D0-A199B4FF2B14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\modules">
+      <UniqueIdentifier>{B1017A89-9D26-C909-C671-AE99B2F5C727}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\modules\atmosphere">
+      <UniqueIdentifier>{5822330E-C4DB-9DB8-4D3B-B892B9F35328}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\modules\environmentMapRenderer">
+      <UniqueIdentifier>{2A6A334F-96A5-9312-9F9A-10A20B551843}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\modules\gpgpu">
+      <UniqueIdentifier>{634364E5-4F69-2E4C-38AF-B31724745318}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\modules\gui">
+      <UniqueIdentifier>{A5FD30D5-91B8-2081-3A70-99CB260A6B11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\modules\gui\button">
+      <UniqueIdentifier>{30121284-9CCB-7C2E-252B-970891E3329E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\modules\gui\slider">
+      <UniqueIdentifier>{D79A10AB-4354-7B55-CCB3-952F386C31C5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\modules\terrain">
+      <UniqueIdentifier>{35DE569F-212F-42E1-4A93-30A33643D54A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\node">
+      <UniqueIdentifier>{3EA06B12-AA0C-270D-7300-BF6ADF2B4975}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\node\component">
+      <UniqueIdentifier>{407E67A0-AC61-76E0-B564-A41C21C73C31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\node\component\audio">
+      <UniqueIdentifier>{61CCDCEE-CD90-DBDE-96F6-0BA9027A7714}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\node\component\light">
+      <UniqueIdentifier>{07529DEF-7316-9CDF-3C7C-CCA9A8FF3715}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\node\component\renderer">
+      <UniqueIdentifier>{06661F39-F2E2-127C-1B60-1390073CAF0F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\node\movement">
+      <UniqueIdentifier>{58671106-448D-DB6C-2DD3-603819980039}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\resources">
+      <UniqueIdentifier>{93783151-7F88-DD21-E841-4240D470CCBA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\scene">
+      <UniqueIdentifier>{C6933360-B28D-5CB2-9BFA-F2C28793C21E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\scene\world">
+      <UniqueIdentifier>{1D7B2B2B-0936-1BD7-B2ED-93219E876567}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\util">
+      <UniqueIdentifier>{D68C6F12-42F9-2A0D-0BED-C26A77184D75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\util\codes">
+      <UniqueIdentifier>{B3D9F790-1FE7-2577-A8CD-216214DAF12D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\util\log">
+      <UniqueIdentifier>{C7A791A6-336A-C530-7C1A-54BDE81B9E0E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\util\math">
+      <UniqueIdentifier>{8FF3C678-7B03-7349-E4BC-D767D0EB61E2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\util\time">
+      <UniqueIdentifier>{54EBCA78-40FB-7649-A9B4-DB6795E365E2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\engine\Prehistoric.h" />
+    <ClInclude Include="src\engine\platform\Platform.h">
+      <Filter>platform</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\buffer\GLMeshVertexBuffer.h">
+      <Filter>platform\opengl\buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\buffer\GLPatchVertexBuffer.h">
+      <Filter>platform\opengl\buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\buffer\GLShaderStorageBuffer.h">
+      <Filter>platform\opengl\buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\capabilities\GLCapabilities.h">
+      <Filter>platform\opengl\capabilities</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\framework\context\GLContext.h">
+      <Filter>platform\opengl\framework\context</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\framework\swapchain\GLSwapchain.h">
+      <Filter>platform\opengl\framework\swapchain</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\GLRenderer.h">
+      <Filter>platform\opengl\rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\framebuffer\GLFramebuffer.h">
+      <Filter>platform\opengl\rendering\framebuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLComputePipeline.h">
+      <Filter>platform\opengl\rendering\pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLGraphicsPipeline.h">
+      <Filter>platform\opengl\rendering\pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLPipeline.h">
+      <Filter>platform\opengl\rendering\pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\GLShader.h">
+      <Filter>platform\opengl\rendering\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereScatteringShader.h">
+      <Filter>platform\opengl\rendering\shaders\atmosphere</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereShader.h">
+      <Filter>platform\opengl\rendering\shaders\atmosphere</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\basic\GLBasicShader.h">
+      <Filter>platform\opengl\rendering\shaders\basic</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLBRDFIntegrateShader.h">
+      <Filter>platform\opengl\rendering\shaders\environmentMap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLEnvironmentMapShader.h">
+      <Filter>platform\opengl\rendering\shaders\environmentMap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLEnvironmentShader.h">
+      <Filter>platform\opengl\rendering\shaders\environmentMap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLIrradianceShader.h">
+      <Filter>platform\opengl\rendering\shaders\environmentMap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLPrefilterShader.h">
+      <Filter>platform\opengl\rendering\shaders\environmentMap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\gpgpu\GLNormalmapShader.h">
+      <Filter>platform\opengl\rendering\shaders\gpgpu</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\gpgpu\GLSplatmapShader.h">
+      <Filter>platform\opengl\rendering\shaders\gpgpu</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\gpgpu\GLTerrainHeightsShader.h">
+      <Filter>platform\opengl\rendering\shaders\gpgpu</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\gui\GLGUIShader.h">
+      <Filter>platform\opengl\rendering\shaders\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\pbr\GLPBRShader.h">
+      <Filter>platform\opengl\rendering\shaders\pbr</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShader.h">
+      <Filter>platform\opengl\rendering\shaders\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainWireframeShader.h">
+      <Filter>platform\opengl\rendering\shaders\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\texture\GLTexture.h">
+      <Filter>platform\opengl\texture</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\buffer\VKBuffer.h">
+      <Filter>platform\vulkan\buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\buffer\VKMeshVertexBuffer.h">
+      <Filter>platform\vulkan\buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\capabilities\VKCapabilities.h">
+      <Filter>platform\vulkan\capabilities</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\framework\context\VKContext.h">
+      <Filter>platform\vulkan\framework\context</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\framework\context\VKDebugMessenger.h">
+      <Filter>platform\vulkan\framework\context</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\framework\context\VKInstance.h">
+      <Filter>platform\vulkan\framework\context</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\framework\device\VKDevice.h">
+      <Filter>platform\vulkan\framework\device</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\framework\device\VKPhysicalDevice.h">
+      <Filter>platform\vulkan\framework\device</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\framework\queue\VKQueue.h">
+      <Filter>platform\vulkan\framework\queue</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\framework\surface\VKSurface.h">
+      <Filter>platform\vulkan\framework\surface</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\framework\swapchain\VkSwapChain.h">
+      <Filter>platform\vulkan\framework\swapchain</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\rendering\VKRenderer.h">
+      <Filter>platform\vulkan\rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\rendering\command\VKCommandBuffer.h">
+      <Filter>platform\vulkan\rendering\command</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\rendering\command\VKCommandPool.h">
+      <Filter>platform\vulkan\rendering\command</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\rendering\descriptors\VKDescriptorPool.h">
+      <Filter>platform\vulkan\rendering\descriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\rendering\descriptors\VKDescriptorSet.h">
+      <Filter>platform\vulkan\rendering\descriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\rendering\descriptors\VKDescriptorSetBinding.h">
+      <Filter>platform\vulkan\rendering\descriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\rendering\framebuffer\VKFramebuffer.h">
+      <Filter>platform\vulkan\rendering\framebuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\rendering\pipeline\VKGraphicsPipeline.h">
+      <Filter>platform\vulkan\rendering\pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\rendering\pipeline\VkPipeline.h">
+      <Filter>platform\vulkan\rendering\pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\rendering\renderpass\VKRenderpass.h">
+      <Filter>platform\vulkan\rendering\renderpass</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\rendering\shaders\VkShader.h">
+      <Filter>platform\vulkan\rendering\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\rendering\shaders\basic\VKBasicShader.h">
+      <Filter>platform\vulkan\rendering\shaders\basic</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\rendering\shaders\pbr\VKPBRShader.h">
+      <Filter>platform\vulkan\rendering\shaders\pbr</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\rendering\synchronisation\VKFence.h">
+      <Filter>platform\vulkan\rendering\synchronisation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\rendering\synchronisation\VKSemaphore.h">
+      <Filter>platform\vulkan\rendering\synchronisation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\texture\VKTexture.h">
+      <Filter>platform\vulkan\texture</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\util\VKUtil.h">
+      <Filter>platform\vulkan\util</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\windows\WindowsInput.h">
+      <Filter>platform\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\windows\WindowsWindow.h">
+      <Filter>platform\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\CoreEngine.h">
+      <Filter>prehistoric</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\application\Application.h">
+      <Filter>prehistoric\application</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\application\EntryPoint.h">
+      <Filter>prehistoric\application</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\buffer\MeshVertexBuffer.h">
+      <Filter>prehistoric\common\buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\buffer\PatchVertexBuffer.h">
+      <Filter>prehistoric\common\buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\buffer\ShaderStorageBuffer.h">
+      <Filter>prehistoric\common\buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\buffer\VertexBuffer.h">
+      <Filter>prehistoric\common\buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\capabilities\Capabilities.h">
+      <Filter>prehistoric\common\capabilities</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\framework\CameraInput.h">
+      <Filter>prehistoric\common\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\framework\Input.h">
+      <Filter>prehistoric\common\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\framework\Window.h">
+      <Filter>prehistoric\common\framework</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\framework\context\Context.h">
+      <Filter>prehistoric\common\framework\context</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\framework\swapchain\Swapchain.h">
+      <Filter>prehistoric\common\framework\swapchain</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\rendering\Renderer.h">
+      <Filter>prehistoric\common\rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\rendering\command\CommandBuffer.h">
+      <Filter>prehistoric\common\rendering\command</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\rendering\framebuffer\Framebuffer.h">
+      <Filter>prehistoric\common\rendering\framebuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\rendering\pipeline\ComputePipeline.h">
+      <Filter>prehistoric\common\rendering\pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\rendering\pipeline\GraphicsPipeline.h">
+      <Filter>prehistoric\common\rendering\pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\rendering\pipeline\Pipeline.h">
+      <Filter>prehistoric\common\rendering\pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\rendering\pipeline\RayTracingPipeline.h">
+      <Filter>prehistoric\common\rendering\pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\rendering\shaders\Shader.h">
+      <Filter>prehistoric\common\rendering\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\texture\Texture.h">
+      <Filter>prehistoric\common\texture</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\texture\TextureLoader.h">
+      <Filter>prehistoric\common\texture</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\util\DeviceProperties.h">
+      <Filter>prehistoric\common\util</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\util\InitDevice.h">
+      <Filter>prehistoric\common\util</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\util\RenderUtils.h">
+      <Filter>prehistoric\common\util</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\Engine.h">
+      <Filter>prehistoric\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\config\AtmosphereConfig.h">
+      <Filter>prehistoric\core\config</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\config\EngineConfig.h">
+      <Filter>prehistoric\core\config</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\config\EnvironmentMapConfig.h">
+      <Filter>prehistoric\core\config</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\config\FrameworkConfig.h">
+      <Filter>prehistoric\core\config</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\config\TerrainConfig.h">
+      <Filter>prehistoric\core\config</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\engines\AudioEngine.h">
+      <Filter>prehistoric\core\engines</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\engines\RenderingEngine.h">
+      <Filter>prehistoric\core\engines</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\model\Mesh.h">
+      <Filter>prehistoric\core\model</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\model\Transform.h">
+      <Filter>prehistoric\core\model</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\model\Vertex.h">
+      <Filter>prehistoric\core\model</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\model\material\Material.h">
+      <Filter>prehistoric\core\model\material</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\model\obj\OBJLoader.h">
+      <Filter>prehistoric\core\model\obj</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\modules\atmosphere\Atmosphere.h">
+      <Filter>prehistoric\core\modules\atmosphere</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\modules\environmentMapRenderer\EnvironmentMapRenderer.h">
+      <Filter>prehistoric\core\modules\environmentMapRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\modules\gpgpu\NormalMapRenderer.h">
+      <Filter>prehistoric\core\modules\gpgpu</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\modules\gpgpu\SplatMapRenderer.h">
+      <Filter>prehistoric\core\modules\gpgpu</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\modules\gpgpu\TerrainHeightsQuery.h">
+      <Filter>prehistoric\core\modules\gpgpu</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\modules\gui\GUIElement.h">
+      <Filter>prehistoric\core\modules\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\modules\gui\button\GUIButton.h">
+      <Filter>prehistoric\core\modules\gui\button</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\modules\gui\slider\GUISlider.h">
+      <Filter>prehistoric\core\modules\gui\slider</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\modules\terrain\Terrain.h">
+      <Filter>prehistoric\core\modules\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\modules\terrain\TerrainMaps.h">
+      <Filter>prehistoric\core\modules\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\modules\terrain\TerrainNode.h">
+      <Filter>prehistoric\core\modules\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\modules\terrain\TerrainQuadtree.h">
+      <Filter>prehistoric\core\modules\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\node\GameObject.h">
+      <Filter>prehistoric\core\node</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\node\Node.h">
+      <Filter>prehistoric\core\node</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\node\component\Component.h">
+      <Filter>prehistoric\core\node\component</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\node\component\audio\AudioComponent.h">
+      <Filter>prehistoric\core\node\component\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\node\component\light\Light.h">
+      <Filter>prehistoric\core\node\component\light</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\node\component\renderer\RenderableComponent.h">
+      <Filter>prehistoric\core\node\component\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\node\component\renderer\RendererComponent.h">
+      <Filter>prehistoric\core\node\component\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\node\movement\Camera.h">
+      <Filter>prehistoric\core\node\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\resources\AssembledAssetManager.h">
+      <Filter>prehistoric\core\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\resources\AssetManager.h">
+      <Filter>prehistoric\core\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\resources\Factory.h">
+      <Filter>prehistoric\core\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\scene\Scene.h">
+      <Filter>prehistoric\core\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\scene\world\WorldLoader.h">
+      <Filter>prehistoric\core\scene\world</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\util\Constants.h">
+      <Filter>prehistoric\core\util</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\util\Includes.hpp">
+      <Filter>prehistoric\core\util</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\util\ModelFabricator.h">
+      <Filter>prehistoric\core\util</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\util\Util.h">
+      <Filter>prehistoric\core\util</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\util\codes\InputCode.h">
+      <Filter>prehistoric\core\util\codes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\util\log\ColourCodes.h">
+      <Filter>prehistoric\core\util\log</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\util\log\Log.h">
+      <Filter>prehistoric\core\util\log</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\util\math\Math.h">
+      <Filter>prehistoric\core\util\math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\util\math\MathT.h">
+      <Filter>prehistoric\core\util\math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\util\time\Time.h">
+      <Filter>prehistoric\core\util\time</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\util\time\Timer.h">
+      <Filter>prehistoric\core\util\time</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\platform\opengl\buffer\GLMeshVertexBuffer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>platform\opengl\buffer</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\buffer\GLPatchVertexBuffer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>platform\opengl\buffer</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\buffer\GLShaderStorageBuffer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>platform\opengl\buffer</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\capabilities\GLCapabilities.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>platform\opengl\capabilities</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\framework\context\GLContext.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>platform\opengl\framework\context</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\framework\swapchain\GLSwapchain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\framebuffer\GLFramebuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\pipeline\GLComputePipeline.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\pipeline\GLGraphicsPipeline.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\pipeline\GLPipeline.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereScatteringShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\basic\GLBasicShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLBRDFIntegrateShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLEnvironmentMapShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLEnvironmentShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLIrradianceShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLPrefilterShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\gpgpu\GLNormalmapShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\gpgpu\GLSplatmapShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\gpgpu\GLTerrainHeightsShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\gui\GLGUIShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\pbr\GLPBRShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainWireframeShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\GLShader.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>platform\opengl\framework\swapchain</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\GLRenderer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>platform\opengl\rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\framebuffer\GLFramebuffer.cpp">
+      <Filter>platform\opengl\rendering\framebuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\pipeline\GLComputePipeline.cpp">
+      <Filter>platform\opengl\rendering\pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\pipeline\GLGraphicsPipeline.cpp">
+      <Filter>platform\opengl\rendering\pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\pipeline\GLPipeline.cpp">
+      <Filter>platform\opengl\rendering\pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\GLShader.cpp">
+      <Filter>platform\opengl\rendering\shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereScatteringShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\atmosphere</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\atmosphere</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\basic\GLBasicShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\basic</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLBRDFIntegrateShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\environmentMap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLEnvironmentMapShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\environmentMap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLEnvironmentShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\environmentMap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLIrradianceShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\environmentMap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLPrefilterShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\environmentMap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\gpgpu\GLNormalmapShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\gpgpu</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\gpgpu\GLSplatmapShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\gpgpu</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\gpgpu\GLTerrainHeightsShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\gpgpu</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\gui\GLGUIShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\pbr\GLPBRShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\pbr</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainWireframeShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\terrain</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\texture\GLTexture.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>platform\opengl\texture</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\vulkan\buffer\VKBuffer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>platform\vulkan\buffer</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\vulkan\buffer\VKMeshVertexBuffer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>platform\vulkan\buffer</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\vulkan\capabilities\VKCapabilities.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>platform\vulkan\capabilities</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\vulkan\framework\context\VKContext.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\vulkan\framework\context\VkDebugMessenger.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>platform\vulkan\framework\context</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\vulkan\framework\context\VKInstance.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>platform\vulkan\framework\context</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\vulkan\framework\context\VkDebugMessenger.cpp">
+      <Filter>platform\vulkan\framework\context</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\vulkan\framework\device\VKDevice.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>platform\vulkan\framework\device</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\vulkan\framework\device\VKPhysicalDevice.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>platform\vulkan\framework\device</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\vulkan\framework\queue\VKQueue.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>platform\vulkan\framework\queue</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\vulkan\framework\surface\VKSurface.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>platform\vulkan\framework\surface</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\vulkan\framework\swapchain\VkSwapChain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\vulkan\rendering\command\VKCommandBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\vulkan\rendering\command\VKCommandPool.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\vulkan\rendering\descriptors\VKDescriptorPool.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\vulkan\rendering\descriptors\VKDescriptorSet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\vulkan\rendering\descriptors\VKDescriptorSetBinding.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\vulkan\rendering\framebuffer\VKFramebuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\vulkan\rendering\pipeline\VKGraphicsPipeline.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\vulkan\rendering\pipeline\VkPipeline.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\vulkan\rendering\renderpass\VKRenderpass.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\vulkan\rendering\shaders\basic\VKBasicShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\vulkan\rendering\shaders\pbr\VKPBRShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\vulkan\rendering\shaders\VkShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\vulkan\rendering\synchronisation\VKFence.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\vulkan\rendering\synchronisation\VKSemaphore.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>platform\vulkan\framework\swapchain</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\vulkan\rendering\VKRenderer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>platform\vulkan\rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\vulkan\rendering\command\VKCommandBuffer.cpp">
+      <Filter>platform\vulkan\rendering\command</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\vulkan\rendering\command\VKCommandPool.cpp">
+      <Filter>platform\vulkan\rendering\command</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\vulkan\rendering\descriptors\VKDescriptorPool.cpp">
+      <Filter>platform\vulkan\rendering\descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\vulkan\rendering\descriptors\VKDescriptorSet.cpp">
+      <Filter>platform\vulkan\rendering\descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\vulkan\rendering\descriptors\VKDescriptorSetBinding.cpp">
+      <Filter>platform\vulkan\rendering\descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\vulkan\rendering\framebuffer\VKFramebuffer.cpp">
+      <Filter>platform\vulkan\rendering\framebuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\vulkan\rendering\pipeline\VKGraphicsPipeline.cpp">
+      <Filter>platform\vulkan\rendering\pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\vulkan\rendering\pipeline\VkPipeline.cpp">
+      <Filter>platform\vulkan\rendering\pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\vulkan\rendering\renderpass\VKRenderpass.cpp">
+      <Filter>platform\vulkan\rendering\renderpass</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\vulkan\rendering\shaders\VkShader.cpp">
+      <Filter>platform\vulkan\rendering\shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\vulkan\rendering\shaders\basic\VKBasicShader.cpp">
+      <Filter>platform\vulkan\rendering\shaders\basic</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\vulkan\rendering\shaders\pbr\VKPBRShader.cpp">
+      <Filter>platform\vulkan\rendering\shaders\pbr</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\vulkan\rendering\synchronisation\VKFence.cpp">
+      <Filter>platform\vulkan\rendering\synchronisation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\vulkan\rendering\synchronisation\VKSemaphore.cpp">
+      <Filter>platform\vulkan\rendering\synchronisation</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\vulkan\texture\VKTexture.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>platform\vulkan\texture</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\vulkan\util\VKUtil.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>platform\vulkan\util</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\windows\WindowsInput.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>platform\windows</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\windows\WindowsWindow.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\common\buffer\MeshVertexBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\common\buffer\PatchVertexBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\common\buffer\ShaderStorageBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\common\buffer\VertexBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\common\capabilities\Capabilities.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\common\framework\context\Context.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\common\framework\swapchain\Swapchain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\common\framework\Input.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\common\framework\Window.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\common\rendering\command\CommandBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\common\rendering\framebuffer\Framebuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\common\rendering\pipeline\ComputePipeline.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\common\rendering\pipeline\GraphicsPipeline.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\common\rendering\pipeline\Pipeline.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\common\rendering\pipeline\RayTracingPipeline.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\common\rendering\shaders\Shader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\common\rendering\Renderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\common\texture\Texture.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\common\util\DeviceProperties.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\common\util\InitDevice.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\model\material\Material.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\model\Mesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\model\Transform.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\model\Vertex.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\util\time\Time.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\util\time\Timer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\util\Includes.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\util\ModelFabricator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\util\Util.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\Engine.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>platform\windows</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\CoreEngine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\resources\AssembledAssetManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\resources\AssetManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\scene\Scene.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\config\AtmosphereConfig.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\config\EngineConfig.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\config\EnvironmentMapConfig.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\config\FrameworkConfig.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\config\TerrainConfig.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\engines\AudioEngine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\engines\RenderingEngine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\modules\atmosphere\Atmosphere.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\modules\environmentMapRenderer\EnvironmentMapRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\modules\gpgpu\NormalMapRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\modules\gpgpu\SplatMapRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\modules\gpgpu\TerrainHeightsQuery.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\modules\gui\button\GUIButton.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\modules\gui\slider\GUISlider.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\modules\gui\GUIElement.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\modules\terrain\Terrain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\modules\terrain\TerrainMaps.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\modules\terrain\TerrainNode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\modules\terrain\TerrainQuadtree.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\node\GameObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\node\Node.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\node\component\audio\AudioComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\node\component\light\Light.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\node\component\renderer\RenderableComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\node\component\renderer\RendererComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\scene\world\WorldLoader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\node\movement\Camera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\util\log\Log.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\common\texture\TextureLoader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\util\math\Math.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\model\obj\OBJLoader.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>prehistoric</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\application\Application.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>prehistoric\application</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="src\engine\platform\opengl\buffer\GLMeshVertexBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\buffer\GLPatchVertexBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\buffer\GLShaderStorageBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\capabilities\GLCapabilities.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\framework\context\GLContext.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\framework\swapchain\GLSwapchain.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\framebuffer\GLFramebuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLComputePipeline.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLGraphicsPipeline.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLPipeline.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereScatteringShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\basic\GLBasicShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLBRDFIntegrateShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLEnvironmentMapShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLEnvironmentShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLIrradianceShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLPrefilterShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\gpgpu\GLNormalmapShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\gpgpu\GLSplatmapShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\gpgpu\GLTerrainHeightsShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\gui\GLGUIShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\pbr\GLPBRShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainWireframeShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\GLShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\GLRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\texture\GLTexture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\buffer\VKBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\buffer\VKMeshVertexBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\capabilities\VKCapabilities.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\framework\context\VKContext.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\framework\context\VKDebugMessenger.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\framework\context\VKInstance.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\framework\device\VKDevice.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\framework\device\VKPhysicalDevice.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\framework\queue\VKQueue.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\framework\surface\VKSurface.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\framework\swapchain\VkSwapChain.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\rendering\command\VKCommandBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\rendering\command\VKCommandPool.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\rendering\descriptors\VKDescriptorPool.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\rendering\descriptors\VKDescriptorSet.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\rendering\descriptors\VKDescriptorSetBinding.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\rendering\framebuffer\VKFramebuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\rendering\pipeline\VKGraphicsPipeline.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\rendering\pipeline\VkPipeline.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\rendering\renderpass\VKRenderpass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\rendering\shaders\basic\VKBasicShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\rendering\shaders\pbr\VKPBRShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\rendering\shaders\VkShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\rendering\synchronisation\VKFence.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\rendering\synchronisation\VKSemaphore.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\rendering\VKRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\texture\VKTexture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\util\VKUtil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\windows\WindowsInput.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\windows\WindowsWindow.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\common\buffer\MeshVertexBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\common\buffer\PatchVertexBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\common\buffer\ShaderStorageBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\common\buffer\VertexBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\common\capabilities\Capabilities.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\common\framework\context\Context.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\common\framework\swapchain\Swapchain.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\common\framework\CameraInput.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\common\framework\Input.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\common\framework\Window.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\common\rendering\command\CommandBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\common\rendering\framebuffer\Framebuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\common\rendering\pipeline\ComputePipeline.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\common\rendering\pipeline\GraphicsPipeline.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\common\rendering\pipeline\Pipeline.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\common\rendering\pipeline\RayTracingPipeline.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\common\rendering\shaders\Shader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\common\rendering\Renderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\common\texture\Texture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\common\util\DeviceProperties.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\common\util\InitDevice.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\common\util\RenderUtils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\model\material\Material.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\model\Mesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\model\Transform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\model\Vertex.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\util\codes\InputCode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\util\time\Time.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\util\time\Timer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\util\Constants.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\util\Includes.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\util\ModelFabricator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\util\Util.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\Engine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\CoreEngine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\Platform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\Prehistoric.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\resources\AssembledAssetManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\resources\AssetManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\resources\Factory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\scene\Scene.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\config\AtmosphereConfig.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\config\EngineConfig.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\config\EnvironmentMapConfig.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\config\FrameworkConfig.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\config\TerrainConfig.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\engines\AudioEngine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\engines\RenderingEngine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\modules\atmosphere\Atmosphere.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\modules\environmentMapRenderer\EnvironmentMapRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\modules\gpgpu\NormalMapRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\modules\gpgpu\SplatMapRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\modules\gpgpu\TerrainHeightsQuery.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\modules\gui\button\GUIButton.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\modules\gui\slider\GUISlider.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\modules\gui\GUIElement.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\modules\terrain\Terrain.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\modules\terrain\TerrainMaps.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\modules\terrain\TerrainNode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\modules\terrain\TerrainQuadtree.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\node\GameObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\node\Node.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\node\component\audio\AudioComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\node\component\light\Light.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\node\component\renderer\RenderableComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\node\component\renderer\RendererComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\node\component\Component.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\scene\world\WorldLoader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\node\movement\Camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\util\log\ColourCodes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\util\log\Log.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\common\texture\TextureLoader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\util\math\Math.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\util\math\MathT.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\model\obj\OBJLoader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\application\EntryPoint.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\application\Application.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+    <ClCompile Include="src\engine\prehistoric\common\buffer\MeshVertexBuffer.cpp">
+      <Filter>prehistoric\common\buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\common\buffer\PatchVertexBuffer.cpp">
+      <Filter>prehistoric\common\buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\common\buffer\ShaderStorageBuffer.cpp">
+      <Filter>prehistoric\common\buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\common\buffer\VertexBuffer.cpp">
+      <Filter>prehistoric\common\buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\common\capabilities\Capabilities.cpp">
+      <Filter>prehistoric\common\capabilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\common\framework\Input.cpp">
+      <Filter>prehistoric\common\framework</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\common\framework\Window.cpp">
+      <Filter>prehistoric\common\framework</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\common\framework\context\Context.cpp">
+      <Filter>prehistoric\common\framework\context</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\common\framework\swapchain\Swapchain.cpp">
+      <Filter>prehistoric\common\framework\swapchain</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\common\rendering\Renderer.cpp">
+      <Filter>prehistoric\common\rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\common\rendering\command\CommandBuffer.cpp">
+      <Filter>prehistoric\common\rendering\command</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\common\rendering\framebuffer\Framebuffer.cpp">
+      <Filter>prehistoric\common\rendering\framebuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\common\rendering\pipeline\ComputePipeline.cpp">
+      <Filter>prehistoric\common\rendering\pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\common\rendering\pipeline\GraphicsPipeline.cpp">
+      <Filter>prehistoric\common\rendering\pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\common\rendering\pipeline\Pipeline.cpp">
+      <Filter>prehistoric\common\rendering\pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\common\rendering\pipeline\RayTracingPipeline.cpp">
+      <Filter>prehistoric\common\rendering\pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\common\rendering\shaders\Shader.cpp">
+      <Filter>prehistoric\common\rendering\shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\common\texture\Texture.cpp">
+      <Filter>prehistoric\common\texture</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\common\texture\TextureLoader.cpp">
+      <Filter>prehistoric\common\texture</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\common\util\DeviceProperties.cpp">
+      <Filter>prehistoric\common\util</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\common\util\InitDevice.cpp">
+      <Filter>prehistoric\common\util</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\Engine.cpp">
+      <Filter>prehistoric\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\config\AtmosphereConfig.cpp">
+      <Filter>prehistoric\core\config</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\config\EngineConfig.cpp">
+      <Filter>prehistoric\core\config</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\config\EnvironmentMapConfig.cpp">
+      <Filter>prehistoric\core\config</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\config\FrameworkConfig.cpp">
+      <Filter>prehistoric\core\config</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\config\TerrainConfig.cpp">
+      <Filter>prehistoric\core\config</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\engines\AudioEngine.cpp">
+      <Filter>prehistoric\core\engines</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\engines\RenderingEngine.cpp">
+      <Filter>prehistoric\core\engines</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\model\Mesh.cpp">
+      <Filter>prehistoric\core\model</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\model\Transform.cpp">
+      <Filter>prehistoric\core\model</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\model\Vertex.cpp">
+      <Filter>prehistoric\core\model</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\model\material\Material.cpp">
+      <Filter>prehistoric\core\model\material</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\model\obj\OBJLoader.cpp">
+      <Filter>prehistoric\core\model\obj</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\modules\atmosphere\Atmosphere.cpp">
+      <Filter>prehistoric\core\modules\atmosphere</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\modules\environmentMapRenderer\EnvironmentMapRenderer.cpp">
+      <Filter>prehistoric\core\modules\environmentMapRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\modules\gpgpu\NormalMapRenderer.cpp">
+      <Filter>prehistoric\core\modules\gpgpu</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\modules\gpgpu\SplatMapRenderer.cpp">
+      <Filter>prehistoric\core\modules\gpgpu</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\modules\gpgpu\TerrainHeightsQuery.cpp">
+      <Filter>prehistoric\core\modules\gpgpu</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\modules\gui\GUIElement.cpp">
+      <Filter>prehistoric\core\modules\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\modules\gui\button\GUIButton.cpp">
+      <Filter>prehistoric\core\modules\gui\button</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\modules\gui\slider\GUISlider.cpp">
+      <Filter>prehistoric\core\modules\gui\slider</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\modules\terrain\Terrain.cpp">
+      <Filter>prehistoric\core\modules\terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\modules\terrain\TerrainMaps.cpp">
+      <Filter>prehistoric\core\modules\terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\modules\terrain\TerrainNode.cpp">
+      <Filter>prehistoric\core\modules\terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\modules\terrain\TerrainQuadtree.cpp">
+      <Filter>prehistoric\core\modules\terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\node\GameObject.cpp">
+      <Filter>prehistoric\core\node</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\node\Node.cpp">
+      <Filter>prehistoric\core\node</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\node\component\audio\AudioComponent.cpp">
+      <Filter>prehistoric\core\node\component\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\node\component\light\Light.cpp">
+      <Filter>prehistoric\core\node\component\light</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\node\component\renderer\RenderableComponent.cpp">
+      <Filter>prehistoric\core\node\component\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\node\component\renderer\RendererComponent.cpp">
+      <Filter>prehistoric\core\node\component\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\node\movement\Camera.cpp">
+      <Filter>prehistoric\core\node\movement</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\resources\AssembledAssetManager.cpp">
+      <Filter>prehistoric\core\resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\resources\AssetManager.cpp">
+      <Filter>prehistoric\core\resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\scene\Scene.cpp">
+      <Filter>prehistoric\core\scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\scene\world\WorldLoader.cpp">
+      <Filter>prehistoric\core\scene\world</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\util\Includes.cpp">
+      <Filter>prehistoric\core\util</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\util\ModelFabricator.cpp">
+      <Filter>prehistoric\core\util</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\util\Util.cpp">
+      <Filter>prehistoric\core\util</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\util\log\Log.cpp">
+      <Filter>prehistoric\core\util\log</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\util\math\Math.cpp">
+      <Filter>prehistoric\core\util\math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\util\time\Time.cpp">
+      <Filter>prehistoric\core\util\time</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\util\time\Timer.cpp">
+      <Filter>prehistoric\core\util\time</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
