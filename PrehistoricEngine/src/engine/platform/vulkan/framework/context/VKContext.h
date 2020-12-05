@@ -1,15 +1,15 @@
 #ifndef VK_CONTEXT_H
 #define VK_CONTEXT_H
 
-#include "engine/prehistoric/common/framework/context/Context.h"
+#include "prehistoric/common/framework/context/Context.h"
 
 #include <vulkan/vulkan.h>
 
 #include "VKInstance.h"
-#include "engine/platform/vulkan/framework/device/VKPhysicalDevice.h"
-#include "engine/platform/vulkan/framework/device/VKDevice.h"
-#include "engine/platform/vulkan/framework/surface/VKSurface.h"
-#include "engine/platform/vulkan/framework/swapchain/VKSwapchain.h"
+#include "platform/vulkan/framework/device/VKPhysicalDevice.h"
+#include "platform/vulkan/framework/device/VKDevice.h"
+#include "platform/vulkan/framework/surface/VKSurface.h"
+#include "platform/vulkan/framework/swapchain/VKSwapchain.h"
 
 namespace Prehistoric
 {

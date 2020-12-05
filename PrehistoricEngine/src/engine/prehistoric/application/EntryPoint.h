@@ -1,6 +1,6 @@
 #pragma once
 
-#include "engine/platform/Platform.h"
+#include "platform/Platform.h"
 #include "Application.h"
 
 #ifdef PR_WINDOWS_64

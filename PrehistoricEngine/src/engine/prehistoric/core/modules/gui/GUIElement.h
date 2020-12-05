@@ -1,20 +1,20 @@
 #ifndef GUI_ELEMENT_H
 #define GUI_ELEMENT_H
 
-#include "engine/prehistoric/core/node/GameObject.h"
+#include "prehistoric/core/node/GameObject.h"
 
-#include "engine/prehistoric/common/texture/Texture.h"
+#include "prehistoric/common/texture/Texture.h"
 
-#include "engine/platform/opengl/buffer/GLMeshVertexBuffer.h"
-#include "engine/platform/vulkan/buffer/VKMeshVertexBuffer.h"
+#include "platform/opengl/buffer/GLMeshVertexBuffer.h"
+#include "platform/vulkan/buffer/VKMeshVertexBuffer.h"
 
-#include "engine/platform/opengl/rendering/pipeline/GLGraphicsPipeline.h"
-#include "engine/platform/vulkan/rendering/pipeline/VKGraphicsPipeline.h"
+#include "platform/opengl/rendering/pipeline/GLGraphicsPipeline.h"
+#include "platform/vulkan/rendering/pipeline/VKGraphicsPipeline.h"
 
-#include "engine/platform/opengl/rendering/shaders/GLShader.h"
-#include "engine/platform/vulkan/rendering/shaders/VKShader.h"
+#include "platform/opengl/rendering/shaders/GLShader.h"
+#include "platform/vulkan/rendering/shaders/VKShader.h"
 
-#include "engine/prehistoric/core/node/component/renderer/RendererComponent.h"
+#include "prehistoric/core/node/component/renderer/RendererComponent.h"
 
 namespace Prehistoric
 {

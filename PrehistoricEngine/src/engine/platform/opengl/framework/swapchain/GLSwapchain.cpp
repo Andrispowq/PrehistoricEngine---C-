@@ -1,7 +1,7 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "GLSwapChain.h"
-#include "engine/prehistoric/core/config/FrameworkConfig.h"
-#include "engine/prehistoric/common/framework/Window.h"
+#include "prehistoric/core/config/FrameworkConfig.h"
+#include "prehistoric/common/framework/Window.h"
 
 namespace Prehistoric
 {

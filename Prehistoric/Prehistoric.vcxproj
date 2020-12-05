@@ -79,7 +79,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_LOAD_DLL;PR_FAST_MATH;PR_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Dependencies\include\AL;..\Dependencies\include\GL;..\Dependencies\include\stb;..\Dependencies\include\Vulkan;..\Dependencies\include\GLFW;src;..\PrehistoricEngine\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Dependencies\include\AL;..\Dependencies\include\GL;..\Dependencies\include\stb;..\Dependencies\include\Vulkan;..\Dependencies\include\GLFW;src;..\PrehistoricEngine\src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
@@ -97,7 +97,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_LOAD_DLL;PR_FAST_MATH;PR_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Dependencies\include\AL;..\Dependencies\include\GL;..\Dependencies\include\stb;..\Dependencies\include\Vulkan;..\Dependencies\include\GLFW;src;..\PrehistoricEngine\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Dependencies\include\AL;..\Dependencies\include\GL;..\Dependencies\include\stb;..\Dependencies\include\Vulkan;..\Dependencies\include\GLFW;src;..\PrehistoricEngine\src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -118,7 +118,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_LOAD_DLL;PR_FAST_MATH;PR_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Dependencies\include\AL;..\Dependencies\include\GL;..\Dependencies\include\stb;..\Dependencies\include\Vulkan;..\Dependencies\include\GLFW;src;..\PrehistoricEngine\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Dependencies\include\AL;..\Dependencies\include\GL;..\Dependencies\include\stb;..\Dependencies\include\Vulkan;..\Dependencies\include\GLFW;src;..\PrehistoricEngine\src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>

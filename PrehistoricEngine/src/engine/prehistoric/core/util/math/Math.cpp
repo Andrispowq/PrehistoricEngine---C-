@@ -1,4 +1,4 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "Math.h"
 
 namespace Prehistoric
@@ -1084,5 +1084,62 @@ void Matrix4f::clear()
 }
 
 #endif
+
+template<typename T>
+inline std::ostream& operator<<(std::ostream& os, const Vector2<T>& e)
+{
+	return os << "[ " << e.x << ", " << e.y << " ]";
+}
+
+template<typename T>
+inline std::ostream& operator<<(std::ostream& os, const Vector3<T>& e)
+{
+	return os << "[ " << e.x << ", " << e.y << ", " << e.z << " ]";
+}
+
+template<typename T>
+inline std::ostream& operator<<(std::ostream& os, const Vector4<T>& e)
+{
+	return os << "[ " << e.x << ", " << e.y << ", " << e.z << ", " << e.w << " ]";
+}
+
+template<typename T>
+inline std::ostream& operator<<(std::ostream& os, const Quaternion<T>& e)
+{
+	return os << "[ " << e.x << ", " << e.y << ", " << e.z << ", " << e.w << " ]";
+}
+
+inline std::ostream& operator<<(std::ostream& os, const Vector2f& e)
+{
+	return os << "[ " << e.x << ", " << e.y << " ]";
+}
+
+inline std::ostream& operator<<(std::ostream& os, const Vector3f& e)
+{
+	return os << "[ " << e.x << ", " << e.y << ", " << e.z << " ]";
+}
+
+inline std::ostream& operator<<(std::ostream& os, const Vector4f& e)
+{
+	return os << "[ " << e.x << ", " << e.y << ", " << e.z << ", " << e.w << " ]";
+}
+
+inline std::ostream& operator<<(std::ostream& os, const Quaternionf& e)
+{
+	return os << "[ " << e.x << ", " << e.y << ", " << e.z << ", " << e.w << " ]";
+}
+
+inline std::ostream& operator<<(std::ostream& os, const Matrix4f& e)
+{
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			os << e.m[j * 4 + i];
+		}
+
+		os << '\n';
+	}
+}
 
 };

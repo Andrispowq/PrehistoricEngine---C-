@@ -3,10 +3,10 @@
 
 #include <vulkan/vulkan.h>
 
-#include "engine/platform/vulkan/framework/surface/VKSurface.h"
-#include "engine/platform/vulkan/framework/context/VKInstance.h"
+#include "platform/vulkan/framework/surface/VKSurface.h"
+#include "platform/vulkan/framework/context/VKInstance.h"
 
-#include "engine/platform/vulkan/util/VKUtil.h"
+#include "platform/vulkan/util/VKUtil.h"
 
 namespace Prehistoric
 {

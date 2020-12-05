@@ -1,14 +1,14 @@
 #ifndef VK_PIPELINE_H
 #define VK_PIPELINE_H
 
-#include "engine/prehistoric/common/rendering/pipeline/Pipeline.h"
+#include "prehistoric/common/rendering/pipeline/Pipeline.h"
 
 #include <vulkan/vulkan.h>
 
-#include "engine/platform/vulkan/framework/surface/VKSurface.h"
-#include "engine/platform/vulkan/framework/device/VKDevice.h"
-#include "engine/platform/vulkan/framework/swapchain/VKSwapchain.h"
-#include "engine/platform/vulkan/buffer/VKMeshVertexBuffer.h"
+#include "platform/vulkan/framework/surface/VKSurface.h"
+#include "platform/vulkan/framework/device/VKDevice.h"
+#include "platform/vulkan/framework/swapchain/VKSwapchain.h"
+#include "platform/vulkan/buffer/VKMeshVertexBuffer.h"
 
 namespace Prehistoric
 {

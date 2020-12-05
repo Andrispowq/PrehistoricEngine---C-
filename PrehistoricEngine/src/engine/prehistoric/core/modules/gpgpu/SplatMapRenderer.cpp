@@ -1,7 +1,7 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "SplatMapRenderer.h"
 
-#include "engine/prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/core/resources/AssembledAssetManager.h"
 
 namespace Prehistoric
 {

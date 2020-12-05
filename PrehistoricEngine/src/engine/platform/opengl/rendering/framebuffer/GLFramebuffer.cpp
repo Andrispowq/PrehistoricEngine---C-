@@ -1,7 +1,7 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "GLFramebuffer.h"
 
-#include "engine/platform/opengl/texture/GLTexture.h"
+#include "platform/opengl/texture/GLTexture.h"
 
 namespace Prehistoric
 {

@@ -1,7 +1,7 @@
 #ifndef INIT_DEVICE_H
 #define INIT_DEVICE_H
 
-#include "engine/prehistoric/core/config/FrameworkConfig.h"
+#include "prehistoric/core/config/FrameworkConfig.h"
 
 namespace Prehistoric
 {

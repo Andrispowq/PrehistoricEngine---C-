@@ -1,16 +1,16 @@
 #ifndef TERRAIN_NODE_H
 #define TERRAIN_NODE_H
 
-#include "engine/prehistoric/core/node/GameObject.h"
+#include "prehistoric/core/node/GameObject.h"
 
 #include "TerrainMaps.h"
 
-#include "engine/prehistoric/common/buffer/PatchVertexBuffer.h"
-#include "engine/prehistoric/core/util/math/Math.h"
+#include "prehistoric/common/buffer/PatchVertexBuffer.h"
+#include "prehistoric/core/util/math/Math.h"
 
-#include "engine/prehistoric/core/node/component/renderer/RendererComponent.h"
+#include "prehistoric/core/node/component/renderer/RendererComponent.h"
 
-#include "engine/prehistoric/core/resources/Factory.h"
+#include "prehistoric/core/resources/Factory.h"
 
 namespace Prehistoric
 {

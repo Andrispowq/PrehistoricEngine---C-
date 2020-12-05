@@ -1,7 +1,7 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "Material.h"
 
-#include "engine/prehistoric/core/resources/AssetManager.h"
+#include "prehistoric/core/resources/AssetManager.h"
 
 namespace Prehistoric
 {

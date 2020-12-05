@@ -1,7 +1,7 @@
 #ifndef LIGHT_H
 #define LIGHT_H
 
-#include "engine/prehistoric/core/node/component/Component.h"
+#include "prehistoric/core/node/component/Component.h"
 
 namespace Prehistoric
 {

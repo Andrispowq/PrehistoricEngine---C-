@@ -3,8 +3,8 @@
 
 #include <vulkan/vulkan.h>
 
-#include "engine/platform/vulkan/framework/device/VKDevice.h"
-#include "engine/platform/vulkan/framework/swapchain/VKSwapchain.h"
+#include "platform/vulkan/framework/device/VKDevice.h"
+#include "platform/vulkan/framework/swapchain/VKSwapchain.h"
 
 namespace Prehistoric
 {

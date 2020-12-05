@@ -3,7 +3,7 @@
 
 #include <glew.h>
 
-#include "engine/platform/opengl/rendering/shaders/GLShader.h"
+#include "platform/opengl/rendering/shaders/GLShader.h"
 
 namespace Prehistoric
 {

@@ -3,7 +3,7 @@
 
 #include "Pipeline.h"
 
-#include "engine/prehistoric/core/resources/AssetManager.h"
+#include "prehistoric/core/resources/AssetManager.h"
 
 namespace Prehistoric
 {

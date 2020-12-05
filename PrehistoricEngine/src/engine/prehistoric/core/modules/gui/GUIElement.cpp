@@ -1,14 +1,14 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "GUIElement.h"
 
-#include "engine/prehistoric/core/util/ModelFabricator.h"
+#include "prehistoric/core/util/ModelFabricator.h"
 
-#include "engine/platform/opengl/rendering/shaders/gui/GLGUIShader.h"
-#include "engine/platform/vulkan/rendering/shaders/basic/VKBasicShader.h"
+#include "platform/opengl/rendering/shaders/gui/GLGUIShader.h"
+#include "platform/vulkan/rendering/shaders/basic/VKBasicShader.h"
 
-#include "engine/prehistoric/core/Engine.h"
+#include "prehistoric/core/Engine.h"
 
-#include "engine/prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/core/resources/AssembledAssetManager.h"
 
 namespace Prehistoric
 {

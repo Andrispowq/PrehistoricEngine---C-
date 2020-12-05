@@ -1,7 +1,7 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "Input.h"
-#include "engine/platform/Platform.h"
-#include "engine/platform/windows/WindowsInput.h"
+#include "platform/Platform.h"
+#include "platform/windows/WindowsInput.h"
 
 namespace Prehistoric
 {

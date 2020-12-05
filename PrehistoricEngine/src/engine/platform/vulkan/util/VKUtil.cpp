@@ -1,8 +1,8 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include <glew.h>
 #include "VKUtil.h"
-#include "engine/platform/vulkan/framework/device/VKDevice.h"
-#include "engine/platform/vulkan/rendering/pipeline/VKPipeline.h"
+#include "platform/vulkan/framework/device/VKDevice.h"
+#include "platform/vulkan/rendering/pipeline/VKPipeline.h"
 
 namespace Prehistoric
 {
@@ -126,8 +126,8 @@ namespace Prehistoric
 			{
 				VkExtent2D actualExtent = { FrameworkConfig::windowWidth, FrameworkConfig::windowHeight };
 
-				actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
-				actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
+				actualExtent.width = max(capabilities.minImageExtent.width, min(capabilities.maxImageExtent.width, actualExtent.width));
+				actualExtent.height = max(capabilities.minImageExtent.height, min(capabilities.maxImageExtent.height, actualExtent.height));
 
 				return actualExtent;
 			}

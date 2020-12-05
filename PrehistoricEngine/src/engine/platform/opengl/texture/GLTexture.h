@@ -1,7 +1,7 @@
 #ifndef GL_TEXTURE_H
 #define GL_TEXTURE_H
 
-#include "engine/prehistoric/common/texture/Texture.h"
+#include "prehistoric/common/texture/Texture.h"
 
 #include <glew.h>
 

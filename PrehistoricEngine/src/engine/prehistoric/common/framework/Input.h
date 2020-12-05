@@ -1,9 +1,9 @@
 #ifndef INPUT_H
 #define INPUT_H
 
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 
-#include "engine/prehistoric/core/config/FrameworkConfig.h"
+#include "prehistoric/core/config/FrameworkConfig.h"
 #include "Window.h"
 
 #define InputInstance Input::getInstance()

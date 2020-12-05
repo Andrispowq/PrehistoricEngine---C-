@@ -1,7 +1,7 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "ModelFabricator.h"
-#include "engine/platform/opengl/buffer/GLMeshVertexBuffer.h"
-#include "engine/platform/vulkan/buffer/VKMeshVertexBuffer.h"
+#include "platform/opengl/buffer/GLMeshVertexBuffer.h"
+#include "platform/vulkan/buffer/VKMeshVertexBuffer.h"
 
 namespace Prehistoric
 {

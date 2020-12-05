@@ -1,17 +1,17 @@
 #ifndef TERRAIN_HEIGHTS_QUERY_H
 #define TERRAIN_HEIGHTS_QUERY_H
 
-#include "engine/platform/opengl/texture/GLTexture.h"
-#include "engine/platform/vulkan/texture/VKTexture.h"
+#include "platform/opengl/texture/GLTexture.h"
+#include "platform/vulkan/texture/VKTexture.h"
 
-#include "engine/platform/opengl/rendering/pipeline/GLComputePipeline.h"
-//#include "engine/platform/vulkan/rendering/pipeline/VKComputePipeline.h"
+#include "platform/opengl/rendering/pipeline/GLComputePipeline.h"
+//#include "platform/vulkan/rendering/pipeline/VKComputePipeline.h"
 
-#include "engine/platform/opengl/buffer/GLShaderStorageBuffer.h"
-//#include "engine/platform/vulkan/buffer/GLShaderStorageBuffer.h"
+#include "platform/opengl/buffer/GLShaderStorageBuffer.h"
+//#include "platform/vulkan/buffer/GLShaderStorageBuffer.h"
 
-#include "engine/platform/opengl/rendering/shaders/gpgpu/GLTerrainHeightsShader.h"
-//#include "engine/platform/vulkan/rendering/shaders/gpgpu/VKerrainHeightsShader.h"
+#include "platform/opengl/rendering/shaders/gpgpu/GLTerrainHeightsShader.h"
+//#include "platform/vulkan/rendering/shaders/gpgpu/VKerrainHeightsShader.h"
 
 namespace Prehistoric
 {

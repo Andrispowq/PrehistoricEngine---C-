@@ -3,9 +3,9 @@
 
 #include <vulkan/vulkan.h>
 
-#include "engine/platform/vulkan/framework/device/VKDevice.h"
-#include "engine/platform/vulkan/rendering/framebuffer/VKFramebuffer.h"
-#include "engine/platform/vulkan/rendering/command/VKCommandBuffer.h"
+#include "platform/vulkan/framework/device/VKDevice.h"
+#include "platform/vulkan/rendering/framebuffer/VKFramebuffer.h"
+#include "platform/vulkan/rendering/command/VKCommandBuffer.h"
 
 namespace Prehistoric
 {

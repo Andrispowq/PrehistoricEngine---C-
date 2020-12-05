@@ -1,9 +1,9 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "GLAtmosphereScatteringShader.h"
 
-#include "engine/prehistoric/core/node/GameObject.h"
+#include "prehistoric/core/node/GameObject.h"
 
-#include "engine/prehistoric/core/modules/atmosphere/Atmosphere.h"
+#include "prehistoric/core/modules/atmosphere/Atmosphere.h"
 
 namespace Prehistoric
 {

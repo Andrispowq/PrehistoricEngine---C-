@@ -3,7 +3,7 @@
 
 #include "VertexBuffer.h"
 
-#include "engine/prehistoric/core/model/Mesh.h"
+#include "prehistoric/core/model/Mesh.h"
 
 namespace Prehistoric
 {

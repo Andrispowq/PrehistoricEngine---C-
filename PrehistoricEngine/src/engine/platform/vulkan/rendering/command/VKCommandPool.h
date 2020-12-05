@@ -4,7 +4,7 @@
 #include <vulkan/vulkan.h>
 
 #include "VKCommandBuffer.h"
-#include "engine/platform/vulkan/util/VKUtil.h"
+#include "platform/vulkan/util/VKUtil.h"
 
 namespace Prehistoric
 {

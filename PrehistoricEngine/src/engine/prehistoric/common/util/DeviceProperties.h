@@ -1,7 +1,7 @@
 #ifndef DEVICE_PROPERTIES
 #define DEVICE_PROPERTIES
 
-#include "engine/prehistoric/common/capabilities/Capabilities.h"
+#include "prehistoric/common/capabilities/Capabilities.h"
 
 namespace Prehistoric
 {

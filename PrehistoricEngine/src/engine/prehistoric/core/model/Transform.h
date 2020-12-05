@@ -1,7 +1,7 @@
 #ifndef TRANSFORM_H
 #define TRANSFORM_H
 
-#include "engine/prehistoric/core/node/movement/Camera.h"
+#include "prehistoric/core/node/movement/Camera.h"
 
 namespace Prehistoric
 {

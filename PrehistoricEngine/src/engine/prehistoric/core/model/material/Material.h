@@ -1,9 +1,9 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
-#include "engine/prehistoric/core/util/Includes.hpp"
-#include "engine/prehistoric/core/util/math/Math.h"
-#include "engine/prehistoric/common/texture/TextureLoader.h"
+#include "Includes.hpp"
+#include "prehistoric/core/util/math/Math.h"
+#include "prehistoric/common/texture/TextureLoader.h"
 
 namespace Prehistoric
 {

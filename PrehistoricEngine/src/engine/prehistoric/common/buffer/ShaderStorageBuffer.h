@@ -1,9 +1,9 @@
 #ifndef SSBO_H
 #define SSBO_H
 
-#include "engine/prehistoric/core/util/math/Math.h"
+#include "prehistoric/core/util/math/Math.h"
 
-#include "engine/prehistoric/common/rendering/command/CommandBuffer.h"
+#include "prehistoric/common/rendering/command/CommandBuffer.h"
 
 namespace Prehistoric
 {

@@ -1,12 +1,12 @@
 #ifndef GL_ATMOSPHERE_SCATTERING_SHADER_H
 #define GL_ATMOSPHERE_SCATTERING_SHADER_H
 
-#include "engine/platform/opengl/rendering/shaders/GLShader.h"
+#include "platform/opengl/rendering/shaders/GLShader.h"
 
 #include <glew.h>
 
-#include "engine/prehistoric/core/config/AtmosphereConfig.h"
-#include "engine/prehistoric/core/config/FrameworkConfig.h"
+#include "prehistoric/core/config/AtmosphereConfig.h"
+#include "prehistoric/core/config/FrameworkConfig.h"
 
 namespace Prehistoric
 {

@@ -1,7 +1,7 @@
 #ifndef GL_NORMAL_MAP_SHADER_H
 #define GL_NORMAL_MAP_SHADER_H
 
-#include "engine/platform/opengl/rendering/shaders/GLShader.h"
+#include "platform/opengl/rendering/shaders/GLShader.h"
 
 #include <glew.h>
 

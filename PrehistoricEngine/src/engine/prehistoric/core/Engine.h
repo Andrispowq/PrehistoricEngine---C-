@@ -1,20 +1,20 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
-#include "engine/prehistoric/core/scene/Scene.h"
+#include "prehistoric/core/scene/Scene.h"
 
-#include "engine/prehistoric/core/engines/RenderingEngine.h"
-#include "engine/prehistoric/core/engines/AudioEngine.h"
+#include "prehistoric/core/engines/RenderingEngine.h"
+#include "prehistoric/core/engines/AudioEngine.h"
 
-#include "engine/prehistoric/core/node/GameObject.h"
+#include "prehistoric/core/node/GameObject.h"
 
-#include "engine/prehistoric/core/config/EngineConfig.h"
-#include "engine/prehistoric/core/config/FrameworkConfig.h"
-#include "engine/prehistoric/core/config/TerrainConfig.h"
-#include "engine/prehistoric/core/config/AtmosphereConfig.h"
-#include "engine/prehistoric/core/config/EnvironmentMapConfig.h"
+#include "prehistoric/core/config/EngineConfig.h"
+#include "prehistoric/core/config/FrameworkConfig.h"
+#include "prehistoric/core/config/TerrainConfig.h"
+#include "prehistoric/core/config/AtmosphereConfig.h"
+#include "prehistoric/core/config/EnvironmentMapConfig.h"
 
-#include "engine/prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/core/resources/AssembledAssetManager.h"
 
 namespace Prehistoric
 {

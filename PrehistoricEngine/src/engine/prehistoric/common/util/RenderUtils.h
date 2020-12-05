@@ -1,7 +1,7 @@
 #ifndef RENDER_UTILS_H
 #define RENDER_UTILS_H
 
-#include "engine/prehistoric/common/framework/Window.h"
+#include "prehistoric/common/framework/Window.h"
 
 namespace Prehistoric
 {

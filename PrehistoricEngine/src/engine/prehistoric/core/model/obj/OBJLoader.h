@@ -1,13 +1,13 @@
 #ifndef OBJ_LOADER_H
 #define OBJ_LOADER_H
 
-#include "engine/prehistoric/common/buffer/MeshVertexBuffer.h"
-#include "engine/prehistoric/core/model/material/Material.h"
-#include "engine/platform/opengl/buffer/GLMeshVertexBuffer.h"
-#include "engine/platform/vulkan/buffer/VKMeshVertexBuffer.h"
+#include "prehistoric/common/buffer/MeshVertexBuffer.h"
+#include "prehistoric/core/model/material/Material.h"
+#include "platform/opengl/buffer/GLMeshVertexBuffer.h"
+#include "platform/vulkan/buffer/VKMeshVertexBuffer.h"
 
-#include "engine/prehistoric/core/util/Constants.h"
-#include "engine/prehistoric/core/config/FrameworkConfig.h"
+#include "prehistoric/core/util/Constants.h"
+#include "prehistoric/core/config/FrameworkConfig.h"
 
 namespace Prehistoric
 {

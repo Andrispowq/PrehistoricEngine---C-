@@ -1,7 +1,7 @@
 #ifndef GL_PATCH_VERTEX_BUFFER_H
 #define GL_PATCH_VERTEX_BUFFER_H
 
-#include "engine/prehistoric/common/buffer/PatchVertexBuffer.h"
+#include "prehistoric/common/buffer/PatchVertexBuffer.h"
 
 #include <glew.h>
 

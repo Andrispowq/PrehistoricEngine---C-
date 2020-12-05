@@ -1,8 +1,8 @@
 #ifndef AUDIO_COMPONENT_H
 #define AUDIO_COMPONENT_H
 
-#include "engine/prehistoric/core/node/component/Component.h"
-#include "engine/prehistoric/core/node/GameObject.h"
+#include "prehistoric/core/node/component/Component.h"
+#include "prehistoric/core/node/GameObject.h"
 
 #include <al.h>
 

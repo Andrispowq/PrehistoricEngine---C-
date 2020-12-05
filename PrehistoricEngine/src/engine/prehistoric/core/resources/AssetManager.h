@@ -1,31 +1,33 @@
 #ifndef ASSET_MANAGER_H
 #define ASSET_MANAGER_H
 
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 
-#include "engine/prehistoric/common/texture/Texture.h"
-#include "engine/prehistoric/common/buffer/VertexBuffer.h"
-#include "engine/prehistoric/common/rendering/shaders/Shader.h"
+#include "prehistoric/common/texture/Texture.h"
+#include "prehistoric/common/buffer/VertexBuffer.h"
+#include "prehistoric/common/rendering/shaders/Shader.h"
 
-#include "engine/prehistoric/common/framework/Window.h"
-#include "engine/prehistoric/core/model/obj/OBJLoader.h"
-#include "engine/prehistoric/common/texture/TextureLoader.h"
+#include "prehistoric/common/framework/Window.h"
+#include "prehistoric/core/model/obj/OBJLoader.h"
+#include "prehistoric/common/texture/TextureLoader.h"
 
-#include "engine/platform/opengl/rendering/shaders/atmosphere/GLAtmosphereScatteringShader.h"
-#include "engine/platform/opengl/rendering/shaders/atmosphere/GLAtmosphereShader.h"
-#include "engine/platform/opengl/rendering/shaders/basic/GLBasicShader.h"
-#include "engine/platform/opengl/rendering/shaders/gpgpu/GLNormalmapShader.h"
-#include "engine/platform/opengl/rendering/shaders/gpgpu/GLSplatmapShader.h"
-#include "engine/platform/opengl/rendering/shaders/gpgpu/GLTerrainHeightsShader.h"
-#include "engine/platform/opengl/rendering/shaders/gui/GLGUIShader.h"
-#include "engine/platform/opengl/rendering/shaders/pbr/GLPBRShader.h"
-#include "engine/platform/opengl/rendering/shaders/terrain/GLTerrainShader.h"
-#include "engine/platform/opengl/rendering/shaders/terrain/GLTerrainWireframeShader.h"
+#include "platform/opengl/rendering/shaders/atmosphere/GLAtmosphereScatteringShader.h"
+#include "platform/opengl/rendering/shaders/atmosphere/GLAtmosphereShader.h"
+#include "platform/opengl/rendering/shaders/basic/GLBasicShader.h"
+#include "platform/opengl/rendering/shaders/gpgpu/GLNormalmapShader.h"
+#include "platform/opengl/rendering/shaders/gpgpu/GLSplatmapShader.h"
+#include "platform/opengl/rendering/shaders/gpgpu/GLTerrainHeightsShader.h"
+#include "platform/opengl/rendering/shaders/gui/GLGUIShader.h"
+#include "platform/opengl/rendering/shaders/pbr/GLPBRShader.h"
+#include "platform/opengl/rendering/shaders/terrain/GLTerrainShader.h"
+#include "platform/opengl/rendering/shaders/terrain/GLTerrainWireframeShader.h"
 
-#include "engine/platform/vulkan/rendering/shaders/basic/VKBasicShader.h"
-#include "engine/platform/vulkan/rendering/shaders/pbr/VKPBRShader.h"
+#include "platform/vulkan/rendering/shaders/basic/VKBasicShader.h"
+#include "platform/vulkan/rendering/shaders/pbr/VKPBRShader.h"
 
-#include <typeinfo>
+#define MODEL_PATH "res/models/"
+#define TEXTURE_PATH "res/textures/"
+#define SHADER_PATH "res/shaders/"
 
 namespace Prehistoric
 {

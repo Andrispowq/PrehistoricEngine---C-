@@ -1,9 +1,9 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include <glew.h>
 #include "VkPipeline.h"
-#include "engine/platform/vulkan/framework/swapchain/VKSwapchain.h"
-#include "engine/platform/vulkan/rendering/shaders/VkShader.h"
-#include "engine/platform/vulkan/framework/context/VKContext.h"
+#include "platform/vulkan/framework/swapchain/VKSwapchain.h"
+#include "platform/vulkan/rendering/shaders/VkShader.h"
+#include "platform/vulkan/framework/context/VKContext.h"
 
 namespace Prehistoric
 {

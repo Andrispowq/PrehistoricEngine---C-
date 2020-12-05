@@ -1,7 +1,7 @@
 #ifndef GL_FRAMEBUFFER_H
 #define GL_FRAMEBUFFER_H
 
-#include "engine/prehistoric/common/rendering/framebuffer/Framebuffer.h"
+#include "prehistoric/common/rendering/framebuffer/Framebuffer.h"
 
 #include <glew.h>
 

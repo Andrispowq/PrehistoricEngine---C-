@@ -1,6 +1,6 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "VKFramebuffer.h"
-#include "engine/platform/vulkan/rendering/renderpass/VKRenderpass.h"
+#include "platform/vulkan/rendering/renderpass/VKRenderpass.h"
 
 namespace Prehistoric
 {

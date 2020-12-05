@@ -1,16 +1,16 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "EnvironmentMapRenderer.h"
 
-#include "engine/prehistoric/core/config/EnvironmentMapConfig.h"
+#include "prehistoric/core/config/EnvironmentMapConfig.h"
 
-#include "engine/platform/opengl/texture/GLTexture.h"
-//#include "engine/platform/vulkan/texture/VKTexture.h"
+#include "platform/opengl/texture/GLTexture.h"
+//#include "platform/vulkan/texture/VKTexture.h"
 
-#include "engine/platform/opengl/rendering/framebuffer/GLFramebuffer.h"
-//#include "engine/platform/vulkan/rendering/framebuffer/VKFramebuffer.h"
+#include "platform/opengl/rendering/framebuffer/GLFramebuffer.h"
+//#include "platform/vulkan/rendering/framebuffer/VKFramebuffer.h"
 
-#include "engine/platform/opengl/rendering/pipeline/GLGraphicsPipeline.h"
-//#include "engine/platform/vulkan/rendering/pipeline/VKGraphicsPipeline.h"
+#include "platform/opengl/rendering/pipeline/GLGraphicsPipeline.h"
+//#include "platform/vulkan/rendering/pipeline/VKGraphicsPipeline.h"
 
 namespace Prehistoric
 {

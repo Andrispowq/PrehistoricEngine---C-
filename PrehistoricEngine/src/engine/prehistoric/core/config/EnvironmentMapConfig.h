@@ -3,8 +3,8 @@
 
 #include <fstream>
 
-#include "engine/prehistoric/core/util/Util.h"
-#include "engine/prehistoric/common/texture/Texture.h"
+#include "prehistoric/core/util/Util.h"
+#include "prehistoric/common/texture/Texture.h"
 
 namespace Prehistoric
 {

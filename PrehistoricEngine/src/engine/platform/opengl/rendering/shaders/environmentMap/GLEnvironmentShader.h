@@ -1,11 +1,11 @@
 #ifndef GL_ENVIROMENT_SHADER_H
 #define GL_ENVIROMENT_SHADER_H
 
-#include "engine/platform/opengl/rendering/shaders/GLShader.h"
+#include "platform/opengl/rendering/shaders/GLShader.h"
 
 #include <glew.h>
 
-#include "engine/prehistoric/common/texture/Texture.h"
+#include "prehistoric/common/texture/Texture.h"
 
 namespace Prehistoric
 {

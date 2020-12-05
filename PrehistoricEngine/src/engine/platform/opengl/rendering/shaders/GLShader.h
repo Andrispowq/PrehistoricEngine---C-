@@ -1,14 +1,14 @@
 #ifndef GL_SHADER_H
 #define GL_SHADER_H
 
-#include "engine/prehistoric/common/rendering/shaders/Shader.h"
+#include "prehistoric/common/rendering/shaders/Shader.h"
 
 #include <glew.h>
 
 #include <fstream>
 
-#include "engine/prehistoric/core/node/component/light/Light.h"
-#include "engine/prehistoric/core/util/Util.h"
+#include "prehistoric/core/node/component/light/Light.h"
+#include "prehistoric/core/util/Util.h"
 
 namespace Prehistoric
 {

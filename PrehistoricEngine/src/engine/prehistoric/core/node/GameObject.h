@@ -1,9 +1,9 @@
 #ifndef GAMEOBJECT_H
 #define GAMEOBJECT_H
 
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 
-#include "engine/prehistoric/core/node/component/Component.h"
+#include "prehistoric/core/node/component/Component.h"
 
 namespace Prehistoric
 {

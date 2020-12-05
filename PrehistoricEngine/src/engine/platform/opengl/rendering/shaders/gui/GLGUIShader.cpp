@@ -1,8 +1,8 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "GLGUIShader.h"
 
-#include "engine/prehistoric/core/modules/gui/GUIElement.h"
-#include "engine/prehistoric/core/modules/gui/slider/GUISlider.h"
+#include "prehistoric/core/modules/gui/GUIElement.h"
+#include "prehistoric/core/modules/gui/slider/GUISlider.h"
 
 namespace Prehistoric
 {

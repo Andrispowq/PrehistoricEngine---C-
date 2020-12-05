@@ -1,11 +1,11 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "RendererComponent.h"
-#include "engine/prehistoric/common/rendering/pipeline/Pipeline.h"
-#include "engine/prehistoric/core/engines/RenderingEngine.h"
-#include "engine/prehistoric/core/node/GameObject.h"
-#include "engine/prehistoric/core/model/material/Material.h"
+#include "prehistoric/common/rendering/pipeline/Pipeline.h"
+#include "prehistoric/core/engines/RenderingEngine.h"
+#include "prehistoric/core/node/GameObject.h"
+#include "prehistoric/core/model/material/Material.h"
 
-#include "engine/prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/core/resources/AssembledAssetManager.h"
 
 namespace Prehistoric
 {

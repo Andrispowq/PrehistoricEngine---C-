@@ -1,10 +1,10 @@
 #ifndef LOG_H
 #define LOG_H
 
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "ColourCodes.h"
-#include "engine/platform/Platform.h"
-#include "engine/prehistoric/core/util/time/Timer.h"
+#include "platform/Platform.h"
+#include "prehistoric/core/util/time/Timer.h"
 #include <time.h>
 #include <ctime>
 #include <stdio.h>
@@ -36,24 +36,27 @@ namespace Prehistoric
 		template<typename... Args> void Log(const std::string& colour, const std::string& message, Args... args)
 		{
 #ifdef PR_COLOURED_LOGGING_FUNCTIONS
-			printf("%s", ("\033" + colour).c_str());
+			std::cout << "\033" << colour;
 #endif
-			printf(message.c_str(), args...);
-#ifdef PR_COLOURED_LOGGING_FUNCTIONS
-			printf("\033[0m"); //Reseting colour
-#endif
+			Log_Internal(message, args...);
 		}
 
 		template<typename... Args> void Log_RuntimeError(const std::string& colour, const std::string& message, Args... args)
 		{
 #ifdef PR_COLOURED_LOGGING_FUNCTIONS
-			printf("%s", ("\033" + colour).c_str());
+			std::cout << "\033" << colour;
 #endif
-			printf(message.c_str(), args...);
-#ifdef PR_COLOURED_LOGGING_FUNCTIONS
-			printf("\033[0m"); //Reseting colour
-#endif
+			Log_Internal(message, args...);
+
 			throw std::runtime_error(message.c_str());
+		}
+
+		/*
+			Format: {x} -> xth argument in args
+		*/
+		template<typename... Args> void Log_Internal(const std::string& message, Args... args)
+		{
+			printf(message.c_str(), args...);
 		}
 	};
 };

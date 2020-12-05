@@ -1,13 +1,13 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "RenderableComponent.h"
-#include "engine/prehistoric/core/model/material/Material.h"
-#include "engine/prehistoric/common/rendering/pipeline/Pipeline.h"
-#include "engine/prehistoric/common/rendering/pipeline/GraphicsPipeline.h"
-#include "engine/prehistoric/common/rendering/pipeline/ComputePipeline.h"
+#include "prehistoric/core/model/material/Material.h"
+#include "prehistoric/common/rendering/pipeline/Pipeline.h"
+#include "prehistoric/common/rendering/pipeline/GraphicsPipeline.h"
+#include "prehistoric/common/rendering/pipeline/ComputePipeline.h"
 
-#include "engine/platform/vulkan/rendering/shaders/VKShader.h"
+#include "platform/vulkan/rendering/shaders/VKShader.h"
 
-#include "engine/prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/core/resources/AssembledAssetManager.h"
 
 namespace Prehistoric
 {

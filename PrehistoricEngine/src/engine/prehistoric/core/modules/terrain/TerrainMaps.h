@@ -1,14 +1,14 @@
 #ifndef TERRAIN_MAPS_H
 #define TERRAIN_MAPS_H
 
-#include "engine/prehistoric/core/config/TerrainConfig.h"
+#include "prehistoric/core/config/TerrainConfig.h"
 
-#include "engine/platform/opengl/texture/GLTexture.h"
-#include "engine/platform/vulkan/texture/VKTexture.h"
+#include "platform/opengl/texture/GLTexture.h"
+#include "platform/vulkan/texture/VKTexture.h"
 
-#include "engine/prehistoric/core/modules/gpgpu/NormalMapRenderer.h"
-#include "engine/prehistoric/core/modules/gpgpu/SplatMapRenderer.h"
-#include "engine/prehistoric/core/modules/gpgpu/TerrainHeightsQuery.h"
+#include "prehistoric/core/modules/gpgpu/NormalMapRenderer.h"
+#include "prehistoric/core/modules/gpgpu/SplatMapRenderer.h"
+#include "prehistoric/core/modules/gpgpu/TerrainHeightsQuery.h"
 
 namespace Prehistoric
 {

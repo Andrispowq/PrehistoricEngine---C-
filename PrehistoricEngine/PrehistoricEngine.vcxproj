@@ -77,10 +77,10 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>engine/prehistoric/core/util/Includes.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>Includes.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_BUILD_DLL;PR_FAST_MATH;GLEW_STATIC;_DEBUG;_CONSOLE;PR_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Dependencies\include\GLFW;..\Dependencies\include\Vulkan;..\Dependencies\include\GL;..\Dependencies\include\AL;..\Dependencies\include\stb;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Dependencies\include\GLFW;..\Dependencies\include\Vulkan;..\Dependencies\include\GL;..\Dependencies\include\AL;..\Dependencies\include\stb;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
@@ -102,10 +102,10 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>engine/prehistoric/core/util/Includes.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>Includes.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_BUILD_DLL;PR_FAST_MATH;GLEW_STATIC;_DEBUG;_CONSOLE;PR_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Dependencies\include\GLFW;..\Dependencies\include\Vulkan;..\Dependencies\include\GL;..\Dependencies\include\AL;..\Dependencies\include\stb;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Dependencies\include\GLFW;..\Dependencies\include\Vulkan;..\Dependencies\include\GL;..\Dependencies\include\AL;..\Dependencies\include\stb;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -130,10 +130,10 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>engine/prehistoric/core/util/Includes.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>Includes.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_BUILD_DLL;PR_FAST_MATH;GLEW_STATIC;_DEBUG;_CONSOLE;PR_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Dependencies\include\GLFW;..\Dependencies\include\Vulkan;..\Dependencies\include\GL;..\Dependencies\include\AL;..\Dependencies\include\stb;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Dependencies\include\GLFW;..\Dependencies\include\Vulkan;..\Dependencies\include\GL;..\Dependencies\include\AL;..\Dependencies\include\stb;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -156,6 +156,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\engine\Includes.hpp" />
     <ClInclude Include="src\engine\Prehistoric.h" />
     <ClInclude Include="src\engine\platform\Platform.h" />
     <ClInclude Include="src\engine\platform\opengl\buffer\GLMeshVertexBuffer.h" />
@@ -250,6 +251,10 @@
     <ClInclude Include="src\engine\prehistoric\core\config\TerrainConfig.h" />
     <ClInclude Include="src\engine\prehistoric\core\engines\AudioEngine.h" />
     <ClInclude Include="src\engine\prehistoric\core\engines\RenderingEngine.h" />
+    <ClInclude Include="src\engine\prehistoric\core\events\ApplicationEvent.h" />
+    <ClInclude Include="src\engine\prehistoric\core\events\Event.h" />
+    <ClInclude Include="src\engine\prehistoric\core\events\KeyEvent.h" />
+    <ClInclude Include="src\engine\prehistoric\core\events\MouseEvent.h" />
     <ClInclude Include="src\engine\prehistoric\core\model\Mesh.h" />
     <ClInclude Include="src\engine\prehistoric\core\model\Transform.h" />
     <ClInclude Include="src\engine\prehistoric\core\model\Vertex.h" />
@@ -281,7 +286,6 @@
     <ClInclude Include="src\engine\prehistoric\core\scene\Scene.h" />
     <ClInclude Include="src\engine\prehistoric\core\scene\world\WorldLoader.h" />
     <ClInclude Include="src\engine\prehistoric\core\util\Constants.h" />
-    <ClInclude Include="src\engine\prehistoric\core\util\Includes.hpp" />
     <ClInclude Include="src\engine\prehistoric\core\util\ModelFabricator.h" />
     <ClInclude Include="src\engine\prehistoric\core\util\Util.h" />
     <ClInclude Include="src\engine\prehistoric\core\util\codes\InputCode.h" />
@@ -293,6 +297,11 @@
     <ClInclude Include="src\engine\prehistoric\core\util\time\Timer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\engine\Includes.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\buffer\GLMeshVertexBuffer.cpp" />
     <ClCompile Include="src\engine\platform\opengl\buffer\GLPatchVertexBuffer.cpp" />
     <ClCompile Include="src\engine\platform\opengl\buffer\GLShaderStorageBuffer.cpp" />
@@ -410,11 +419,6 @@
     <ClCompile Include="src\engine\prehistoric\core\resources\AssetManager.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\scene\Scene.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\scene\world\WorldLoader.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\util\Includes.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\util\ModelFabricator.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\util\Util.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\util\log\Log.cpp" />

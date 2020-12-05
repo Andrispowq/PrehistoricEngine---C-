@@ -1,10 +1,10 @@
 #ifndef VK_UTIL_H
 #define VK_UTIL_H
 
-#include "engine/platform/vulkan/framework/surface/VKSurface.h"
+#include "platform/vulkan/framework/surface/VKSurface.h"
 
-#include "engine/prehistoric/core/util/Includes.hpp"
-#include "engine/prehistoric/core/config/FrameworkConfig.h"
+#include "Includes.hpp"
+#include "prehistoric/core/config/FrameworkConfig.h"
 
 namespace Prehistoric
 {

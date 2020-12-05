@@ -3,10 +3,10 @@
 
 #include <vulkan/vulkan.h>
 
-#include "engine/prehistoric/common/rendering/shaders/Shader.h"
+#include "prehistoric/common/rendering/shaders/Shader.h"
 
-#include "engine/platform/vulkan/buffer/VKBuffer.h"
-#include "engine/platform/vulkan/texture/VkTexture.h"
+#include "platform/vulkan/buffer/VKBuffer.h"
+#include "platform/vulkan/texture/VkTexture.h"
 
 namespace Prehistoric
 {

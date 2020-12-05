@@ -1,7 +1,8 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
-#include "engine/prehistoric/CoreEngine.h"
+#include "prehistoric/CoreEngine.h"
+#include "prehistoric/core/events/Event.h"
 
 namespace Prehistoric
 {
@@ -13,7 +14,7 @@ namespace Prehistoric
 
 		void Run();
 	private:
-		CoreEngine engine;
+		//CoreEngine engine;
 	};
 
 	//To be defined in client

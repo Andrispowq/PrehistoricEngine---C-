@@ -1,7 +1,7 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "GLPBRShader.h"
 
-#include "engine/prehistoric/core/config/EnvironmentMapConfig.h"
+#include "prehistoric/core/config/EnvironmentMapConfig.h"
 
 namespace Prehistoric
 {

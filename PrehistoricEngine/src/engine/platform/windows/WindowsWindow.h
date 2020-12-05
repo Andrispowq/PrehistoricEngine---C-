@@ -1,14 +1,14 @@
 #ifndef WINDOWS_WINDOW_H
 #define WINDOWS_WINDOW_H
 
-#include "engine/prehistoric/common/framework/Window.h"
+#include "prehistoric/common/framework/Window.h"
 
 #include <glew.h>
 #include <glfw3.h>
 
-#include "engine/prehistoric/common/texture/TextureLoader.h"
-#include "engine/prehistoric/core/config/FrameworkConfig.h"
-#include "engine/platform/Platform.h"
+#include "prehistoric/common/texture/TextureLoader.h"
+#include "prehistoric/core/config/FrameworkConfig.h"
+#include "platform/Platform.h"
 
 namespace Prehistoric
 {

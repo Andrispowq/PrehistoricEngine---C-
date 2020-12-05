@@ -6,7 +6,7 @@
 
 #include "core/Engine.h"
 
-#include "engine/prehistoric/core/config/FrameworkConfig.h"
+#include "prehistoric/core/config/FrameworkConfig.h"
 #include "core/util/time/Time.h"
 
 namespace Prehistoric

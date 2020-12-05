@@ -1,11 +1,11 @@
 #ifndef WINDOWS_INPUT_H
 #define WINDOWS_INPUT_H
 
-#include "engine/prehistoric/common/framework/Input.h"
+#include "prehistoric/common/framework/Input.h"
 
 #include <glfw3.h>
 
-#include "engine/prehistoric/core/util/math/Math.h"
+#include "prehistoric/core/util/math/Math.h"
 
 namespace Prehistoric
 {

@@ -1,7 +1,7 @@
 #ifndef GL_SWAP_CHAIN_H
 #define GL_SWAP_CHAIN_H
 
-#include "engine/prehistoric/common/framework/swapchain/Swapchain.h"
+#include "prehistoric/common/framework/swapchain/Swapchain.h"
 
 #include <glew.h>
 #include <glfw3.h>

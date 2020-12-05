@@ -1,12 +1,12 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#include "engine/prehistoric/core/util/Constants.h"
+#include "prehistoric/core/util/Constants.h"
 
-#include "engine/prehistoric/common/framework/swapchain/Swapchain.h"
-#include "engine/prehistoric/common/framework/context/Context.h"
+#include "prehistoric/common/framework/swapchain/Swapchain.h"
+#include "prehistoric/common/framework/context/Context.h"
 
-#include "engine/prehistoric/core/config/FrameworkConfig.h"
+#include "prehistoric/core/config/FrameworkConfig.h"
 
 namespace Prehistoric
 {

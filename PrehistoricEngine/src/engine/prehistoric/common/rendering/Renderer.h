@@ -1,10 +1,10 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-#include "engine/prehistoric/common/framework/Window.h"
-#include "engine/prehistoric/core/node/movement/Camera.h"
+#include "prehistoric/common/framework/Window.h"
+#include "prehistoric/core/node/movement/Camera.h"
 
-#include "engine/prehistoric/common/rendering/pipeline/Pipeline.h"
+#include "prehistoric/common/rendering/pipeline/Pipeline.h"
 
 namespace Prehistoric
 {

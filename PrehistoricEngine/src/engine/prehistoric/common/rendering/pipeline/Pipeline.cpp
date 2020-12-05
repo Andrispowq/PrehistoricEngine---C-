@@ -1,8 +1,8 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "Pipeline.h"
 
-#include "engine/prehistoric/core/config/FrameworkConfig.h"
-#include "engine/prehistoric/core/resources/AssetManager.h"
+#include "prehistoric/core/config/FrameworkConfig.h"
+#include "prehistoric/core/resources/AssetManager.h"
 
 namespace Prehistoric
 {

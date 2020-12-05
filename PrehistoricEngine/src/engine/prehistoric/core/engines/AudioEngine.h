@@ -4,7 +4,7 @@
 #include <al.h>
 #include <alc.h>
 
-#include "engine/prehistoric/core/node/component/audio/AudioComponent.h"
+#include "prehistoric/core/node/component/audio/AudioComponent.h"
 
 namespace Prehistoric
 {

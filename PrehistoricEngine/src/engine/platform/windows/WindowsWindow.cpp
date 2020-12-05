@@ -1,11 +1,11 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "WindowsWindow.h"
 
-#include "engine/platform/opengl/framework/context/GLContext.h"
-#include "engine/platform/vulkan/framework/context/VKContext.h"
+#include "platform/opengl/framework/context/GLContext.h"
+#include "platform/vulkan/framework/context/VKContext.h"
 
-#include "engine/platform/opengl/framework/swapchain/GLSwapchain.h"
-#include "engine/platform/vulkan/framework/swapchain/VKSwapchain.h"
+#include "platform/opengl/framework/swapchain/GLSwapchain.h"
+#include "platform/vulkan/framework/swapchain/VKSwapchain.h"
 
 #include "WindowsInput.h"
 

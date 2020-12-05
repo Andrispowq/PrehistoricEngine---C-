@@ -1,10 +1,10 @@
 #ifndef FRAMEBUFFER_H
 #define FRAMEBUFFER_H
 
-#include "engine/prehistoric/common/framework/Window.h"
-#include "engine/prehistoric/common/texture/Texture.h"
+#include "prehistoric/common/framework/Window.h"
+#include "prehistoric/common/texture/Texture.h"
 
-#include "engine/prehistoric/core/util/math/Math.h"
+#include "prehistoric/core/util/math/Math.h"
 
 namespace Prehistoric
 {

@@ -1,7 +1,7 @@
 #ifndef GL_SPLAT_MAP_SHADER_H
 #define GL_SPLAT_MAP_SHADER_H
 
-#include "engine/platform/opengl/rendering/shaders/GLShader.h"
+#include "platform/opengl/rendering/shaders/GLShader.h"
 
 #include <glew.h>
 

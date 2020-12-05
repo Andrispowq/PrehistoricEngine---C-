@@ -1,7 +1,7 @@
 #ifndef RENDERER_COMPONENT_H
 #define RENDERER_COMPONENT_H
 
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 
 #include "RenderableComponent.h"
 

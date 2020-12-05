@@ -1,7 +1,7 @@
 #ifndef GL_RENDERER_H
 #define GL_RENDERER_H
 
-#include "engine/prehistoric/common/rendering/Renderer.h"
+#include "prehistoric/common/rendering/Renderer.h"
 
 #include <glew.h>
 

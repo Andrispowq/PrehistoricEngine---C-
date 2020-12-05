@@ -1,9 +1,9 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "Renderer.h"
 
-#include "engine/prehistoric/core/node/component/renderer/RenderableComponent.h"
+#include "prehistoric/core/node/component/renderer/RenderableComponent.h"
 
-#include "engine/prehistoric/core/node/component/light/Light.h"
+#include "prehistoric/core/node/component/light/Light.h"
 
 namespace Prehistoric
 {

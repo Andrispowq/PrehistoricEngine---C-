@@ -1,7 +1,7 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "GLRenderer.h"
 
-#include "engine/prehistoric/core/node/component/renderer/RenderableComponent.h"
+#include "prehistoric/core/node/component/renderer/RenderableComponent.h"
 
 namespace Prehistoric
 {

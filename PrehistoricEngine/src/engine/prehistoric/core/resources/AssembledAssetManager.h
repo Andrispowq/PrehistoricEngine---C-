@@ -1,7 +1,7 @@
 #ifndef ASSEMBLED_ASSET_MANAGER_H
 #define ASSEMBLED_ASSET_MANAGER_H
 
-#include "engine/prehistoric/common/framework/Window.h"
+#include "prehistoric/common/framework/Window.h"
 
 #include "AssetManager.h"
 

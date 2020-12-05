@@ -1,7 +1,7 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "GLAtmosphereShader.h"
 
-#include "engine/prehistoric/core/node/GameObject.h"
+#include "prehistoric/core/node/GameObject.h"
 
 namespace Prehistoric
 {

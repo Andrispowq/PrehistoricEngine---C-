@@ -4,8 +4,8 @@
 #include <vulkan/vulkan.h>
 
 #include "VKPhysicalDevice.h"
-#include "engine/platform/vulkan/framework/surface/VKSurface.h"
-#include "engine/platform/vulkan/framework/queue/VKQueue.h"
+#include "platform/vulkan/framework/surface/VKSurface.h"
+#include "platform/vulkan/framework/queue/VKQueue.h"
 
 namespace Prehistoric
 {

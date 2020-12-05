@@ -4,9 +4,9 @@
 #include <fstream>
 #include <map>
 
-#include "engine/prehistoric/core/util/Util.h"
-#include "engine/prehistoric/core/util/math/Math.h"
-#include "engine/prehistoric/core/util/log/Log.h"
+#include "prehistoric/core/util/Util.h"
+#include "prehistoric/core/util/math/Math.h"
+#include "prehistoric/core/util/log/Log.h"
 
 namespace Prehistoric
 {

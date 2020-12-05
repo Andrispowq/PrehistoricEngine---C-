@@ -1,11 +1,11 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "Window.h"
-#include "engine/prehistoric/common/framework/context/Context.h"
-#include "engine/prehistoric/core/config/FrameworkConfig.h"
-#include "engine/platform/opengl/framework/swapchain/GLSwapChain.h"
-#include "engine/platform/vulkan/framework/swapchain/VkSwapChain.h"
-#include "engine/platform/opengl/framework/context/GLContext.h"
-#include "engine/platform/vulkan/framework/context/VKContext.h"
+#include "prehistoric/common/framework/context/Context.h"
+#include "prehistoric/core/config/FrameworkConfig.h"
+#include "platform/opengl/framework/swapchain/GLSwapChain.h"
+#include "platform/vulkan/framework/swapchain/VkSwapChain.h"
+#include "platform/opengl/framework/context/GLContext.h"
+#include "platform/vulkan/framework/context/VKContext.h"
 
 namespace Prehistoric
 {

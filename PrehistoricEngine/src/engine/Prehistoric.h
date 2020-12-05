@@ -4,7 +4,7 @@
 //Only included by client!!
 
 //Platform related headers
-#include "engine/platform/Platform.h"
+#include "platform/Platform.h"
 
 //Application headers
 #include "prehistoric/application/Application.h"

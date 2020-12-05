@@ -1,7 +1,7 @@
 #ifndef GL_SSBO_H
 #define GL_SSBO_H
 
-#include "engine/prehistoric/common/buffer/ShaderStorageBuffer.h"
+#include "prehistoric/common/buffer/ShaderStorageBuffer.h"
 
 #include <glew.h>
 

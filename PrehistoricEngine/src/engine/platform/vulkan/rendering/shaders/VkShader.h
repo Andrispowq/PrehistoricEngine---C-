@@ -1,15 +1,15 @@
 #ifndef VK_SHADER_H
 #define VK_SHADER_H
 
-#include "engine/prehistoric/common/rendering/shaders/Shader.h"
+#include "prehistoric/common/rendering/shaders/Shader.h"
 
-#include "engine/platform/vulkan/framework/swapchain/VKSwapchain.h"
-#include "engine/platform/vulkan/framework/device/VKDevice.h"
+#include "platform/vulkan/framework/swapchain/VKSwapchain.h"
+#include "platform/vulkan/framework/device/VKDevice.h"
 
-#include "engine/platform/vulkan/rendering/descriptors/VKDescriptorPool.h"
+#include "platform/vulkan/rendering/descriptors/VKDescriptorPool.h"
 
-#include "engine/prehistoric/core/node/GameObject.h"
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "prehistoric/core/node/GameObject.h"
+#include "Includes.hpp"
 
 namespace Prehistoric
 {

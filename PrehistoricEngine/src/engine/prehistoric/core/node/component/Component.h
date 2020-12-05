@@ -1,7 +1,7 @@
 #ifndef COMPONENT_H
 #define COMPONENT_H
 
-#include "engine/prehistoric/core/node/Node.h"
+#include "prehistoric/core/node/Node.h"
 
 namespace Prehistoric
 {

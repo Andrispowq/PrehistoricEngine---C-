@@ -1,7 +1,7 @@
 #ifndef GUI_BUTTON_H
 #define GUI_BUTTON_H
 
-#include "engine/prehistoric/core/modules/gui/GUIElement.h"
+#include "prehistoric/core/modules/gui/GUIElement.h"
 
 namespace Prehistoric
 {

@@ -1,13 +1,13 @@
 #ifndef TEXTURE_LOADER_H
 #define TEXTURE_LOADER_H
 
-#include "engine/platform/opengl/texture/GLTexture.h"
-#include "engine/platform/vulkan/texture/VKTexture.h"
+#include "platform/opengl/texture/GLTexture.h"
+#include "platform/vulkan/texture/VKTexture.h"
 
-#include "engine/prehistoric/common/framework/Window.h"
+#include "prehistoric/common/framework/Window.h"
 
-#include "engine/prehistoric/core/util/Util.h"
-#include "engine/prehistoric/core/config/FrameworkConfig.h"
+#include "prehistoric/core/util/Util.h"
+#include "prehistoric/core/config/FrameworkConfig.h"
 
 namespace Prehistoric
 {

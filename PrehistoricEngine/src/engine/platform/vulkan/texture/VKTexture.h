@@ -1,11 +1,11 @@
 #ifndef VK_TEXTURE_H
 #define VK_TEXTURE_H
 
-#include "engine/prehistoric/common/texture/Texture.h"
+#include "prehistoric/common/texture/Texture.h"
 
 #include <vulkan/vulkan.h>
 
-#include "engine/platform/vulkan/framework/device/VKDevice.h"
+#include "platform/vulkan/framework/device/VKDevice.h"
 
 namespace Prehistoric
 {

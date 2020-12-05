@@ -1,10 +1,10 @@
 #ifndef TERRAIN_CONFIG_H
 #define TERRAIN_CONFIG_H
 
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 
-#include "engine/prehistoric/core/util/Util.h"
-#include "engine/prehistoric/core/util/math/Math.h"
+#include "prehistoric/core/util/Util.h"
+#include "prehistoric/core/util/math/Math.h"
 
 namespace Prehistoric
 {

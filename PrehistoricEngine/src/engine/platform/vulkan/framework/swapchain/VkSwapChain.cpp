@@ -1,7 +1,7 @@
- #include "engine/prehistoric/core/util/Includes.hpp"
+ #include "Includes.hpp"
 #include "VKSwapchain.h"
 
-#include "engine/platform/vulkan/framework/context/VKContext.h"
+#include "platform/vulkan/framework/context/VKContext.h"
 
 namespace Prehistoric
 {

@@ -1,7 +1,7 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include <glew.h>
 #include "VKMeshVertexBuffer.h"
-#include "engine/platform/vulkan/rendering/pipeline/VKGraphicsPipeline.h"
+#include "platform/vulkan/rendering/pipeline/VKGraphicsPipeline.h"
 
 namespace Prehistoric
 {

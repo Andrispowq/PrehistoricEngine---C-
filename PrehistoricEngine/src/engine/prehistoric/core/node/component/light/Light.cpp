@@ -1,7 +1,7 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "Light.h"
 
-#include "engine/prehistoric/common/rendering/Renderer.h"
+#include "prehistoric/common/rendering/Renderer.h"
 
 namespace Prehistoric
 {

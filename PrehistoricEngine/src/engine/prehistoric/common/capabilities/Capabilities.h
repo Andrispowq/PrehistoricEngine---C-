@@ -1,7 +1,7 @@
 #ifndef CAPABILITIES_H
 #define CAPABILITIES_H
 
-#include "engine/prehistoric/core/config/FrameworkConfig.h"
+#include "prehistoric/core/config/FrameworkConfig.h"
 
 namespace Prehistoric
 {

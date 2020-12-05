@@ -5,8 +5,8 @@
 #define GLFW_INCLUDE_VULKAN
 #include <glfw3.h>
 
-#include "engine/prehistoric/common/framework/Window.h"
-#include "engine/platform/vulkan/framework/context/VKInstance.h"
+#include "prehistoric/common/framework/Window.h"
+#include "platform/vulkan/framework/context/VKInstance.h"
 
 namespace Prehistoric
 {

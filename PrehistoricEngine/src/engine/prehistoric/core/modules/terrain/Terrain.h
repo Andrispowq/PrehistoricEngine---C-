@@ -1,7 +1,7 @@
 #ifndef TERRAIN_H
 #define TERRAIN_H
 
-#include "engine/prehistoric/core/node/Node.h"
+#include "prehistoric/core/node/Node.h"
 
 #include "TerrainQuadtree.h"
 

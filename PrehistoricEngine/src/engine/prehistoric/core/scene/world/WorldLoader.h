@@ -3,23 +3,23 @@
 
 #include <fstream>
 
-#include "engine/prehistoric/core/node/GameObject.h"
-#include "engine/prehistoric/common/buffer/MeshVertexBuffer.h"
-#include "engine/prehistoric/core/model/material/Material.h"
-#include "engine/prehistoric/common/rendering/shaders/Shader.h"
-#include "engine/prehistoric/core/node/component/renderer/RendererComponent.h"
-#include "engine/prehistoric/core/model/obj/OBJLoader.h"
+#include "prehistoric/core/node/GameObject.h"
+#include "prehistoric/common/buffer/MeshVertexBuffer.h"
+#include "prehistoric/core/model/material/Material.h"
+#include "prehistoric/common/rendering/shaders/Shader.h"
+#include "prehistoric/core/node/component/renderer/RendererComponent.h"
+#include "prehistoric/core/model/obj/OBJLoader.h"
 
-#include "engine/platform/opengl/rendering/shaders/basic/GLBasicShader.h"
-#include "engine/platform/vulkan/rendering/shaders/basic/VKBasicShader.h"
+#include "platform/opengl/rendering/shaders/basic/GLBasicShader.h"
+#include "platform/vulkan/rendering/shaders/basic/VKBasicShader.h"
 
-#include "engine/platform/opengl/rendering/shaders/pbr/GLPBRShader.h"
-#include "engine/platform/vulkan/rendering/shaders/pbr/VKPBRShader.h"
+#include "platform/opengl/rendering/shaders/pbr/GLPBRShader.h"
+#include "platform/vulkan/rendering/shaders/pbr/VKPBRShader.h"
 
-#include "engine/platform/opengl/rendering/pipeline/GLGraphicsPipeline.h"
-#include "engine/platform/vulkan/rendering/pipeline/VKGraphicsPipeline.h"
+#include "platform/opengl/rendering/pipeline/GLGraphicsPipeline.h"
+#include "platform/vulkan/rendering/pipeline/VKGraphicsPipeline.h"
 
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 
 namespace Prehistoric
 {

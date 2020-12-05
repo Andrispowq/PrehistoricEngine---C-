@@ -1,7 +1,7 @@
 #ifndef GL_MESH_VERTEX_BUFFER_H
 #define GL_MESH_VERTEX_BUFFER_H
 
-#include "engine/prehistoric/common/buffer/MeshVertexBuffer.h"
+#include "prehistoric/common/buffer/MeshVertexBuffer.h"
 
 #include <glew.h>
 

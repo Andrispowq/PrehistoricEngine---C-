@@ -1,14 +1,14 @@
 #ifndef VK_RENDERER_H
 #define VK_RENDERER_H
 
-#include "engine/prehistoric/common/rendering/Renderer.h"
+#include "prehistoric/common/rendering/Renderer.h"
 
 #include <vulkan/vulkan.h>
 
-#include "engine/prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/core/resources/AssembledAssetManager.h"
 
-#include "engine/platform/vulkan/rendering/command/VKCommandPool.h"
-#include "engine/platform/vulkan/rendering/renderpass/VKRenderpass.h"
+#include "platform/vulkan/rendering/command/VKCommandPool.h"
+#include "platform/vulkan/rendering/renderpass/VKRenderpass.h"
 
 namespace Prehistoric
 {

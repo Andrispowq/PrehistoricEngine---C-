@@ -1,12 +1,12 @@
 #ifndef GL_COMPUTE_PIPELINE
 #define GL_COMPUTE_PIPELINE
 
-#include "engine/prehistoric/common/rendering/pipeline/ComputePipeline.h"
+#include "prehistoric/common/rendering/pipeline/ComputePipeline.h"
 #include "GLPipeline.h"
 
 #include <glew.h>
 
-#include "engine/platform/opengl/texture/GLTexture.h"
+#include "platform/opengl/texture/GLTexture.h"
 
 namespace Prehistoric
 {

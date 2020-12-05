@@ -1,7 +1,7 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "GameObject.h"
 
-#include "engine/prehistoric/core/Engine.h"
+#include "prehistoric/core/Engine.h"
 
 namespace Prehistoric
 {

@@ -1,8 +1,8 @@
 #ifndef MATH_H
 #define MATH_H
 
-#include "engine/prehistoric/core/util/Includes.hpp"
-#include "engine/platform/Platform.h"
+#include "Includes.hpp"
+#include "platform/Platform.h"
 
 #include <xmmintrin.h>
 
@@ -930,7 +930,6 @@ namespace Prehistoric
 	};
 
 #endif
-
 };
 
 #endif

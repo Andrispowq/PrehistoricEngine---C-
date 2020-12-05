@@ -1,9 +1,9 @@
 #ifndef VertexBuffer_H
 #define VertexBuffer_H
 
-#include "engine/prehistoric/core/model/Mesh.h"
+#include "prehistoric/core/model/Mesh.h"
 
-#include "engine/prehistoric/common/rendering/command/CommandBuffer.h"
+#include "prehistoric/common/rendering/command/CommandBuffer.h"
 
 namespace Prehistoric
 {

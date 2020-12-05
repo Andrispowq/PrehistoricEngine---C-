@@ -1,4 +1,4 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "VkTexture.h"
 
 namespace Prehistoric
@@ -6,7 +6,7 @@ namespace Prehistoric
 	VKTexture::VKTexture(VKPhysicalDevice* physicalDevice, VKDevice* device, uint32_t width, uint32_t height, ImageFormat format, ImageType type)
 		: physicalDevice(physicalDevice), device(device), Texture(width, height, format, type)
 	{
-		this->mipLevels = (uint32_t)(std::floor(std::log2(std::max(width, height)))) + 1;
+		this->mipLevels = (uint32_t)(std::floor(std::log2(max(width, height)))) + 1;
 	}
 
 	VKTexture::VKTexture(VKPhysicalDevice* physicalDevice, VKDevice* device)

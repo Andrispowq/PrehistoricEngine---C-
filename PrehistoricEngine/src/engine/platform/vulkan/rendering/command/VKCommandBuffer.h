@@ -1,11 +1,11 @@
 #ifndef VK_COMMAND_BUFFER_H
 #define VK_COMMAND_BUFFER_H
 
-#include "engine/prehistoric/common/rendering/command/CommandBuffer.h"
+#include "prehistoric/common/rendering/command/CommandBuffer.h"
 
 #include <vulkan/vulkan.h>
 
-#include "engine/platform/vulkan/framework/device/VKDevice.h"
+#include "platform/vulkan/framework/device/VKDevice.h"
 
 namespace Prehistoric
 {

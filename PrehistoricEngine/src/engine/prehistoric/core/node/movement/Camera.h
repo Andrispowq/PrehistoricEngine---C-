@@ -1,9 +1,9 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "engine/prehistoric/common/framework/CameraInput.h"
+#include "prehistoric/common/framework/CameraInput.h"
 
-#include "engine/prehistoric/core/config/EngineConfig.h"
+#include "prehistoric/core/config/EngineConfig.h"
 
 namespace Prehistoric
 {
@@ -79,6 +79,6 @@ namespace Prehistoric
     };
 };
 
-#include "engine/prehistoric/core/util/math/MathT.h"
+#include "prehistoric/core/util/math/MathT.h"
 
 #endif

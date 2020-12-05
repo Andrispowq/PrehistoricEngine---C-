@@ -1,10 +1,10 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "VKRenderer.h"
 
-#include "engine/prehistoric/core/node/component/renderer/RenderableComponent.h"
+#include "prehistoric/core/node/component/renderer/RenderableComponent.h"
 
-#include "engine/platform/vulkan/framework/context/VKContext.h"
-#include "engine/platform/vulkan/framework/swapchain/VKSwapchain.h"
+#include "platform/vulkan/framework/context/VKContext.h"
+#include "platform/vulkan/framework/swapchain/VKSwapchain.h"
 
 namespace Prehistoric
 {

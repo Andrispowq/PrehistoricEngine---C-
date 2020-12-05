@@ -1,14 +1,14 @@
 #ifndef VK_PBR_SHADER_H
 #define VK_PBR_SHADER_H
 
-#include "engine/platform/vulkan/rendering/shaders/VkShader.h"
+#include "platform/vulkan/rendering/shaders/VkShader.h"
 
 #include <vulkan/vulkan.h>
 
-#include "engine/prehistoric/core/node/GameObject.h"
-#include "engine/prehistoric/core/model/material/Material.h"
-#include "engine/prehistoric/core/node/component/light/Light.h"
-#include "engine/prehistoric/core/node/component/renderer/RendererComponent.h"
+#include "prehistoric/core/node/GameObject.h"
+#include "prehistoric/core/model/material/Material.h"
+#include "prehistoric/core/node/component/light/Light.h"
+#include "prehistoric/core/node/component/renderer/RendererComponent.h"
 
 namespace Prehistoric
 {

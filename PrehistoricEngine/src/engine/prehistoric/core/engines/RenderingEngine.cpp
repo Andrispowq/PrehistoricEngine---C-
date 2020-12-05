@@ -1,14 +1,14 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "RenderingEngine.h"
 
-#include "engine/prehistoric/core/node/component/renderer/RenderableComponent.h"
-#include "engine/prehistoric/core/node/GameObject.h"
-#include "engine/prehistoric/common/util/DeviceProperties.h"
+#include "prehistoric/core/node/component/renderer/RenderableComponent.h"
+#include "prehistoric/core/node/GameObject.h"
+#include "prehistoric/common/util/DeviceProperties.h"
 
-#include "engine/platform/opengl/rendering/GLRenderer.h"
-#include "engine/platform/vulkan/rendering/VKRenderer.h"
+#include "platform/opengl/rendering/GLRenderer.h"
+#include "platform/vulkan/rendering/VKRenderer.h"
 
-#include "engine/prehistoric/core/modules/environmentMapRenderer/EnvironmentMapRenderer.h"
+#include "prehistoric/core/modules/environmentMapRenderer/EnvironmentMapRenderer.h"
 
 namespace Prehistoric
 {

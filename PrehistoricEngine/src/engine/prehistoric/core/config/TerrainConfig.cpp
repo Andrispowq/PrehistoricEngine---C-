@@ -1,8 +1,8 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "TerrainConfig.h"
 
-#include "engine/prehistoric/core/modules/terrain/TerrainQuadtree.h"
-#include "engine/prehistoric/core/model/material/Material.h" 
+#include "prehistoric/core/modules/terrain/TerrainQuadtree.h"
+#include "prehistoric/core/model/material/Material.h" 
 
 namespace Prehistoric
 {

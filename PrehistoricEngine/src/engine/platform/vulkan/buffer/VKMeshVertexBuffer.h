@@ -1,7 +1,7 @@
 #ifndef VK_MESH_VERTEX_BUFFER_H
 #define VK_MESH_VERTEX_BUFFER_H
 
-#include "engine/prehistoric/common/buffer/MeshVertexBuffer.h"
+#include "prehistoric/common/buffer/MeshVertexBuffer.h"
 
 #include <vulkan/vulkan.h>
 
@@ -9,9 +9,9 @@
 
 #include <vector>
 
-#include "engine/platform/vulkan/rendering/command/VKCommandBuffer.h"
-#include "engine/platform/vulkan/framework/device/VKDevice.h"
-#include "engine/platform/vulkan/framework/swapchain/VKSwapchain.h"
+#include "platform/vulkan/rendering/command/VKCommandBuffer.h"
+#include "platform/vulkan/framework/device/VKDevice.h"
+#include "platform/vulkan/framework/swapchain/VKSwapchain.h"
 
 namespace Prehistoric
 {

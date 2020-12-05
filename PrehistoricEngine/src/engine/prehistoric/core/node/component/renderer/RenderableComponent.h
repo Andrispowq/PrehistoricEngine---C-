@@ -1,12 +1,12 @@
 #ifndef RENDERABLE_COMPONENT_H
 #define RENDERABLE_COMPONENT_H
 
-#include "engine/prehistoric/core/node/component/Component.h"
+#include "prehistoric/core/node/component/Component.h"
 
-#include "engine/prehistoric/common/rendering/pipeline/Pipeline.h"
-#include "engine/prehistoric/common/framework/Window.h"
+#include "prehistoric/common/rendering/pipeline/Pipeline.h"
+#include "prehistoric/common/framework/Window.h"
 
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 
 namespace Prehistoric
 {

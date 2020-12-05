@@ -1,10 +1,10 @@
 #ifndef NODE_H
 #define NODE_H
 
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 
-#include "engine/prehistoric/core/model/transform.h"
-#include "engine/prehistoric/common/rendering/Renderer.h"
+#include "prehistoric/core/model/transform.h"
+#include "prehistoric/common/rendering/Renderer.h"
 
 namespace Prehistoric
 {

@@ -3,9 +3,9 @@
 
 #include "Pipeline.h"
 
-#include "engine/prehistoric/core/util/math/Math.h"
+#include "prehistoric/core/util/math/Math.h"
 
-#include "engine/prehistoric/common/buffer/ShaderStorageBuffer.h"
+#include "prehistoric/common/buffer/ShaderStorageBuffer.h"
 
 static constexpr uint32_t READ_ONLY = 0x1;
 static constexpr uint32_t WRITE_ONLY = 0x2;

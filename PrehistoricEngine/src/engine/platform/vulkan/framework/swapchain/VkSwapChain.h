@@ -1,19 +1,19 @@
 #ifndef VK_SWAP_CHAIN_H
 #define VK_SWAP_CHAIN_H
 
-#include "engine/prehistoric/common/framework/swapchain/Swapchain.h"
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "prehistoric/common/framework/swapchain/Swapchain.h"
+#include "Includes.hpp"
 
 #include <glfw3.h>
 #define PR_INCLUDE_VULKAN
 #include <vulkan/vulkan.h>
 
-#include "engine/platform/vulkan/framework/device/VKDevice.h"
-#include "engine/platform/vulkan/framework/surface/VKSurface.h"
-#include "engine/platform/vulkan/rendering/command/VKCommandPool.h"
-#include "engine/platform/vulkan/rendering/synchronisation/VKSemaphore.h"
-#include "engine/platform/vulkan/rendering/synchronisation/VKFence.h"
-#include "engine/platform/vulkan/rendering/renderpass/VKRenderpass.h"
+#include "platform/vulkan/framework/device/VKDevice.h"
+#include "platform/vulkan/framework/surface/VKSurface.h"
+#include "platform/vulkan/rendering/command/VKCommandPool.h"
+#include "platform/vulkan/rendering/synchronisation/VKSemaphore.h"
+#include "platform/vulkan/rendering/synchronisation/VKFence.h"
+#include "platform/vulkan/rendering/renderpass/VKRenderpass.h"
 
 namespace Prehistoric
 {

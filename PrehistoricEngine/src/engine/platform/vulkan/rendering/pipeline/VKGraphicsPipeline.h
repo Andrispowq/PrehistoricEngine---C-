@@ -1,17 +1,17 @@
 #ifndef VK_GRAPHICS_PIPELINE_H
 #define VK_GRAPHICS_PIPELINE_H
 
-#include "engine/prehistoric/common/rendering/pipeline/GraphicsPipeline.h"
+#include "prehistoric/common/rendering/pipeline/GraphicsPipeline.h"
 #include "VKPipeline.h"
 
 #include <vulkan/vulkan.h>
 
-#include "engine/platform/vulkan/framework/device/VKDevice.h"
-#include "engine/platform/vulkan/rendering/renderpass/VKRenderpass.h"
-#include "engine/platform/vulkan/buffer/VKMeshVertexBuffer.h"
-#include "engine/platform/vulkan/rendering/shaders/VkShader.h"
+#include "platform/vulkan/framework/device/VKDevice.h"
+#include "platform/vulkan/rendering/renderpass/VKRenderpass.h"
+#include "platform/vulkan/buffer/VKMeshVertexBuffer.h"
+#include "platform/vulkan/rendering/shaders/VkShader.h"
 
-#include "engine/prehistoric/core/util/math/Math.h"
+#include "prehistoric/core/util/math/Math.h"
 
 namespace Prehistoric
 {

@@ -1,13 +1,13 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 
-#include "engine/prehistoric/common/texture/Texture.h"
+#include "prehistoric/common/texture/Texture.h"
 
-#include "engine/prehistoric/core/util/math/Math.h"
+#include "prehistoric/core/util/math/Math.h"
 
-#include "engine/prehistoric/common/rendering/command/CommandBuffer.h"
+#include "prehistoric/common/rendering/command/CommandBuffer.h"
 
 #include <vulkan/vulkan.h>
 

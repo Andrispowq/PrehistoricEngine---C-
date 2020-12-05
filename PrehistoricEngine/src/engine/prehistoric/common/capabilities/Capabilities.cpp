@@ -1,8 +1,8 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "Capabilities.h"
 
-#include "engine/platform/opengl/capabilities/GLCapabilities.h"
-#include "engine/platform/vulkan/capabilities/VKCapabilities.h"
+#include "platform/opengl/capabilities/GLCapabilities.h"
+#include "platform/vulkan/capabilities/VKCapabilities.h"
 
 namespace Prehistoric
 {

@@ -1,17 +1,17 @@
 #ifndef ENVIROMENT_RENDERER_H
 #define ENVIROMENT_RENDERER_H
 
-#include "engine/prehistoric/common/rendering/framebuffer/Framebuffer.h"
-#include "engine/prehistoric/common/texture/Texture.h"
-#include "engine/prehistoric/common/buffer/MeshVertexBuffer.h"
+#include "prehistoric/common/rendering/framebuffer/Framebuffer.h"
+#include "prehistoric/common/texture/Texture.h"
+#include "prehistoric/common/buffer/MeshVertexBuffer.h"
 
-#include "engine/prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/core/resources/AssembledAssetManager.h"
 
-#include "engine/platform/opengl/rendering/shaders/environmentMap/GLBRDFIntegrateShader.h"
-#include "engine/platform/opengl/rendering/shaders/environmentMap/GLEnvironmentShader.h"
-#include "engine/platform/opengl/rendering/shaders/environmentMap/GLEnvironmentMapShader.h"
-#include "engine/platform/opengl/rendering/shaders/environmentMap/GLIrradianceShader.h"
-#include "engine/platform/opengl/rendering/shaders/environmentMap/GLPrefilterShader.h"
+#include "platform/opengl/rendering/shaders/environmentMap/GLBRDFIntegrateShader.h"
+#include "platform/opengl/rendering/shaders/environmentMap/GLEnvironmentShader.h"
+#include "platform/opengl/rendering/shaders/environmentMap/GLEnvironmentMapShader.h"
+#include "platform/opengl/rendering/shaders/environmentMap/GLIrradianceShader.h"
+#include "platform/opengl/rendering/shaders/environmentMap/GLPrefilterShader.h"
 
 namespace Prehistoric
 {

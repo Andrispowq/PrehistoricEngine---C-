@@ -1,11 +1,11 @@
 #ifndef GL_PIPELINE_H
 #define GL_PIPELINE_H
 
-#include "engine/prehistoric/common/rendering/pipeline/Pipeline.h"
+#include "prehistoric/common/rendering/pipeline/Pipeline.h"
 
 #include <glew.h>
 
-#include "engine/prehistoric/common/framework/Window.h"
+#include "prehistoric/common/framework/Window.h"
 
 namespace Prehistoric
 {

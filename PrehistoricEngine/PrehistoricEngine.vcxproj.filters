@@ -178,6 +178,9 @@
     <Filter Include="prehistoric\core\engines">
       <UniqueIdentifier>{81B0821F-6DD5-D19F-9620-B72F82A4D0BD}</UniqueIdentifier>
     </Filter>
+    <Filter Include="prehistoric\core\events">
+      <UniqueIdentifier>{ADA75547-19DF-9DDE-22E9-01028E9FC4D7}</UniqueIdentifier>
+    </Filter>
     <Filter Include="prehistoric\core\model">
       <UniqueIdentifier>{E98FCD5F-D589-F6B1-BEF6-8CC2AA8F5C1E}</UniqueIdentifier>
     </Filter>
@@ -255,6 +258,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\engine\Includes.hpp" />
     <ClInclude Include="src\engine\Prehistoric.h" />
     <ClInclude Include="src\engine\platform\Platform.h">
       <Filter>platform</Filter>
@@ -535,6 +539,18 @@
     <ClInclude Include="src\engine\prehistoric\core\engines\RenderingEngine.h">
       <Filter>prehistoric\core\engines</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\events\ApplicationEvent.h">
+      <Filter>prehistoric\core\events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\events\Event.h">
+      <Filter>prehistoric\core\events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\events\KeyEvent.h">
+      <Filter>prehistoric\core\events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\events\MouseEvent.h">
+      <Filter>prehistoric\core\events</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\model\Mesh.h">
       <Filter>prehistoric\core\model</Filter>
     </ClInclude>
@@ -628,9 +644,6 @@
     <ClInclude Include="src\engine\prehistoric\core\util\Constants.h">
       <Filter>prehistoric\core\util</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\util\Includes.hpp">
-      <Filter>prehistoric\core\util</Filter>
-    </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\util\ModelFabricator.h">
       <Filter>prehistoric\core\util</Filter>
     </ClInclude>
@@ -660,6 +673,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\engine\Includes.cpp" />
     <ClCompile Include="src\engine\platform\opengl\buffer\GLMeshVertexBuffer.cpp">
       <Filter>platform\opengl\buffer</Filter>
     </ClCompile>
@@ -1010,9 +1024,6 @@
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\scene\world\WorldLoader.cpp">
       <Filter>prehistoric\core\scene\world</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\util\Includes.cpp">
-      <Filter>prehistoric\core\util</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\util\ModelFabricator.cpp">
       <Filter>prehistoric\core\util</Filter>

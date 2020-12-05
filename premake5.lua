@@ -1,5 +1,6 @@
 workspace "PrehistoricEngine"
     architecture "x64"
+    startproject "Prehistoric"
 
     configurations
     {
@@ -23,8 +24,8 @@ project "PrehistoricEngine"
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
-    pchheader "engine/prehistoric/core/util/Includes.hpp"
-    pchsource "engine/prehistoric/core/util/Includes.cpp"
+    pchheader "Includes.hpp"
+    pchsource "PrehistoricEngine/src/Includes.cpp"
 
     files
     {
@@ -46,7 +47,7 @@ project "PrehistoricEngine"
         "%{wks.location}/Dependencies/include/GL",
         "%{wks.location}/Dependencies/include/AL",
         "%{wks.location}/Dependencies/include/stb",
-        "%{prj.location}/src"
+        "%{prj.location}/src/engine"
     }
 
     links
@@ -115,7 +116,7 @@ project "Prehistoric"
         "%{wks.location}/Dependencies/include/Vulkan",
         "%{wks.location}/Dependencies/include/GLFW",
         "%{prj.location}/src",
-        "PrehistoricEngine/src"
+        "PrehistoricEngine/src/engine"
     }
 
     defines

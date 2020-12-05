@@ -1,21 +1,21 @@
 #ifndef TERRAIN_QUADTREE_H
 #define TERRAIN_QUADTREE_H
 
-#include "engine/prehistoric/core/node/Node.h"
+#include "prehistoric/core/node/Node.h"
 
 #include "TerrainNode.h"
 
-#include "engine/platform/opengl/rendering/pipeline/GLGraphicsPipeline.h"
-#include "engine/platform/vulkan/rendering/pipeline/VKGraphicsPipeline.h"
+#include "platform/opengl/rendering/pipeline/GLGraphicsPipeline.h"
+#include "platform/vulkan/rendering/pipeline/VKGraphicsPipeline.h"
 
-#include "engine/platform/opengl/rendering/shaders/terrain/GLTerrainShader.h"
-#include "engine/platform/opengl/rendering/shaders/terrain/GLTerrainWireframeShader.h"
+#include "platform/opengl/rendering/shaders/terrain/GLTerrainShader.h"
+#include "platform/opengl/rendering/shaders/terrain/GLTerrainWireframeShader.h"
 
-#include "engine/platform/opengl/buffer/GLPatchVertexBuffer.h"
-#include "engine/platform/vulkan/buffer/VKMeshVertexBuffer.h"
+#include "platform/opengl/buffer/GLPatchVertexBuffer.h"
+#include "platform/vulkan/buffer/VKMeshVertexBuffer.h"
 
-//#include "engine/platform/vulkan/rendering/shaders/terrain/VKTerrainShader.h"
-//#include "engine/platform/vulkan/rendering/shaders/terrain/VKTerrainWireframeShader.h"
+//#include "platform/vulkan/rendering/shaders/terrain/VKTerrainShader.h"
+//#include "platform/vulkan/rendering/shaders/terrain/VKTerrainWireframeShader.h"
 
 namespace Prehistoric
 {

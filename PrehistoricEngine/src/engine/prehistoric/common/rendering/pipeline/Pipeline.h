@@ -1,11 +1,11 @@
 #ifndef PIPELINE_H
 #define PIPELINE_H
 
-#include "engine/prehistoric/common/buffer/VertexBuffer.h"
-#include "engine/prehistoric/common/rendering/shaders/Shader.h"
+#include "prehistoric/common/buffer/VertexBuffer.h"
+#include "prehistoric/common/rendering/shaders/Shader.h"
 
-#include "engine/prehistoric/core/util/math/Math.h"
-#include "engine/prehistoric/common/framework/Window.h"
+#include "prehistoric/core/util/math/Math.h"
+#include "prehistoric/common/framework/Window.h"
 
 namespace Prehistoric
 {

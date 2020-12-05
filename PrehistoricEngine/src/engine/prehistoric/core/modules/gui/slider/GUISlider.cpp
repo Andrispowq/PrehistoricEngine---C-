@@ -1,4 +1,4 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "GUISlider.h"
 
 namespace Prehistoric
@@ -25,9 +25,9 @@ namespace Prehistoric
 
 				float diff = newPosition - cursorOldPositionX;
 
-				float dX = std::min(diff / (worldTransform.getScaling().x * window->getWidth() * 2), 1.0f);
+				float dX = min(diff / (worldTransform.getScaling().x * window->getWidth() * 2), 1.0f);
 				progress += dX;
-				progress = std::max(std::min(progress, 1.0f), 0.0f);
+				progress = max(min(progress, 1.0f), 0.0f);
 				cursorOldPositionX = newPosition;
 			}
 		}

@@ -1,6 +1,6 @@
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 #include "GLTexture.h"
-#include "engine/prehistoric/common/texture/TextureLoader.h"
+#include "prehistoric/common/texture/TextureLoader.h"
 
 namespace Prehistoric
 {

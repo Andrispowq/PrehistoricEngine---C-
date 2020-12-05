@@ -1,7 +1,7 @@
 #ifndef GL_GRAPHICS_PIPELINE_H
 #define GL_GRAPHICS_PIPELINE_H
 
-#include "engine/prehistoric/common/rendering/pipeline/GraphicsPipeline.h"
+#include "prehistoric/common/rendering/pipeline/GraphicsPipeline.h"
 #include "GLPipeline.h"
 
 #include <glew.h>

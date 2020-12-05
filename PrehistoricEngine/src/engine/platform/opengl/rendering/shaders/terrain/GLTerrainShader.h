@@ -1,11 +1,11 @@
 #ifndef GL_TERRAIN_SHADER_H
 #define GL_TERRAIN_SHADER_H
 
-#include "engine/prehistoric/core/util/Includes.hpp"
+#include "Includes.hpp"
 
 #include <glew.h>
 
-#include "engine/platform/opengl/rendering/shaders/GLShader.h"
+#include "platform/opengl/rendering/shaders/GLShader.h"
 
 namespace Prehistoric
 {

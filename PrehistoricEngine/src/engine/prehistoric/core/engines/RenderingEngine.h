@@ -1,14 +1,14 @@
 #ifndef RENDERING_ENGINE_H
 #define RENDERING_ENGINE_H
 
-#include "engine/platform/windows/WindowsWindow.h"
-#include "engine/prehistoric/core/node/movement/Camera.h"
-#include "engine/prehistoric/core/config/FrameworkConfig.h"
+#include "platform/windows/WindowsWindow.h"
+#include "prehistoric/core/node/movement/Camera.h"
+#include "prehistoric/core/config/FrameworkConfig.h"
 
-#include "engine/prehistoric/common/buffer/VertexBuffer.h"
-#include "engine/prehistoric/common/rendering/pipeline/Pipeline.h"
+#include "prehistoric/common/buffer/VertexBuffer.h"
+#include "prehistoric/common/rendering/pipeline/Pipeline.h"
 
-#include "engine/prehistoric/core/resources/AssetManager.h"
+#include "prehistoric/core/resources/AssetManager.h"
 
 namespace Prehistoric
 {
