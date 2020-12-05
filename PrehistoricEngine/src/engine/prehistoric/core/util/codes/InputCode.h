@@ -1,7 +1,7 @@
 #ifndef INPUT_CODE_H
 #define INPUT_CODE_H
 
-//Everything in this class is from glfw3.h
+//Everything in this class is from GLFW/glfw3.h
 
 #include "Includes.hpp"
 

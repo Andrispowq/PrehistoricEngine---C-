@@ -80,7 +80,7 @@
       <PrecompiledHeaderFile>Includes.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_BUILD_DLL;PR_FAST_MATH;GLEW_STATIC;_DEBUG;_CONSOLE;PR_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Dependencies\include\GLFW;..\Dependencies\include\Vulkan;..\Dependencies\include\GL;..\Dependencies\include\AL;..\Dependencies\include\stb;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Dependencies\include\GLFW;..\Dependencies\include\Vulkan;..\Dependencies\include\GLEW;..\Dependencies\include\AL;..\Dependencies\include\stb;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
@@ -92,7 +92,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>..\Dependencies\lib\GLFW\glfw3.lib;..\Dependencies\lib\Vulkan\vulkan-1.lib;..\Dependencies\lib\GL\glew32s.lib;..\Dependencies\lib\AL\OpenAL32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\Dependencies\lib\GLFW\glfw3.lib;..\Dependencies\lib\Vulkan\vulkan-1.lib;..\Dependencies\lib\GLEW\glew32s.lib;..\Dependencies\lib\AL\OpenAL32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImportLibrary>..\bin\Debug-windows-x86_64\PrehistoricEngine\PrehistoricEngine.lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
@@ -105,7 +105,7 @@
       <PrecompiledHeaderFile>Includes.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_BUILD_DLL;PR_FAST_MATH;GLEW_STATIC;_DEBUG;_CONSOLE;PR_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Dependencies\include\GLFW;..\Dependencies\include\Vulkan;..\Dependencies\include\GL;..\Dependencies\include\AL;..\Dependencies\include\stb;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Dependencies\include\GLFW;..\Dependencies\include\Vulkan;..\Dependencies\include\GLEW;..\Dependencies\include\AL;..\Dependencies\include\stb;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -120,7 +120,7 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>..\Dependencies\lib\GLFW\glfw3.lib;..\Dependencies\lib\Vulkan\vulkan-1.lib;..\Dependencies\lib\GL\glew32s.lib;..\Dependencies\lib\AL\OpenAL32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\Dependencies\lib\GLFW\glfw3.lib;..\Dependencies\lib\Vulkan\vulkan-1.lib;..\Dependencies\lib\GLEW\glew32s.lib;..\Dependencies\lib\AL\OpenAL32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImportLibrary>..\bin\Release-windows-x86_64\PrehistoricEngine\PrehistoricEngine.lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
@@ -133,7 +133,7 @@
       <PrecompiledHeaderFile>Includes.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_BUILD_DLL;PR_FAST_MATH;GLEW_STATIC;_DEBUG;_CONSOLE;PR_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Dependencies\include\GLFW;..\Dependencies\include\Vulkan;..\Dependencies\include\GL;..\Dependencies\include\AL;..\Dependencies\include\stb;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Dependencies\include\GLFW;..\Dependencies\include\Vulkan;..\Dependencies\include\GLEW;..\Dependencies\include\AL;..\Dependencies\include\stb;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -148,7 +148,7 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>..\Dependencies\lib\GLFW\glfw3.lib;..\Dependencies\lib\Vulkan\vulkan-1.lib;..\Dependencies\lib\GL\glew32s.lib;..\Dependencies\lib\AL\OpenAL32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\Dependencies\lib\GLFW\glfw3.lib;..\Dependencies\lib\Vulkan\vulkan-1.lib;..\Dependencies\lib\GLEW\glew32s.lib;..\Dependencies\lib\AL\OpenAL32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImportLibrary>..\bin\Distribution-windows-x86_64\PrehistoricEngine\PrehistoricEngine.lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
@@ -298,9 +298,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\buffer\GLMeshVertexBuffer.cpp" />
     <ClCompile Include="src\engine\platform\opengl\buffer\GLPatchVertexBuffer.cpp" />

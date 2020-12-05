@@ -4,7 +4,7 @@
 #include "prehistoric/common/framework/context/Context.h"
 
 #include <glew.h>
-#include <glfw3.h>
+#include <GLFW/glfw3.h>
 
 #include "prehistoric/common/framework/Window.h"
 

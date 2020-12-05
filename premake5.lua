@@ -16,16 +16,24 @@ workspace "PrehistoricEngine"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
+IncludeDir = {}
+IncludeDir["GLFW"] = "%{wks.location}/Dependencies/include/GLFW"
+IncludeDir["Vulkan"] = "%{wks.location}/Dependencies/include/Vulkan"
+IncludeDir["GLEW"] = "%{wks.location}/Dependencies/include/GLEW"
+IncludeDir["AL"] = "%{wks.location}/Dependencies/include/AL"
+IncludeDir["STB"] = "%{wks.location}/Dependencies/include/stb"
+
 project "PrehistoricEngine"
     location "PrehistoricEngine"
     kind "SharedLib"
     language "C++"
+    cppdialect "C++17"
     
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
     pchheader "Includes.hpp"
-    pchsource "PrehistoricEngine/src/Includes.cpp"
+    pchsource "%{prj.location}/src/engine/Includes.cpp"
 
     files
     {
@@ -42,11 +50,11 @@ project "PrehistoricEngine"
 
     includedirs
     {
-        "%{wks.location}/Dependencies/include/GLFW",
-        "%{wks.location}/Dependencies/include/Vulkan",
-        "%{wks.location}/Dependencies/include/GL",
-        "%{wks.location}/Dependencies/include/AL",
-        "%{wks.location}/Dependencies/include/stb",
+        "%{IncludeDir.GLFW}",
+        "%{IncludeDir.Vulkan}",
+        "%{IncludeDir.GLEW}",
+        "%{IncludeDir.AL}",
+        "%{IncludeDir.STB}",
         "%{prj.location}/src/engine"
     }
 
@@ -54,13 +62,12 @@ project "PrehistoricEngine"
 	{
         "%{wks.location}/Dependencies/lib/GLFW/glfw3.lib",
         "%{wks.location}/Dependencies/lib/Vulkan/vulkan-1.lib",
-        "%{wks.location}/Dependencies/lib/GL/glew32s.lib",
+        "%{wks.location}/Dependencies/lib/GLEW/glew32s.lib",
         "%{wks.location}/Dependencies/lib/AL/OpenAL32.lib",
         "opengl32.lib"
 	}
 
     filter "system:windows"
-        cppdialect "C++17"
         staticruntime "On"
         systemversion "latest"
 
@@ -110,11 +117,11 @@ project "Prehistoric"
 
     includedirs
     {
-        "%{wks.location}/Dependencies/include/AL",
-        "%{wks.location}/Dependencies/include/GL",
-        "%{wks.location}/Dependencies/include/stb",
-        "%{wks.location}/Dependencies/include/Vulkan",
-        "%{wks.location}/Dependencies/include/GLFW",
+        "%{IncludeDir.GLFW}",
+        "%{IncludeDir.Vulkan}",
+        "%{IncludeDir.GLEW}",
+        "%{IncludeDir.AL}",
+        "%{IncludeDir.STB}",
         "%{prj.location}/src",
         "PrehistoricEngine/src/engine"
     }
@@ -137,8 +144,7 @@ project "Prehistoric"
 
         defines
         {
-            "PR_LOAD_DLL",
-            "PR_FAST_MATH",
+            "PR_FAST_MATH"
         }
     
     filter "configurations:Debug"

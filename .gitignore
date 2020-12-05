@@ -1,6 +1,13 @@
-# My files
+# Binary output
 bin/
 bin-int/
+
+# Github and Visual Studio files
 .git/
 .vs/
+
+# Other VS files
+*.filters
+*.vcxproj
 *.user
+*.sln

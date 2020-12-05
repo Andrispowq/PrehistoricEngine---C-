@@ -21,5 +21,4 @@ namespace Prehistoric
 	Application* CreateApplication();
 };
 
-
 #endif

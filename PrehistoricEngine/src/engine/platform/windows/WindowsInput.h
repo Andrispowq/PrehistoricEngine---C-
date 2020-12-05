@@ -3,7 +3,7 @@
 
 #include "prehistoric/common/framework/Input.h"
 
-#include <glfw3.h>
+#include <GLFW/glfw3.h>
 
 #include "prehistoric/core/util/math/Math.h"
 

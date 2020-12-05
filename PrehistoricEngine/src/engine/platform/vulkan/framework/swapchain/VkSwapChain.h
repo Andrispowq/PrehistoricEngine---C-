@@ -4,7 +4,7 @@
 #include "prehistoric/common/framework/swapchain/Swapchain.h"
 #include "Includes.hpp"
 
-#include <glfw3.h>
+#include <GLFW/glfw3.h>
 #define PR_INCLUDE_VULKAN
 #include <vulkan/vulkan.h>
 

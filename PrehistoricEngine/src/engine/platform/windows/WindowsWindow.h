@@ -4,7 +4,7 @@
 #include "prehistoric/common/framework/Window.h"
 
 #include <glew.h>
-#include <glfw3.h>
+#include <GLFW/glfw3.h>
 
 #include "prehistoric/common/texture/TextureLoader.h"
 #include "prehistoric/core/config/FrameworkConfig.h"

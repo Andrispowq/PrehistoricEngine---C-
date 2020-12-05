@@ -4,7 +4,7 @@
 //GLFW is only included for getting the VK_KHR_win32_surface extensions for windows
 #include <vulkan/vulkan.h>
 #define PR_INCLUDE_VULKAN
-#include <glfw3.h>
+#include <GLFW/glfw3.h>
 
 #include "VKDebugMessenger.h"
 #include "prehistoric/core/config/FrameworkConfig.h"
