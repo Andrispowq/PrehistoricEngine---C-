@@ -15,6 +15,9 @@
 #include <sstream>
 #include <functional>
 
+#include <chrono>
+#include <thread>
+
 #include "prehistoric/core/util/log/Log.h"
 #include "prehistoric/core/util/time/Time.h"
 

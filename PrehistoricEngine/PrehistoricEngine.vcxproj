@@ -217,7 +217,6 @@
     <ClInclude Include="src\engine\platform\vulkan\util\VKUtil.h" />
     <ClInclude Include="src\engine\platform\windows\WindowsInput.h" />
     <ClInclude Include="src\engine\platform\windows\WindowsWindow.h" />
-    <ClInclude Include="src\engine\prehistoric\CoreEngine.h" />
     <ClInclude Include="src\engine\prehistoric\application\Application.h" />
     <ClInclude Include="src\engine\prehistoric\application\EntryPoint.h" />
     <ClInclude Include="src\engine\prehistoric\common\buffer\MeshVertexBuffer.h" />
@@ -358,7 +357,6 @@
     <ClCompile Include="src\engine\platform\vulkan\util\VKUtil.cpp" />
     <ClCompile Include="src\engine\platform\windows\WindowsInput.cpp" />
     <ClCompile Include="src\engine\platform\windows\WindowsWindow.cpp" />
-    <ClCompile Include="src\engine\prehistoric\CoreEngine.cpp" />
     <ClCompile Include="src\engine\prehistoric\application\Application.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\buffer\MeshVertexBuffer.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\buffer\PatchVertexBuffer.cpp" />

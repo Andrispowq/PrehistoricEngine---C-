@@ -19,6 +19,8 @@
 	#define PR_LOG_ERROR(...)          ::Prehistoric::Log::Log(RED, __VA_ARGS__)
 	#define PR_LOG_RUNTIME_ERROR(...)  ::Prehistoric::Log::Log_RuntimeError(RED, __VA_ARGS__)
 	#define PR_LOG(x, ...)             ::Prehistoric::Log::Log(x, __VA_ARGS__)
+
+	#define PR_ASSERT(x, ...) if(!(x)) ::Prehistoric::Log::Log_RuntimeError(RED, "Assertion failed: %s\n", __VA_ARGS__)
 #else
 	#define PR_PROFILE(x)
 	
@@ -27,12 +29,18 @@
 	#define PR_LOG_ERROR(...)          ::Prehistoric::Log::Log(RED, __VA_ARGS__)
 	#define PR_LOG_RUNTIME_ERROR(...)  ::Prehistoric::Log::Log_RuntimeError(RED, __VA_ARGS__)
 	#define PR_LOG(x, ...)             ::Prehistoric::Log::Log(x, __VA_ARGS__)
+	#define PR_ASSERT(x, ...)
 #endif
 
 namespace Prehistoric
 {
 	namespace Log
 	{
+		template<typename... Args> void Log_Internal(const std::string& message, Args... args)
+		{
+			printf(message.c_str(), args...);
+		}
+
 		template<typename... Args> void Log(const std::string& colour, const std::string& message, Args... args)
 		{
 #ifdef PR_COLOURED_LOGGING_FUNCTIONS
@@ -48,15 +56,7 @@ namespace Prehistoric
 #endif
 			Log_Internal(message, args...);
 
-			throw std::runtime_error(message.c_str());
-		}
-
-		/*
-			Format: {x} -> xth argument in args
-		*/
-		template<typename... Args> void Log_Internal(const std::string& message, Args... args)
-		{
-			printf(message.c_str(), args...);
+			DEBUG_BREAK();
 		}
 	};
 };

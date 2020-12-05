@@ -44,8 +44,8 @@
 	#define PR_VK_DISABLE_VALIDATION_LAYERS
 #endif
 
-#if !defined(PR_NAMESPACE_START)
-	#define PR_NAMESPACE_START namespace Prehistoric {
+#if defined(PR_WINDOWS_64)
+	#define DEBUG_BREAK() __debugbreak()
 #endif
 
 #endif

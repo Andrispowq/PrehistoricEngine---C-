@@ -6,13 +6,15 @@ namespace Prehistoric
 	Engine::Engine()
 		: root(nullptr), scene(nullptr), renderingEngine(nullptr), audioEngine(nullptr), manager(nullptr)
 	{
-		frameTime = 0;
+		running = false;
 
 		//Config loading
 		FrameworkConfig::LoadConfig("res/config/framework.cfg");
 		EngineConfig::LoadConfig("res/config/engine.cfg");
 		AtmosphereConfig::LoadConfig("res/config/atmosphere.cfg");
 		EnvironmentMapConfig::LoadConfig("res/config/environment_map.cfg");
+
+		frameTime = 1.0 / FrameworkConfig::windowMaxFPS;
 
 		//Rootobject init
 		root = std::make_unique<GameObject>();
@@ -43,23 +45,84 @@ namespace Prehistoric
 		delete renderingEngine.release();
 	}
 
-	void Engine::LoadScene(CreateSceneFunction function)
+	void Engine::LoadScene()
 	{
-		function(root.get(), renderingEngine->getWindow(), manager.get(), renderingEngine->getCamera());
 	}
 
-	void Engine::Input()
+	void Engine::Start()
 	{
-		InputInstance.Update();
+		if (running)
+			return;
 
-		renderingEngine->Input();
+		running = true;
+		Run();
 	}
 
-	//For consistency: Engine updates the root node, and then the engines do the work they need to
-	//Most components will register themselves into an engine's list of components, and then the engine can update them
+	void Engine::Stop()
+	{
+		if (!running)
+			return;
+
+		running = false;
+	}
+
+	void Engine::Run()
+	{
+		uint32_t frames = 0;
+		double frameCounter = 0;
+
+		long long lastTime = Time::getTimeNanoseconds();
+		double unprocessedTime = 0;
+
+		while (running)
+		{
+			bool render = false;
+
+			long long startTime = Time::getTimeNanoseconds();
+			long long passedTime = startTime - lastTime;
+			lastTime = startTime;
+
+			unprocessedTime += passedTime / NANOSECOND;
+			frameCounter += passedTime;
+
+			while (unprocessedTime > frameTime)
+			{
+				render = true;
+				unprocessedTime -= frameTime;
+
+				if (renderingEngine->getWindow()->ShouldClose())
+				{
+					Stop();
+					break;
+				}
+
+				Update(frameTime);
+
+				if (frameCounter >= NANOSECOND)
+				{
+					PR_LOG(CYAN, "FPS: %i\n", frames);
+					PR_LOG(CYAN, "Delta time: %f ms\n", frameTime * 1000.0);
+					frames = 0;
+					frameCounter = 0;
+				}
+			}
+
+			if (render && !InputInstance.IsPause())
+			{
+				Render();
+				frames++;
+			}
+			else
+			{
+				using namespace std::chrono_literals;
+				std::this_thread::sleep_for(1ms);
+			}
+		}
+	}
+
 	void Engine::Update(float frameTime)
 	{
-		this->frameTime = frameTime;
+		InputInstance.Update();
 
 		root->PreUpdate(this);
 
@@ -69,7 +132,6 @@ namespace Prehistoric
 
 	void Engine::Render()
 	{
-		renderingEngine->getWindow()->ClearScreen();
 		root->PreRender(renderingEngine->getRenderer());
 
 		renderingEngine->Render();

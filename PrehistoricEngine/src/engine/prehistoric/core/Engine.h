@@ -18,7 +18,7 @@
 
 namespace Prehistoric
 {
-	typedef void(*CreateSceneFunction)(GameObject* root, Window* window, AssembledAssetManager* manager, Camera* camera);
+	constexpr static double NANOSECOND = 1000000000;
 
 	class Engine
 	{
@@ -26,11 +26,9 @@ namespace Prehistoric
 		Engine();
 		~Engine();
 
-		void LoadScene(CreateSceneFunction function);
+		void Start();
 
-		void Input();
-		void Update(float frameTime);
-		void Render();
+		void LoadScene();
 
 		inline RenderingEngine* getRenderingEngine() const { return renderingEngine.get(); }
 		inline AudioEngine* getAudioEngine() const { return audioEngine.get(); }
@@ -44,6 +42,12 @@ namespace Prehistoric
 		Engine(const Engine&& engine) = delete;
 		Engine operator=(const Engine&& engine) = delete;
 	private:
+		void Run();
+		void Stop();
+
+		void Update(float frameTime);
+		void Render();
+	private:
 		//Root object
 		std::unique_ptr<GameObject> root;
 		std::unique_ptr<Scene> scene;
@@ -56,7 +60,8 @@ namespace Prehistoric
 		std::unique_ptr<AudioEngine> audioEngine;
 
 		//Frametime, set once per update
-		float frameTime;
+		bool running;
+		double frameTime;
 	};
 };
 

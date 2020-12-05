@@ -75,13 +75,10 @@ namespace Prehistoric
 		}
 	}
 
-	void RenderingEngine::Input()
-	{
-		window->Input();
-	}
-
 	void RenderingEngine::Update(float delta)
 	{
+		window->Input();
+
 		if (InputInstance.IsKeyPushed(PR_KEY_ESCAPE))
 		{
 			window->setClosed(true);
@@ -102,6 +99,8 @@ namespace Prehistoric
 
 	void RenderingEngine::Render()
 	{
+		window->ClearScreen();
+
 		renderer->PrepareRendering();
 		if (FrameworkConfig::api == OpenGL)
 			EnvironmentMapRenderer::instance->RenderCube(camera.get());

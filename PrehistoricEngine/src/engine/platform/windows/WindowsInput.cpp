@@ -131,13 +131,13 @@ namespace Prehistoric
 
 	bool WindowsInput::Update()
 	{
-		scrollOffset = 0;
+		/*scrollOffset = 0;
 
 		pushedKeys.clear();
 		releasedKeys.clear();
 
 		pushedButtons.clear();
-		releasedButtons.clear();
+		releasedButtons.clear();*/
 
 		//Set up joystick/gamepad
 		for (uint32_t i = 0; i < MAX_NUM_JOYSTICKS; i++)

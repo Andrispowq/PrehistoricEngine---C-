@@ -24,7 +24,6 @@ namespace Prehistoric
 
 		void Init(AssembledAssetManager* manager);
 
-		void Input();
 		void Update(float delta);
 		void Render();
 
