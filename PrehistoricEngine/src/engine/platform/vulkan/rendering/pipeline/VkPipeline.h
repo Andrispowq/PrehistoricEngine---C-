@@ -10,26 +10,29 @@
 #include "engine/platform/vulkan/framework/swapchain/VKSwapchain.h"
 #include "engine/platform/vulkan/buffer/VKMeshVertexBuffer.h"
 
-class VKPipeline : public Pipeline
+namespace Prehistoric
 {
-public:
-	VKPipeline(Window* window, AssetManager* manager, size_t shaderID);
-	virtual ~VKPipeline() {}
+	class VKPipeline : public Pipeline
+	{
+	public:
+		VKPipeline(Window* window, AssetManager* manager, size_t shaderID);
+		virtual ~VKPipeline() {}
 
-	virtual void BindPipeline(CommandBuffer* buffer) const override { getShader()->Bind(buffer); this->buffer = buffer; }
-	virtual void RenderPipeline() const override {}
-	virtual void UnbindPipeline() const override {}
+		virtual void BindPipeline(CommandBuffer* buffer) const override { getShader()->Bind(buffer); this->buffer = buffer; }
+		virtual void RenderPipeline() const override {}
+		virtual void UnbindPipeline() const override {}
 
-	virtual void RecreatePipeline() {}
-protected:
-	VKPhysicalDevice* physicalDevice;
-	VKDevice* device;
-	VKSurface* surface;
+		virtual void RecreatePipeline() {}
+	protected:
+		VKPhysicalDevice* physicalDevice;
+		VKDevice* device;
+		VKSurface* surface;
 
-	Window* window;
-	VKSwapchain* swapchain;
+		Window* window;
+		VKSwapchain* swapchain;
 
-	mutable CommandBuffer* buffer; //The currently used commandbuffer
+		mutable CommandBuffer* buffer; //The currently used commandbuffer
+	};
 };
 
 #endif

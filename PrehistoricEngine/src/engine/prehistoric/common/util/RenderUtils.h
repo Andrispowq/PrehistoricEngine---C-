@@ -3,19 +3,22 @@
 
 #include "engine/prehistoric/common/framework/Window.h"
 
-class RenderUtils
+namespace Prehistoric
 {
-public:
-	RenderUtils(Window* window) : window(window) {}
-	virtual ~RenderUtils() = 0;
-	
-	virtual void setAlphaBlending(bool alphaBlending) = 0;
-	virtual void setDepthTesting(bool depthTesting) = 0;
+	class RenderUtils
+	{
+	public:
+		RenderUtils(Window* window) : window(window) {}
+		virtual ~RenderUtils() = 0;
 
-private:
-	Window* window;
+		virtual void setAlphaBlending(bool alphaBlending) = 0;
+		virtual void setDepthTesting(bool depthTesting) = 0;
 
-	static RenderUtils* instance;
+	private:
+		Window* window;
+
+		static RenderUtils* instance;
+	};
 };
 
 #endif

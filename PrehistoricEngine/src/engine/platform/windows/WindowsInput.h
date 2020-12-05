@@ -7,13 +7,16 @@
 
 #include "engine/prehistoric/core/util/math/Math.h"
 
-class WindowsInput : public Input
+namespace Prehistoric
 {
-public:
-	bool Init(Window* window) const override;
-	bool Update() override;
+	class WindowsInput : public Input
+	{
+	public:
+		bool Init(Window* window) const override;
+		bool Update() override;
 
-	void setCursorPositionOnScreen(Window* window, const Vector2f& cursorPosition) override;
+		void setCursorPositionOnScreen(Window* window, const Vector2f& cursorPosition) override;
+	};
 };
 
 #endif

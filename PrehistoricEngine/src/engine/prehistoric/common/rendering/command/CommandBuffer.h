@@ -1,16 +1,19 @@
 #ifndef COMMAND_BUFFER_H
 #define COMMAND_BUFFER_H
 
-class CommandBuffer
+namespace Prehistoric
 {
-public:
-	CommandBuffer() {}
-	virtual ~CommandBuffer();
+	class CommandBuffer
+	{
+	public:
+		CommandBuffer() {}
+		virtual ~CommandBuffer();
 
-	virtual void BindBuffer() const {}
-	virtual void UnbindBuffer() const {}
+		virtual void BindBuffer() const {}
+		virtual void UnbindBuffer() const {}
 
-	virtual void DeleteBuffer() {}
+		virtual void DeleteBuffer() {}
+	};
 };
 
 #endif

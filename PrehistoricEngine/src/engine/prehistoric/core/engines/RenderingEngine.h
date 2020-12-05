@@ -10,36 +10,39 @@
 
 #include "engine/prehistoric/core/resources/AssetManager.h"
 
-class GameObject;
-class RenderableComponent;
-class Light;
-
-class RenderingEngine
+namespace Prehistoric
 {
-public:
-	RenderingEngine();
-	virtual ~RenderingEngine();
+	class GameObject;
+	class RenderableComponent;
+	class Light;
 
-	void Init(AssembledAssetManager* manager);
+	class RenderingEngine
+	{
+	public:
+		RenderingEngine();
+		virtual ~RenderingEngine();
 
-	void Input();
-	void Update(float delta);
-	void Render();
+		void Init(AssembledAssetManager* manager);
 
-	inline Window* getWindow() const { return window.get(); }
-	inline Camera* getCamera() const { return camera.get(); }
+		void Input();
+		void Update(float delta);
+		void Render();
 
-	inline Renderer* getRenderer() const { return renderer.get(); }
+		inline Window* getWindow() const { return window.get(); }
+		inline Camera* getCamera() const { return camera.get(); }
 
-	RenderingEngine(const RenderingEngine& engine) = delete;
-	RenderingEngine operator=(const RenderingEngine& engine) = delete;
-private:
-	std::unique_ptr<Window> window;
-	std::unique_ptr<Camera> camera;
+		inline Renderer* getRenderer() const { return renderer.get(); }
 
-	std::unique_ptr<Renderer> renderer;
+		RenderingEngine(const RenderingEngine& engine) = delete;
+		RenderingEngine operator=(const RenderingEngine& engine) = delete;
+	private:
+		std::unique_ptr<Window> window;
+		std::unique_ptr<Camera> camera;
 
-	AssembledAssetManager* manager;
+		std::unique_ptr<Renderer> renderer;
+
+		AssembledAssetManager* manager;
+	};
 };
 
 #endif

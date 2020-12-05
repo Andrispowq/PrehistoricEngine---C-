@@ -17,25 +17,28 @@
 //#include "engine/platform/vulkan/rendering/shaders/terrain/VKTerrainShader.h"
 //#include "engine/platform/vulkan/rendering/shaders/terrain/VKTerrainWireframeShader.h"
 
-class TerrainQuadtree : public Node
+namespace Prehistoric
 {
-public:
-	TerrainQuadtree(Window* window, Camera* camera, TerrainMaps* maps, AssembledAssetManager* manager);
-	virtual ~TerrainQuadtree();
+	class TerrainQuadtree : public Node
+	{
+	public:
+		TerrainQuadtree(Window* window, Camera* camera, TerrainMaps* maps, AssembledAssetManager* manager);
+		virtual ~TerrainQuadtree();
 
-	void UpdateQuadtree();
-	std::vector<Vector2f> generatePatch() const;
+		void UpdateQuadtree();
+		std::vector<Vector2f> generatePatch() const;
 
-	TerrainQuadtree(const TerrainQuadtree&) = default;
-public:
-	constexpr static int rootNodes = 8;
-private:
-	Window* window;
-	Camera* camera;
+		TerrainQuadtree(const TerrainQuadtree&) = default;
+	public:
+		constexpr static int rootNodes = 8;
+	private:
+		Window* window;
+		Camera* camera;
 
-	TerrainMaps* maps;
+		TerrainMaps* maps;
 
-	Factory<TerrainNode> factory;
+		Factory<TerrainNode> factory;
+	};
 };
 
 #endif

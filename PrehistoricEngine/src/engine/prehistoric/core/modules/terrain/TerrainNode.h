@@ -12,86 +12,89 @@
 
 #include "engine/prehistoric/core/resources/Factory.h"
 
-class TerrainNode : public GameObject
+namespace Prehistoric
 {
-public:
-	TerrainNode() {}
-	TerrainNode(Factory<TerrainNode>* factory, Window* window, Camera* camera, AssembledAssetManager* manager, TerrainMaps* maps,
-		size_t pipelineID, size_t wireframePipelineID, const Vector2f& location, int lod, const Vector2f& index);
-	virtual ~TerrainNode();
-
-	virtual void PreRender(Renderer* renderer) override;
-
-	void UpdateQuadtree();
-	void UpdateChildNodes();
-
-	void AddChildNodes(int lod);
-	void RemoveChildNodes();
-
-	void ComputeWorldPosition();
-	float getTerrainHeight(const Vector2f& location) const;
-
-	TerrainMaps* getMaps() const { return maps; }
-
-	int getLod() const { return lod; }
-	Vector2f getLocation() const { return location; }
-	Vector3f getWorldPosition() const { return worldPosition; }
-	Vector2f getIndex() const { return index; }
-	float getGap() const { return gap; }
-
-	Transform getLocalTransform() const { return localTransform; }
-
-	TerrainNode(const TerrainNode&) = default;
-
-	//Overloaded new and delete comes here:
-	/*void* operator new(size_t size, Factory<TerrainNode>& factory)
+	class TerrainNode : public GameObject
 	{
-		return factory.allocate();
-	}
+	public:
+		TerrainNode() {}
+		TerrainNode(Factory<TerrainNode>* factory, Window* window, Camera* camera, AssembledAssetManager* manager, TerrainMaps* maps,
+			size_t pipelineID, size_t wireframePipelineID, const Vector2f& location, int lod, const Vector2f& index);
+		virtual ~TerrainNode();
 
-	void* operator new(size_t size)
-	{
-		void* ptr = malloc(size);
-	
-		if (!ptr)
-			throw std::bad_alloc();
+		virtual void PreRender(Renderer* renderer) override;
 
-		return ptr;
-	}
+		void UpdateQuadtree();
+		void UpdateChildNodes();
 
-	void operator delete(void* ptr, Factory<TerrainNode>& factory)
-	{
-		TerrainNode* _ptr = (TerrainNode*)ptr;
-		_ptr->~TerrainNode();
-		factory.deallocate(_ptr);
-	}
+		void AddChildNodes(int lod);
+		void RemoveChildNodes();
 
-	void operator delete(void* ptr)
-	{
-		((TerrainNode*)ptr)->~TerrainNode();
-		free(ptr);
-	}*/
-private:
-	Factory<TerrainNode>* factory;
-	AssembledAssetManager* manager;
+		void ComputeWorldPosition();
+		float getTerrainHeight(const Vector2f& location) const;
 
-	Window* window;
-	Camera* camera;
-	
-	TerrainMaps* maps;
+		TerrainMaps* getMaps() const { return maps; }
 
-	bool leaf;
-	int lod;
-	Vector2f location;
-	Vector3f worldPosition;
-	Vector2f index;
-	float gap;
+		int getLod() const { return lod; }
+		Vector2f getLocation() const { return location; }
+		Vector3f getWorldPosition() const { return worldPosition; }
+		Vector2f getIndex() const { return index; }
+		float getGap() const { return gap; }
 
-	RendererComponent* rendererComponent;
-	RendererComponent* wireframeRendererComponent;
-	Material* material;
+		Transform getLocalTransform() const { return localTransform; }
 
-	Transform localTransform;
+		TerrainNode(const TerrainNode&) = default;
+
+		//Overloaded new and delete comes here:
+		/*void* operator new(size_t size, Factory<TerrainNode>& factory)
+		{
+			return factory.allocate();
+		}
+
+		void* operator new(size_t size)
+		{
+			void* ptr = malloc(size);
+
+			if (!ptr)
+				throw std::bad_alloc();
+
+			return ptr;
+		}
+
+		void operator delete(void* ptr, Factory<TerrainNode>& factory)
+		{
+			TerrainNode* _ptr = (TerrainNode*)ptr;
+			_ptr->~TerrainNode();
+			factory.deallocate(_ptr);
+		}
+
+		void operator delete(void* ptr)
+		{
+			((TerrainNode*)ptr)->~TerrainNode();
+			free(ptr);
+		}*/
+	private:
+		Factory<TerrainNode>* factory;
+		AssembledAssetManager* manager;
+
+		Window* window;
+		Camera* camera;
+
+		TerrainMaps* maps;
+
+		bool leaf;
+		int lod;
+		Vector2f location;
+		Vector3f worldPosition;
+		Vector2f index;
+		float gap;
+
+		RendererComponent* rendererComponent;
+		RendererComponent* wireframeRendererComponent;
+		Material* material;
+
+		Transform localTransform;
+	};
 };
 
 #endif

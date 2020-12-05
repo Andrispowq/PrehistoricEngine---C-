@@ -1,6 +1,8 @@
 #include "engine/prehistoric/core/util/Includes.hpp"
 #include "Math.h"
 
+namespace Prehistoric
+{
 #if defined(PR_FAST_MATH)
 
 inline Vector2f Vector2f::abs() const
@@ -1082,3 +1084,5 @@ void Matrix4f::clear()
 }
 
 #endif
+
+};

@@ -7,13 +7,16 @@
 
 #include "engine/prehistoric/common/texture/Texture.h"
 
-class GLPrefilterShader : public GLShader
+namespace Prehistoric
 {
-public:
-	GLPrefilterShader();
-	virtual ~GLPrefilterShader() {}
+	class GLPrefilterShader : public GLShader
+	{
+	public:
+		GLPrefilterShader();
+		virtual ~GLPrefilterShader() {}
 
-	void UpdateUniforms(const Matrix4f& projection, const Matrix4f& view, Texture* texture, float roughness) const;
+		void UpdateUniforms(const Matrix4f& projection, const Matrix4f& view, Texture* texture, float roughness) const;
+	};
 };
 
 #endif

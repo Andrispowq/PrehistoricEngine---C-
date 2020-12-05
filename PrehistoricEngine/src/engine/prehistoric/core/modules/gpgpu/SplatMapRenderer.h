@@ -10,28 +10,31 @@
 #include "engine/platform/opengl/rendering/shaders/gpgpu/GLSplatMapShader.h"
 //#include "engine/platform/vulkan/rendering/shaders/gpgpu/VKSplatMapShader.h"
 
-class AssembledAssetManager;
-
-class SplatMapRenderer
+namespace Prehistoric
 {
-public:
-	SplatMapRenderer(Window* window, AssembledAssetManager* manager, uint32_t N);
-	virtual ~SplatMapRenderer();
+	class AssembledAssetManager;
 
-	void Render(Texture* normalmap);
+	class SplatMapRenderer
+	{
+	public:
+		SplatMapRenderer(Window* window, AssembledAssetManager* manager, uint32_t N);
+		virtual ~SplatMapRenderer();
 
-	Texture* getSplatmap() { return splatmap; }
-private:
-	Window* window;
-	AssembledAssetManager* manager;
+		void Render(Texture* normalmap);
 
-	size_t pipelineID;
-	size_t textureID;
+		Texture* getSplatmap() { return splatmap; }
+	private:
+		Window* window;
+		AssembledAssetManager* manager;
 
-	Pipeline* pipeline;
-	Texture* splatmap;
+		size_t pipelineID;
+		size_t textureID;
 
-	uint32_t N;
+		Pipeline* pipeline;
+		Texture* splatmap;
+
+		uint32_t N;
+	};
 };
 
 #endif

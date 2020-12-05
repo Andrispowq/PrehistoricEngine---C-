@@ -7,13 +7,16 @@
 
 #include "engine/prehistoric/common/texture/Texture.h"
 
-class GLIrradianceShader : public GLShader
+namespace Prehistoric
 {
-public:
-	GLIrradianceShader();
-	virtual ~GLIrradianceShader() {}
+	class GLIrradianceShader : public GLShader
+	{
+	public:
+		GLIrradianceShader();
+		virtual ~GLIrradianceShader() {}
 
-	void UpdateUniforms(const Matrix4f& projection, const Matrix4f& view, Texture* texture) const;
+		void UpdateUniforms(const Matrix4f& projection, const Matrix4f& view, Texture* texture) const;
+	};
 };
 
 #endif

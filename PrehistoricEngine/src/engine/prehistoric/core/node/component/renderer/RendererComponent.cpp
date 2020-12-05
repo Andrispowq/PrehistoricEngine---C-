@@ -7,57 +7,60 @@
 
 #include "engine/prehistoric/core/resources/AssembledAssetManager.h"
 
-RendererComponent::RendererComponent(size_t pipelineID, size_t materialID, Window* window, AssembledAssetManager* manager)
-	: RenderableComponent(pipelineID, window, manager)
+namespace Prehistoric
 {
-	materialIndex = materialID;
-	manager->addReference<Material>(materialID);
-
-	if (FrameworkConfig::api == Vulkan)
+	RendererComponent::RendererComponent(size_t pipelineID, size_t materialID, Window* window, AssembledAssetManager* manager)
+		: RenderableComponent(pipelineID, window, manager)
 	{
-		static_cast<VKShader*>(manager->getResourceByID<Pipeline>(pipelineID)->getShader())->RegisterInstance();
+		materialIndex = materialID;
+		manager->addReference<Material>(materialID);
+
+		if (FrameworkConfig::api == Vulkan)
+		{
+			static_cast<VKShader*>(manager->getResourceByID<Pipeline>(pipelineID)->getShader())->RegisterInstance();
+		}
 	}
-}
 
-RendererComponent::RendererComponent(Window* window, AssembledAssetManager* manager)
-	: RenderableComponent(window, manager)
-{
-	materialIndex = -1;
-}
+	RendererComponent::RendererComponent(Window* window, AssembledAssetManager* manager)
+		: RenderableComponent(window, manager)
+	{
+		materialIndex = -1;
+	}
 
-RendererComponent::~RendererComponent()
-{
-	manager->removeReference<Material>(materialIndex);
-	materialIndex = -1;
-}
+	RendererComponent::~RendererComponent()
+	{
+		manager->removeReference<Material>(materialIndex);
+		materialIndex = -1;
+	}
 
-void RendererComponent::PreRender(Renderer* renderer)
-{
-	renderer->AddModel(this);
-}
+	void RendererComponent::PreRender(Renderer* renderer)
+	{
+		renderer->AddModel(this);
+	}
 
-void RendererComponent::Render(Renderer* renderer) const
-{
-	Pipeline* pipeline = getPipeline();
-	
-	pipeline->BindPipeline(renderer->getDrawCommandBuffer());
-	pipeline->getShader()->UpdateShaderUniforms(renderer->getCamera(), renderer->getLights());
-	pipeline->getShader()->UpdateSharedUniforms(parent);
-	pipeline->getShader()->UpdateObjectUniforms(parent);
+	void RendererComponent::Render(Renderer* renderer) const
+	{
+		Pipeline* pipeline = getPipeline();
 
-	pipeline->RenderPipeline();
-	pipeline->UnbindPipeline();
-}
+		pipeline->BindPipeline(renderer->getDrawCommandBuffer());
+		pipeline->getShader()->UpdateShaderUniforms(renderer->getCamera(), renderer->getLights());
+		pipeline->getShader()->UpdateSharedUniforms(parent);
+		pipeline->getShader()->UpdateObjectUniforms(parent);
 
-void RendererComponent::BatchRender(uint32_t instance_index) const
-{
-	Pipeline* pipeline = getPipeline();
+		pipeline->RenderPipeline();
+		pipeline->UnbindPipeline();
+	}
 
-	pipeline->getShader()->UpdateObjectUniforms(parent, instance_index);
-	pipeline->RenderPipeline();
-}
+	void RendererComponent::BatchRender(uint32_t instance_index) const
+	{
+		Pipeline* pipeline = getPipeline();
 
-Material* RendererComponent::getMaterial() const
-{
-	return manager->getResourceByID<Material>(materialIndex);
-}
+		pipeline->getShader()->UpdateObjectUniforms(parent, instance_index);
+		pipeline->RenderPipeline();
+	}
+
+	Material* RendererComponent::getMaterial() const
+	{
+		return manager->getResourceByID<Material>(materialIndex);
+	}
+};

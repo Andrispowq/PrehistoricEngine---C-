@@ -3,29 +3,32 @@
 
 #include "engine/prehistoric/core/config/EnvironmentMapConfig.h"
 
-GLPrefilterShader::GLPrefilterShader()
+namespace Prehistoric
 {
-	AddShader(ResourceLoader::LoadShaderGL("opengl/environmentMap/prefilter_VS.glsl"), VERTEX_SHADER);
-	AddShader(ResourceLoader::LoadShaderGL("opengl/environmentMap/prefilter_FS.glsl"), FRAGMENT_SHADER);
+	GLPrefilterShader::GLPrefilterShader()
+	{
+		AddShader(ResourceLoader::LoadShaderGL("opengl/environmentMap/prefilter_VS.glsl"), VERTEX_SHADER);
+		AddShader(ResourceLoader::LoadShaderGL("opengl/environmentMap/prefilter_FS.glsl"), FRAGMENT_SHADER);
 
-	CompileShader();
+		CompileShader();
 
-	AddUniform("m_view");
-	AddUniform("m_projection");
+		AddUniform("m_view");
+		AddUniform("m_projection");
 
-	AddUniform("environmentMap");
-	AddUniform("roughness");
-	AddUniform("resolution");
-}
+		AddUniform("environmentMap");
+		AddUniform("roughness");
+		AddUniform("resolution");
+	}
 
-void GLPrefilterShader::UpdateUniforms(const Matrix4f& projection, const Matrix4f& view, Texture* texture, float roughness) const
-{
-	SetUniform("m_view", view);
-	SetUniform("m_projection", projection);
+	void GLPrefilterShader::UpdateUniforms(const Matrix4f& projection, const Matrix4f& view, Texture* texture, float roughness) const
+	{
+		SetUniform("m_view", view);
+		SetUniform("m_projection", projection);
 
-	texture->Bind(0);
-	SetUniformi("environmentMap", 0);
+		texture->Bind(0);
+		SetUniformi("environmentMap", 0);
 
-	SetUniformf("roughness", roughness);
-	SetUniformi("resolution", EnvironmentMapConfig::prefilterMapResolution);
-}
+		SetUniformf("roughness", roughness);
+		SetUniformi("resolution", EnvironmentMapConfig::prefilterMapResolution);
+	}
+};

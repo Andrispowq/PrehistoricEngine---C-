@@ -8,17 +8,20 @@
 #include "engine/prehistoric/common/framework/Window.h"
 #include "engine/platform/vulkan/framework/context/VKInstance.h"
 
-class VKSurface
+namespace Prehistoric
 {
-public:
-	VKSurface(Window* window, VkInstance instance);
-	virtual ~VKSurface();
+	class VKSurface
+	{
+	public:
+		VKSurface(Window* window, VkInstance instance);
+		virtual ~VKSurface();
 
-	VkSurfaceKHR getSurface() const { return surface; }
-private:
-	VkInstance instance;
+		VkSurfaceKHR getSurface() const { return surface; }
+	private:
+		VkInstance instance;
 
-	VkSurfaceKHR surface;
+		VkSurfaceKHR surface;
+	};
 };
 
 #endif

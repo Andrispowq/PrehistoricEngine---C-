@@ -10,29 +10,32 @@
 #include "engine/prehistoric/core/config/FrameworkConfig.h"
 #include "engine/platform/Platform.h"
 
-class WindowsWindow : public Window
+namespace Prehistoric
 {
-public:
-	WindowsWindow() : Window(), window(nullptr) {}
+	class WindowsWindow : public Window
+	{
+	public:
+		WindowsWindow() : Window(), window(nullptr) {}
 
-	virtual ~WindowsWindow();
+		virtual ~WindowsWindow();
 
-	virtual bool Create() override;
-	virtual bool ShouldClose() const override;
-	virtual void Input() override;
-	virtual void Render(CommandBuffer* buffer) const override;
+		virtual bool Create() override;
+		virtual bool ShouldClose() const override;
+		virtual void Input() override;
+		virtual void Render(CommandBuffer* buffer) const override;
 
-	virtual void SetFullscreen(bool fullscreen) override;
-	virtual bool IsFullscreen() const override;
+		virtual void SetFullscreen(bool fullscreen) override;
+		virtual bool IsFullscreen() const override;
 
-	virtual void* getWindowHandle() const override { return window; }
-private:
-	bool initGLFW() const;
-private:
-	int oldWidth, oldHeight;
-	int oldX, oldY;
+		virtual void* getWindowHandle() const override { return window; }
+	private:
+		bool initGLFW() const;
+	private:
+		int oldWidth, oldHeight;
+		int oldX, oldY;
 
-	GLFWwindow* window;
+		GLFWwindow* window;
+	};
 };
 
 #endif

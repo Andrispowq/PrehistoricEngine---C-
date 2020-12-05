@@ -13,25 +13,28 @@
 
 #include "engine/prehistoric/core/util/math/Math.h"
 
-class VKGraphicsPipeline : public VKPipeline, public GraphicsPipeline
+namespace Prehistoric
 {
-public:
-	VKGraphicsPipeline(Window* window, AssetManager* manager, size_t shaderID, size_t vboID);
-	virtual ~VKGraphicsPipeline();
+	class VKGraphicsPipeline : public VKPipeline, public GraphicsPipeline
+	{
+	public:
+		VKGraphicsPipeline(Window* window, AssetManager* manager, size_t shaderID, size_t vboID);
+		virtual ~VKGraphicsPipeline();
 
-	virtual void BindPipeline(CommandBuffer* buffer) const override;
-	virtual void RenderPipeline() const override;
-	virtual void UnbindPipeline() const override;
+		virtual void BindPipeline(CommandBuffer* buffer) const override;
+		virtual void RenderPipeline() const override;
+		virtual void UnbindPipeline() const override;
 
-	virtual void RecreatePipeline();
+		virtual void RecreatePipeline();
 
-	VkPipeline getGraphicsPipeline() const { return graphicsPipeline; }
-private:
-	void CreatePipeline();
-private:
-	VKRenderpass* renderpass;
+		VkPipeline getGraphicsPipeline() const { return graphicsPipeline; }
+	private:
+		void CreatePipeline();
+	private:
+		VKRenderpass* renderpass;
 
-	VkPipeline graphicsPipeline;
+		VkPipeline graphicsPipeline;
+	};
 };
 
 #endif

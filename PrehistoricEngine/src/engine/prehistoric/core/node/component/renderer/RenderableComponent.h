@@ -8,42 +8,45 @@
 
 #include "engine/prehistoric/core/util/Includes.hpp"
 
-class AssembledAssetManager;
-
-enum class RenderPriority
+namespace Prehistoric
 {
-	_3D = 0,
-	_TRANSPARENCY = 1,
-	_2D = 2,
-	_POST_PROCESSING = 3
-};
+	class AssembledAssetManager;
 
-class RenderableComponent : public Component
-{
-public:
-	RenderableComponent(size_t pipelineID, Window* window, AssembledAssetManager* manager);
-	RenderableComponent(Window* window, AssembledAssetManager* manager);
-	virtual ~RenderableComponent();
+	enum class RenderPriority
+	{
+		_3D = 0,
+		_TRANSPARENCY = 1,
+		_2D = 2,
+		_POST_PROCESSING = 3
+	};
 
-	virtual void Render(Renderer* renderer) const = 0;
-	virtual void BatchRender(uint32_t instance_index = 0) const = 0;
+	class RenderableComponent : public Component
+	{
+	public:
+		RenderableComponent(size_t pipelineID, Window* window, AssembledAssetManager* manager);
+		RenderableComponent(Window* window, AssembledAssetManager* manager);
+		virtual ~RenderableComponent();
 
-	inline size_t getPipelineIndex() const { return pipelineIndex; }
-	Pipeline* getPipeline() const;
+		virtual void Render(Renderer* renderer) const = 0;
+		virtual void BatchRender(uint32_t instance_index = 0) const = 0;
 
-	inline RenderPriority getPriority() const { return priority; }
-	inline void setPriority(RenderPriority priority) { this->priority = priority; }
+		inline size_t getPipelineIndex() const { return pipelineIndex; }
+		Pipeline* getPipeline() const;
 
-	RenderableComponent(const RenderableComponent&) = delete;
-	RenderableComponent(const RenderableComponent&&) = delete;
-	RenderableComponent& operator=(RenderableComponent) = delete;
-protected:
-	AssembledAssetManager* manager;
+		inline RenderPriority getPriority() const { return priority; }
+		inline void setPriority(RenderPriority priority) { this->priority = priority; }
 
-	Window* window;
+		RenderableComponent(const RenderableComponent&) = delete;
+		RenderableComponent(const RenderableComponent&&) = delete;
+		RenderableComponent& operator=(RenderableComponent) = delete;
+	protected:
+		AssembledAssetManager* manager;
 
-	size_t pipelineIndex;
-	RenderPriority priority;
+		Window* window;
+
+		size_t pipelineIndex;
+		RenderPriority priority;
+	};
 };
 
 #endif

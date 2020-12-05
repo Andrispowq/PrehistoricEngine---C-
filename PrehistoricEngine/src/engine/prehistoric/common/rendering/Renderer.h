@@ -6,46 +6,49 @@
 
 #include "engine/prehistoric/common/rendering/pipeline/Pipeline.h"
 
-class RenderableComponent;
-
-class Renderer
+namespace Prehistoric
 {
-public:
-	Renderer(Window* window, Camera* camera);
-	virtual ~Renderer() {}
+	class RenderableComponent;
 
-	virtual void PrepareRendering() = 0;
-	virtual void EndRendering() = 0;
+	class Renderer
+	{
+	public:
+		Renderer(Window* window, Camera* camera);
+		virtual ~Renderer() {}
 
-	virtual void Render() = 0;
+		virtual void PrepareRendering() = 0;
+		virtual void EndRendering() = 0;
 
-	virtual CommandBuffer* getDrawCommandBuffer() const { return nullptr; }
+		virtual void Render() = 0;
 
-	void AddModel(RenderableComponent* renderable);
-	void AddLight(Light* light);
+		virtual CommandBuffer* getDrawCommandBuffer() const { return nullptr; }
 
-	Window* getWindow() const { return window; }
-	Camera* getCamera() const { return camera; }
+		void AddModel(RenderableComponent* renderable);
+		void AddLight(Light* light);
 
-	inline std::vector<Light*> getLights() const { return lights; }
-	inline Light* getSun() const { return sun; }
+		Window* getWindow() const { return window; }
+		Camera* getCamera() const { return camera; }
 
-	inline bool isWireframeMode() const { return wireframeMode; }
-	inline void setWireframeMode(bool wire) { this->wireframeMode = wire; }
+		inline std::vector<Light*> getLights() const { return lights; }
+		inline Light* getSun() const { return sun; }
 
-protected:
-	Window* window;
-	Camera* camera;
+		inline bool isWireframeMode() const { return wireframeMode; }
+		inline void setWireframeMode(bool wire) { this->wireframeMode = wire; }
 
-	//The rendering context
-	std::unordered_map<Pipeline*, std::vector<RenderableComponent*>> models_3d;
-	std::unordered_map<Pipeline*, std::vector<RenderableComponent*>> models_transparency;
-	std::unordered_map<Pipeline*, std::vector<RenderableComponent*>> models_2d;
+	protected:
+		Window* window;
+		Camera* camera;
 
-	std::vector<Light*> lights;
-	Light* sun = nullptr; //Not owned
+		//The rendering context
+		std::unordered_map<Pipeline*, std::vector<RenderableComponent*>> models_3d;
+		std::unordered_map<Pipeline*, std::vector<RenderableComponent*>> models_transparency;
+		std::unordered_map<Pipeline*, std::vector<RenderableComponent*>> models_2d;
 
-	bool wireframeMode;
+		std::vector<Light*> lights;
+		Light* sun = nullptr; //Not owned
+
+		bool wireframeMode;
+	};
 };
 
 #endif

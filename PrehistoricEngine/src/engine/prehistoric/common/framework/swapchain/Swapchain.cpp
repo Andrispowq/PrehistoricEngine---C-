@@ -3,6 +3,9 @@
 
 #include "engine/prehistoric/common/framework/Window.h"
 
-Swapchain::~Swapchain()
+namespace Prehistoric
 {
-}
+	Swapchain::~Swapchain()
+	{
+	}
+};

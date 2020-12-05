@@ -3,23 +3,26 @@
 
 #include "engine/prehistoric/core/modules/gui/GUIElement.h"
 
-class GUISlider : public GUIElement
+namespace Prehistoric
 {
-public:
-	GUISlider(Window* window, AssembledAssetManager* manager, float minValue, float maxValue, Texture* texture = nullptr, void* data = nullptr, size_t dataSize = 0, bool visible = true);
+	class GUISlider : public GUIElement
+	{
+	public:
+		GUISlider(Window* window, AssembledAssetManager* manager, float minValue, float maxValue, Texture* texture = nullptr, void* data = nullptr, size_t dataSize = 0, bool visible = true);
 
-	virtual void PreUpdate(Engine* engine) override;
+		virtual void PreUpdate(Engine* engine) override;
 
-	float getProgress() const { return progress; }
+		float getProgress() const { return progress; }
 
-	GUISlider(const GUISlider&) = default;
+		GUISlider(const GUISlider&) = default;
 
-private:
-	float minValue;
-	float maxValue;
-	float progress;
+	private:
+		float minValue;
+		float maxValue;
+		float progress;
 
-	float cursorOldPositionX = -1;
+		float cursorOldPositionX = -1;
+	};
 };
 
 #endif

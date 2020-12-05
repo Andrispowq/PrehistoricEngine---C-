@@ -4,37 +4,40 @@
 #define GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX 0x9048
 #define GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX 0x9049
 
-void GLCapabilities::QueryCapabilities(void* physicalDevice)
+namespace Prehistoric
 {
-	physicalDeviceCaps.name = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
-	physicalDeviceCaps.discrete = true;
+	void GLCapabilities::QueryCapabilities(void* physicalDevice)
+	{
+		physicalDeviceCaps.name = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+		physicalDeviceCaps.discrete = true;
 
-	std::string version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
-	std::vector<std::string> versions = Util::Split(version, '.');
-	driverCaps.apiVersionMajor = std::atoi(versions[0].c_str());
-	driverCaps.apiVersionMinor = std::atoi(versions[1].c_str());
-	driverCaps.apiVersionPatch = std::atoi(versions[2].c_str());
-	driverCaps.driverVersionMajor = 0;
-	driverCaps.driverVersionMinor = 0;
-	driverCaps.driverVersionPatch = 0;
+		std::string version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
+		std::vector<std::string> versions = Util::Split(version, '.');
+		driverCaps.apiVersionMajor = std::atoi(versions[0].c_str());
+		driverCaps.apiVersionMinor = std::atoi(versions[1].c_str());
+		driverCaps.apiVersionPatch = std::atoi(versions[2].c_str());
+		driverCaps.driverVersionMajor = 0;
+		driverCaps.driverVersionMinor = 0;
+		driverCaps.driverVersionPatch = 0;
 
-	shaderCaps.geometryShaderSupported = true;
-	shaderCaps.tessellationShaderSupported = true;
-	shaderCaps.computeShaderSupported = true;
-	shaderCaps.shaderVersion = 1;
-	shaderCaps.rayTracingSupported = false;
-	shaderCaps.meshShadingSupported = false;
+		shaderCaps.geometryShaderSupported = true;
+		shaderCaps.tessellationShaderSupported = true;
+		shaderCaps.computeShaderSupported = true;
+		shaderCaps.shaderVersion = 1;
+		shaderCaps.rayTracingSupported = false;
+		shaderCaps.meshShadingSupported = false;
 
-	int32_t size;
-	glGetIntegerv(GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX, &size);
-	memoryCaps.vramSize = (size) * 1024;
-	memoryCaps.sharedRamSize = 0;
+		int32_t size;
+		glGetIntegerv(GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX, &size);
+		memoryCaps.vramSize = (size) * 1024;
+		memoryCaps.sharedRamSize = 0;
 
-	int32_t maxTexSlots;
-	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTexSlots);
-	limits.maxTextureSlots = maxTexSlots;
+		int32_t maxTexSlots;
+		glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTexSlots);
+		limits.maxTextureSlots = maxTexSlots;
 
-	int32_t maxTexSize;
-	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTexSize);
-	limits.maxTextureResolution = maxTexSize;
-}
+		int32_t maxTexSize;
+		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTexSize);
+		limits.maxTextureResolution = maxTexSize;
+	}
+};

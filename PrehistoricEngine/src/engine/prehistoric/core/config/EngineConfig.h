@@ -6,16 +6,19 @@
 #include "engine/prehistoric/core/util/Util.h"
 #include "engine/prehistoric/core/util/math/Math.h"
 
-namespace EngineConfig
+namespace Prehistoric
 {
-    void LoadConfig(const std::string& path);
+    namespace EngineConfig
+    {
+        void LoadConfig(const std::string& path);
 
-    extern uint32_t lightsMaxNumber;
-    extern float rendererGamma;
-    extern float rendererExposure;
-    extern int rendererHighDetailRange;
-    extern float rendererNearPlane;
-    extern float rendererFarPlane;
+        extern uint32_t lightsMaxNumber;
+        extern float rendererGamma;
+        extern float rendererExposure;
+        extern int rendererHighDetailRange;
+        extern float rendererNearPlane;
+        extern float rendererFarPlane;
+    };
 };
 
 #endif

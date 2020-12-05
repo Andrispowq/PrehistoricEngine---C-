@@ -4,14 +4,18 @@
 #include "Time.h"
 #include "engine/prehistoric/core/util/Includes.hpp"
 
-class Timer
+
+namespace Prehistoric
 {
-public:
-	Timer(const std::string& funcName = "unknown");
-	virtual ~Timer();
-private:
-	double startTime;
-	std::string funcName;
+	class Timer
+	{
+	public:
+		Timer(const std::string& funcName = "unknown");
+		virtual ~Timer();
+	private:
+		double startTime;
+		std::string funcName;
+	};
 };
 
 #endif

@@ -16,53 +16,56 @@
 
 #include "engine/prehistoric/core/node/component/renderer/RendererComponent.h"
 
-enum class GUIType
+namespace Prehistoric
 {
-	Element, Button, Slider
-};
+	enum class GUIType
+	{
+		Element, Button, Slider
+	};
 
-class GUIElement : public GameObject
-{
-public:
-	GUIElement(Window* window, AssembledAssetManager* manager, Texture* texture = nullptr, void* data = nullptr, size_t dataSize = 0, bool visible = true);
-	virtual ~GUIElement();
+	class GUIElement : public GameObject
+	{
+	public:
+		GUIElement(Window* window, AssembledAssetManager* manager, Texture* texture = nullptr, void* data = nullptr, size_t dataSize = 0, bool visible = true);
+		virtual ~GUIElement();
 
-	virtual void PreUpdate(Engine* engine) override;
-	virtual void PreRender(Renderer* renderer) override;
+		virtual void PreUpdate(Engine* engine) override;
+		virtual void PreRender(Renderer* renderer) override;
 
-	bool inside(Vector2f cursor);
+		bool inside(Vector2f cursor);
 
-	bool isVisible() const { return visible; }
-	bool hasChanged() const { return statusChanged; }
+		bool isVisible() const { return visible; }
+		bool hasChanged() const { return statusChanged; }
 
-	void* getData() { return data; }
-	size_t getDataSize() const { return dataSize; }
+		void* getData() { return data; }
+		size_t getDataSize() const { return dataSize; }
 
-	Texture* getTexture() { return texture; }
+		Texture* getTexture() { return texture; }
 
-	GUIType getType() const { return type; }
+		GUIType getType() const { return type; }
 
-	void setVisible(bool visible) { this->visible = visible; }
+		void setVisible(bool visible) { this->visible = visible; }
 
-	void setData(void* data, size_t dataSize = 0) { this->data = data; this->dataSize = dataSize; }
-	void setTexture(Texture* texture) { this->texture = texture; }
+		void setData(void* data, size_t dataSize = 0) { this->data = data; this->dataSize = dataSize; }
+		void setTexture(Texture* texture) { this->texture = texture; }
 
-	GUIElement(const GUIElement&) = default;
-protected:
-	GUIType type;
+		GUIElement(const GUIElement&) = default;
+	protected:
+		GUIType type;
 
-	bool visible;
-	bool statusChanged;
+		bool visible;
+		bool statusChanged;
 
-	void* data;
-	size_t dataSize;
+		void* data;
+		size_t dataSize;
 
-	static size_t vboID;
-	static size_t pipelineID;
-	
-	Texture* texture;
+		static size_t vboID;
+		static size_t pipelineID;
 
-	Window* window;
+		Texture* texture;
+
+		Window* window;
+	};
 };
 
 #endif

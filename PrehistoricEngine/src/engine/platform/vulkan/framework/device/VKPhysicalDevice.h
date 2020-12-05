@@ -8,31 +8,34 @@
 
 #include "engine/platform/vulkan/util/VKUtil.h"
 
-class VKPhysicalDevice
+namespace Prehistoric
 {
-public:
-	VKPhysicalDevice();
-	virtual ~VKPhysicalDevice() {}
+	class VKPhysicalDevice
+	{
+	public:
+		VKPhysicalDevice();
+		virtual ~VKPhysicalDevice() {}
 
-	void PickPhysicalDevice(VkInstance instance, VkSurfaceKHR surface);
-	
-	//This needs to return a reference because the memory address of this variable is taken
-	VkPhysicalDevice& getPhysicalDevice() { return physicalDevice; }
-	std::vector<const char*>& getDeviceExtensions() { return deviceExtensions; }
+		void PickPhysicalDevice(VkInstance instance, VkSurfaceKHR surface);
 
-	std::vector<const char*> getOptionalExtensionsSupported() const;
+		//This needs to return a reference because the memory address of this variable is taken
+		VkPhysicalDevice& getPhysicalDevice() { return physicalDevice; }
+		std::vector<const char*>& getDeviceExtensions() { return deviceExtensions; }
 
-	VkSampleCountFlagBits getSampleCount() const { return msaaSamples; }
-private:
-	//Utility functions for picking GPU
-	bool IsDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR surface, VkPhysicalDeviceFeatures features) const;
-	bool CheckDeviceExtensionSupport(VkPhysicalDevice device) const;
-private:
-	VkPhysicalDevice physicalDevice;
+		std::vector<const char*> getOptionalExtensionsSupported() const;
 
-	std::vector<const char*> deviceExtensions;
-	std::vector<const char*> optionalDeviceExtensions;
-	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+		VkSampleCountFlagBits getSampleCount() const { return msaaSamples; }
+	private:
+		//Utility functions for picking GPU
+		bool IsDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR surface, VkPhysicalDeviceFeatures features) const;
+		bool CheckDeviceExtensionSupport(VkPhysicalDevice device) const;
+	private:
+		VkPhysicalDevice physicalDevice;
+
+		std::vector<const char*> deviceExtensions;
+		std::vector<const char*> optionalDeviceExtensions;
+		VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+	};
 };
 
 #endif

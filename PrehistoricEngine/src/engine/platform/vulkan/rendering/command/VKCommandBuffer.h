@@ -7,28 +7,31 @@
 
 #include "engine/platform/vulkan/framework/device/VKDevice.h"
 
-class VKCommandPool;
-
-class VKCommandBuffer : public CommandBuffer
+namespace Prehistoric
 {
-public:
-	VKCommandBuffer(VKCommandPool* commandPool, VkDevice device);
-	virtual ~VKCommandBuffer() {}
+	class VKCommandPool;
 
-	void BindBuffer() const;
-	void UnbindBuffer() const;
+	class VKCommandBuffer : public CommandBuffer
+	{
+	public:
+		VKCommandBuffer(VKCommandPool* commandPool, VkDevice device);
+		virtual ~VKCommandBuffer() {}
 
-	void DeleteBuffer();
+		void BindBuffer() const;
+		void UnbindBuffer() const;
 
-	//Needs to return a reference
-	VkCommandBuffer& getCommandBuffer() { return commandBuffer; }
+		void DeleteBuffer();
 
-	VKCommandBuffer(const VKCommandBuffer&) = default;
-private:
-	VKCommandPool* commandPool;
-	VkDevice device;
+		//Needs to return a reference
+		VkCommandBuffer& getCommandBuffer() { return commandBuffer; }
 
-	VkCommandBuffer commandBuffer;
+		VKCommandBuffer(const VKCommandBuffer&) = default;
+	private:
+		VKCommandPool* commandPool;
+		VkDevice device;
+
+		VkCommandBuffer commandBuffer;
+	};
 };
 
 #endif

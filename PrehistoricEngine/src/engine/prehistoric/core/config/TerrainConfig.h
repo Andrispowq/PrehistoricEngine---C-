@@ -6,28 +6,31 @@
 #include "engine/prehistoric/core/util/Util.h"
 #include "engine/prehistoric/core/util/math/Math.h"
 
-class Material;
-
-class Window;
-class AssetManager;
-
-namespace TerrainConfig
+namespace Prehistoric
 {
-	void LoadConfig(const std::string& path, Window* window, AssetManager* manager);
-	int UpdateMorphingArea(int lod);
+	class Material;
 
-	extern float scaleY;
-	extern float scaleXZ;
+	class Window;
+	class AssetManager;
 
-	extern int tessellationFactor;
-	extern float tessellationSlope;
-	extern float tessellationShift;
+	namespace TerrainConfig
+	{
+		void LoadConfig(const std::string& path, Window* window, AssetManager* manager);
+		int UpdateMorphingArea(int lod);
 
-	extern std::vector<int> lodRanges;
-	extern std::vector<int> lodMorphingAreas;
+		extern float scaleY;
+		extern float scaleXZ;
 
-	extern std::string heightmap;
-	extern std::vector<Material*> materials;
+		extern int tessellationFactor;
+		extern float tessellationSlope;
+		extern float tessellationShift;
+
+		extern std::vector<int> lodRanges;
+		extern std::vector<int> lodMorphingAreas;
+
+		extern std::string heightmap;
+		extern std::vector<Material*> materials;
+	};
 };
 
 #endif

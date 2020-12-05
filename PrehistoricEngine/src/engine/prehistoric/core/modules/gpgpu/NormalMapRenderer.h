@@ -10,29 +10,32 @@
 #include "engine/platform/opengl/rendering/shaders/gpgpu/GLNormalMapShader.h"
 //#include "engine/platform/vulkan/rendering/shaders/gpgpu/VKNormalMapShader.h"
 
-class AssembledAssetManager;
-
-class NormalMapRenderer
+namespace Prehistoric
 {
-public:
-	NormalMapRenderer(Window* window, AssembledAssetManager* manager, float strength, uint32_t N);
-	virtual ~NormalMapRenderer();
+	class AssembledAssetManager;
 
-	void Render(Texture* heightmap);
+	class NormalMapRenderer
+	{
+	public:
+		NormalMapRenderer(Window* window, AssembledAssetManager* manager, float strength, uint32_t N);
+		virtual ~NormalMapRenderer();
 
-	Texture* getNormalmap() const { return normalmap; }
-private:
-	Window* window;
-	AssembledAssetManager* manager;
+		void Render(Texture* heightmap);
 
-	size_t pipelineID;
-	size_t textureID;
+		Texture* getNormalmap() const { return normalmap; }
+	private:
+		Window* window;
+		AssembledAssetManager* manager;
 
-	Pipeline* pipeline;
-	Texture* normalmap;
+		size_t pipelineID;
+		size_t textureID;
 
-	float strength;
-	uint32_t N;
+		Pipeline* pipeline;
+		Texture* normalmap;
+
+		float strength;
+		uint32_t N;
+	};
 };
 
 #endif

@@ -3,19 +3,22 @@
 
 #include <vulkan/vulkan.h>
 
-class VKDebugMessenger
+namespace Prehistoric
 {
-public:
-	VKDebugMessenger(VkInstance instnace);
-	virtual ~VKDebugMessenger();
+	class VKDebugMessenger
+	{
+	public:
+		VKDebugMessenger(VkInstance instnace);
+		virtual ~VKDebugMessenger();
 
-	static void CreateMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& messengerCreateInfo);
+		static void CreateMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& messengerCreateInfo);
 
-	VkDebugUtilsMessengerEXT getDebugMessenger() const { return debugMessenger; }
-private:
-	VkInstance instance;
+		VkDebugUtilsMessengerEXT getDebugMessenger() const { return debugMessenger; }
+	private:
+		VkInstance instance;
 
-	VkDebugUtilsMessengerEXT debugMessenger;
+		VkDebugUtilsMessengerEXT debugMessenger;
+	};
 };
 
 #endif

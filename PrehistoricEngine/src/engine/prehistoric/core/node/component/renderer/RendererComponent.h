@@ -5,25 +5,28 @@
 
 #include "RenderableComponent.h"
 
-class Material;
-
-class RendererComponent : public RenderableComponent
+namespace Prehistoric
 {
-public:
-	RendererComponent(size_t pipelineID, size_t materialID, Window* window, AssembledAssetManager* manager);
-	RendererComponent(Window* window, AssembledAssetManager* manager);
+	class Material;
 
-	virtual ~RendererComponent();
+	class RendererComponent : public RenderableComponent
+	{
+	public:
+		RendererComponent(size_t pipelineID, size_t materialID, Window* window, AssembledAssetManager* manager);
+		RendererComponent(Window* window, AssembledAssetManager* manager);
 
-	void PreRender(Renderer* renderer) override;
+		virtual ~RendererComponent();
 
-	void Render(Renderer* renderer) const override;
-	void BatchRender(uint32_t instance_index = 0) const override;
+		void PreRender(Renderer* renderer) override;
 
-	inline size_t getMaterialIndex() const { return materialIndex; }
-	Material* getMaterial() const;
-private:
-	size_t materialIndex;
+		void Render(Renderer* renderer) const override;
+		void BatchRender(uint32_t instance_index = 0) const override;
+
+		inline size_t getMaterialIndex() const { return materialIndex; }
+		Material* getMaterial() const;
+	private:
+		size_t materialIndex;
+	};
 };
 
 #endif

@@ -1,6 +1,9 @@
 #include "engine/prehistoric/core/util/Includes.hpp"
 #include "ShaderStorageBuffer.h"
 
-ShaderStorageBuffer::~ShaderStorageBuffer()
+namespace Prehistoric
 {
-}
+	ShaderStorageBuffer::~ShaderStorageBuffer()
+	{
+	}
+};

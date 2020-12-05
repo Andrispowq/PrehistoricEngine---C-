@@ -1,16 +1,18 @@
 #include "engine/prehistoric/core/util/Includes.hpp"
 #include "Application.h"
 
-Prehistoric::Application::Application()
+namespace Prehistoric
 {
-}
+	Application::Application()
+	{
+	}
 
-Prehistoric::Application::~Application()
-{
-}
+	Application::~Application()
+	{
+	}
 
-void Prehistoric::Application::Run()
-{
-	PR_LOG_MESSAGE("Hello there!\n");
-	while (true);
-}
+	void Application::Run()
+	{
+		engine.Start();
+	}
+};

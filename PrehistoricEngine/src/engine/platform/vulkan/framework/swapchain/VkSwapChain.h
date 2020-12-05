@@ -15,72 +15,75 @@
 #include "engine/platform/vulkan/rendering/synchronisation/VKFence.h"
 #include "engine/platform/vulkan/rendering/renderpass/VKRenderpass.h"
 
-const static uint32_t MAX_FRAMES_IN_FLIGHT = 3;
-
-class VKSwapchain : public Swapchain
+namespace Prehistoric
 {
-public:
-	VKSwapchain(Window* window);
-	virtual ~VKSwapchain();
+	const static uint32_t MAX_FRAMES_IN_FLIGHT = 3;
 
-	virtual void SwapBuffers(CommandBuffer* buffer) override;
-	virtual void ClearScreen() override;
+	class VKSwapchain : public Swapchain
+	{
+	public:
+		VKSwapchain(Window* window);
+		virtual ~VKSwapchain();
 
-	virtual void SetVSync(bool vSync) const override {}
-	virtual void SetWindowSize(uint32_t width, uint32_t height) override;
+		virtual void SwapBuffers(CommandBuffer* buffer) override;
+		virtual void ClearScreen() override;
 
-	virtual uint32_t getAquiredImageIndex() const override { return aquiredImageIndex; }
+		virtual void SetVSync(bool vSync) const override {}
+		virtual void SetWindowSize(uint32_t width, uint32_t height) override;
 
-	bool GetNextImageIndex(); //If return false, we should recreate the command buffers, and the renderpass along with the framebuffers
+		virtual uint32_t getAquiredImageIndex() const override { return aquiredImageIndex; }
 
-	VkSwapchainKHR getSwapchain() const { return swapchain; }
-	std::vector<VkImage> getSwapchainImages() const { return swapchainImages; }
-	std::vector<VkImageView> getSwapchainImageViews() const { return swapchainImageViews; }
+		bool GetNextImageIndex(); //If return false, we should recreate the command buffers, and the renderpass along with the framebuffers
 
-	VkImageView getColourImageView() { return colourImageView; }
-	VkImageView getDepthImageView() { return depthImageView; }
-	VkFormat getSwapchainImageFormat() const { return swapchainImageFormat; }
-	VkExtent2D getSwapchainExtent() const { return swapchainExtent; }
-	VKRenderpass* getRenderpass() { return renderpass; }
+		VkSwapchainKHR getSwapchain() const { return swapchain; }
+		std::vector<VkImage> getSwapchainImages() const { return swapchainImages; }
+		std::vector<VkImageView> getSwapchainImageViews() const { return swapchainImageViews; }
 
-	void setSurface(VKSurface& surface) { this->surface = &surface; }
-	void setRenderpass(VKRenderpass* renderpass) { this->renderpass = renderpass; }
-private:
-	//External
-	VKPhysicalDevice* physicalDevice;
-	VKDevice* device;
-	VKSurface* surface;
+		VkImageView getColourImageView() { return colourImageView; }
+		VkImageView getDepthImageView() { return depthImageView; }
+		VkFormat getSwapchainImageFormat() const { return swapchainImageFormat; }
+		VkExtent2D getSwapchainExtent() const { return swapchainExtent; }
+		VKRenderpass* getRenderpass() { return renderpass; }
 
-	VKRenderpass* renderpass;
+		void setSurface(VKSurface& surface) { this->surface = &surface; }
+		void setRenderpass(VKRenderpass* renderpass) { this->renderpass = renderpass; }
+	private:
+		//External
+		VKPhysicalDevice* physicalDevice;
+		VKDevice* device;
+		VKSurface* surface;
 
-	//Swapchain imageviews and images
-	VkSwapchainKHR swapchain;
+		VKRenderpass* renderpass;
 
-	VkFormat swapchainImageFormat;
-	VkExtent2D swapchainExtent;
+		//Swapchain imageviews and images
+		VkSwapchainKHR swapchain;
 
-	std::vector<VkImage> swapchainImages;
-	std::vector<VkImageView> swapchainImageViews;
+		VkFormat swapchainImageFormat;
+		VkExtent2D swapchainExtent;
 
-	//For multisampling
-	VkImage colourImage;
-	VkDeviceMemory colourImageMemory;
-	VkImageView colourImageView;
-	
-	//Depth buffer
-	VkImage depthImage;
-	VkDeviceMemory depthImageMemory;
-	VkImageView depthImageView;
+		std::vector<VkImage> swapchainImages;
+		std::vector<VkImageView> swapchainImageViews;
 
-	//Synchronization
-	std::vector<VKSemaphore*> imageAvailableSemaphores;
-	std::vector<VKSemaphore*> renderFinishedSemaphores;
-	std::vector<VKFence*> inFlightFences;
-	std::vector<VkFence> imagesInFlight;
-	size_t currentFrame = 0;
+		//For multisampling
+		VkImage colourImage;
+		VkDeviceMemory colourImageMemory;
+		VkImageView colourImageView;
 
-	uint32_t aquiredImageIndex;
-	uint32_t NumImages;
+		//Depth buffer
+		VkImage depthImage;
+		VkDeviceMemory depthImageMemory;
+		VkImageView depthImageView;
+
+		//Synchronization
+		std::vector<VKSemaphore*> imageAvailableSemaphores;
+		std::vector<VKSemaphore*> renderFinishedSemaphores;
+		std::vector<VKFence*> inFlightFences;
+		std::vector<VkFence> imagesInFlight;
+		size_t currentFrame = 0;
+
+		uint32_t aquiredImageIndex;
+		uint32_t NumImages;
+	};
 };
 
 #endif

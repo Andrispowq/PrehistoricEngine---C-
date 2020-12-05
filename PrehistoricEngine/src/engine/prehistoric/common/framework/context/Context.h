@@ -1,22 +1,25 @@
 #ifndef CONTEXT_H
 #define CONTEXT_H
 
-class Window;
-
-class Context
+namespace Prehistoric
 {
-public:
-	Context(Window* window) : window(window) {}
-	virtual ~Context() = 0;
+	class Window;
 
-	virtual void* getNativePhysicalDevice() { return nullptr; };
-	virtual void* getNativeDevice() { return nullptr; };
+	class Context
+	{
+	public:
+		Context(Window* window) : window(window) {}
+		virtual ~Context() = 0;
 
-	virtual void* getPhysicalDevice() { return nullptr; };
-	virtual void* getDevice() { return nullptr; };
+		virtual void* getNativePhysicalDevice() { return nullptr; };
+		virtual void* getNativeDevice() { return nullptr; };
 
-protected:
-	Window* window;
+		virtual void* getPhysicalDevice() { return nullptr; };
+		virtual void* getDevice() { return nullptr; };
+
+	protected:
+		Window* window;
+	};
 };
 
 #endif

@@ -3,18 +3,21 @@
 
 #include "engine/prehistoric/core/config/FrameworkConfig.h"
 
-class InitDevice
+namespace Prehistoric
 {
-public:
-	static InitDevice& getInstance();
-	static void DeleteInstance();
+	class InitDevice
+	{
+	public:
+		static InitDevice& getInstance();
+		static void DeleteInstance();
 
-	virtual void InitiateDevice() const = 0;
-protected:
-	InitDevice() {}
-	virtual ~InitDevice() {}
-private:
-	static InitDevice* instance;
+		virtual void InitiateDevice() const = 0;
+	protected:
+		InitDevice() {}
+		virtual ~InitDevice() {}
+	private:
+		static InitDevice* instance;
+	};
 };
 
 #endif

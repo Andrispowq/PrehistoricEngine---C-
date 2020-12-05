@@ -16,24 +16,27 @@
 
 #include "engine/prehistoric/core/node/component/renderer/RendererComponent.h"
 
-class AssembledAssetManager;
-
-class Atmosphere : public GameObject
+namespace Prehistoric
 {
-public:
-	Atmosphere(Window* window, AssembledAssetManager* manager);
-	virtual ~Atmosphere() {}
+	class AssembledAssetManager;
 
-	virtual void PreUpdate(Engine* engine) override;
+	class Atmosphere : public GameObject
+	{
+	public:
+		Atmosphere(Window* window, AssembledAssetManager* manager);
+		virtual ~Atmosphere() {}
 
-	inline Vector3f getSunPosition() const { return sunPosition; }
+		virtual void PreUpdate(Engine* engine) override;
 
-	Atmosphere(const Atmosphere&) = default;
+		inline Vector3f getSunPosition() const { return sunPosition; }
 
-private:
-	Window* window;
+		Atmosphere(const Atmosphere&) = default;
 
-	Vector3f sunPosition;
+	private:
+		Window* window;
+
+		Vector3f sunPosition;
+	};
 };
 
 #endif

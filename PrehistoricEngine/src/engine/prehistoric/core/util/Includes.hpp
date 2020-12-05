@@ -23,24 +23,27 @@
 #define TEXTURE_PATH "res/textures/"
 #define SHADER_PATH "res/shaders/"
 
-template<typename T>
-size_t FindElement(T* element, std::vector<T*> list)
+namespace Prehistoric
 {
-	for (size_t i = 0; i < list.size(); i++)
+	template<typename T>
+	size_t FindElement(T* element, std::vector<T*> list)
 	{
-		if (list[i] == element)
+		for (size_t i = 0; i < list.size(); i++)
 		{
-			return i;
+			if (list[i] == element)
+			{
+				return i;
+			}
 		}
+
+		return 0xFFFFFFFF;
 	}
 
-	return 0xFFFFFFFF;
-}
+	constexpr static uint8_t number_of_digits(long long number)
+	{
+		if (number == 0)
+			return 1;
 
-constexpr static uint8_t number_of_digits(long long number)
-{
-	if (number == 0)
-		return 1;
-
-	return uint8_t(log10(abs(number))) + 1;
-}
+		return uint8_t(log10(abs(number))) + 1;
+	}
+};

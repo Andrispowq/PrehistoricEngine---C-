@@ -4,6 +4,9 @@
 #include "engine/platform/opengl/framework/context/GLContext.h"
 #include "engine/platform/vulkan/framework/context/VkContext.h"
 
-Context::~Context()
+namespace Prehistoric
 {
-}
+	Context::~Context()
+	{
+	}
+};

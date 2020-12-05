@@ -11,28 +11,31 @@
 #include "engine/platform/vulkan/framework/surface/VKSurface.h"
 #include "engine/platform/vulkan/framework/swapchain/VKSwapchain.h"
 
-class VKContext : public Context
+namespace Prehistoric
 {
-public:
-	VKContext(Window* window);
-	virtual ~VKContext();
+	class VKContext : public Context
+	{
+	public:
+		VKContext(Window* window);
+		virtual ~VKContext();
 
-	VKInstance getInstance() const { return instance; }
+		VKInstance getInstance() const { return instance; }
 
-	void* getNativePhysicalDevice() override { return &physicalDevice.getPhysicalDevice(); }
-	void* getNativeDevice() override { return &logicalDevice.getDevice(); }
+		void* getNativePhysicalDevice() override { return &physicalDevice.getPhysicalDevice(); }
+		void* getNativeDevice() override { return &logicalDevice.getDevice(); }
 
-	void* getPhysicalDevice() override { return &physicalDevice; }
-	void* getDevice() override { return &logicalDevice; }
+		void* getPhysicalDevice() override { return &physicalDevice; }
+		void* getDevice() override { return &logicalDevice; }
 
-	VKSurface* getSurface() { return surface.get(); }
-private:
-	VKInstance instance;
+		VKSurface* getSurface() { return surface.get(); }
+	private:
+		VKInstance instance;
 
-	VKPhysicalDevice physicalDevice;
-	VKDevice logicalDevice;
+		VKPhysicalDevice physicalDevice;
+		VKDevice logicalDevice;
 
-	std::unique_ptr<VKSurface> surface;
+		std::unique_ptr<VKSurface> surface;
+	};
 };
 
 #endif

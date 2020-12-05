@@ -6,39 +6,42 @@
 #include "engine/prehistoric/core/model/transform.h"
 #include "engine/prehistoric/common/rendering/Renderer.h"
 
-class Engine;
-
-class Node
+namespace Prehistoric
 {
-public:
-    Node() : parent(nullptr) {}
-    virtual ~Node() {}
+    class Engine;
 
-    virtual void PreUpdate(Engine* engine);
-    virtual void PreRender(Renderer* renderer);
+    class Node
+    {
+    public:
+        Node() : parent(nullptr) {}
+        virtual ~Node() {}
 
-    Node* AddChild(const std::string& key, Node* child);
+        virtual void PreUpdate(Engine* engine);
+        virtual void PreRender(Renderer* renderer);
 
-    inline Transform getWorldTransform() const { return worldTransform; }
+        Node* AddChild(const std::string& key, Node* child);
 
-    inline Node* getChild(const std::string& key) const { return children.at(key).get(); }
+        inline Transform getWorldTransform() const { return worldTransform; }
 
-    inline void Move(const Vector3f& d) { worldTransform.setPosition(worldTransform.getPosition() + d);}
-    inline void Rotate(const Vector3f& d) { worldTransform.setRotation(worldTransform.getRotation() + d);}
-    inline void Scale(const Vector3f& d) { worldTransform.setScaling(worldTransform.getScaling() + d);}
+        inline Node* getChild(const std::string& key) const { return children.at(key).get(); }
 
-    inline void SetPosition(const Vector3f& d) { worldTransform.setPosition(d); }
-    inline void SetRotation(const Vector3f& d) { worldTransform.setRotation(d); }
-    inline void SetScale(const Vector3f& d) { worldTransform.setScaling(d); }
+        inline void Move(const Vector3f& d) { worldTransform.setPosition(worldTransform.getPosition() + d); }
+        inline void Rotate(const Vector3f& d) { worldTransform.setRotation(worldTransform.getRotation() + d); }
+        inline void Scale(const Vector3f& d) { worldTransform.setScaling(worldTransform.getScaling() + d); }
 
-    std::unordered_map<std::string, Node*> getChildren() const;
+        inline void SetPosition(const Vector3f& d) { worldTransform.setPosition(d); }
+        inline void SetRotation(const Vector3f& d) { worldTransform.setRotation(d); }
+        inline void SetScale(const Vector3f& d) { worldTransform.setScaling(d); }
 
-    Node(const Node&) = default;
-protected:
-    std::unordered_map<std::string, std::unique_ptr<Node>> children;
-    Node* parent;
+        std::unordered_map<std::string, Node*> getChildren() const;
 
-    Transform worldTransform;
+        Node(const Node&) = default;
+    protected:
+        std::unordered_map<std::string, std::unique_ptr<Node>> children;
+        Node* parent;
+
+        Transform worldTransform;
+    };
 };
 
 #endif

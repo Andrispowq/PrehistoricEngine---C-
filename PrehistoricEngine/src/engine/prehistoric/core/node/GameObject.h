@@ -5,26 +5,29 @@
 
 #include "engine/prehistoric/core/node/component/Component.h"
 
-typedef void(*UpdateFunction)(GameObject*, float); //The object, and the delta time
-
-class GameObject : public Node
+namespace Prehistoric
 {
-public:
-	GameObject() : updateFunction(nullptr) {}
-	virtual ~GameObject() {}
+	typedef void(*UpdateFunction)(GameObject*, float); //The object, and the delta time
 
-	void PreUpdate(Engine* engine) override;
-	void PreRender(Renderer* renderer) override;
+	class GameObject : public Node
+	{
+	public:
+		GameObject() : updateFunction(nullptr) {}
+		virtual ~GameObject() {}
 
-	void setUpdateFunction(UpdateFunction func) { this->updateFunction = func; }
+		void PreUpdate(Engine* engine) override;
+		void PreRender(Renderer* renderer) override;
 
-	GameObject* AddComponent(const std::string& name, Component* component);
-	Component* GetComponent(const std::string& name) const;
+		void setUpdateFunction(UpdateFunction func) { this->updateFunction = func; }
 
-	GameObject(const GameObject&) = default;
-protected:
-	std::unordered_map<std::string, std::unique_ptr<Component>> components;
-	UpdateFunction updateFunction;
+		GameObject* AddComponent(const std::string& name, Component* component);
+		Component* GetComponent(const std::string& name) const;
+
+		GameObject(const GameObject&) = default;
+	protected:
+		std::unordered_map<std::string, std::unique_ptr<Component>> components;
+		UpdateFunction updateFunction;
+	};
 };
 
 #endif

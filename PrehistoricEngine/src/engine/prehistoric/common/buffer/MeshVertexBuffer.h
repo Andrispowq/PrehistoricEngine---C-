@@ -5,18 +5,21 @@
 
 #include "engine/prehistoric/core/model/Mesh.h"
 
-class MeshVertexBuffer : public VertexBuffer
+namespace Prehistoric
 {
-public:
-	MeshVertexBuffer(const Mesh& mesh) : mesh(mesh) {}
-	
-	virtual ~MeshVertexBuffer() override = 0;
+	class MeshVertexBuffer : public VertexBuffer
+	{
+	public:
+		MeshVertexBuffer(const Mesh& mesh) : mesh(mesh) {}
 
-	virtual void Bind(CommandBuffer* commandBuffer) const override  = 0;
-	virtual void Draw(CommandBuffer* commandBuffer) const = 0;
-	virtual void Unbind() const override = 0;
-private:
-	Mesh mesh;
+		virtual ~MeshVertexBuffer() override = 0;
+
+		virtual void Bind(CommandBuffer* commandBuffer) const override = 0;
+		virtual void Draw(CommandBuffer* commandBuffer) const = 0;
+		virtual void Unbind() const override = 0;
+	private:
+		Mesh mesh;
+	};
 };
 
 #endif

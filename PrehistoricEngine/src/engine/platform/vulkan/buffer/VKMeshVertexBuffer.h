@@ -13,25 +13,28 @@
 #include "engine/platform/vulkan/framework/device/VKDevice.h"
 #include "engine/platform/vulkan/framework/swapchain/VKSwapchain.h"
 
-class VKMeshVertexBuffer : public MeshVertexBuffer
+namespace Prehistoric
 {
-public:
-	VKMeshVertexBuffer(const Mesh& mesh, Window* window);
-	virtual ~VKMeshVertexBuffer() {}
+	class VKMeshVertexBuffer : public MeshVertexBuffer
+	{
+	public:
+		VKMeshVertexBuffer(const Mesh& mesh, Window* window);
+		virtual ~VKMeshVertexBuffer() {}
 
-	void Bind(CommandBuffer* commandBuffer) const override;
-	void Draw(CommandBuffer* commandBuffer) const override;
-	void Unbind() const override {}
+		void Bind(CommandBuffer* commandBuffer) const override;
+		void Draw(CommandBuffer* commandBuffer) const override;
+		void Unbind() const override {}
 
-	VkVertexInputBindingDescription getBindingDescription() const;
-	std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions() const;
-private:
-	std::unique_ptr<VKBuffer> vertexBuffer;
-	std::unique_ptr<VKBuffer> indexBuffer;
+		VkVertexInputBindingDescription getBindingDescription() const;
+		std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions() const;
+	private:
+		std::unique_ptr<VKBuffer> vertexBuffer;
+		std::unique_ptr<VKBuffer> indexBuffer;
 
-	VKPhysicalDevice* physicalDevice;
-	VKDevice* device;
-	VKSwapchain* swapchain;
+		VKPhysicalDevice* physicalDevice;
+		VKDevice* device;
+		VKSwapchain* swapchain;
+	};
 };
 
 #endif

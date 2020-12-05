@@ -3,21 +3,24 @@
 
 #include <vulkan/vulkan.h>
 
-class VKFence
+namespace Prehistoric
 {
-public:
-	VKFence(VkDevice device);
-	virtual ~VKFence();
+	class VKFence
+	{
+	public:
+		VKFence(VkDevice device);
+		virtual ~VKFence();
 
-	void WaitForFence();
-	void ResetFence();
+		void WaitForFence();
+		void ResetFence();
 
-	//Needs to return a reference
-	VkFence& getFence() { return fence; }
-private:
-	VkDevice device;
+		//Needs to return a reference
+		VkFence& getFence() { return fence; }
+	private:
+		VkDevice device;
 
-	VkFence fence;
+		VkFence fence;
+	};
 };
 
 #endif

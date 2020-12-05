@@ -13,33 +13,36 @@
 
 #include "engine/prehistoric/core/config/EngineConfig.h"
 
-class GLPBRShader : public GLShader
+namespace Prehistoric
 {
-public:
-	GLPBRShader();
-	virtual ~GLPBRShader() {}
+	class GLPBRShader : public GLShader
+	{
+	public:
+		GLPBRShader();
+		virtual ~GLPBRShader() {}
 
-	virtual void UpdateShaderUniforms(Camera* camera, const std::vector<Light*>& lights, uint32_t instance_index = 0) const override;
-	virtual void UpdateObjectUniforms(GameObject* object, uint32_t instance_index = 0) const override;
+		virtual void UpdateShaderUniforms(Camera* camera, const std::vector<Light*>& lights, uint32_t instance_index = 0) const override;
+		virtual void UpdateObjectUniforms(GameObject* object, uint32_t instance_index = 0) const override;
 
-private:
-	int m_transform;
+	private:
+		int m_transform;
 
-	int albedoMap;
-	int normalMap;
-	int displacementMap;
-	int metallicMap;
-	int roughnessMap;
-	int occlusionMap;
-	int emissionMap;
+		int albedoMap;
+		int normalMap;
+		int displacementMap;
+		int metallicMap;
+		int roughnessMap;
+		int occlusionMap;
+		int emissionMap;
 
-	int colour;
-	int usesNormalMap;
-	int heightScale;
-	int metallic;
-	int roughness;
-	int ambientOcclusion;
-	int emission;
+		int colour;
+		int usesNormalMap;
+		int heightScale;
+		int metallic;
+		int roughness;
+		int ambientOcclusion;
+		int emission;
+	};
 };
 
 #endif

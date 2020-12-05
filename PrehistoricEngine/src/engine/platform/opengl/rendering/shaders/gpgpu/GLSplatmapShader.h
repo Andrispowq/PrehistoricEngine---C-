@@ -5,13 +5,16 @@
 
 #include <glew.h>
 
-class GLSplatMapShader : public GLShader
+namespace Prehistoric
 {
-public:
-	GLSplatMapShader();
-	virtual ~GLSplatMapShader() {}
+	class GLSplatMapShader : public GLShader
+	{
+	public:
+		GLSplatMapShader();
+		virtual ~GLSplatMapShader() {}
 
-	void UpdateUniforms(Texture* texture, uint32_t N) const;
+		void UpdateUniforms(Texture* texture, uint32_t N) const;
+	};
 };
 
 #endif

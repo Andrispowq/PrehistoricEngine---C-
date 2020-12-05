@@ -9,26 +9,29 @@
 #include "VKDebugMessenger.h"
 #include "engine/prehistoric/core/config/FrameworkConfig.h"
 
-class VKInstance
+namespace Prehistoric
 {
-public:
-	VKInstance();
-	virtual ~VKInstance();
+	class VKInstance
+	{
+	public:
+		VKInstance();
+		virtual ~VKInstance();
 
-	VkInstance getInstance() const { return instance; }
-	VKDebugMessenger& getDebugMessenger() { return *messenger; }
+		VkInstance getInstance() const { return instance; }
+		VKDebugMessenger& getDebugMessenger() { return *messenger; }
 
-	std::vector<const char*> getValidationLayers() const { return validationLayers; }
-private:
-	bool CheckValidationLayerSupport() const;
-	std::vector<const char*> GetRequiredExtensions() const;
+		std::vector<const char*> getValidationLayers() const { return validationLayers; }
+	private:
+		bool CheckValidationLayerSupport() const;
+		std::vector<const char*> GetRequiredExtensions() const;
 
-	void ListExtensions() const;
-private:
-	VkInstance instance;
-	VKDebugMessenger* messenger; //Owned pointer, but optional
+		void ListExtensions() const;
+	private:
+		VkInstance instance;
+		VKDebugMessenger* messenger; //Owned pointer, but optional
 
-	std::vector<const char*> validationLayers;
+		std::vector<const char*> validationLayers;
+	};
 };
 
 #endif

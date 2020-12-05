@@ -8,15 +8,18 @@
 
 #include "engine/platform/opengl/texture/GLTexture.h"
 
-class GLComputePipeline : public GLPipeline, public ComputePipeline
+namespace Prehistoric
 {
-public:
-	GLComputePipeline(Window* window, AssetManager* manager, size_t shaderID);
-	virtual ~GLComputePipeline() {}
+	class GLComputePipeline : public GLPipeline, public ComputePipeline
+	{
+	public:
+		GLComputePipeline(Window* window, AssetManager* manager, size_t shaderID);
+		virtual ~GLComputePipeline() {}
 
-	virtual void BindPipeline(CommandBuffer* buffer) const override;
-	virtual void RenderPipeline() const override;
-	virtual void UnbindPipeline() const override;
+		virtual void BindPipeline(CommandBuffer* buffer) const override;
+		virtual void RenderPipeline() const override;
+		virtual void UnbindPipeline() const override;
+	};
 };
 
 #endif

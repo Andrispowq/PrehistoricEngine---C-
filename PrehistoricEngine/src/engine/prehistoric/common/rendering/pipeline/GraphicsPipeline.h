@@ -5,26 +5,29 @@
 
 #include "engine/prehistoric/core/resources/AssetManager.h"
 
-class GraphicsPipeline
+namespace Prehistoric
 {
-public:
-	GraphicsPipeline(AssetManager* manager, size_t vboID);
-	GraphicsPipeline() : backfaceCulling(false), vboID(-1) {}
+	class GraphicsPipeline
+	{
+	public:
+		GraphicsPipeline(AssetManager* manager, size_t vboID);
+		GraphicsPipeline() : backfaceCulling(false), vboID(-1) {}
 
-	virtual ~GraphicsPipeline();
+		virtual ~GraphicsPipeline();
 
-	VertexBuffer* getVertexBuffer() const { return manager->getResourceByID<VertexBuffer>(vboID); }
+		VertexBuffer* getVertexBuffer() const { return manager->getResourceByID<VertexBuffer>(vboID); }
 
-	void setVertexBufferID(size_t vboID);
+		void setVertexBufferID(size_t vboID);
 
-	bool IsBackfaceCulling() const { return backfaceCulling; }
-	void SetBackfaceCulling(bool backfaceCulling) { this->backfaceCulling = backfaceCulling; }
-protected:
-	AssetManager* manager;
-	
-	size_t vboID;
+		bool IsBackfaceCulling() const { return backfaceCulling; }
+		void SetBackfaceCulling(bool backfaceCulling) { this->backfaceCulling = backfaceCulling; }
+	protected:
+		AssetManager* manager;
 
-	bool backfaceCulling;
+		size_t vboID;
+
+		bool backfaceCulling;
+	};
 };
 
 #endif

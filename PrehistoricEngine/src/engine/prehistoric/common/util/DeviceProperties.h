@@ -3,10 +3,13 @@
 
 #include "engine/prehistoric/common/capabilities/Capabilities.h"
 
-class DeviceProperties
+namespace Prehistoric
 {
-public:
-	void ListProperties(Capabilities& capabilities) const;
+	class DeviceProperties
+	{
+	public:
+		void ListProperties(Capabilities& capabilities) const;
+	};
 };
 
 #endif

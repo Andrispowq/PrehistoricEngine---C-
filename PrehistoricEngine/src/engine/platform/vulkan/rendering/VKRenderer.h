@@ -10,25 +10,28 @@
 #include "engine/platform/vulkan/rendering/command/VKCommandPool.h"
 #include "engine/platform/vulkan/rendering/renderpass/VKRenderpass.h"
 
-class VKRenderer : public Renderer
+namespace Prehistoric
 {
-public:
-	VKRenderer(Window* window, Camera* camera, AssembledAssetManager* manager);
-	virtual ~VKRenderer() {}
+	class VKRenderer : public Renderer
+	{
+	public:
+		VKRenderer(Window* window, Camera* camera, AssembledAssetManager* manager);
+		virtual ~VKRenderer() {}
 
-	virtual void PrepareRendering();
-	virtual void EndRendering();
+		virtual void PrepareRendering();
+		virtual void EndRendering();
 
-	virtual void Render() override;
+		virtual void Render() override;
 
-	virtual CommandBuffer* getDrawCommandBuffer() const { return (CommandBuffer*)commandPool->getCommandBuffer(window->getSwapchain()->getAquiredImageIndex()); }
-private:
-	AssembledAssetManager* manager;
+		virtual CommandBuffer* getDrawCommandBuffer() const { return (CommandBuffer*)commandPool->getCommandBuffer(window->getSwapchain()->getAquiredImageIndex()); }
+	private:
+		AssembledAssetManager* manager;
 
-	std::unique_ptr<VKCommandPool> commandPool;
-	std::unique_ptr<VKRenderpass> renderpass;
+		std::unique_ptr<VKCommandPool> commandPool;
+		std::unique_ptr<VKRenderpass> renderpass;
 
-	std::vector<std::unique_ptr<VKFramebuffer>> primaryFramebuffers;
+		std::vector<std::unique_ptr<VKFramebuffer>> primaryFramebuffers;
+	};
 };
 
 #endif

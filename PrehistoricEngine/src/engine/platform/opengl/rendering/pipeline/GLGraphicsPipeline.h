@@ -6,15 +6,18 @@
 
 #include <glew.h>
 
-class GLGraphicsPipeline : public GLPipeline, public GraphicsPipeline
+namespace Prehistoric
 {
-public:
-	GLGraphicsPipeline(Window* window, AssetManager* manager, size_t shaderID, size_t vboID);
-	virtual ~GLGraphicsPipeline() {}
+	class GLGraphicsPipeline : public GLPipeline, public GraphicsPipeline
+	{
+	public:
+		GLGraphicsPipeline(Window* window, AssetManager* manager, size_t shaderID, size_t vboID);
+		virtual ~GLGraphicsPipeline() {}
 
-	virtual void BindPipeline(CommandBuffer* buffer) const override;
-	virtual void RenderPipeline() const override;
-	virtual void UnbindPipeline() const override;
+		virtual void BindPipeline(CommandBuffer* buffer) const override;
+		virtual void RenderPipeline() const override;
+		virtual void UnbindPipeline() const override;
+	};
 };
 
 #endif

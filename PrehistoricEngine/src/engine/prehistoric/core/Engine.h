@@ -16,45 +16,48 @@
 
 #include "engine/prehistoric/core/resources/AssembledAssetManager.h"
 
-typedef void(*CreateSceneFunction)(GameObject* root, Window* window, AssembledAssetManager* manager, Camera* camera);
-
-class Engine
+namespace Prehistoric
 {
-public:
-	Engine();
-	~Engine();
+	typedef void(*CreateSceneFunction)(GameObject* root, Window* window, AssembledAssetManager* manager, Camera* camera);
 
-	void LoadScene(CreateSceneFunction function);
-	
-	void Input();
-	void Update(float frameTime);
-	void Render();
+	class Engine
+	{
+	public:
+		Engine();
+		~Engine();
 
-	inline RenderingEngine* getRenderingEngine() const { return renderingEngine.get(); }
-	inline AudioEngine* getAudioEngine() const { return audioEngine.get(); }
+		void LoadScene(CreateSceneFunction function);
 
-	inline AssembledAssetManager* getAssetManager() const { return manager.get(); }
+		void Input();
+		void Update(float frameTime);
+		void Render();
 
-	inline float getFrameTime() const { return frameTime; }
+		inline RenderingEngine* getRenderingEngine() const { return renderingEngine.get(); }
+		inline AudioEngine* getAudioEngine() const { return audioEngine.get(); }
 
-	Engine(const Engine& engine) = delete;
-	Engine operator=(const Engine& engine) = delete;
-	Engine(const Engine&& engine) = delete;
-	Engine operator=(const Engine&& engine) = delete;
-private:
-	//Root object
-	std::unique_ptr<GameObject> root;
-	std::unique_ptr<Scene> scene;
+		inline AssembledAssetManager* getAssetManager() const { return manager.get(); }
 
-	//The asset manager
-	std::unique_ptr<AssembledAssetManager> manager;
+		inline float getFrameTime() const { return frameTime; }
 
-	//Engines
-	std::unique_ptr<RenderingEngine> renderingEngine;
-	std::unique_ptr<AudioEngine> audioEngine;
+		Engine(const Engine& engine) = delete;
+		Engine operator=(const Engine& engine) = delete;
+		Engine(const Engine&& engine) = delete;
+		Engine operator=(const Engine&& engine) = delete;
+	private:
+		//Root object
+		std::unique_ptr<GameObject> root;
+		std::unique_ptr<Scene> scene;
 
-	//Frametime, set once per update
-	float frameTime;
+		//The asset manager
+		std::unique_ptr<AssembledAssetManager> manager;
+
+		//Engines
+		std::unique_ptr<RenderingEngine> renderingEngine;
+		std::unique_ptr<AudioEngine> audioEngine;
+
+		//Frametime, set once per update
+		float frameTime;
+	};
 };
 
 #endif

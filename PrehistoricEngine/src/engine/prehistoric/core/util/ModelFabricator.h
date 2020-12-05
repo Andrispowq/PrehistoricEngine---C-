@@ -6,9 +6,12 @@
 
 #include "engine/prehistoric/core/config/FrameworkConfig.h"
 
-namespace ModelFabricator
+namespace Prehistoric
 {
-	MeshVertexBuffer* CreateQuad(Window* window);
+	namespace ModelFabricator
+	{
+		MeshVertexBuffer* CreateQuad(Window* window);
+	};
 };
 
 #endif

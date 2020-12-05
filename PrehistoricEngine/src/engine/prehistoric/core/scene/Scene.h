@@ -22,16 +22,19 @@
 #include "engine/prehistoric/core/modules/environmentMapRenderer/EnvironmentMapRenderer.h"
 #include "engine/prehistoric/core/node/component/audio/AudioComponent.h"
 
-/*
-	TODO: the scene will have a function later on, but it is just some legacy code right now
-*/
-class Scene
+namespace Prehistoric
 {
-public:
-	Scene(GameObject* root, Window* window, AssembledAssetManager* manager, Camera* camera);
-	virtual ~Scene() {}
+	/*
+		TODO: the scene will have a function later on, but it is just some legacy code right now
+	*/
+	class Scene
+	{
+	public:
+		Scene(GameObject* root, Window* window, AssembledAssetManager* manager, Camera* camera);
+		virtual ~Scene() {}
 
-	Scene(const Scene&) = default;
+		Scene(const Scene&) = default;
+	};
 };
 
 #endif

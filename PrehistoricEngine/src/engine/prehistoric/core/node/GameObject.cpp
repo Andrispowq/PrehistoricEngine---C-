@@ -3,37 +3,40 @@
 
 #include "engine/prehistoric/core/Engine.h"
 
-void GameObject::PreUpdate(Engine* engine)
+namespace Prehistoric
 {
-	for (auto& kv : components)
+	void GameObject::PreUpdate(Engine* engine)
 	{
-		kv.second->PreUpdate(engine);
+		for (auto& kv : components)
+		{
+			kv.second->PreUpdate(engine);
+		}
+
+		Node::PreUpdate(engine);
+
+		if (updateFunction)
+			updateFunction(this, engine->getFrameTime());
 	}
 
-	Node::PreUpdate(engine);
-
-	if (updateFunction)
-		updateFunction(this, engine->getFrameTime());
-}
-
-void GameObject::PreRender(Renderer* renderer)
-{
-	for (auto& kv : components)
+	void GameObject::PreRender(Renderer* renderer)
 	{
-		kv.second->PreRender(renderer);
+		for (auto& kv : components)
+		{
+			kv.second->PreRender(renderer);
+		}
+
+		Node::PreRender(renderer);
 	}
 
-	Node::PreRender(renderer);
-}
+	GameObject* GameObject::AddComponent(const std::string& name, Component* component)
+	{
+		component->setParent(this);
+		components.emplace(name, component);
+		return this;
+	}
 
-GameObject* GameObject::AddComponent(const std::string& name, Component* component)
-{
-	component->setParent(this);
-	components.emplace(name, component);
-	return this;
-}
-
-Component* GameObject::GetComponent(const std::string& name) const
-{
-	return components.at(name).get();
-}
+	Component* GameObject::GetComponent(const std::string& name) const
+	{
+		return components.at(name).get();
+	}
+};

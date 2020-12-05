@@ -5,23 +5,26 @@
 
 #include "TerrainQuadtree.h"
 
-class Terrain : public Node
+namespace Prehistoric
 {
-public:
-	Terrain(Window* window, Camera* camera, AssembledAssetManager* manager);
-	virtual ~Terrain() {}
+	class Terrain : public Node
+	{
+	public:
+		Terrain(Window* window, Camera* camera, AssembledAssetManager* manager);
+		virtual ~Terrain() {}
 
-	void PreRender(Renderer* renderer) override;
-	void UpdateQuadtree();
+		void PreRender(Renderer* renderer) override;
+		void UpdateQuadtree();
 
-	TerrainMaps* getMaps() const { return maps.get(); }
+		TerrainMaps* getMaps() const { return maps.get(); }
 
-	Terrain(const Terrain&) = default;
-private:
-	Window* window;
-	Camera* camera;
+		Terrain(const Terrain&) = default;
+	private:
+		Window* window;
+		Camera* camera;
 
-	std::unique_ptr<TerrainMaps> maps;
+		std::unique_ptr<TerrainMaps> maps;
+	};
 };
 
 #endif

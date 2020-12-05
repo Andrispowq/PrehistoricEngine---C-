@@ -7,11 +7,14 @@
 
 #include "engine/prehistoric/common/texture/Texture.h"
 
-class GLBRDFIntegrateShader : public GLShader
+namespace Prehistoric
 {
-public:
-	GLBRDFIntegrateShader();
-	virtual ~GLBRDFIntegrateShader() {}
+	class GLBRDFIntegrateShader : public GLShader
+	{
+	public:
+		GLBRDFIntegrateShader();
+		virtual ~GLBRDFIntegrateShader() {}
+	};
 };
 
 #endif

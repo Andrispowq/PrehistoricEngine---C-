@@ -7,13 +7,16 @@
 
 #include "engine/prehistoric/common/texture/Texture.h"
 
-class GLEnvironmentMapShader : public GLShader
+namespace Prehistoric
 {
-public:
-	GLEnvironmentMapShader();
-	virtual ~GLEnvironmentMapShader() {}
+	class GLEnvironmentMapShader : public GLShader
+	{
+	public:
+		GLEnvironmentMapShader();
+		virtual ~GLEnvironmentMapShader() {}
 
-	void UpdateUniforms(const Matrix4f& projection, const Matrix4f& view, Texture* texture) const;
+		void UpdateUniforms(const Matrix4f& projection, const Matrix4f& view, Texture* texture) const;
+	};
 };
 
 #endif

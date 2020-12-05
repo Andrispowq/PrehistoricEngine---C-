@@ -1,24 +1,27 @@
 #ifndef COMPONENT_H
 #define COMPONENT_H
 
-class GameObject;
-class Engine;
-
 #include "engine/prehistoric/core/node/Node.h"
 
-class Component
+namespace Prehistoric
 {
-public:
-	Component() : parent(nullptr) {}
-	virtual ~Component() {}
+	class GameObject;
+	class Engine;
 
-	virtual void PreUpdate(Engine* engine) {}
-	virtual void PreRender(Renderer* renderer) {}
+	class Component
+	{
+	public:
+		Component() : parent(nullptr) {}
+		virtual ~Component() {}
 
-	inline GameObject* getParent() const { return parent; }
-	inline void setParent(GameObject* parent) { this->parent = parent; }
-protected:
-	GameObject* parent;
+		virtual void PreUpdate(Engine* engine) {}
+		virtual void PreRender(Renderer* renderer) {}
+
+		inline GameObject* getParent() const { return parent; }
+		inline void setParent(GameObject* parent) { this->parent = parent; }
+	protected:
+		GameObject* parent;
+	};
 };
 
 #endif

@@ -7,18 +7,21 @@
 #include "engine/platform/opengl/framework/context/GLContext.h"
 #include "engine/platform/vulkan/framework/context/VKContext.h"
 
-Window::Window()
-	: swapchain(nullptr), context(nullptr)
+namespace Prehistoric
 {
-	this->width = FrameworkConfig::windowWidth;
-	this->height = FrameworkConfig::windowHeight;
-	this->title = FrameworkConfig::windowName.c_str();
-	this->fullscreen = FrameworkConfig::windowFullScreen;
-	this->closed = true;
-}
+	Window::Window()
+		: swapchain(nullptr), context(nullptr)
+	{
+		this->width = FrameworkConfig::windowWidth;
+		this->height = FrameworkConfig::windowHeight;
+		this->title = FrameworkConfig::windowName.c_str();
+		this->fullscreen = FrameworkConfig::windowFullScreen;
+		this->closed = true;
+	}
 
-Window::~Window()
-{
-	delete swapchain.release();
-	delete context.release();
-}
+	Window::~Window()
+	{
+		delete swapchain.release();
+		delete context.release();
+	}
+};

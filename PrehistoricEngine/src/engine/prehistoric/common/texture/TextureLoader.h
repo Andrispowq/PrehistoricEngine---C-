@@ -9,16 +9,19 @@
 #include "engine/prehistoric/core/util/Util.h"
 #include "engine/prehistoric/core/config/FrameworkConfig.h"
 
-struct ImageData
+namespace Prehistoric
 {
-	int width, height;
-	unsigned char* data;
-};
+	struct ImageData
+	{
+		int width, height;
+		unsigned char* data;
+	};
 
-namespace TextureLoader
-{
-	Texture* LoadTexture(const std::string& path, Window* window, SamplerFilter filter = Anisotropic, TextureWrapMode wrapMode = Repeat);
-	ImageData LoadTextureData(const std::string& path);
+	namespace TextureLoader
+	{
+		Texture* LoadTexture(const std::string& path, Window* window, SamplerFilter filter = Anisotropic, TextureWrapMode wrapMode = Repeat);
+		ImageData LoadTextureData(const std::string& path);
+	};
 };
 
 #endif

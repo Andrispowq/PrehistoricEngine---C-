@@ -3,14 +3,17 @@
 
 #include <vulkan/vulkan.h>
 
-class VKQueue
+namespace Prehistoric
 {
-public:
-	void SetupQueue(VkDevice device, uint32_t family);
+	class VKQueue
+	{
+	public:
+		void SetupQueue(VkDevice device, uint32_t family);
 
-	VkQueue getQueue() const { return queue; }
-private:
-	VkQueue queue;
+		VkQueue getQueue() const { return queue; }
+	private:
+		VkQueue queue;
+	};
 };
 
 #endif;

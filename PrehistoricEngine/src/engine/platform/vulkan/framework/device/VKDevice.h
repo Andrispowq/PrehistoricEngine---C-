@@ -7,25 +7,28 @@
 #include "engine/platform/vulkan/framework/surface/VKSurface.h"
 #include "engine/platform/vulkan/framework/queue/VKQueue.h"
 
-class VKDevice
+namespace Prehistoric
 {
-public:
-	VKDevice();
-	virtual ~VKDevice();
+	class VKDevice
+	{
+	public:
+		VKDevice();
+		virtual ~VKDevice();
 
-	void CreateLogicalDevice(VKPhysicalDevice* physicalDevice, VkSurfaceKHR surface, const std::vector<const char*>& validationLayers);
-	void DestroyLogicalDevice();
+		void CreateLogicalDevice(VKPhysicalDevice* physicalDevice, VkSurfaceKHR surface, const std::vector<const char*>& validationLayers);
+		void DestroyLogicalDevice();
 
-	//This needs to return a reference
-	VkDevice& getDevice() { return device; }
+		//This needs to return a reference
+		VkDevice& getDevice() { return device; }
 
-	VKQueue& getGraphicsQueue() { return graphicsQueue; }
-	VKQueue& getPresentQueue() { return presentQueue; }
-private:
-	VkDevice device;
+		VKQueue& getGraphicsQueue() { return graphicsQueue; }
+		VKQueue& getPresentQueue() { return presentQueue; }
+	private:
+		VkDevice device;
 
-	VKQueue graphicsQueue;
-	VKQueue presentQueue;
+		VKQueue graphicsQueue;
+		VKQueue presentQueue;
+	};
 };
 
 #endif

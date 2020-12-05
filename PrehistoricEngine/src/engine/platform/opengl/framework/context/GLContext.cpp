@@ -100,27 +100,30 @@ static void OpenGLMessageCallback(
 	}
 }
 
-GLContext::GLContext(Window* window)
-	: Context(window)
+namespace Prehistoric
 {
-	glfwMakeContextCurrent(reinterpret_cast<GLFWwindow*>(window->getWindowHandle()));
-
-	GLenum error = glewInit();
-
-	glewExperimental = GL_FALSE;
-
-	if (error != GLEW_OK)
+	GLContext::GLContext(Window* window)
+		: Context(window)
 	{
-		PR_LOG_ERROR("The initialisation of OpenGL Extension Wrangler Library (GLEW) has failed! The error: \n%s\n", glewGetErrorString(error));
+		glfwMakeContextCurrent(reinterpret_cast<GLFWwindow*>(window->getWindowHandle()));
 
-		glfwTerminate();
-	}
+		GLenum error = glewInit();
+
+		glewExperimental = GL_FALSE;
+
+		if (error != GLEW_OK)
+		{
+			PR_LOG_ERROR("The initialisation of OpenGL Extension Wrangler Library (GLEW) has failed! The error: \n%s\n", glewGetErrorString(error));
+
+			glfwTerminate();
+		}
 
 #if defined(PR_ENABLE_DEBUGGING)
-	glEnable(GL_DEBUG_OUTPUT);
-	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-	glDebugMessageCallback(OpenGLMessageCallback, nullptr);
+		glEnable(GL_DEBUG_OUTPUT);
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+		glDebugMessageCallback(OpenGLMessageCallback, nullptr);
 
-	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
+		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
 #endif
-}
+	}
+};

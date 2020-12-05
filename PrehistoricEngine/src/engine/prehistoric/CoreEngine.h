@@ -9,31 +9,34 @@
 #include "engine/prehistoric/core/config/FrameworkConfig.h"
 #include "core/util/time/Time.h"
 
-class CoreEngine
+namespace Prehistoric
 {
-public:
-	CoreEngine();
-	~CoreEngine() {}
+	class CoreEngine
+	{
+	public:
+		CoreEngine();
+		~CoreEngine() {}
 
-	Engine* getEngine() { return engine.get(); }
+		Engine* getEngine() { return engine.get(); }
 
-	void Start();
-private:
-	void Stop();
+		void Start();
+	private:
+		void Stop();
 
-	void Run();
+		void Run();
 
-	void Input() { engine->Input(); }
-	void Update(double passedTime) { engine->Update(static_cast<float>(passedTime)); }
-	void Render() { engine->Render(); }
+		void Input() { engine->Input(); }
+		void Update(double passedTime) { engine->Update(static_cast<float>(passedTime)); }
+		void Render() { engine->Render(); }
 
-	CoreEngine(const CoreEngine& engine) = delete;
-	CoreEngine operator=(const CoreEngine& engine) = delete;
-private:
-	bool running;
-	double frameTime;
+		CoreEngine(const CoreEngine& engine) = delete;
+		CoreEngine operator=(const CoreEngine& engine) = delete;
+	private:
+		bool running;
+		double frameTime;
 
-	std::unique_ptr<Engine> engine;
+		std::unique_ptr<Engine> engine;
+	};
 };
 
 #endif

@@ -5,17 +5,19 @@
 
 #include <glew.h>
 
-class GLRenderer : public Renderer
+namespace Prehistoric
 {
-public:
-	GLRenderer(Window* window, Camera* camera) : Renderer(window, camera) {}
-	virtual ~GLRenderer() {}
+	class GLRenderer : public Renderer
+	{
+	public:
+		GLRenderer(Window* window, Camera* camera) : Renderer(window, camera) {}
+		virtual ~GLRenderer() {}
 
-	virtual void PrepareRendering();
-	virtual void EndRendering();
+		virtual void PrepareRendering();
+		virtual void EndRendering();
 
-	virtual void Render() override;
-
+		virtual void Render() override;
+	};
 };
 
 #endif

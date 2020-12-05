@@ -1,26 +1,29 @@
 #include "engine/prehistoric/core/util/Includes.hpp"
 #include "InitDevice.h"
 
-InitDevice* InitDevice::instance;
-
-InitDevice& InitDevice::getInstance()
+namespace Prehistoric
 {
-	if (instance == nullptr)
+	InitDevice* InitDevice::instance;
+
+	InitDevice& InitDevice::getInstance()
 	{
-		if (FrameworkConfig::api == OpenGL)
+		if (instance == nullptr)
 		{
-			PR_LOG_WARNING("CREATE OPENGL DEVICE PROPERTIES!!!!!!!!!");
+			if (FrameworkConfig::api == OpenGL)
+			{
+				PR_LOG_WARNING("CREATE OPENGL DEVICE PROPERTIES!!!!!!!!!");
+			}
+			else if (FrameworkConfig::api == Vulkan)
+			{
+				PR_LOG_WARNING("CREATE VULKAN DEVICE PROPERTIES!!!!!!!!!");
+			}
 		}
-		else if (FrameworkConfig::api == Vulkan)
-		{
-			PR_LOG_WARNING("CREATE VULKAN DEVICE PROPERTIES!!!!!!!!!");
-		}
+
+		return *instance;
 	}
 
-	return *instance;
-}
-
-void InitDevice::DeleteInstance()
-{
-	delete instance;
-}
+	void InitDevice::DeleteInstance()
+	{
+		delete instance;
+	}
+};

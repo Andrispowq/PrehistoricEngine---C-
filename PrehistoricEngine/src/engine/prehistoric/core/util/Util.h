@@ -3,10 +3,13 @@
 
 #include "Includes.hpp"
 
-namespace Util
+namespace Prehistoric
 {
-	std::vector<std::string> Split(const std::string& s, char delim);
-	std::vector<std::string> RemoveEmptyStrings(const std::vector<std::string>& vec);
+	namespace Util
+	{
+		std::vector<std::string> Split(const std::string& s, char delim);
+		std::vector<std::string> RemoveEmptyStrings(const std::vector<std::string>& vec);
+	};
 };
 
 #endif

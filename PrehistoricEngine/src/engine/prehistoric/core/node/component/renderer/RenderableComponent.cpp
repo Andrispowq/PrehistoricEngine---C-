@@ -9,32 +9,35 @@
 
 #include "engine/prehistoric/core/resources/AssembledAssetManager.h"
 
-RenderableComponent::RenderableComponent(size_t pipelineID, Window* window, AssembledAssetManager* manager)
-	: priority(RenderPriority::_3D)
+namespace Prehistoric
 {
-	this->window = window;
-	this->manager = manager;
+	RenderableComponent::RenderableComponent(size_t pipelineID, Window* window, AssembledAssetManager* manager)
+		: priority(RenderPriority::_3D)
+	{
+		this->window = window;
+		this->manager = manager;
 
-	pipelineIndex = pipelineID;
-	manager->addReference<Pipeline>(pipelineID);
-}
+		pipelineIndex = pipelineID;
+		manager->addReference<Pipeline>(pipelineID);
+	}
 
-RenderableComponent::RenderableComponent(Window* window, AssembledAssetManager* manager)
-	: priority(RenderPriority::_3D)
-{
-	pipelineIndex = -1;
+	RenderableComponent::RenderableComponent(Window* window, AssembledAssetManager* manager)
+		: priority(RenderPriority::_3D)
+	{
+		pipelineIndex = -1;
 
-	this->window = window;
-	this->manager = manager;
-}
+		this->window = window;
+		this->manager = manager;
+	}
 
-RenderableComponent::~RenderableComponent()
-{
-	manager->removeReference<Pipeline>(pipelineIndex);
-	pipelineIndex = -1;
-}
+	RenderableComponent::~RenderableComponent()
+	{
+		manager->removeReference<Pipeline>(pipelineIndex);
+		pipelineIndex = -1;
+	}
 
-Pipeline* RenderableComponent::getPipeline() const
-{
-	return manager->getResourceByID<Pipeline>(pipelineIndex);
-}
+	Pipeline* RenderableComponent::getPipeline() const
+	{
+		return manager->getResourceByID<Pipeline>(pipelineIndex);
+	}
+};

@@ -3,14 +3,17 @@
 
 #include "engine/prehistoric/core/modules/gui/GUIElement.h"
 
-class GUIButton : public GUIElement
+namespace Prehistoric
 {
-public:
-	GUIButton(Window* window, AssembledAssetManager* manager, Texture* texture = nullptr, void* data = nullptr, size_t dataSize = 0, bool visible = true);
+	class GUIButton : public GUIElement
+	{
+	public:
+		GUIButton(Window* window, AssembledAssetManager* manager, Texture* texture = nullptr, void* data = nullptr, size_t dataSize = 0, bool visible = true);
 
-	virtual void PreUpdate(Engine* engine) override;
+		virtual void PreUpdate(Engine* engine) override;
 
-	GUIButton(const GUIButton&) = default;
+		GUIButton(const GUIButton&) = default;
+	};
 };
 
 #endif

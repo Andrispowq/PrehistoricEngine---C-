@@ -1,7 +1,9 @@
 #include "engine/prehistoric/core/util/Includes.hpp"
 #include "Shader.h"
 
-Shader::~Shader()
+namespace Prehistoric
 {
-
-}
+	Shader::~Shader()
+	{
+	}
+};

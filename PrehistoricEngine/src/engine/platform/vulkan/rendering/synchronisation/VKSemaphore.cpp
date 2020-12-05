@@ -1,19 +1,22 @@
 #include "engine/prehistoric/core/util/Includes.hpp"
 #include "VKSemaphore.h"
 
-VKSemaphore::VKSemaphore(VkDevice device)
-	: device(device)
+namespace Prehistoric
 {
-	VkSemaphoreCreateInfo info = {};
-	info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-	if (vkCreateSemaphore(device, &info, nullptr, &semaphore) != VK_SUCCESS)
+	VKSemaphore::VKSemaphore(VkDevice device)
+		: device(device)
 	{
-		PR_LOG_RUNTIME_ERROR("Failed to create semaphore!\n");
-	}
-}
+		VkSemaphoreCreateInfo info = {};
+		info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-VKSemaphore::~VKSemaphore()
-{
-	vkDestroySemaphore(device, semaphore, nullptr);
-}
+		if (vkCreateSemaphore(device, &info, nullptr, &semaphore) != VK_SUCCESS)
+		{
+			PR_LOG_RUNTIME_ERROR("Failed to create semaphore!\n");
+		}
+	}
+
+	VKSemaphore::~VKSemaphore()
+	{
+		vkDestroySemaphore(device, semaphore, nullptr);
+	}
+};

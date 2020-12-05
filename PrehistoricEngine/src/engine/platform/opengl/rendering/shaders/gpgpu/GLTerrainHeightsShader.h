@@ -5,13 +5,16 @@
 
 #include <glew.h>
 
-class GLTerrainHeightsShader : public GLShader
+namespace Prehistoric
 {
-public:
-	GLTerrainHeightsShader();
-	virtual ~GLTerrainHeightsShader() {}
+	class GLTerrainHeightsShader : public GLShader
+	{
+	public:
+		GLTerrainHeightsShader();
+		virtual ~GLTerrainHeightsShader() {}
 
-	void UpdateUniforms(Texture* texture, uint32_t N) const;
+		void UpdateUniforms(Texture* texture, uint32_t N) const;
+	};
 };
 
 #endif
