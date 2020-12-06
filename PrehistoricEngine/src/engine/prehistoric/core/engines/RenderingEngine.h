@@ -39,8 +39,6 @@ namespace Prehistoric
 		std::unique_ptr<Camera> camera;
 
 		std::unique_ptr<Renderer> renderer;
-
-		AssembledAssetManager* manager;
 	};
 };
 

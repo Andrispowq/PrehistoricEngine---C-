@@ -92,7 +92,7 @@ namespace Prehistoric
 				return index->second;
 			}
 
-			Texture* tex = TextureLoader::LoadTexture(/*TEXTURE_PATH + */path, window);
+			Texture* tex = TextureLoader::LoadTexture(path, window);
 			size_t ret = texture_ID++;
 
 			textures.insert(std::make_pair(ret, std::make_pair(tex, 0)));

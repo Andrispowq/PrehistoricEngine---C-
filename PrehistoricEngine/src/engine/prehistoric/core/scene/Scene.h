@@ -30,7 +30,7 @@ namespace Prehistoric
 	class Scene
 	{
 	public:
-		Scene(GameObject* root, Window* window, AssembledAssetManager* manager, Camera* camera);
+		Scene(GameObject* root, Window* window, AssembledAssetManager* manager, Camera* camera, const std::string& worldFile);
 		virtual ~Scene() {}
 
 		Scene(const Scene&) = default;

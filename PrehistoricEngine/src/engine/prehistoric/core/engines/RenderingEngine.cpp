@@ -32,6 +32,9 @@ namespace Prehistoric
 
 		window->setClearColour({ 0.23f, 0.78f, 0.88f, 1.0f });
 
+		CameraInput keyInput({ KEY_HELD, PR_KEY_W, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_S, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_D, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_A, PR_JOYSTICK_1 },
+			{ KEY_HELD, PR_KEY_UP, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_DOWN, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_RIGHT, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_LEFT, PR_JOYSTICK_1 });
+
 		/*if (FrameworkConfig::api == OpenGL)
 		{
 			camera = std::make_unique<Camera>(5.0f, 50.0f, 0.8f, 80.0f, Vector3f(-178, 102, -47));
@@ -42,6 +45,11 @@ namespace Prehistoric
 		{*/
 		camera = std::make_unique<Camera>(5.0f, 50.0f, 0.8f, 80.0f, Vector3f(0, 5, -2));
 		//}
+
+		camera->AddCameraInput(keyInput);
+
+		camera->LogStage();
+		camera->setSpeedControl({ MOUSE_SCROLL, PR_KEY_UNKNOWN, PR_JOYSTICK_1 });
 	}
 
 	RenderingEngine::~RenderingEngine()
@@ -55,16 +63,6 @@ namespace Prehistoric
 
 	void RenderingEngine::Init(AssembledAssetManager* manager)
 	{
-		this->manager = manager;
-
-		CameraInput keyInput({ KEY_HELD, PR_KEY_W, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_S, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_D, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_A, PR_JOYSTICK_1 },
-			{ KEY_HELD, PR_KEY_UP, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_DOWN, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_RIGHT, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_LEFT, PR_JOYSTICK_1 });
-
-		camera->AddCameraInput(keyInput);
-
-		camera->LogStage();
-		camera->setSpeedControl({ MOUSE_SCROLL, PR_KEY_UNKNOWN, PR_JOYSTICK_1 });
-
 		if (FrameworkConfig::api == OpenGL)
 		{
 			renderer = std::make_unique<GLRenderer>(window.get(), camera.get());

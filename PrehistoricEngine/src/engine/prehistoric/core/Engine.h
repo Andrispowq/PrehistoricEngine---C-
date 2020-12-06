@@ -23,19 +23,21 @@ namespace Prehistoric
 	class Engine
 	{
 	public:
-		Engine();
+		Engine(const std::string& configPath = "res/config", const std::string& worldFile = "res/world/testLevel.wrld");
 		~Engine();
 
 		void Start();
 
-		void LoadScene();
+		void LoadConfigurationFiles(const std::string& path);
+		void LoadEngines();
+		void LoadScene(const std::string& worldFile);
 
 		inline RenderingEngine* getRenderingEngine() const { return renderingEngine.get(); }
 		inline AudioEngine* getAudioEngine() const { return audioEngine.get(); }
 
 		inline AssembledAssetManager* getAssetManager() const { return manager.get(); }
 
-		inline float getFrameTime() const { return frameTime; }
+		inline float getFrameTime() const { return (float)frameTime; }
 
 		Engine(const Engine& engine) = delete;
 		Engine operator=(const Engine& engine) = delete;

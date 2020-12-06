@@ -10,82 +10,102 @@ namespace Prehistoric
 	{
 		Texture* TextureLoader::LoadTexture(const std::string& path, Window* window, SamplerFilter filter, TextureWrapMode wrapMode)
 		{
-			if (FrameworkConfig::api == OpenGL)
-				stbi_set_flip_vertically_on_load(1);
-
-			int width, height, channels;
-			if (stbi_is_hdr(path.c_str()))
-			{
-				float* data = stbi_loadf(path.c_str(), &width, &height, &channels, 0);
-
-				GLTexture* texture = new GLTexture(width, height);
-				texture->Bind();
-				texture->UploadHDRTextureData(data);
-
-				texture->SamplerProperties(filter, wrapMode);
-				texture->Unbind();
-
-				stbi_image_free(data);
-
-				return texture;
-			}
-
-			unsigned char* data;
-			if (FrameworkConfig::api == OpenGL)
-				data = stbi_load(path.c_str(), &width, &height, &channels, 0);
-			else
-				data = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
-
-			if (data == nullptr)
-			{
-				PR_LOG_ERROR("Failed to load texture %s!\n", path.c_str());
-			}
-
 			Texture* texture = nullptr;
+			ImageData data = LoadTextureData(path);
 
-			ImageFormat format;
-			if (channels == 3 && FrameworkConfig::api != Vulkan) //Vulkan can't decide if it supports 24 bit textures yet, so don't do this
-				format = R8G8B8_LINEAR;
-			else
-				format = R8G8B8A8_LINEAR;
-
-			//We generally want to generate the texture, then upload the data, but in Vulkan, uploading the data actually loads everything into a staging buffer which
-			//is then copied into the actual texture during generation
-			if (FrameworkConfig::api == OpenGL)
+			if (data.type == ImageData::ImageType::HDR)
 			{
-				texture = new GLTexture(width, height);
+				texture = new GLTexture(data.width, data.height);
 				texture->Bind();
-				texture->UploadTextureData(data, format);
+				static_cast<GLTexture*>(texture)->UploadHDRTextureData(data.ptr.dataF);
 			}
-			else if (FrameworkConfig::api == Vulkan)
+			else
 			{
-				texture = new VKTexture((VKPhysicalDevice*)window->getContext()->getPhysicalDevice(), (VKDevice*)window->getContext()->getDevice(), width, height);
-				texture->Bind();
-				texture->UploadTextureData(data, format);
-				texture->Generate();
+				ImageFormat format;
+				if (data.channels == 3 && FrameworkConfig::api != Vulkan) //Vulkan can't decide if it supports 24 bit textures yet, so don't do this
+					format = R8G8B8_LINEAR;
+				else
+					format = R8G8B8A8_LINEAR;
+
+				if (FrameworkConfig::api == OpenGL)
+				{
+					texture = new GLTexture(data.width, data.height);
+					texture->Bind();
+					texture->UploadTextureData(data.ptr.dataUC, format);
+				}
+				else if (FrameworkConfig::api == Vulkan)
+				{
+					texture = new VKTexture((VKPhysicalDevice*)window->getContext()->getPhysicalDevice(), (VKDevice*)window->getContext()->getDevice(), data.width, data.height);
+					texture->Bind();
+					texture->UploadTextureData(data.ptr.dataUC, format);
+					texture->Generate();
+				}
 			}
 
 			texture->SamplerProperties(filter, wrapMode);
 			texture->Unbind();
 
-			stbi_image_free(data);
-
+			stbi_image_free(data.ptr.dataF);
 			return texture;
 		}
 
 		ImageData TextureLoader::LoadTextureData(const std::string& path)
 		{
-			stbi_set_flip_vertically_on_load(1);
+			PR_PROFILE(std::string("Prehistoric::TextureLoader::LoadTextureData(std::string&), path: " + path));
+			if (FrameworkConfig::api == OpenGL)
+				stbi_set_flip_vertically_on_load(1);
+
+			std::ifstream stream(path, std::ios::ate | std::ios::binary);
+			size_t size = (size_t)stream.tellg();
+			stream.seekg(0);
+			unsigned char* buffer = new unsigned char[size];
+			stream.read((char*)buffer, size);
+
+			ImageData ret;
 
 			int width, height, channels;
-			unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
-
-			if (data == nullptr)
+			if (stbi_is_hdr(path.c_str()))
 			{
-				PR_LOG_ERROR("Failed to load texture %s!\n", path.c_str());
+				float* data = stbi_loadf_from_memory(buffer, size, &width, &height, &channels, 0);
+				//float* data = stbi_loadf(path.c_str(), &width, &height, &channels, 0);
+
+				if (data == nullptr)
+				{
+					PR_LOG_ERROR("Failed to load texture %s!\n", path.c_str());
+				}
+
+				ImagePtr ptr;
+				ptr.dataF = data;
+
+				ret = { ImageData::ImageType::HDR, width, height, channels, ptr };
+			}
+			else
+			{
+				unsigned char* data;
+				if (FrameworkConfig::api == OpenGL)
+				{
+					data = stbi_load_from_memory(buffer, size, &width, &height, &channels, 0);
+					//data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+				}
+				else
+				{
+					data = stbi_load_from_memory(buffer, size, &width, &height, &channels, STBI_rgb_alpha);
+					//data = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+				}
+
+				if (data == nullptr)
+				{
+					PR_LOG_ERROR("Failed to load texture %s!\n", path.c_str());
+				}
+
+				ImagePtr ptr;
+				ptr.dataUC = data;
+
+				ret = { ImageData::ImageType::LDR, width, height, channels, data };
 			}
 
-			return { width, height, data };
+			delete[] buffer;
+			return ret;
 		}
 	};
 };

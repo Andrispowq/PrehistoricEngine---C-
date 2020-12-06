@@ -3,34 +3,16 @@
 
 namespace Prehistoric
 {
-	Engine::Engine()
+	Engine::Engine(const std::string& configPath, const std::string& worldFile)
 		: root(nullptr), scene(nullptr), renderingEngine(nullptr), audioEngine(nullptr), manager(nullptr)
 	{
 		running = false;
 
-		//Config loading
-		FrameworkConfig::LoadConfig("res/config/framework.cfg");
-		EngineConfig::LoadConfig("res/config/engine.cfg");
-		AtmosphereConfig::LoadConfig("res/config/atmosphere.cfg");
-		EnvironmentMapConfig::LoadConfig("res/config/environment_map.cfg");
+		Log::Init();
 
-		frameTime = 1.0 / FrameworkConfig::windowMaxFPS;
-
-		//Rootobject init
-		root = std::make_unique<GameObject>();
-
-		//Engines' initialization
-		renderingEngine = std::make_unique<RenderingEngine>();
-		audioEngine = std::make_unique<AudioEngine>();
-
-		InputInstance.Init(renderingEngine->getWindow());
-
-		manager = std::make_unique<AssembledAssetManager>(renderingEngine->getWindow());
-		renderingEngine->Init(manager.get());
-
-		//Loading configs that depend on some engine feature like the window
-		TerrainConfig::LoadConfig("res/config/terrain.cfg", renderingEngine->getWindow(), manager->getAssetManager());
-		scene = std::make_unique<Scene>(root.get(), renderingEngine->getWindow(), manager.get(), renderingEngine->getCamera());
+		LoadConfigurationFiles(configPath);
+		LoadEngines();
+		LoadScene(worldFile);
 	}
 
 	Engine::~Engine()
@@ -43,10 +25,41 @@ namespace Prehistoric
 		delete manager.release();
 		delete audioEngine.release();
 		delete renderingEngine.release();
+
+		Log::Shutdown();
 	}
 
-	void Engine::LoadScene()
+	void Engine::LoadConfigurationFiles(const std::string& path)
 	{
+		FrameworkConfig::LoadConfig(path + "/framework.cfg");
+		EngineConfig::LoadConfig(path + "/engine.cfg");
+		AtmosphereConfig::LoadConfig(path + "/atmosphere.cfg");
+		EnvironmentMapConfig::LoadConfig(path + "/environment_map.cfg");
+		TerrainConfig::LoadConfig(path + "/terrain.cfg");
+
+		frameTime = 1.0 / FrameworkConfig::windowMaxFPS;
+	}
+
+	void Engine::LoadEngines()
+	{
+		//Root object and manager initialisation
+		root = std::make_unique<GameObject>();
+
+		//Engines' initialisation
+		renderingEngine = std::make_unique<RenderingEngine>();
+		audioEngine = std::make_unique<AudioEngine>();
+
+		//Input initialisation
+		InputInstance.Init(renderingEngine->getWindow());
+
+		//Manager and the renderers in the rendering engine
+		manager = std::make_unique<AssembledAssetManager>(renderingEngine->getWindow());
+		renderingEngine->Init(manager.get());
+	}
+
+	void Engine::LoadScene(const std::string& worldFile)
+	{
+		scene = std::make_unique<Scene>(root.get(), renderingEngine->getWindow(), manager.get(), renderingEngine->getCamera(), worldFile);
 	}
 
 	void Engine::Start()
@@ -96,7 +109,7 @@ namespace Prehistoric
 					break;
 				}
 
-				Update(frameTime);
+				Update((float)frameTime);
 
 				if (frameCounter >= NANOSECOND)
 				{

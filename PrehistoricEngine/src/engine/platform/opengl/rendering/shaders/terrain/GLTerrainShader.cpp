@@ -2,6 +2,7 @@
 #include "GLTerrainShader.h"
 
 #include "prehistoric/core/modules/terrain/TerrainNode.h"
+#include "prehistoric/core/modules/terrain/Terrain.h"
 #include "prehistoric/core/model/material/Material.h"
 
 namespace Prehistoric
@@ -140,6 +141,18 @@ namespace Prehistoric
 
 			SetUniformi(uName, TerrainConfig::lodMorphingAreas[i]);
 		}
+	}
+
+	void GLTerrainShader::UpdateSharedUniforms(GameObject* object, uint32_t instance_index) const
+	{
+		TerrainNode* node = (TerrainNode*)object;
+
+		node->getMaps()->getHeightmap()->Bind(0);
+		SetUniformi("heightmap", 0);
+		node->getMaps()->getNormalmap()->Bind(1);
+		SetUniformi("normalmap", 1);
+		node->getMaps()->getSplatmap()->Bind(2);
+		SetUniformi("splatmap", 2);
 
 		uint32_t texUnit = 3;
 
@@ -147,7 +160,8 @@ namespace Prehistoric
 		{
 			std::string uniformName = "materials[" + std::to_string(i) + "].";
 
-			Material* material = TerrainConfig::materials[i];
+			TerrainMaps* maps = node->getMaps();
+			Material* material = maps->getMaterials()[i];
 
 			material->getTexture(ALBEDO_MAP)->Bind(texUnit);
 			SetUniformi(uniformName + ALBEDO_MAP, texUnit);
@@ -175,18 +189,6 @@ namespace Prehistoric
 			SetUniformf(uniformName + ROUGHNESS, material->getFloat(ROUGHNESS));
 			//SetUniformf(uniformName + OCCLUSION, material->getFloat(OCCLUSION));
 		}
-	}
-
-	void GLTerrainShader::UpdateSharedUniforms(GameObject* object, uint32_t instance_index) const
-	{
-		TerrainNode* node = (TerrainNode*)object;
-
-		node->getMaps()->getHeightmap()->Bind(0);
-		SetUniformi("heightmap", 0);
-		node->getMaps()->getNormalmap()->Bind(1);
-		SetUniformi("normalmap", 1);
-		node->getMaps()->getSplatmap()->Bind(2);
-		SetUniformi("splatmap", 2);
 	}
 
 	void GLTerrainShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const

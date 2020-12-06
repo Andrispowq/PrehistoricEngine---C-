@@ -4,17 +4,17 @@
 #include "Time.h"
 #include "Includes.hpp"
 
-
 namespace Prehistoric
 {
 	class Timer
 	{
 	public:
-		Timer(const std::string& funcName = "unknown");
+		Timer(const std::string& funcName = "unknown", std::ofstream* file = nullptr);
 		virtual ~Timer();
 	private:
 		double startTime;
 		std::string funcName;
+		std::ofstream* file;
 	};
 };
 

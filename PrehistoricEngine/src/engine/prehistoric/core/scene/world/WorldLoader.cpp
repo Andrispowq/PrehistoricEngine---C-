@@ -83,7 +83,7 @@ namespace Prehistoric
 				{
 					if (nameTokens[1] == "add")
 					{
-						Material* material = new Material(manager->getAssetManager(), window);
+						Material* material = new Material(manager->getAssetManager());
 						materials.insert(std::make_pair(tokens[1], manager->loadResource<Material>(material)));
 					}
 					else

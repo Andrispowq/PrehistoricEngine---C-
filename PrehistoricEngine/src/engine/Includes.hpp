@@ -1,7 +1,6 @@
 #pragma once
 
 #include <iostream>
-#include <fstream>
 
 #include <algorithm>
 
@@ -17,6 +16,8 @@
 
 #include <chrono>
 #include <thread>
+#include <fstream>
+#include <optional>
 
 #include "prehistoric/core/util/log/Log.h"
 #include "prehistoric/core/util/time/Time.h"

@@ -86,7 +86,7 @@ namespace Prehistoric
 		GLFWimage image;
 		image.width = data.width;
 		image.height = data.height;
-		image.pixels = data.data;
+		image.pixels = data.ptr.dataUC;
 
 		glfwSetWindowIcon(window, 1, &image);
 

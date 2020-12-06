@@ -18,10 +18,7 @@ namespace Prehistoric
 		std::vector<int> TerrainConfig::lodRanges;
 		std::vector<int> TerrainConfig::lodMorphingAreas;
 
-		std::string TerrainConfig::heightmap;
-		std::vector<Material*> TerrainConfig::materials;
-
-		void TerrainConfig::LoadConfig(const std::string& path, Window* window, AssetManager* manager)
+		void TerrainConfig::LoadConfig(const std::string& path)
 		{
 			std::ifstream file;
 			file.open(path.c_str());
@@ -83,49 +80,6 @@ namespace Prehistoric
 								lodMorphingAreas[index] = 0;
 							else
 								lodMorphingAreas[index] = range - UpdateMorphingArea(index + 1);
-						}
-					}
-					//TODO: make the per-terrain data be in the world files, not in the general terrain-file
-					else if (nameTokens[0] == "heightmap")
-					{
-						heightmap = tokens[1];
-					}
-					else if (nameTokens[0] == "materials")
-					{
-						if (nameTokens[1] == "add")
-						{
-							materials.push_back(new Material(manager, window));
-						}
-						else
-						{
-							Material* material = materials[materials.size() - 1];
-
-							if (nameTokens[2] == "texture")
-							{
-								material->addTexture(tokens[1], manager->getResource<Texture>(tokens[2]));
-							}
-							else if (nameTokens[2] == "vec4")
-							{
-								material->addVector4f(tokens[1], Vector4f((float)std::atof(tokens[2].c_str()), (float)std::atof(tokens[3].c_str())
-									, (float)std::atof(tokens[4].c_str()), (float)std::atof(tokens[5].c_str())));
-							}
-							else if (nameTokens[2] == "vec3")
-							{
-								material->addVector3f(tokens[1], Vector3f((float)std::atof(tokens[2].c_str()), (float)std::atof(tokens[3].c_str())
-									, (float)std::atof(tokens[4].c_str())));
-							}
-							else if (nameTokens[2] == "vec2")
-							{
-								material->addVector2f(tokens[1], Vector2f((float)std::atof(tokens[2].c_str()), (float)std::atof(tokens[3].c_str())));
-							}
-							else if (nameTokens[2] == "float")
-							{
-								material->addFloat(tokens[1], (float)std::atof(tokens[2].c_str()));
-							}
-							else if (nameTokens[2] == "int")
-							{
-								material->addInt(tokens[1], std::atoi(tokens[2].c_str()));
-							}
 						}
 					}
 				}

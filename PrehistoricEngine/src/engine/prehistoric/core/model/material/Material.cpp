@@ -5,7 +5,7 @@
 
 namespace Prehistoric
 {
-	Material::Material(AssetManager* manager, Window* window)
+	Material::Material(AssetManager* manager)
 	{
 		this->manager = manager;
 

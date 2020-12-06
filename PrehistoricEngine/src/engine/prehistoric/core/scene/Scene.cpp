@@ -18,7 +18,7 @@ namespace Prehistoric
 		object->SetPosition({ x, y, 0 });
 	}
 
-	Scene::Scene(GameObject* root, Window* window, AssembledAssetManager* manager, Camera* camera)
+	Scene::Scene(GameObject* root, Window* window, AssembledAssetManager* manager, Camera* camera, const std::string& worldFile)
 	{
 		WorldLoader loader;
 
@@ -30,7 +30,7 @@ namespace Prehistoric
 
 			size_t pipelineID = manager->loadResource<Pipeline>(new VKGraphicsPipeline(window, manager->getAssetManager(), shaderID, vboID));
 
-			Material* material = new Material(manager->getAssetManager(), window);
+			Material* material = new Material(manager->getAssetManager());
 			material->addTexture(ALBEDO_MAP, manager->getAssetManager()->getResource<Texture>("res/textures/oakFloor/oakFloor_DIF.png"));
 			material->addTexture(NORMAL_MAP, manager->getAssetManager()->getResource<Texture>("res/textures/oakFloor/oakFloor_NRM.png"));
 			material->addTexture(METALLIC_MAP, manager->getAssetManager()->getResource<Texture>("res/textures/oakFloor/oakFloor_MET.png"));
@@ -64,11 +64,11 @@ namespace Prehistoric
 		}
 		else
 		{
-			loader.LoadWorld("res/world/testLevel.wrld", root, window, manager);
+			loader.LoadWorld(worldFile, root, window, manager);
 
 			root->AddChild("Atmosphere", new Atmosphere(window, manager));
 
-			Terrain* terrain = new Terrain(window, camera, manager);
+			Terrain* terrain = new Terrain(window, camera, manager, "res/config/terrain_0.cfg");
 			terrain->UpdateQuadtree();
 
 			root->AddChild("Terrain", terrain);

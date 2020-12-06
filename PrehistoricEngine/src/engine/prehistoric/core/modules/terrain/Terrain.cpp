@@ -5,8 +5,8 @@
 
 namespace Prehistoric
 {
-	Terrain::Terrain(Window* window, Camera* camera, AssembledAssetManager* manager)
-		: window(window), camera(camera), maps{ std::make_unique<TerrainMaps>(window, manager) }
+	Terrain::Terrain(Window* window, Camera* camera, AssembledAssetManager* manager, const std::string& terrainConfigFile)
+		: window(window), camera(camera), maps{ std::make_unique<TerrainMaps>(window, manager, terrainConfigFile) }
 	{
 		AddChild("Quadtree", new TerrainQuadtree(window, camera, maps.get(), manager));
 	}

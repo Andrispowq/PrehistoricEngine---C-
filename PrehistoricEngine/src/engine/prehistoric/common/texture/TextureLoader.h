@@ -11,10 +11,17 @@
 
 namespace Prehistoric
 {
+	union ImagePtr
+	{
+		unsigned char* dataUC; 
+		float* dataF;
+	};
+
 	struct ImageData
 	{
-		int width, height;
-		unsigned char* data;
+		enum class ImageType { LDR, HDR } type;
+		int width, height, channels;
+		ImagePtr ptr;
 	};
 
 	namespace TextureLoader

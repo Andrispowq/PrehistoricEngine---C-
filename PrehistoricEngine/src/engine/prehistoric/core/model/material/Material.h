@@ -12,7 +12,7 @@ namespace Prehistoric
 	class Material
 	{
 	public:
-		Material(AssetManager* manager, Window* window);
+		Material(AssetManager* manager);
 		~Material();
 
 		void addTexture(const std::string& key, size_t textureID);

@@ -8,3 +8,7 @@ bin-int/
 #
 # Other VS files
 *.user
+**.sln
+**.vcxproj
+**.vcxproj.filters
+**.vcxproj.user

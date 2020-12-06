@@ -67,22 +67,6 @@ namespace Prehistoric
 		SetUniformf("tessellationSlope", TerrainConfig::tessellationSlope);
 		SetUniformf("tessellationShift", TerrainConfig::tessellationShift);
 
-		uint32_t texUnit = 3;
-
-		for (unsigned int i = 0; i < 3; i++)
-		{
-			std::string uniformName = "materials[" + std::to_string(i) + "].";
-
-			Material* material = TerrainConfig::materials[i];
-
-			material->getTexture(DISPLACEMENT_MAP)->Bind(texUnit);
-			SetUniformi(uniformName + DISPLACEMENT_MAP, texUnit);
-			texUnit++;
-
-			SetUniformf(uniformName + HEIGHT_SCALE, material->getFloat(HEIGHT_SCALE));
-			SetUniformf(uniformName + HORIZONTAL_SCALE, material->getFloat(HORIZONTAL_SCALE));
-		}
-
 		for (unsigned int i = 0; i < 8; i++)
 		{
 			std::string uName = "lodMorphArea[" + std::to_string(i) + "]";
@@ -101,6 +85,23 @@ namespace Prehistoric
 		SetUniformi("heightmap", 0);
 		node->getMaps()->getSplatmap()->Bind(1);
 		SetUniformi("splatmap", 1);
+
+		uint32_t texUnit = 3;
+
+		for (unsigned int i = 0; i < 3; i++)
+		{
+			std::string uniformName = "materials[" + std::to_string(i) + "].";
+
+			TerrainMaps* maps = node->getMaps();
+			Material* material = maps->getMaterials()[i];
+
+			material->getTexture(DISPLACEMENT_MAP)->Bind(texUnit);
+			SetUniformi(uniformName + DISPLACEMENT_MAP, texUnit);
+			texUnit++;
+
+			SetUniformf(uniformName + HEIGHT_SCALE, material->getFloat(HEIGHT_SCALE));
+			SetUniformf(uniformName + HORIZONTAL_SCALE, material->getFloat(HORIZONTAL_SCALE));
+		}
 	}
 
 	void GLTerrainWireframeShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const

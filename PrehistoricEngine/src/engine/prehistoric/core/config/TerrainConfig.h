@@ -15,7 +15,7 @@ namespace Prehistoric
 
 	namespace TerrainConfig
 	{
-		void LoadConfig(const std::string& path, Window* window, AssetManager* manager);
+		void LoadConfig(const std::string& path);
 		int UpdateMorphingArea(int lod);
 
 		extern float scaleY;
@@ -27,9 +27,6 @@ namespace Prehistoric
 
 		extern std::vector<int> lodRanges;
 		extern std::vector<int> lodMorphingAreas;
-
-		extern std::string heightmap;
-		extern std::vector<Material*> materials;
 	};
 };
 
