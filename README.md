@@ -32,4 +32,4 @@ Features to come include:
   * Android, and iOS
   * and probably Xbox and PlayStation
 
-Currently, the engine only supports Windows. If you wish to use this engine, clone the whole reposotary, and run build_windows_vs<version>.bat file. There's one for Visual Studio 2017 and 2019, but if you wish to use an other version, use the command "call vendor\bin\premake\premake5.exe vs<version>".
+Currently, the engine only supports Windows. If you wish to use this engine, clone the whole reposotary, and run build_windows_vs<version>.bat file. There's one for Visual Studio 2017 and 2019, but if you wish to use an other version, use the command "call vendor\bin\premake\premake5.exe vs'version'".
