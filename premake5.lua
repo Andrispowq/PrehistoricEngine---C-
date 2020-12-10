@@ -17,17 +17,20 @@ workspace "PrehistoricEngine"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
-IncludeDir["GLFW"] = "%{wks.location}/Dependencies/include/GLFW"
-IncludeDir["Vulkan"] = "%{wks.location}/Dependencies/include/Vulkan"
-IncludeDir["GLEW"] = "%{wks.location}/Dependencies/include/GLEW"
-IncludeDir["AL"] = "%{wks.location}/Dependencies/include/AL"
-IncludeDir["STB"] = "%{wks.location}/Dependencies/include/stb"
+IncludeDir["GLFW"] = "%{wks.location}/PrehistoricEngine/vendor/GLFW/include"
+IncludeDir["Vulkan"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/Vulkan"
+IncludeDir["GLEW"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/GLEW"
+IncludeDir["AL"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/AL"
+IncludeDir["STB"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/stb"
+
+include "PrehistoricEngine/vendor/GLFW"
 
 project "PrehistoricEngine"
     location "PrehistoricEngine"
-    kind "SharedLib"
+    kind "StaticLib"
     language "C++"
     cppdialect "C++17"
+    staticruntime "on"
     
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -59,51 +62,47 @@ project "PrehistoricEngine"
     }
 
     links
-	{
-        "%{wks.location}/Dependencies/lib/GLFW/glfw3.lib",
-        "%{wks.location}/Dependencies/lib/Vulkan/vulkan-1.lib",
-        "%{wks.location}/Dependencies/lib/GLEW/glew32s.lib",
-        "%{wks.location}/Dependencies/lib/AL/OpenAL32.lib",
-        "opengl32.lib"
-	}
+    {
+        "%{wks.location}/PrehistoricEngine/Dependencies/lib/Vulkan/vulkan-1.lib",
+        "%{wks.location}/PrehistoricEngine/Dependencies/lib/GLEW/glew32s.lib",
+        "%{wks.location}/PrehistoricEngine/Dependencies/lib/AL/OpenAL32.lib",
+        "opengl32.lib",
+        "GLFW"
+    }
 
     filter "system:windows"
-        staticruntime "On"
         systemversion "latest"
 
         defines
         {
-            "PR_BUILD_DLL",
             "PR_FAST_MATH",
-            "GLEW_STATIC",
-            "_DEBUG",
-            "_CONSOLE",
-        }
-
-        postbuildcommands
-        {
-            ("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Prehistoric")
+            "GLEW_STATIC"
         }
     
     filter "configurations:Debug"
         defines "PR_DEBUG"
-        symbols "On"
-        buildoptions { "/MDd" }
+        runtime "Debug"
+        symbols "on"
+        buildoptions { "/MTd" }
     
     filter "configurations:Release"
         defines "PR_RELEASE"
-        optimize "On"
-        buildoptions { "/MD" }
+        runtime "Release"
+        optimize "on"
+        buildoptions { "/MT" }
     
     filter "configurations:Distribution"
         defines "PR_DIST"
-        optimize "On"
-        buildoptions { "/MD" }
+        runtime "Release"
+        optimize "on"
+        buildoptions { "/MT" }
 
 project "Prehistoric"
     location "Prehistoric"
     kind "ConsoleApp"
     language "C++"
+    cppdialect "C++17"
+    staticruntime "off"
     
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -138,8 +137,6 @@ project "Prehistoric"
     }
 
     filter "system:windows"
-        cppdialect "C++17"
-        staticruntime "On"
         systemversion "latest"
 
         defines
@@ -149,13 +146,19 @@ project "Prehistoric"
     
     filter "configurations:Debug"
         defines "PR_DEBUG"
-        symbols "On"
+        runtime "Debug"
+        symbols "on"
+        buildoptions { "/MTd" }
     
     filter "configurations:Release"
         defines "PR_RELEASE"
-        optimize "On"
+        runtime "Release"
+        optimize "on"
+        buildoptions { "/MT" }
     
     filter "configurations:Distribution"
         defines "PR_DIST"
-        optimize "On"
+        runtime "Release"
+        optimize "on"
+        buildoptions { "/MT" }
     

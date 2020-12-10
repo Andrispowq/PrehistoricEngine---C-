@@ -10,6 +10,9 @@
 #include "prehistoric/core/config/FrameworkConfig.h"
 #include "platform/Platform.h"
 
+#include "Includes.hpp"
+#include "prehistoric/core/events/Event.h"
+
 namespace Prehistoric
 {
 	class WindowsWindow : public Window

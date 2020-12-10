@@ -86,11 +86,6 @@ namespace Prehistoric
 			EnvironmentMapRenderer::instance = new EnvironmentMapRenderer(window, manager);
 			EnvironmentMapRenderer::instance->GenerateEnvironmentMap();
 
-			/*GameObject* img = new GUIElement(window, manager, EnvironmentMapRenderer::instance->getBRDFMap());
-			img->SetPosition({ 0.5f, 0.5f, 0 });
-			img->SetScale({ 0.125f, 0.125f, 0 });
-			root->AddChild("img", img);*/
-
 			GameObject* sun = new GameObject();
 			sun->setUpdateFunction(sun_move_function);
 			sun->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0.95f, 0.87f), Vector3f(10000000000.0f), true));

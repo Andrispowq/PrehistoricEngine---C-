@@ -44,20 +44,20 @@ namespace Prehistoric
 
     void AudioEngine::Update(float delta)
     {
-        for (auto comp : audioComponents)
-        {
-            uint32_t id = comp->getSourceID();
+       for (auto comp : audioComponents)
+       {
+           uint32_t id = comp->getSourceID();
 
-            int state;
-            alGetSourcei(id, AL_SOURCE_STATE, &state);
+           int state;
+           alGetSourcei(id, AL_SOURCE_STATE, &state);
 
-            if (state == AL_PLAYING)
-                continue;
+           if (state == AL_PLAYING)
+               continue;
 
-            alSourcePlay(id);
-        }
+           alSourcePlay(id);
+       }
 
-        audioComponents.clear();
+       audioComponents.clear();
     }
 
     void AudioEngine::addAudioComponent(AudioComponent* audioComponent)

@@ -116,9 +116,6 @@ namespace Prehistoric
 	{
 		GLFWwindow* id = reinterpret_cast<GLFWwindow*>(window->getWindowHandle());
 
-		//Input is static so we can use it in the callbacks, but window is not, so we need a way to get it
-		glfwSetWindowUserPointer(id, (void*)window);
-
 		glfwSetKeyCallback(id, key_callback);
 		glfwSetMouseButtonCallback(id, mouse_callback);
 		glfwSetCursorPosCallback(id, cursor_pos_callback);
@@ -131,13 +128,13 @@ namespace Prehistoric
 
 	bool WindowsInput::Update()
 	{
-		/*scrollOffset = 0;
+		scrollOffset = 0;
 
 		pushedKeys.clear();
 		releasedKeys.clear();
 
 		pushedButtons.clear();
-		releasedButtons.clear();*/
+		releasedButtons.clear();
 
 		//Set up joystick/gamepad
 		for (uint32_t i = 0; i < MAX_NUM_JOYSTICKS; i++)

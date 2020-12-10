@@ -66,7 +66,7 @@ namespace Prehistoric
 			int width, height, channels;
 			if (stbi_is_hdr(path.c_str()))
 			{
-				float* data = stbi_loadf_from_memory(buffer, size, &width, &height, &channels, 0);
+				float* data = stbi_loadf_from_memory(buffer, (int)size, &width, &height, &channels, 0);
 				//float* data = stbi_loadf(path.c_str(), &width, &height, &channels, 0);
 
 				if (data == nullptr)
@@ -84,12 +84,12 @@ namespace Prehistoric
 				unsigned char* data;
 				if (FrameworkConfig::api == OpenGL)
 				{
-					data = stbi_load_from_memory(buffer, size, &width, &height, &channels, 0);
+					data = stbi_load_from_memory(buffer, (int)size, &width, &height, &channels, 0);
 					//data = stbi_load(path.c_str(), &width, &height, &channels, 0);
 				}
 				else
 				{
-					data = stbi_load_from_memory(buffer, size, &width, &height, &channels, STBI_rgb_alpha);
+					data = stbi_load_from_memory(buffer, (int)size, &width, &height, &channels, STBI_rgb_alpha);
 					//data = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
 				}
 

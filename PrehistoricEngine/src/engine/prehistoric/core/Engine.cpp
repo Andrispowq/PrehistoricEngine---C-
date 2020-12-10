@@ -62,6 +62,11 @@ namespace Prehistoric
 		scene = std::make_unique<Scene>(root.get(), renderingEngine->getWindow(), manager.get(), renderingEngine->getCamera(), worldFile);
 	}
 
+	void Engine::AddGameObject(const std::string& name, GameObject* gameobject)
+	{
+		root->AddChild(name, gameobject);
+	}
+
 	void Engine::Start()
 	{
 		if (running)
@@ -136,6 +141,7 @@ namespace Prehistoric
 	void Engine::Update(float frameTime)
 	{
 		InputInstance.Update();
+		renderingEngine->getWindow()->Input();
 
 		root->PreUpdate(this);
 

@@ -46,12 +46,27 @@ namespace Prehistoric
 
 	VKBuffer::VKBuffer(VKBuffer&& other) noexcept
 	{
-		std::swap(*this, other);
+		this->physicalDevice = other.physicalDevice;
+		this->device = other.device;
+		this->size = other.size;
+		this->buFlags = other.buFlags;
+		this->mpFlags = other.mpFlags;
+
+		this->buffer = other.buffer;
+		this->memory = other.memory;
+		other.buffer = 0;
+		other.memory = 0;
 	}
 
 	VKBuffer& VKBuffer::operator=(VKBuffer other)
 	{
-		std::swap(*this, other);
+		this->physicalDevice = other.physicalDevice;
+		this->device = other.device;
+		this->size = other.size;
+		this->buFlags = other.buFlags;
+		this->mpFlags = other.mpFlags;
+
+		VKUtil::CreateBuffer(physicalDevice->getPhysicalDevice(), device->getDevice(), size, buFlags, mpFlags, buffer, memory);
 		return *this;
 	}
 };

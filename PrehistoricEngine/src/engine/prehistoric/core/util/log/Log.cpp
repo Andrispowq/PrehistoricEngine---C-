@@ -8,10 +8,10 @@ namespace Prehistoric
 	void Log::Init()
 	{
 		file = new std::ofstream("./res/profiling/engine.log");
-		/*if (!file->is_open())
+		if (!file->is_open())
 		{
 			PR_LOG_RUNTIME_ERROR("Couldn't open the profiling file!\n");
-		}*/
+		}
 	}
 
 	void Log::Shutdown()

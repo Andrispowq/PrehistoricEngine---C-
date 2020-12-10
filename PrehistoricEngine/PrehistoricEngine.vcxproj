@@ -23,19 +23,19 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v142</PlatformToolset>
@@ -54,58 +54,53 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LinkIncremental>true</LinkIncremental>
     <OutDir>..\bin\Debug-windows-x86_64\PrehistoricEngine\</OutDir>
     <IntDir>..\bin-int\Debug-windows-x86_64\PrehistoricEngine\</IntDir>
     <TargetName>PrehistoricEngine</TargetName>
-    <TargetExt>.dll</TargetExt>
+    <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LinkIncremental>false</LinkIncremental>
     <OutDir>..\bin\Release-windows-x86_64\PrehistoricEngine\</OutDir>
     <IntDir>..\bin-int\Release-windows-x86_64\PrehistoricEngine\</IntDir>
     <TargetName>PrehistoricEngine</TargetName>
-    <TargetExt>.dll</TargetExt>
+    <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">
-    <LinkIncremental>false</LinkIncremental>
     <OutDir>..\bin\Distribution-windows-x86_64\PrehistoricEngine\</OutDir>
     <IntDir>..\bin-int\Distribution-windows-x86_64\PrehistoricEngine\</IntDir>
     <TargetName>PrehistoricEngine</TargetName>
-    <TargetExt>.dll</TargetExt>
+    <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Includes.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_BUILD_DLL;PR_FAST_MATH;GLEW_STATIC;_DEBUG;_CONSOLE;PR_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Dependencies\include\GLFW;..\Dependencies\include\Vulkan;..\Dependencies\include\GLEW;..\Dependencies\include\AL;..\Dependencies\include\stb;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_FAST_MATH;GLEW_STATIC;PR_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>vendor\GLFW\include;Dependencies\include\Vulkan;Dependencies\include\GLEW;Dependencies\include\AL;Dependencies\include\stb;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalOptions>/MDd %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/MTd %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>..\Dependencies\lib\GLFW\glfw3.lib;..\Dependencies\lib\Vulkan\vulkan-1.lib;..\Dependencies\lib\GLEW\glew32s.lib;..\Dependencies\lib\AL\OpenAL32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <ImportLibrary>..\bin\Debug-windows-x86_64\PrehistoricEngine\PrehistoricEngine.lib</ImportLibrary>
     </Link>
-    <PostBuildEvent>
-      <Command>IF EXIST ..\bin\Debug-windows-x86_64\PrehistoricEngine\PrehistoricEngine.dll\ (xcopy /Q /E /Y /I ..\bin\Debug-windows-x86_64\PrehistoricEngine\PrehistoricEngine.dll ..\bin\Debug-windows-x86_64\Prehistoric &gt; nul) ELSE (xcopy /Q /Y /I ..\bin\Debug-windows-x86_64\PrehistoricEngine\PrehistoricEngine.dll ..\bin\Debug-windows-x86_64\Prehistoric &gt; nul)</Command>
-    </PostBuildEvent>
+    <Lib>
+      <AdditionalDependencies>Dependencies\lib\Vulkan\vulkan-1.lib;Dependencies\lib\GLEW\glew32s.lib;Dependencies\lib\AL\OpenAL32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Includes.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_BUILD_DLL;PR_FAST_MATH;GLEW_STATIC;_DEBUG;_CONSOLE;PR_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Dependencies\include\GLFW;..\Dependencies\include\Vulkan;..\Dependencies\include\GLEW;..\Dependencies\include\AL;..\Dependencies\include\stb;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_FAST_MATH;GLEW_STATIC;PR_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>vendor\GLFW\include;Dependencies\include\Vulkan;Dependencies\include\GLEW;Dependencies\include\AL;Dependencies\include\stb;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -113,27 +108,25 @@
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalOptions>/MD %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/MT %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>..\Dependencies\lib\GLFW\glfw3.lib;..\Dependencies\lib\Vulkan\vulkan-1.lib;..\Dependencies\lib\GLEW\glew32s.lib;..\Dependencies\lib\AL\OpenAL32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <ImportLibrary>..\bin\Release-windows-x86_64\PrehistoricEngine\PrehistoricEngine.lib</ImportLibrary>
     </Link>
-    <PostBuildEvent>
-      <Command>IF EXIST ..\bin\Release-windows-x86_64\PrehistoricEngine\PrehistoricEngine.dll\ (xcopy /Q /E /Y /I ..\bin\Release-windows-x86_64\PrehistoricEngine\PrehistoricEngine.dll ..\bin\Release-windows-x86_64\Prehistoric &gt; nul) ELSE (xcopy /Q /Y /I ..\bin\Release-windows-x86_64\PrehistoricEngine\PrehistoricEngine.dll ..\bin\Release-windows-x86_64\Prehistoric &gt; nul)</Command>
-    </PostBuildEvent>
+    <Lib>
+      <AdditionalDependencies>Dependencies\lib\Vulkan\vulkan-1.lib;Dependencies\lib\GLEW\glew32s.lib;Dependencies\lib\AL\OpenAL32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Includes.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_BUILD_DLL;PR_FAST_MATH;GLEW_STATIC;_DEBUG;_CONSOLE;PR_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Dependencies\include\GLFW;..\Dependencies\include\Vulkan;..\Dependencies\include\GLEW;..\Dependencies\include\AL;..\Dependencies\include\stb;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_FAST_MATH;GLEW_STATIC;PR_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>vendor\GLFW\include;Dependencies\include\Vulkan;Dependencies\include\GLEW;Dependencies\include\AL;Dependencies\include\stb;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -141,19 +134,17 @@
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalOptions>/MD %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/MT %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>..\Dependencies\lib\GLFW\glfw3.lib;..\Dependencies\lib\Vulkan\vulkan-1.lib;..\Dependencies\lib\GLEW\glew32s.lib;..\Dependencies\lib\AL\OpenAL32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <ImportLibrary>..\bin\Distribution-windows-x86_64\PrehistoricEngine\PrehistoricEngine.lib</ImportLibrary>
     </Link>
-    <PostBuildEvent>
-      <Command>IF EXIST ..\bin\Distribution-windows-x86_64\PrehistoricEngine\PrehistoricEngine.dll\ (xcopy /Q /E /Y /I ..\bin\Distribution-windows-x86_64\PrehistoricEngine\PrehistoricEngine.dll ..\bin\Distribution-windows-x86_64\Prehistoric &gt; nul) ELSE (xcopy /Q /Y /I ..\bin\Distribution-windows-x86_64\PrehistoricEngine\PrehistoricEngine.dll ..\bin\Distribution-windows-x86_64\Prehistoric &gt; nul)</Command>
-    </PostBuildEvent>
+    <Lib>
+      <AdditionalDependencies>Dependencies\lib\Vulkan\vulkan-1.lib;Dependencies\lib\GLEW\glew32s.lib;Dependencies\lib\AL\OpenAL32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\Includes.hpp" />
@@ -421,6 +412,11 @@
     <ClCompile Include="src\engine\prehistoric\core\util\math\Math.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\util\time\Time.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\util\time\Timer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="vendor\GLFW\GLFW.vcxproj">
+      <Project>{154B857C-0182-860D-AA6E-6C109684020F}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

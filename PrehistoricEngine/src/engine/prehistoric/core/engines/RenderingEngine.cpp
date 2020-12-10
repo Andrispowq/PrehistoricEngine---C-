@@ -26,11 +26,11 @@ namespace Prehistoric
 			PR_LOG_RUNTIME_ERROR("The creation of the window has failed!\n");
 		}
 
+		window->setClearColour({ 0.23f, 0.78f, 0.88f, 1.0f });
+
 		Capabilities::getInstance()->QueryCapabilities(window->getContext()->getPhysicalDevice());
 		DeviceProperties properties;
 		properties.ListProperties(*Capabilities::getInstance());
-
-		window->setClearColour({ 0.23f, 0.78f, 0.88f, 1.0f });
 
 		CameraInput keyInput({ KEY_HELD, PR_KEY_W, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_S, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_D, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_A, PR_JOYSTICK_1 },
 			{ KEY_HELD, PR_KEY_UP, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_DOWN, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_RIGHT, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_LEFT, PR_JOYSTICK_1 });
@@ -75,8 +75,6 @@ namespace Prehistoric
 
 	void RenderingEngine::Update(float delta)
 	{
-		window->Input();
-
 		if (InputInstance.IsKeyPushed(PR_KEY_ESCAPE))
 		{
 			window->setClosed(true);

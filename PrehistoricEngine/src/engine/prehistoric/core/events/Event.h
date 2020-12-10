@@ -30,7 +30,7 @@ namespace Prehistoric
 
 #define EVENT_CLASS_CATEGORY(category) virtual int getCategoryFlags() const override { return category; }
 
-	class PR_API Event
+	class Event
 	{
 		friend class EventDispatcher;
 	public:
@@ -50,7 +50,7 @@ namespace Prehistoric
 
 	};
 
-	class PR_API EventDispatcher
+	class EventDispatcher
 	{
 		template<typename T>
 		using EventFn = std::function<bool(T&)>;

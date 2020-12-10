@@ -30,7 +30,7 @@ namespace Prehistoric
 			std::stringstream str;
 			str << "[" << timeinfo->tm_hour << ":" << timeinfo->tm_min << ":" << timeinfo->tm_sec;
 			str << "]: ";
-			str << "Time elapsed executing function" << funcName;
+			str << "Time elapsed executing function " << funcName;
 			str << ": " << diff << "ms\n";
 			file->write(str.str().c_str(), str.str().size());
 		}

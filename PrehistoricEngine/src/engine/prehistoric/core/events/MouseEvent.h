@@ -7,7 +7,7 @@
 
 namespace Prehistoric
 {
-	class PR_API MouseMovedEvent : public Event
+	class MouseMovedEvent : public Event
 	{
 	public:
 		MouseMovedEvent(Vector2f mousePos)
@@ -29,7 +29,7 @@ namespace Prehistoric
 		Vector2f mousePosition;
 	};
 
-	class PR_API MouseScrolledEvent : public Event
+	class MouseScrolledEvent : public Event
 	{
 	public:
 		MouseScrolledEvent(Vector2f mouseOffset)
@@ -51,7 +51,7 @@ namespace Prehistoric
 		Vector2f mouseOffset;
 	};
 
-	class PR_API MouseButtonEvent : public Event
+	class MouseButtonEvent : public Event
 	{
 	public:
 		InputCode GetMouseButton() const { return button; }
@@ -64,7 +64,7 @@ namespace Prehistoric
 		InputCode button;
 	};
 
-	class PR_API MouseButtonPressedEvent : public MouseButtonEvent
+	class MouseButtonPressedEvent : public MouseButtonEvent
 	{
 	public:
 		MouseButtonPressedEvent(const InputCode button)
@@ -80,7 +80,7 @@ namespace Prehistoric
 		EVENT_CLASS_TYPE(MouseButtonPressed)
 	};
 
-	class PR_API MouseButtonReleasedEvent : public MouseButtonEvent
+	class MouseButtonReleasedEvent : public MouseButtonEvent
 	{
 	public:
 		MouseButtonReleasedEvent(const InputCode button)

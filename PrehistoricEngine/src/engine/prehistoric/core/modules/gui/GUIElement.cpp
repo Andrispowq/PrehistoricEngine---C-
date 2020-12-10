@@ -28,7 +28,7 @@ namespace Prehistoric
 		if (vboID == -1)
 		{
 			vboID = manager->getAssetManager()->addResource<VertexBuffer>(ModelFabricator::CreateQuad(window));
-			//manager->getAssetManager()->getResourceByID<VertexBuffer>(vboID)->setFrontFace(FrontFace::CLOCKWISE);
+			manager->getAssetManager()->getResourceByID<VertexBuffer>(vboID)->setFrontFace(FrontFace::CLOCKWISE);
 		}
 
 		if (pipelineID == -1)

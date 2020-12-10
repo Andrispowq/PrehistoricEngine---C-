@@ -25,7 +25,7 @@
 	#error "This OS is currently not supported!"
 #endif
 
-#if defined(PR_WINDOWS_64)
+/*#if defined(PR_WINDOWS_64)
 	#if defined(PR_BUILD_DLL)
 		#define PR_API __declspec(dllexport)
 	#else
@@ -33,7 +33,7 @@
 	#endif
 #else
 	#error "This OS doesn't support DLLs!"
-#endif
+#endif*/
 
 #if defined(PR_DEBUG)
 	#define PR_ENABLE_DEBUGGING

@@ -5,14 +5,14 @@
 
 namespace Prehistoric 
 {
-	class PR_API WindowResizeEvent : public Event
+	class WindowResizeEvent : public Event
 	{
 	public:
-		WindowResizeEvent(unsigned int width, unsigned int height)
+		WindowResizeEvent(uint32_t width, uint32_t height)
 			: width(width), height(height) {}
 
-		unsigned int getWidth() const { return width; }
-		unsigned int getHeight() const { return height; }
+		uint32_t getWidth() const { return width; }
+		uint32_t getHeight() const { return height; }
 
 		std::string toString() const override
 		{
@@ -27,7 +27,7 @@ namespace Prehistoric
 		uint32_t width, height;
 	};
 
-	class PR_API WindowCloseEvent : public Event
+	class WindowCloseEvent : public Event
 	{
 	public:
 		WindowCloseEvent() = default;
@@ -36,7 +36,7 @@ namespace Prehistoric
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)
 	};
 
-	class PR_API AppInputEvent : public Event
+	class AppInputEvent : public Event
 	{
 	public:
 		AppInputEvent() = default;
@@ -45,7 +45,7 @@ namespace Prehistoric
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)
 	};
 
-	class PR_API AppUpdateEvent : public Event
+	class AppUpdateEvent : public Event
 	{
 	public:
 		AppUpdateEvent() = default;
@@ -54,7 +54,7 @@ namespace Prehistoric
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)
 	};
 
-	class PR_API AppRenderEvent : public Event
+	class AppRenderEvent : public Event
 	{
 	public:
 		AppRenderEvent() = default;

@@ -6,13 +6,15 @@
 
 namespace Prehistoric
 {
-	class PR_API Application
+	class Application
 	{
 	public:
 		Application();
 		virtual ~Application();
 
 		void Run();
+
+		void OnEvent(Event& e);
 	private:
 		Engine engine;
 	};

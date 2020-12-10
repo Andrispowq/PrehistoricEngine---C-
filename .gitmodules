@@ -1,0 +1,3 @@
+[submodule "PrehistoricEngine/vendor/GLFW"]
+	path = PrehistoricEngine/vendor/GLFW
+	url = https://github.com/Andrispowq/glfw

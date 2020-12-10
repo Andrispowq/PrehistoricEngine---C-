@@ -9,6 +9,8 @@
 
 #include "WindowsInput.h"
 
+#include "prehistoric/core/events/ApplicationEvent.h"
+
 namespace Prehistoric
 {
 	static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -25,12 +27,16 @@ namespace Prehistoric
 		wnd->setWidth(width);
 		wnd->setHeight(height);
 		wnd->getSwapchain()->SetWindowSize(width, height);
+		
+		//WindowResizeEvent ev(uint32_t(width), uint32_t(height));
+		//wnd->getEventCallback()((Event&)ev);
 	}
 
 	static void error_callback(int error, const char* description)
 	{
 		PR_LOG_ERROR("Error: %s\n", description);
 	}
+
 	bool WindowsWindow::Create()
 	{
 		//Initialisation of GLFW
@@ -81,6 +87,9 @@ namespace Prehistoric
 			swapchain = std::make_unique<VKSwapchain>(this);
 		}
 
+		//Input is static so we can use it in the callbacks, but window is not, so we need a way to get it
+		glfwSetWindowUserPointer(window, (void*)this);
+
 		ImageData data = TextureLoader::LoadTextureData("res/textures/logo.png");
 
 		GLFWimage image;
@@ -91,7 +100,7 @@ namespace Prehistoric
 		glfwSetWindowIcon(window, 1, &image);
 
 		glfwShowWindow(window);
-		SetVSync(FrameworkConfig::windowVSync);
+		SetVSync(FrameworkConfig::windowVSync); 
 
 		glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 

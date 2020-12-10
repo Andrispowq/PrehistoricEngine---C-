@@ -32,6 +32,8 @@ namespace Prehistoric
 		void LoadEngines();
 		void LoadScene(const std::string& worldFile);
 
+		void AddGameObject(const std::string& name, GameObject* gameobject);
+
 		inline RenderingEngine* getRenderingEngine() const { return renderingEngine.get(); }
 		inline AudioEngine* getAudioEngine() const { return audioEngine.get(); }
 
