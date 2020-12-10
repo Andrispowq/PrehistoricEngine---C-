@@ -1,9 +1,12 @@
 # Prehistoric Engine C++
 Prehistoric Engine is a 3D game engine under development, written in C++. It uses OpenGL and Vulkan APIs to render high-end 3D graphics. 
 The engine is completely customisable after compilation with the help of configuration files, including settings like window size, FPS cap, rendering settings, the scene.
+
+This reposotary not only contains the engine, but an example project built using the engine's features.
+
 Please read this file to learn about to features of this engine, and how to use it.
 
-The engine is feature rich, and ever-expanding. Currently implemented features include: (currently only the OpenGL render images are available)
+## The engine's features
 
 A working 3D rendering pipeline with Physically Based Shading:
 ![](/images/pbr_image_1.png)
@@ -18,7 +21,8 @@ A functional, customisable Terrain rendering system:
 A helpful debug mode, rendering everything in wireframe:
 ![](/images/terrain_wireframe.png)
 
-Features to come include:
+## Planned features
+
 * Extending the atmosphere system with a better dynamic light scattering simulation, and a day-night cycle
 * A deferred renderer, with additional rendering options, including Screen-space Ambient Occlusion, Screen-space reflections, Screen-space ray tracing with compute shaders
 * Multi-sample anti-aliasing for framebuffers
@@ -31,5 +35,7 @@ Features to come include:
   * Mac OS
   * Android, and iOS
   * and probably Xbox and PlayStation
+  
+## Building the engine
 
-Currently, the engine only supports Windows. If you wish to use this engine, clone the whole reposotary, and run build_windows_vs<version>.bat file. There's one for Visual Studio 2017 and 2019, but if you wish to use an other version, use the command "call vendor\bin\premake\premake5.exe vs'version'".
+The engine uses Premake 5.0 as it's build system. To learn more about using it, please click [here](BUILDING.md)
