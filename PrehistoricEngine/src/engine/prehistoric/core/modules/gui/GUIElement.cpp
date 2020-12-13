@@ -6,7 +6,7 @@
 #include "platform/opengl/rendering/shaders/gui/GLGUIShader.h"
 #include "platform/vulkan/rendering/shaders/basic/VKBasicShader.h"
 
-#include "prehistoric/core/Engine.h"
+#include "prehistoric/core/CoreEngine.h"
 
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 
@@ -53,7 +53,7 @@ namespace Prehistoric
 		AddComponent(RENDERER_COMPONENT, renderer);
 	}
 
-	void GUIElement::PreUpdate(Engine* engine)
+	void GUIElement::PreUpdate(CoreEngine* engine)
 	{
 	}
 

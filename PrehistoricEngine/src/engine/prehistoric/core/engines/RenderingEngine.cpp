@@ -1,12 +1,12 @@
 #include "Includes.hpp"
 #include "RenderingEngine.h"
 
-#include "prehistoric/core/node/component/renderer/RenderableComponent.h"
-#include "prehistoric/core/node/GameObject.h"
-#include "prehistoric/common/util/DeviceProperties.h"
+#include "platform/windows/WindowsWindow.h"
 
 #include "platform/opengl/rendering/GLRenderer.h"
 #include "platform/vulkan/rendering/VKRenderer.h"
+
+#include "prehistoric/common/util/DeviceProperties.h"
 
 #include "prehistoric/core/modules/environmentMapRenderer/EnvironmentMapRenderer.h"
 
@@ -35,16 +35,16 @@ namespace Prehistoric
 		CameraInput keyInput({ KEY_HELD, PR_KEY_W, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_S, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_D, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_A, PR_JOYSTICK_1 },
 			{ KEY_HELD, PR_KEY_UP, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_DOWN, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_RIGHT, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_LEFT, PR_JOYSTICK_1 });
 
-		/*if (FrameworkConfig::api == OpenGL)
+		if (FrameworkConfig::api == OpenGL)
 		{
-			camera = std::make_unique<Camera>(5.0f, 50.0f, 0.8f, 80.0f, Vector3f(-178, 102, -47));
+			camera = std::make_unique<Camera>(5.0f, 50.0f, 0.8f, 80.0f, Vector3f(0, 5, -2));//Vector3f(-178, 102, -47));
 			camera->RotateY(-80);
 			camera->RotateX(30);
 		}
 		else
-		{*/
-		camera = std::make_unique<Camera>(5.0f, 50.0f, 0.8f, 80.0f, Vector3f(0, 5, -2));
-		//}
+		{
+			camera = std::make_unique<Camera>(5.0f, 50.0f, 0.8f, 80.0f, Vector3f(0, 5, -2));
+		}
 
 		camera->AddCameraInput(keyInput);
 
@@ -71,6 +71,11 @@ namespace Prehistoric
 		{
 			renderer = std::make_unique<VKRenderer>(window.get(), camera.get(), manager);
 		}
+	}
+
+	void RenderingEngine::OnEvent(Event& event)
+	{
+		window->OnEvent(event);
 	}
 
 	void RenderingEngine::Update(float delta)

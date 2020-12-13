@@ -13,6 +13,8 @@
 #include "Includes.hpp"
 #include "prehistoric/core/events/Event.h"
 
+#include "prehistoric/core/events/ApplicationEvent.h"
+
 namespace Prehistoric
 {
 	class WindowsWindow : public Window
@@ -26,6 +28,8 @@ namespace Prehistoric
 		virtual bool ShouldClose() const override;
 		virtual void Input() override;
 		virtual void Render(CommandBuffer* buffer) const override;
+
+		virtual void OnEvent(Event& event) override;
 
 		virtual void SetFullscreen(bool fullscreen) override;
 		virtual bool IsFullscreen() const override;

@@ -47,7 +47,6 @@ namespace Prehistoric
 		}
 	private:
 		bool handled = false;
-
 	};
 
 	class EventDispatcher

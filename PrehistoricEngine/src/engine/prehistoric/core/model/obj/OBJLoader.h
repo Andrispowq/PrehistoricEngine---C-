@@ -3,8 +3,6 @@
 
 #include "prehistoric/common/buffer/MeshVertexBuffer.h"
 #include "prehistoric/core/model/material/Material.h"
-#include "platform/opengl/buffer/GLMeshVertexBuffer.h"
-#include "platform/vulkan/buffer/VKMeshVertexBuffer.h"
 
 #include "prehistoric/core/util/Constants.h"
 #include "prehistoric/core/config/FrameworkConfig.h"

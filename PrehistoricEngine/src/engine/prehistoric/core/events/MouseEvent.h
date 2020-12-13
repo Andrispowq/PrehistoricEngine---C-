@@ -10,11 +10,11 @@ namespace Prehistoric
 	class MouseMovedEvent : public Event
 	{
 	public:
-		MouseMovedEvent(Vector2f mousePos)
-			: mousePosition(mousePos) {}
+		MouseMovedEvent(Vector2f mousePos, void* handle)
+			: mousePosition(mousePos), handle(handle) {}
 
-		float getX() const { return mousePosition.x; }
-		float getY() const { return mousePosition.y; }
+		Vector2f getPosition() const { return mousePosition; }
+		void* getHandle() const { return handle; }
 
 		std::string toString() const override
 		{
@@ -27,16 +27,17 @@ namespace Prehistoric
 		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
 	private:
 		Vector2f mousePosition;
+		void* handle;
 	};
 
 	class MouseScrolledEvent : public Event
 	{
 	public:
-		MouseScrolledEvent(Vector2f mouseOffset)
-			: mouseOffset(mouseOffset) {}
+		MouseScrolledEvent(Vector2f mouseOffset, void* handle)
+			: mouseOffset(mouseOffset), handle(handle) {}
 
-		float getXOffset() const { return mouseOffset.x; }
-		float getYOffset() const { return mouseOffset.y; }
+		Vector2f getOffset() const { return mouseOffset; }
+		void* getHandle() const { return handle; }
 
 		std::string toString() const override
 		{
@@ -49,42 +50,47 @@ namespace Prehistoric
 		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
 	private:
 		Vector2f mouseOffset;
+		void* handle;
 	};
 
 	class MouseButtonEvent : public Event
 	{
 	public:
-		InputCode GetMouseButton() const { return button; }
+		InputCode getMouseButton() const { return button; }
+		void* getHandle() const { return handle; }
 
 		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput | EventCategoryMouseButton)
 	protected:
-		MouseButtonEvent(const InputCode button)
-			: button(button) {}
+		MouseButtonEvent(InputCode button, void* handle)
+			: button(button), handle(handle) {}
 
 		InputCode button;
+		void* handle;
 	};
 
 	class MouseButtonPressedEvent : public MouseButtonEvent
 	{
 	public:
-		MouseButtonPressedEvent(const InputCode button)
-			: MouseButtonEvent(button) {}
+		MouseButtonPressedEvent(InputCode button, void* handle, uint16_t repeatCount)
+			: MouseButtonEvent(button, handle), repeatCount(repeatCount) {}
 
 		std::string toString() const override
 		{
 			std::stringstream ss;
-			ss << "MouseButtonPressedEvent: " << (uint16_t)button;
+			ss << "MouseButtonPressedEvent: " << (uint16_t)button << " (" << repeatCount << " repeats)";
 			return ss.str();
 		}
 
 		EVENT_CLASS_TYPE(MouseButtonPressed)
+	private:
+		uint16_t repeatCount;
 	};
 
 	class MouseButtonReleasedEvent : public MouseButtonEvent
 	{
 	public:
-		MouseButtonReleasedEvent(const InputCode button)
-			: MouseButtonEvent(button) {}
+		MouseButtonReleasedEvent(InputCode button, void* handle)
+			: MouseButtonEvent(button, handle) {}
 
 		std::string toString() const override
 		{

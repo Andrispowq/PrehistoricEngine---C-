@@ -1,7 +1,7 @@
 #include "Includes.hpp"
 #include "GUIButton.h"
 
-#include "prehistoric/core/Engine.h"
+#include "prehistoric/core/CoreEngine.h"
 
 namespace Prehistoric
 {
@@ -11,7 +11,7 @@ namespace Prehistoric
 		type = GUIType::Button;
 	}
 
-	void GUIButton::PreUpdate(Engine* engine)
+	void GUIButton::PreUpdate(CoreEngine* engine)
 	{
 		bool* val = (bool*)data;
 

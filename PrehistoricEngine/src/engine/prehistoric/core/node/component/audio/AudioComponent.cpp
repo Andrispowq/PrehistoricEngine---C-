@@ -1,7 +1,7 @@
 #include "Includes.hpp"
 #include "AudioComponent.h"
 
-#include "prehistoric/core/Engine.h"
+#include "prehistoric/core/CoreEngine.h"
 
 namespace Prehistoric
 {
@@ -36,7 +36,7 @@ namespace Prehistoric
         alDeleteSources(1, &sourceID);
     }
 
-    void AudioComponent::PreUpdate(Engine* engine)
+    void AudioComponent::PreUpdate(CoreEngine* engine)
     {
         Vector3f pos = parent->getWorldTransform().getPosition();
         alSource3f(sourceID, AL_POSITION, pos.x, pos.y, pos.z);

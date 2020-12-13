@@ -5,11 +5,24 @@
 
 namespace Prehistoric 
 {
-	class WindowResizeEvent : public Event
+	class WindowEvent : public Event
 	{
 	public:
-		WindowResizeEvent(uint32_t width, uint32_t height)
-			: width(width), height(height) {}
+		void* getHandle() const { return handle; }
+	protected:
+		WindowEvent(void* handle)
+			: handle(handle) {}
+
+		EVENT_CLASS_CATEGORY(EventCategoryApplication)
+	protected:
+		void* handle;
+	};
+
+	class WindowResizeEvent : public WindowEvent
+	{
+	public:
+		WindowResizeEvent(uint32_t width, uint32_t height, void* handle)
+			: WindowEvent(handle), width(width), height(height) {}
 
 		uint32_t getWidth() const { return width; }
 		uint32_t getHeight() const { return height; }
@@ -22,18 +35,33 @@ namespace Prehistoric
 		}
 
 		EVENT_CLASS_TYPE(WindowResize)
-		EVENT_CLASS_CATEGORY(EventCategoryApplication)
 	private:
 		uint32_t width, height;
+		void* handle;
 	};
 
-	class WindowCloseEvent : public Event
+	class WindowCloseEvent : public WindowEvent
 	{
 	public:
-		WindowCloseEvent() = default;
+		WindowCloseEvent(void* handle) : WindowEvent(handle) {}
 
 		EVENT_CLASS_TYPE(WindowClose)
-		EVENT_CLASS_CATEGORY(EventCategoryApplication)
+	};
+
+	class WindowFocusEvent : public WindowEvent
+	{
+	public:
+		WindowFocusEvent(void* handle) : WindowEvent(handle) {}
+
+		EVENT_CLASS_TYPE(WindowFocus)
+	};
+
+	class WindowLostFocusEvent : public WindowEvent
+	{
+	public:
+		WindowLostFocusEvent(void* handle) : WindowEvent(handle) {}
+
+		EVENT_CLASS_TYPE(WindowLostFocus)
 	};
 
 	class AppInputEvent : public Event

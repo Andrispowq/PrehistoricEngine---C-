@@ -1,11 +1,11 @@
 #include "Includes.hpp"
 #include "GameObject.h"
 
-#include "prehistoric/core/Engine.h"
+#include "prehistoric/core/CoreEngine.h"
 
 namespace Prehistoric
 {
-	void GameObject::PreUpdate(Engine* engine)
+	void GameObject::PreUpdate(CoreEngine* engine)
 	{
 		for (auto& kv : components)
 		{

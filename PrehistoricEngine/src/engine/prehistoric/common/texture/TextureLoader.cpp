@@ -4,6 +4,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#include "platform/opengl/texture/GLTexture.h"
+#include "platform/vulkan/texture/VKTexture.h"
+
 namespace Prehistoric
 {
 	namespace TextureLoader

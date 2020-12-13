@@ -15,7 +15,7 @@ namespace Prehistoric
 		GameObject() : updateFunction(nullptr) {}
 		virtual ~GameObject() {}
 
-		void PreUpdate(Engine* engine) override;
+		void PreUpdate(CoreEngine* engine) override;
 		void PreRender(Renderer* renderer) override;
 
 		void setUpdateFunction(UpdateFunction func) { this->updateFunction = func; }

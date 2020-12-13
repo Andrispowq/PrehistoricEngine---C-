@@ -8,7 +8,7 @@
 
 namespace Prehistoric
 {
-    class Engine;
+    class CoreEngine;
 
     class Node
     {
@@ -16,7 +16,7 @@ namespace Prehistoric
         Node() : parent(nullptr) {}
         virtual ~Node() {}
 
-        virtual void PreUpdate(Engine* engine);
+        virtual void PreUpdate(CoreEngine* engine);
         virtual void PreRender(Renderer* renderer);
 
         Node* AddChild(const std::string& key, Node* child);

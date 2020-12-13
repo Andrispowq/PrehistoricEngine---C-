@@ -10,20 +10,22 @@ namespace Prehistoric
 	{
 	public:
 		InputCode getKeyCode() const { return keyCode; }
+		void* getHandle() const { return handle; }
 
 		EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
 	protected:
-		KeyEvent(const InputCode keycode)
-			: keyCode(keycode) {}
+		KeyEvent(InputCode keycode, void* handle)
+			: keyCode(keycode), handle(handle) {}
 
 		InputCode keyCode;
+		void* handle;
 	};
 
 	class KeyPressedEvent : public KeyEvent
 	{
 	public:
-		KeyPressedEvent(const InputCode keycode, const uint16_t repeatCount)
-			: KeyEvent(keycode), repeatCount(repeatCount) {}
+		KeyPressedEvent(InputCode keycode, void* handle, uint16_t repeatCount)
+			: KeyEvent(keycode, handle), repeatCount(repeatCount) {}
 
 		uint16_t getRepeatCount() const { return repeatCount; }
 
@@ -42,8 +44,8 @@ namespace Prehistoric
 	class KeyReleasedEvent : public KeyEvent
 	{
 	public:
-		KeyReleasedEvent(const InputCode keycode)
-			: KeyEvent(keycode) {}
+		KeyReleasedEvent(InputCode keycode, void* handle)
+			: KeyEvent(keycode, handle) {}
 
 		std::string toString() const override
 		{

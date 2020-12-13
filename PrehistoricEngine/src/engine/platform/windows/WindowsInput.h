@@ -7,15 +7,20 @@
 
 #include "prehistoric/core/util/math/Math.h"
 
+#include "prehistoric/core/events/KeyEvent.h"
+#include "prehistoric/core/events/MouseEvent.h"
+
 namespace Prehistoric
 {
 	class WindowsInput : public Input
 	{
 	public:
-		bool Init(Window* window) const override;
-		bool Update() override;
+		virtual bool Init(Window* window) const override;
+		virtual bool Update() override;
 
-		void setCursorPositionOnScreen(Window* window, const Vector2f& cursorPosition) override;
+		virtual void OnEvent(Event& event) override;
+
+		virtual void setCursorPositionOnScreen(Window* window, const Vector2f& cursorPosition) override;
 	};
 };
 

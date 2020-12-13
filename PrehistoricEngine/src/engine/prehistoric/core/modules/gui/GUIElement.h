@@ -29,7 +29,7 @@ namespace Prehistoric
 		GUIElement(Window* window, AssembledAssetManager* manager, Texture* texture = nullptr, void* data = nullptr, size_t dataSize = 0, bool visible = true);
 		virtual ~GUIElement();
 
-		virtual void PreUpdate(Engine* engine) override;
+		virtual void PreUpdate(CoreEngine* engine) override;
 		virtual void PreRender(Renderer* renderer) override;
 
 		bool inside(Vector2f cursor);

@@ -10,7 +10,7 @@ namespace Prehistoric
 	public:
 		GUIButton(Window* window, AssembledAssetManager* manager, Texture* texture = nullptr, void* data = nullptr, size_t dataSize = 0, bool visible = true);
 
-		virtual void PreUpdate(Engine* engine) override;
+		virtual void PreUpdate(CoreEngine* engine) override;
 
 		GUIButton(const GUIButton&) = default;
 	};

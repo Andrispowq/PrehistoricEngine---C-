@@ -81,9 +81,8 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalOptions>/MTd %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -106,9 +105,8 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalOptions>/MT %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -132,9 +130,8 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalOptions>/MT %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -233,13 +230,14 @@
     <ClInclude Include="src\engine\prehistoric\common\util\DeviceProperties.h" />
     <ClInclude Include="src\engine\prehistoric\common\util\InitDevice.h" />
     <ClInclude Include="src\engine\prehistoric\common\util\RenderUtils.h" />
-    <ClInclude Include="src\engine\prehistoric\core\Engine.h" />
+    <ClInclude Include="src\engine\prehistoric\core\CoreEngine.h" />
     <ClInclude Include="src\engine\prehistoric\core\config\AtmosphereConfig.h" />
     <ClInclude Include="src\engine\prehistoric\core\config\EngineConfig.h" />
     <ClInclude Include="src\engine\prehistoric\core\config\EnvironmentMapConfig.h" />
     <ClInclude Include="src\engine\prehistoric\core\config\FrameworkConfig.h" />
     <ClInclude Include="src\engine\prehistoric\core\config\TerrainConfig.h" />
     <ClInclude Include="src\engine\prehistoric\core\engines\AudioEngine.h" />
+    <ClInclude Include="src\engine\prehistoric\core\engines\Engine.h" />
     <ClInclude Include="src\engine\prehistoric\core\engines\RenderingEngine.h" />
     <ClInclude Include="src\engine\prehistoric\core\events\ApplicationEvent.h" />
     <ClInclude Include="src\engine\prehistoric\core\events\Event.h" />
@@ -370,7 +368,7 @@
     <ClCompile Include="src\engine\prehistoric\common\texture\TextureLoader.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\util\DeviceProperties.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\util\InitDevice.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\Engine.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\CoreEngine.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\config\AtmosphereConfig.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\config\EngineConfig.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\config\EnvironmentMapConfig.cpp" />

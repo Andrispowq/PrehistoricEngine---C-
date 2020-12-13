@@ -3,125 +3,195 @@
 
 namespace Prehistoric
 {
-	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+	static bool key_pressed_callback(KeyPressedEvent& event)
 	{
 		auto pushedKeys = InputInstance.getPushedKeys();
 		auto keysHolding = InputInstance.getKeysHolding();
-		auto releasedKeys = InputInstance.getReleasedKeys();
 
-		if (action == GLFW_PRESS)
+		int key_code = (int)event.getKeyCode();
+		if (std::find(pushedKeys.begin(), pushedKeys.end(), key_code) == pushedKeys.end())
 		{
-			if (std::find(pushedKeys.begin(), pushedKeys.end(), key) == pushedKeys.end())
-			{
-				pushedKeys.push_back(key);
-				keysHolding.push_back(key);
-			}
+			pushedKeys.push_back(key_code);
 		}
-
-		if (action == GLFW_RELEASE)
+		if (std::find(keysHolding.begin(), keysHolding.end(), key_code) == keysHolding.end())
 		{
-			releasedKeys.push_back(key);
-
-			auto index0 = std::find(pushedKeys.begin(), pushedKeys.end(), key);
-			auto index1 = std::find(keysHolding.begin(), keysHolding.end(), key);
-
-			if (index0 != pushedKeys.end())
-			{
-				pushedKeys.erase(index0);
-			}
-
-			if (index1 != keysHolding.end())
-			{
-				keysHolding.erase(index1);
-			}
+			keysHolding.push_back(key_code);
 		}
 
 		InputInstance.setPushedKeys(pushedKeys);
 		InputInstance.setKeysHolding(keysHolding);
-		InputInstance.setReleasedKeys(releasedKeys);
+
+		return true;
 	}
 
-	static void mouse_callback(GLFWwindow* window, int button, int action, int mods)
+	static bool key_released_callback(KeyReleasedEvent& event)
 	{
-		if (button == 2 && action == GLFW_PRESS)
+		auto pushedKeys = InputInstance.getPushedKeys();
+		auto keysHolding = InputInstance.getKeysHolding();
+
+		int key_code = (int)event.getKeyCode();
+
+		auto index0 = std::find(pushedKeys.begin(), pushedKeys.end(), key_code);
+		auto index1 = std::find(keysHolding.begin(), keysHolding.end(), key_code);
+
+		if (index0 != pushedKeys.end())
 		{
-			InputInstance.setLockedCursorPosition(InputInstance.getCursorPosition());
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+			pushedKeys.erase(index0);
 		}
 
-		if (button == 2 && action == GLFW_RELEASE)
+		if (index1 != keysHolding.end())
 		{
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			keysHolding.erase(index1);
 		}
 
+		InputInstance.setPushedKeys(pushedKeys);
+		InputInstance.setKeysHolding(keysHolding);
+
+		return true;
+	}
+
+	static bool mouse_button_pressed_callback(MouseButtonPressedEvent& event)
+	{
 		auto pushedButtons = InputInstance.getPushedButtons();
 		auto buttonsHolding = InputInstance.getButtonsHolding();
-		auto releasedButtons = InputInstance.getReleasedButtons();
 
-		if (action == GLFW_PRESS)
+		int code = (int)event.getMouseButton();
+		if (code == 2)
 		{
-			if (std::find(pushedButtons.begin(), pushedButtons.end(), button) == pushedButtons.end())
-			{
-				pushedButtons.push_back(button);
-				buttonsHolding.push_back(button);
-			}
+			InputInstance.setLockedCursorPosition(InputInstance.getCursorPosition());
+			glfwSetInputMode((GLFWwindow*)event.getHandle(), GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 		}
 
-		if (action == GLFW_RELEASE)
+		if (std::find(pushedButtons.begin(), pushedButtons.end(), code) == pushedButtons.end())
 		{
-			releasedButtons.push_back(button);
-
-			auto index0 = std::find(pushedButtons.begin(), pushedButtons.end(), button);
-			auto index1 = std::find(buttonsHolding.begin(), buttonsHolding.end(), button);
-
-			if (index0 != pushedButtons.end())
-			{
-				pushedButtons.erase(index0);
-			}
-
-			if (index1 != buttonsHolding.end())
-			{
-				buttonsHolding.erase(index1);
-			}
+			pushedButtons.push_back(code);
+		}
+		if (std::find(buttonsHolding.begin(), buttonsHolding.end(), code) == buttonsHolding.end())
+		{
+			buttonsHolding.push_back(code);
 		}
 
 		InputInstance.setPushedButtons(pushedButtons);
 		InputInstance.setButtonsHolding(buttonsHolding);
-		InputInstance.setReleasedButtons(releasedButtons);
+
+		return true;
 	}
 
-	static void cursor_pos_callback(GLFWwindow* window, double xPos, double yPos)
+	static bool mouse_button_released_callback(MouseButtonReleasedEvent& event)
 	{
-		InputInstance.setCursorPosition(Vector2f(static_cast<float>(xPos), static_cast<float>(yPos)));
-	}
+		auto pushedButtons = InputInstance.getPushedButtons();
+		auto buttonsHolding = InputInstance.getButtonsHolding();
 
-	static void scroll_callback(GLFWwindow* window, double xOffset, double yOffset)
-	{
-		InputInstance.setScrollOffset(static_cast<float>(yOffset));
-	}
-
-	static void focus_callback(GLFWwindow* window, int iconified)
-	{
-		if (iconified == GLFW_TRUE)
+		int code = (int)event.getMouseButton();
+		if (code == 2)
 		{
-			InputInstance.setPause(true);
+			glfwSetInputMode((GLFWwindow*)event.getHandle(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		}
-		else
+
+		auto index0 = std::find(pushedButtons.begin(), pushedButtons.end(), code);
+		auto index1 = std::find(buttonsHolding.begin(), buttonsHolding.end(), code);
+
+		if (index0 != pushedButtons.end())
 		{
-			InputInstance.setPause(false);
+			pushedButtons.erase(index0);
 		}
+
+		if (index1 != buttonsHolding.end())
+		{
+			buttonsHolding.erase(index1);
+		}
+
+		InputInstance.setPushedButtons(pushedButtons);
+		InputInstance.setButtonsHolding(buttonsHolding);
+
+		return true;
+	}
+
+	static bool mouse_moved_callback(MouseMovedEvent& event)
+	{
+		InputInstance.setCursorPosition(event.getPosition());
+		return true;
+	}
+
+	static bool mouse_scrolled_callback(MouseScrolledEvent& event)
+	{
+		InputInstance.setScrollOffset(event.getOffset().y);
+		return true;
 	}
 
 	bool WindowsInput::Init(Window* window) const
 	{
 		GLFWwindow* id = reinterpret_cast<GLFWwindow*>(window->getWindowHandle());
 
-		glfwSetKeyCallback(id, key_callback);
-		glfwSetMouseButtonCallback(id, mouse_callback);
-		glfwSetCursorPosCallback(id, cursor_pos_callback);
-		glfwSetScrollCallback(id, scroll_callback);
+		glfwSetKeyCallback(id, [](GLFWwindow* window, int key, int scancode, int action, int mods)
+		{
+			Window* wnd = (Window*)glfwGetWindowUserPointer(window);
 
-		glfwSetWindowFocusCallback(id, focus_callback);
+			switch (action)
+			{
+				case GLFW_PRESS:
+				{
+					KeyPressedEvent ev((InputCode)key, window, 0);
+					wnd->getEventCallback()((Event&)ev);
+					break;
+				}
+				case GLFW_REPEAT:
+				{
+					KeyPressedEvent ev((InputCode)key, window, 1);
+					wnd->getEventCallback()((Event&)ev);
+					break;
+				}
+				case GLFW_RELEASE:
+				{
+					KeyReleasedEvent ev((InputCode)key, window);
+					wnd->getEventCallback()((Event&)ev);
+					break;
+				}
+			}
+		});
+
+		glfwSetMouseButtonCallback(id, [](GLFWwindow* window, int button, int action, int mods)
+		{
+			Window* wnd = (Window*)glfwGetWindowUserPointer(window);
+
+			switch (action)
+			{
+				case GLFW_PRESS:
+				{
+					MouseButtonPressedEvent ev((InputCode)button, window, 0);
+					wnd->getEventCallback()((Event&)ev);
+					break;
+				}
+				case GLFW_REPEAT:
+				{
+					MouseButtonPressedEvent ev((InputCode)button, window, 1);
+					wnd->getEventCallback()((Event&)ev);
+					break;
+				}
+				case GLFW_RELEASE:
+				{
+					MouseButtonReleasedEvent ev((InputCode)button, window);
+					wnd->getEventCallback()((Event&)ev);
+					break;
+				}
+			}
+		});
+
+		glfwSetCursorPosCallback(id, [](GLFWwindow* window, double xPos, double yPos)
+		{
+			Window* wnd = (Window*)glfwGetWindowUserPointer(window);
+
+			MouseMovedEvent ev({ (float)xPos, (float)yPos }, window);
+			wnd->getEventCallback()((Event&)ev);
+		});
+
+		glfwSetScrollCallback(id, [](GLFWwindow* window, double xOffset, double yOffset)
+		{
+			Window* wnd = (Window*)glfwGetWindowUserPointer(window);
+
+			MouseScrolledEvent ev({ (float)xOffset, (float)yOffset }, window);
+			wnd->getEventCallback()((Event&)ev);
+		});
 
 		return true;
 	}
@@ -131,10 +201,7 @@ namespace Prehistoric
 		scrollOffset = 0;
 
 		pushedKeys.clear();
-		releasedKeys.clear();
-
 		pushedButtons.clear();
-		releasedButtons.clear();
 
 		//Set up joystick/gamepad
 		for (uint32_t i = 0; i < MAX_NUM_JOYSTICKS; i++)
@@ -172,6 +239,17 @@ namespace Prehistoric
 		}
 
 		return true;
+	}
+
+	void WindowsInput::OnEvent(Event& event)
+	{
+		EventDispatcher d(event);
+		d.Dispatch<KeyPressedEvent>(key_pressed_callback);
+		d.Dispatch<KeyReleasedEvent>(key_released_callback);
+		d.Dispatch<MouseButtonPressedEvent>(mouse_button_pressed_callback);
+		d.Dispatch<MouseButtonReleasedEvent>(mouse_button_released_callback);
+		d.Dispatch<MouseMovedEvent>(mouse_moved_callback);
+		d.Dispatch<MouseScrolledEvent>(mouse_scrolled_callback);
 	}
 
 	void WindowsInput::setCursorPositionOnScreen(Window* window, const Vector2f& cursorPosition)

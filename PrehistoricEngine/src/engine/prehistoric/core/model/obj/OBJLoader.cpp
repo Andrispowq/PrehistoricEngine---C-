@@ -1,6 +1,9 @@
 #include "Includes.hpp"
 #include "OBJLoader.h"
 
+#include "platform/opengl/buffer/GLMeshVertexBuffer.h"
+#include "platform/vulkan/buffer/VKMeshVertexBuffer.h"
+
 namespace Prehistoric
 {
 	namespace OBJLoader

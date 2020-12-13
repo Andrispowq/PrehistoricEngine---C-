@@ -42,6 +42,10 @@ namespace Prehistoric
     {
     }
 
+    void AudioEngine::OnEvent(Event& event)
+    {
+    }
+
     void AudioEngine::Update(float delta)
     {
        for (auto comp : audioComponents)

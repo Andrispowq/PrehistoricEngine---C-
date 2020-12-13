@@ -1,10 +1,10 @@
-#ifndef ENGINE_H
-#define ENGINE_H
-
-#include "prehistoric/core/scene/Scene.h"
+#ifndef CORE_ENGINE_H
+#define CORE_ENGINE_H
 
 #include "prehistoric/core/engines/RenderingEngine.h"
 #include "prehistoric/core/engines/AudioEngine.h"
+
+#include "prehistoric/core/scene/Scene.h"
 
 #include "prehistoric/core/node/GameObject.h"
 
@@ -20,11 +20,11 @@ namespace Prehistoric
 {
 	constexpr static double NANOSECOND = 1000000000;
 
-	class Engine
+	class CoreEngine
 	{
 	public:
-		Engine(const std::string& configPath = "res/config", const std::string& worldFile = "res/world/testLevel.wrld");
-		~Engine();
+		CoreEngine(const std::string& configPath = "res/config", const std::string& worldFile = "res/world/testLevel.wrld");
+		~CoreEngine();
 
 		void Start();
 
@@ -34,6 +34,8 @@ namespace Prehistoric
 
 		void AddGameObject(const std::string& name, GameObject* gameobject);
 
+		void OnEvent(Event& event);
+
 		inline RenderingEngine* getRenderingEngine() const { return renderingEngine.get(); }
 		inline AudioEngine* getAudioEngine() const { return audioEngine.get(); }
 
@@ -41,10 +43,10 @@ namespace Prehistoric
 
 		inline float getFrameTime() const { return (float)frameTime; }
 
-		Engine(const Engine& engine) = delete;
-		Engine operator=(const Engine& engine) = delete;
-		Engine(const Engine&& engine) = delete;
-		Engine operator=(const Engine&& engine) = delete;
+		CoreEngine(const CoreEngine& engine) = delete;
+		CoreEngine operator=(const CoreEngine& engine) = delete;
+		CoreEngine(const CoreEngine&& engine) = delete;
+		CoreEngine operator=(const CoreEngine&& engine) = delete;
 	private:
 		void Run();
 		void Stop();

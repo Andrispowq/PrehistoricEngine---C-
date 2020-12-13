@@ -1,22 +1,17 @@
 #ifndef RENDERING_ENGINE_H
 #define RENDERING_ENGINE_H
 
-#include "platform/windows/WindowsWindow.h"
+#include "Engine.h"
+
 #include "prehistoric/core/node/movement/Camera.h"
-#include "prehistoric/core/config/FrameworkConfig.h"
+#include "prehistoric/core/resources/AssembledAssetManager.h"
 
-#include "prehistoric/common/buffer/VertexBuffer.h"
-#include "prehistoric/common/rendering/pipeline/Pipeline.h"
-
-#include "prehistoric/core/resources/AssetManager.h"
+#include "prehistoric/common/framework/Window.h"
+#include "prehistoric/common/rendering/Renderer.h"
 
 namespace Prehistoric
 {
-	class GameObject;
-	class RenderableComponent;
-	class Light;
-
-	class RenderingEngine
+	class RenderingEngine : public Engine
 	{
 	public:
 		RenderingEngine();
@@ -24,7 +19,9 @@ namespace Prehistoric
 
 		void Init(AssembledAssetManager* manager);
 
-		void Update(float delta);
+		virtual void OnEvent(Event& event) override;
+
+		virtual void Update(float delta) override;
 		void Render();
 
 		inline Window* getWindow() const { return window.get(); }

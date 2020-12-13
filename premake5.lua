@@ -30,7 +30,7 @@ project "PrehistoricEngine"
     kind "StaticLib"
     language "C++"
     cppdialect "C++17"
-    staticruntime "on"
+    staticruntime "off"
     
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -83,19 +83,16 @@ project "PrehistoricEngine"
         defines "PR_DEBUG"
         runtime "Debug"
         symbols "on"
-        buildoptions { "/MTd" }
     
     filter "configurations:Release"
         defines "PR_RELEASE"
         runtime "Release"
         optimize "on"
-        buildoptions { "/MT" }
     
     filter "configurations:Distribution"
         defines "PR_DIST"
         runtime "Release"
         optimize "on"
-        buildoptions { "/MT" }
 
 project "Prehistoric"
     location "Prehistoric"
@@ -148,17 +145,14 @@ project "Prehistoric"
         defines "PR_DEBUG"
         runtime "Debug"
         symbols "on"
-        buildoptions { "/MTd" }
     
     filter "configurations:Release"
         defines "PR_RELEASE"
         runtime "Release"
         optimize "on"
-        buildoptions { "/MT" }
     
     filter "configurations:Distribution"
         defines "PR_DIST"
         runtime "Release"
         optimize "on"
-        buildoptions { "/MT" }
     

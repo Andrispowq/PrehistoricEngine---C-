@@ -1,7 +1,7 @@
 #include "Includes.hpp"
 #include "Atmosphere.h"
 
-#include "prehistoric/core/Engine.h"
+#include "prehistoric/core/CoreEngine.h"
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 
 namespace Prehistoric
@@ -40,7 +40,7 @@ namespace Prehistoric
 		sunPosition = AtmosphereConfig::sunPosition;
 	}
 
-	void Atmosphere::PreUpdate(Engine* engine)
+	void Atmosphere::PreUpdate(CoreEngine* engine)
 	{
 		//sun logic can go in here
 		if (engine->getRenderingEngine()->getRenderer()->getSun() != nullptr)

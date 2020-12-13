@@ -9,7 +9,7 @@ namespace Prehistoric
 		type = GUIType::Slider;
 	}
 
-	void GUISlider::PreUpdate(Engine* engine)
+	void GUISlider::PreUpdate(CoreEngine* engine)
 	{
 		float* _data = (float*)data;
 

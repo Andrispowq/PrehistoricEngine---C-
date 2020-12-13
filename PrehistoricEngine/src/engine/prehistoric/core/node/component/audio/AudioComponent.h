@@ -15,7 +15,7 @@ namespace Prehistoric
 		AudioComponent(const std::string& audio, bool is3D = true, bool isStereo = false, bool isLoop = false);
 		~AudioComponent();
 
-		virtual void PreUpdate(Engine* engine);
+		virtual void PreUpdate(CoreEngine* engine);
 
 		void setGain(float gain);
 		void setPitch(float pitch);

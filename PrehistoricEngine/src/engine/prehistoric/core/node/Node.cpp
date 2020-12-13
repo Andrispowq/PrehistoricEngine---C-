@@ -1,11 +1,11 @@
 #include "Includes.hpp"
 #include "Node.h"
 
-#include "prehistoric/core/Engine.h"
+#include "prehistoric/core/CoreEngine.h"
 
 namespace Prehistoric
 {
-    void Node::PreUpdate(Engine* engine)
+    void Node::PreUpdate(CoreEngine* engine)
     {
         for (auto& child : children)
         {

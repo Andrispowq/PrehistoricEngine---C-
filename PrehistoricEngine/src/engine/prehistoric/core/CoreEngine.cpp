@@ -1,9 +1,9 @@
 #include "Includes.hpp"
-#include "Engine.h"
+#include "CoreEngine.h"
 
 namespace Prehistoric
 {
-	Engine::Engine(const std::string& configPath, const std::string& worldFile)
+	CoreEngine::CoreEngine(const std::string& configPath, const std::string& worldFile)
 		: root(nullptr), scene(nullptr), renderingEngine(nullptr), audioEngine(nullptr), manager(nullptr)
 	{
 		running = false;
@@ -15,7 +15,7 @@ namespace Prehistoric
 		LoadScene(worldFile);
 	}
 
-	Engine::~Engine()
+	CoreEngine::~CoreEngine()
 	{
 		//The order is VERY important here, hence the deletion by hand
 		Input::DeleteInstance();
@@ -29,7 +29,7 @@ namespace Prehistoric
 		Log::Shutdown();
 	}
 
-	void Engine::LoadConfigurationFiles(const std::string& path)
+	void CoreEngine::LoadConfigurationFiles(const std::string& path)
 	{
 		FrameworkConfig::LoadConfig(path + "/framework.cfg");
 		EngineConfig::LoadConfig(path + "/engine.cfg");
@@ -40,7 +40,7 @@ namespace Prehistoric
 		frameTime = 1.0 / FrameworkConfig::windowMaxFPS;
 	}
 
-	void Engine::LoadEngines()
+	void CoreEngine::LoadEngines()
 	{
 		//Root object and manager initialisation
 		root = std::make_unique<GameObject>();
@@ -55,19 +55,44 @@ namespace Prehistoric
 		//Manager and the renderers in the rendering engine
 		manager = std::make_unique<AssembledAssetManager>(renderingEngine->getWindow());
 		renderingEngine->Init(manager.get());
+		renderingEngine->getWindow()->setEventCallback(std::bind(&CoreEngine::OnEvent, this, std::placeholders::_1));
 	}
 
-	void Engine::LoadScene(const std::string& worldFile)
+	void CoreEngine::LoadScene(const std::string& worldFile)
 	{
 		scene = std::make_unique<Scene>(root.get(), renderingEngine->getWindow(), manager.get(), renderingEngine->getCamera(), worldFile);
 	}
 
-	void Engine::AddGameObject(const std::string& name, GameObject* gameobject)
+	void CoreEngine::Update(float frameTime)
+	{
+		root->PreUpdate(this);
+
+		InputInstance.Update();
+		renderingEngine->getWindow()->Input();
+
+		renderingEngine->Update(frameTime);
+		audioEngine->Update(frameTime);
+	}
+
+	void CoreEngine::Render()
+	{
+		root->PreRender(renderingEngine->getRenderer());
+
+		renderingEngine->Render();
+	}
+
+	void CoreEngine::OnEvent(Event& event)
+	{
+		renderingEngine->OnEvent(event);
+		audioEngine->OnEvent(event);
+	}
+
+	void CoreEngine::AddGameObject(const std::string& name, GameObject* gameobject)
 	{
 		root->AddChild(name, gameobject);
 	}
 
-	void Engine::Start()
+	void CoreEngine::Start()
 	{
 		if (running)
 			return;
@@ -76,7 +101,7 @@ namespace Prehistoric
 		Run();
 	}
 
-	void Engine::Stop()
+	void CoreEngine::Stop()
 	{
 		if (!running)
 			return;
@@ -84,7 +109,7 @@ namespace Prehistoric
 		running = false;
 	}
 
-	void Engine::Run()
+	void CoreEngine::Run()
 	{
 		uint32_t frames = 0;
 		double frameCounter = 0;
@@ -136,23 +161,5 @@ namespace Prehistoric
 				std::this_thread::sleep_for(1ms);
 			}
 		}
-	}
-
-	void Engine::Update(float frameTime)
-	{
-		InputInstance.Update();
-		renderingEngine->getWindow()->Input();
-
-		root->PreUpdate(this);
-
-		audioEngine->Update(frameTime);
-		renderingEngine->Update(frameTime);
-	}
-
-	void Engine::Render()
-	{
-		root->PreRender(renderingEngine->getRenderer());
-
-		renderingEngine->Render();
 	}
 };

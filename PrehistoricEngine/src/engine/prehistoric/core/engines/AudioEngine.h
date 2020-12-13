@@ -1,6 +1,8 @@
 #ifndef AUDIO_ENGINE_H
 #define AUDIO_ENGINE_H
 
+#include "Engine.h"
+
 #include <al.h>
 #include <alc.h>
 
@@ -28,14 +30,16 @@ namespace Prehistoric
         uint32_t        Subchunk2Size;  // Sampled data length
     } wav_header;
 
-    class AudioEngine
+    class AudioEngine : public Engine
     {
     public:
         AudioEngine();
         virtual ~AudioEngine();
 
         void Input();
-        void Update(float delta);
+
+        virtual void OnEvent(Event& event) override;
+        virtual void Update(float delta) override;
 
         void addAudioComponent(AudioComponent* audioComponent);
 

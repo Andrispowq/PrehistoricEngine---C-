@@ -6,7 +6,6 @@
 namespace Prehistoric
 {
 	class GameObject;
-	class Engine;
 
 	class Component
 	{
@@ -14,7 +13,7 @@ namespace Prehistoric
 		Component() : parent(nullptr) {}
 		virtual ~Component() {}
 
-		virtual void PreUpdate(Engine* engine) {}
+		virtual void PreUpdate(CoreEngine* engine) {}
 		virtual void PreRender(Renderer* renderer) {}
 
 		inline GameObject* getParent() const { return parent; }

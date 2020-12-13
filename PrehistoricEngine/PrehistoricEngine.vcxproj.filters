@@ -512,7 +512,7 @@
     <ClInclude Include="src\engine\prehistoric\common\util\RenderUtils.h">
       <Filter>prehistoric\common\util</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\Engine.h">
+    <ClInclude Include="src\engine\prehistoric\core\CoreEngine.h">
       <Filter>prehistoric\core</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\config\AtmosphereConfig.h">
@@ -668,6 +668,7 @@
     <ClInclude Include="src\engine\prehistoric\core\util\time\Timer.h">
       <Filter>prehistoric\core\util\time</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\engines\Engine.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -911,7 +912,7 @@
     <ClCompile Include="src\engine\prehistoric\common\util\InitDevice.cpp">
       <Filter>prehistoric\common\util</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\Engine.cpp">
+    <ClCompile Include="src\engine\prehistoric\core\CoreEngine.cpp">
       <Filter>prehistoric\core</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\config\AtmosphereConfig.cpp">

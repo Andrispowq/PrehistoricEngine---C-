@@ -8,8 +8,8 @@ namespace Prehistoric
 	enum InputType
 	{
 		NO_TYPE,
-		KEY_PRESSED, KEY_HELD, KEY_RELEASED,
-		MOUSE_PRESSED, MOUSE_HELD, MOUSE_RELEASED, MOUSE_SCROLL,
+		KEY_PRESSED, KEY_HELD,
+		MOUSE_PRESSED, MOUSE_HELD, MOUSE_SCROLL,
 		JOYSTICK_BUTTON_PRESSED, JOYSTICK_AXIS_MOVED_NEGATIVE, JOYSTICK_AXIS_MOVED_POSITIVE
 	};
 
@@ -82,15 +82,11 @@ namespace Prehistoric
 				return (float)InputInstance.IsKeyPushed(data.code);
 			case KEY_HELD:
 				return (float)InputInstance.IsKeyHeld(data.code);
-			case KEY_RELEASED:
-				return (float)InputInstance.IsKeyReleased(data.code);
 
 			case MOUSE_PRESSED:
 				return (float)InputInstance.IsButtonPushed(data.code);
 			case MOUSE_HELD:
 				return (float)InputInstance.IsButtonHeld(data.code);
-			case MOUSE_RELEASED:
-				return (float)InputInstance.IsButtonReleased(data.code);
 			case MOUSE_SCROLL:
 				return InputInstance.getScrollOffset();
 

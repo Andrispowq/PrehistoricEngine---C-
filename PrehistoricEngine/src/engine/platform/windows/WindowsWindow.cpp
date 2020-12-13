@@ -9,27 +9,40 @@
 
 #include "WindowsInput.h"
 
-#include "prehistoric/core/events/ApplicationEvent.h"
+#include "prehistoric/core/events/KeyEvent.h"
+#include "prehistoric/core/events/MouseEvent.h"
 
 namespace Prehistoric
 {
-	static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+	static bool window_size_callback(WindowResizeEvent& event)
 	{
-		InputInstance.setPause(false);
-
-		if (width == 0 || height == 0)
+		if (event.getWidth() == 0 || event.getHeight() == 0)
 		{
-			InputInstance.setPause(true);
-			return;
+			return false;
 		}
 
-		Window* wnd = (Window*)glfwGetWindowUserPointer(window);
-		wnd->setWidth(width);
-		wnd->setHeight(height);
-		wnd->getSwapchain()->SetWindowSize(width, height);
-		
-		//WindowResizeEvent ev(uint32_t(width), uint32_t(height));
-		//wnd->getEventCallback()((Event&)ev);
+		Window* window = (Window*)glfwGetWindowUserPointer((GLFWwindow*)event.getHandle());
+		window->getSwapchain()->SetWindowSize(event.getWidth(), event.getHeight());
+		return true;
+	}
+
+	static bool window_close_callback(WindowCloseEvent& event)
+	{
+		Window* window = (Window*)glfwGetWindowUserPointer((GLFWwindow*)event.getHandle());
+		window->setClosed(true);
+		return true;
+	}
+
+	static bool window_focus_callback(WindowFocusEvent& event)
+	{
+		InputInstance.setPause(false);
+		return true;
+	}
+
+	static bool window_focus_lost_callback(WindowLostFocusEvent& event)
+	{
+		InputInstance.setPause(true);
+		return true;
 	}
 
 	static void error_callback(int error, const char* description)
@@ -102,7 +115,39 @@ namespace Prehistoric
 		glfwShowWindow(window);
 		SetVSync(FrameworkConfig::windowVSync); 
 
-		glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+		glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int height)
+		{
+			Window* wnd = (Window*)glfwGetWindowUserPointer(window);
+			wnd->setWidth(width);
+			wnd->setHeight(height);
+
+			WindowResizeEvent ev(width, height, window);
+			wnd->getEventCallback()((Event&)ev);
+		});
+
+		glfwSetWindowCloseCallback(window, [](GLFWwindow* window)
+		{
+			Window* wnd = (Window*)glfwGetWindowUserPointer(window);
+
+			WindowCloseEvent ev(window);
+			wnd->getEventCallback()((Event&)ev);
+		});
+
+		glfwSetWindowFocusCallback(window, [](GLFWwindow* window, int focused)
+		{
+			Window* wnd = (Window*)glfwGetWindowUserPointer(window);
+
+			if (focused == GLFW_TRUE)
+			{
+				WindowFocusEvent ev(window);
+				wnd->getEventCallback()((Event&)ev);
+			}
+			else
+			{
+				WindowLostFocusEvent ev(window);
+				wnd->getEventCallback()((Event&)ev);
+			}
+		});
 
 		return true;
 	}
@@ -132,6 +177,17 @@ namespace Prehistoric
 	void WindowsWindow::Render(CommandBuffer* buffer) const
 	{
 		swapchain->SwapBuffers(buffer);
+	}
+
+	void WindowsWindow::OnEvent(Event& event)
+	{
+		EventDispatcher d(event);
+		d.Dispatch<WindowResizeEvent>(window_size_callback);
+		d.Dispatch<WindowCloseEvent>(window_close_callback);
+		d.Dispatch<WindowFocusEvent>(window_focus_callback);
+		d.Dispatch<WindowLostFocusEvent>(window_focus_lost_callback);
+
+		InputInstance.OnEvent(event);
 	}
 
 	void WindowsWindow::SetFullscreen(bool fullscreen)
