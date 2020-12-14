@@ -34,6 +34,8 @@ namespace Prehistoric
 
 		bool IsPause() const { return pause; }
 		void setPause(bool pause) { Input::pause = pause; }
+		bool IsPauseRendering() const { return pauseRendering; }
+		void setPauseRendering(bool pauseRendering) { Input::pauseRendering = pauseRendering; }
 
 		Vector2f getCursorPosition() const { return cursorPosition; }
 		void setCursorPosition(const Vector2f& cursorPosition) { Input::cursorPosition = cursorPosition; }
@@ -77,6 +79,7 @@ namespace Prehistoric
 		float scrollOffset;
 
 		bool pause;
+		bool pauseRendering;
 	};
 };
 

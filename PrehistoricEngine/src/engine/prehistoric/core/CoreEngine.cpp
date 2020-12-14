@@ -125,6 +125,21 @@ namespace Prehistoric
 			long long passedTime = startTime - lastTime;
 			lastTime = startTime;
 
+			//This piece of code is put here so that whenever the window is iconified, the only code that runs is what is absolutely necessary
+			//The code before this check is necessary so that the elapsed time is not tracked, but updated (lastTime = startTime)
+			if (InputInstance.IsPause())
+			{
+				//Checks for updates, so that we can restore the window later
+				InputInstance.Update();
+				renderingEngine->getWindow()->Input();
+
+				//Makes sure that this loop only runs a 1000 times per second at most, avoiding unnecessary CPU load
+				using namespace std::chrono_literals;
+				std::this_thread::sleep_for(1ms);
+
+				continue;
+			}
+
 			unprocessedTime += passedTime / NANOSECOND;
 			frameCounter += passedTime;
 
@@ -150,7 +165,7 @@ namespace Prehistoric
 				}
 			}
 
-			if (render && !InputInstance.IsPause())
+			if (render && !InputInstance.IsPauseRendering())
 			{
 				Render();
 				frames++;

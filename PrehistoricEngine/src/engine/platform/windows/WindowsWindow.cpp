@@ -12,6 +12,8 @@
 #include "prehistoric/core/events/KeyEvent.h"
 #include "prehistoric/core/events/MouseEvent.h"
 
+#include <Windows.h>
+
 namespace Prehistoric
 {
 	static bool window_size_callback(WindowResizeEvent& event)
@@ -35,19 +37,37 @@ namespace Prehistoric
 
 	static bool window_focus_callback(WindowFocusEvent& event)
 	{
-		InputInstance.setPause(false);
+		InputInstance.setPauseRendering(false);
 		return true;
 	}
 
 	static bool window_focus_lost_callback(WindowLostFocusEvent& event)
 	{
+		InputInstance.setPauseRendering(true);
+		return true;
+	}
+
+	static bool window_iconified_callback(WindowIconifiedEvent& event)
+	{
 		InputInstance.setPause(true);
+		return true;
+	}
+
+	static bool window_restored_callback(WindowRestoredEvent& event)
+	{
+		InputInstance.setPause(false);
 		return true;
 	}
 
 	static void error_callback(int error, const char* description)
 	{
 		PR_LOG_ERROR("Error: %s\n", description);
+	}
+
+	WindowsWindow::~WindowsWindow()
+	{
+		glfwDestroyWindow(window);
+		glfwTerminate();
 	}
 
 	bool WindowsWindow::Create()
@@ -149,13 +169,23 @@ namespace Prehistoric
 			}
 		});
 
-		return true;
-	}
+		glfwSetWindowIconifyCallback(window, [](GLFWwindow* window, int iconified)
+		{
+			Window* wnd = (Window*)glfwGetWindowUserPointer(window);
 
-	WindowsWindow::~WindowsWindow()
-	{
-		glfwDestroyWindow(window);
-		glfwTerminate();
+			if (iconified == GLFW_TRUE)
+			{
+				WindowIconifiedEvent ev(window);
+				wnd->getEventCallback()((Event&)ev);
+			}
+			else
+			{
+				WindowRestoredEvent ev(window);
+				wnd->getEventCallback()((Event&)ev);
+			}
+		});
+
+		return true;
 	}
 
 	bool WindowsWindow::initGLFW() const
@@ -186,6 +216,8 @@ namespace Prehistoric
 		d.Dispatch<WindowCloseEvent>(window_close_callback);
 		d.Dispatch<WindowFocusEvent>(window_focus_callback);
 		d.Dispatch<WindowLostFocusEvent>(window_focus_lost_callback);
+		d.Dispatch<WindowIconifiedEvent>(window_iconified_callback);
+		d.Dispatch<WindowRestoredEvent>(window_restored_callback);
 
 		InputInstance.OnEvent(event);
 	}

@@ -64,6 +64,22 @@ namespace Prehistoric
 		EVENT_CLASS_TYPE(WindowLostFocus)
 	};
 
+	class WindowIconifiedEvent : public WindowEvent
+	{
+	public:
+		WindowIconifiedEvent(void* handle) : WindowEvent(handle) {}
+
+		EVENT_CLASS_TYPE(WindowIconified)
+	};
+
+	class WindowRestoredEvent : public WindowEvent
+	{
+	public:
+		WindowRestoredEvent(void* handle) : WindowEvent(handle) {}
+
+		EVENT_CLASS_TYPE(WindowRestored)
+	};
+
 	class AppInputEvent : public Event
 	{
 	public:
