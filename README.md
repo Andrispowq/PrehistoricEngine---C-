@@ -39,3 +39,7 @@ A helpful debug mode, rendering everything in wireframe:
 ## Building the engine
 
 The engine uses Premake 5.0 as it's build system. To learn more about using it, please click [here](BUILDING.md).
+
+## Using the engine
+
+If you don't want to compile the engine yourself, you should download the installer of one of the engine's releases. For more information, please click [here](INSTALLING.md).
