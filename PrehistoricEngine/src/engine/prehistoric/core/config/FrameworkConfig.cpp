@@ -85,25 +85,40 @@ namespace Prehistoric
 					{
 						if (nameTokens[1] == "use")
 						{
-							std::string name = nameTokens[1];
+							std::string name = tokens[1];
 							API api = NO_API;
 
-							switch (api)
+							if (name == "OpenGL")
 							{
-							case OpenGL:
 								api = OpenGL;
-							case Vulkan:
+							}
+							else if(name == "Vulkan")
+							{
 								api = Vulkan;
-							case Vulkan_RTX:
+							}
+							else if (name == "Vulkan_RTX")
+							{
 								api = Vulkan_RTX;
-							case DirectX_11:
+							}
+							else if (name == "DirectX_11")
+							{
 								api = DirectX_11;
-							case DirectX_12:
+							}
+							else if (name == "DirectX_12")
+							{
 								api = DirectX_12;
-							case DirectX_DXR:
+							}
+							else if (name == "DirectX_DXR")
+							{
 								api = DirectX_DXR;
 							}
+							else
+							{
+								api = NO_API;
+								PR_LOG_RUNTIME_ERROR("ERROR: No API is currently not supported in the engine!\n");
+							}
 
+							FrameworkConfig::api = api;
 							apiVersion = apiVersions[api];
 						}
 						else
@@ -111,19 +126,28 @@ namespace Prehistoric
 							std::string name = nameTokens[1];
 							API api = NO_API;
 
-							switch (api)
+							if (name == "OpenGL")
 							{
-							case OpenGL:
 								api = OpenGL;
-							case Vulkan:
+							}
+							else if (name == "Vulkan")
+							{
 								api = Vulkan;
-							case Vulkan_RTX:
+							}
+							else if (name == "Vulkan_RTX")
+							{
 								api = Vulkan_RTX;
-							case DirectX_11:
+							}
+							else if (name == "DirectX_11")
+							{
 								api = DirectX_11;
-							case DirectX_12:
+							}
+							else if (name == "DirectX_12")
+							{
 								api = DirectX_12;
-							case DirectX_DXR:
+							}
+							else if (name == "DirectX_DXR")
+							{
 								api = DirectX_DXR;
 							}
 

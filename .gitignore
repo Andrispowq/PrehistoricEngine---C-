@@ -1,6 +1,7 @@
 # Binary output
 bin/
 bin-int/
+Output/
 #
 # Github and Visual Studio files
 .git/

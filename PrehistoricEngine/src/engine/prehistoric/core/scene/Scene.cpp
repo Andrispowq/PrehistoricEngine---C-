@@ -43,7 +43,7 @@ namespace Prehistoric
 			material->addFloat(OCCLUSION, 1);
 
 			RendererComponent* renderer = new RendererComponent(pipelineID, materialID, window, manager);
-			RendererComponent* renderer2 = new RendererComponent(pipelineID, materialID, window, manager);
+			//RendererComponent* renderer2 = new RendererComponent(pipelineID, materialID, window, manager);
 
 			GameObject* obj = new GameObject();
 			obj->AddComponent(RENDERER_COMPONENT, renderer);
@@ -51,11 +51,11 @@ namespace Prehistoric
 			obj->Move({ 0, 0, 0 });
 			root->AddChild("OBJ", obj);
 
-			GameObject* obj2 = new GameObject();
+			/*GameObject* obj2 = new GameObject();
 			obj2->AddComponent(RENDERER_COMPONENT, renderer2);
 			obj2->Rotate({ -90, 0, 0 });
 			obj2->Move({ 0, 0, -4 });
-			root->AddChild("OBJ2", obj2);
+			root->AddChild("OBJ2", obj2);*/
 
 			GameObject* light2 = new GameObject();
 			light2->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0, 0), Vector3f(1000.0f)));
