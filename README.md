@@ -1,5 +1,5 @@
 # Prehistoric Engine C++
-Prehistoric Engine is an interactive application and 2D/3D game engine under development, written in C++. It uses OpenGL and Vulkan APIs to render high-end 3D graphics. 
+Prehistoric Engine is an interactive application and 2D/3D game engine under development, written in C++. It uses the OpenGL and Vulkan APIs to render high-end 3D graphics. 
 The engine is completely customisable after compilation with the help of configuration files, including settings like window size, FPS cap, rendering settings, the scene.
 
 This repository not only contains the engine, but also an example project built using the engine's features.
