@@ -1,12 +1,16 @@
 # Binary output
-bin/
-bin-int/
+**/bin/
+**/bin-int/
 Output/
-#
+!vendor/premake/bin/
+
+# Prehistoric Engine files
+*.log
+
 # Github and Visual Studio files
 .git/
 .vs/
-#
+
 # Other VS files
 *.user
 **.sln
