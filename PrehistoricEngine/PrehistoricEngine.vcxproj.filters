@@ -181,6 +181,9 @@
     <Filter Include="prehistoric\core\events">
       <UniqueIdentifier>{ADA75547-19DF-9DDE-22E9-01028E9FC4D7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="prehistoric\core\layers">
+      <UniqueIdentifier>{88923856-F4C9-80ED-FDD3-E410698AA7E6}</UniqueIdentifier>
+    </Filter>
     <Filter Include="prehistoric\core\model">
       <UniqueIdentifier>{E98FCD5F-D589-F6B1-BEF6-8CC2AA8F5C1E}</UniqueIdentifier>
     </Filter>
@@ -377,7 +380,7 @@
     <ClInclude Include="src\engine\platform\vulkan\framework\surface\VKSurface.h">
       <Filter>platform\vulkan\framework\surface</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\framework\swapchain\VkSwapChain.h">
+    <ClInclude Include="src\engine\platform\vulkan\framework\swapchain\VKSwapchain.h">
       <Filter>platform\vulkan\framework\swapchain</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\platform\vulkan\rendering\VKRenderer.h">
@@ -404,13 +407,13 @@
     <ClInclude Include="src\engine\platform\vulkan\rendering\pipeline\VKGraphicsPipeline.h">
       <Filter>platform\vulkan\rendering\pipeline</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\rendering\pipeline\VkPipeline.h">
+    <ClInclude Include="src\engine\platform\vulkan\rendering\pipeline\VKPipeline.h">
       <Filter>platform\vulkan\rendering\pipeline</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\platform\vulkan\rendering\renderpass\VKRenderpass.h">
       <Filter>platform\vulkan\rendering\renderpass</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\rendering\shaders\VkShader.h">
+    <ClInclude Include="src\engine\platform\vulkan\rendering\shaders\VKShader.h">
       <Filter>platform\vulkan\rendering\shaders</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\platform\vulkan\rendering\shaders\basic\VKBasicShader.h">
@@ -533,6 +536,9 @@
     <ClInclude Include="src\engine\prehistoric\core\engines\AudioEngine.h">
       <Filter>prehistoric\core\engines</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\engines\Engine.h">
+      <Filter>prehistoric\core\engines</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\engines\RenderingEngine.h">
       <Filter>prehistoric\core\engines</Filter>
     </ClInclude>
@@ -547,6 +553,12 @@
     </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\events\MouseEvent.h">
       <Filter>prehistoric\core\events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\layers\Layer.h">
+      <Filter>prehistoric\core\layers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\layers\LayerStack.h">
+      <Filter>prehistoric\core\layers</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\model\Mesh.h">
       <Filter>prehistoric\core\model</Filter>
@@ -668,7 +680,6 @@
     <ClInclude Include="src\engine\prehistoric\core\util\time\Timer.h">
       <Filter>prehistoric\core\util\time</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\engines\Engine.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -786,7 +797,7 @@
     <ClCompile Include="src\engine\platform\vulkan\framework\surface\VKSurface.cpp">
       <Filter>platform\vulkan\framework\surface</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\platform\vulkan\framework\swapchain\VkSwapChain.cpp">
+    <ClCompile Include="src\engine\platform\vulkan\framework\swapchain\VKSwapchain.cpp">
       <Filter>platform\vulkan\framework\swapchain</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\vulkan\rendering\VKRenderer.cpp">
@@ -813,13 +824,13 @@
     <ClCompile Include="src\engine\platform\vulkan\rendering\pipeline\VKGraphicsPipeline.cpp">
       <Filter>platform\vulkan\rendering\pipeline</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\platform\vulkan\rendering\pipeline\VkPipeline.cpp">
+    <ClCompile Include="src\engine\platform\vulkan\rendering\pipeline\VKPipeline.cpp">
       <Filter>platform\vulkan\rendering\pipeline</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\vulkan\rendering\renderpass\VKRenderpass.cpp">
       <Filter>platform\vulkan\rendering\renderpass</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\platform\vulkan\rendering\shaders\VkShader.cpp">
+    <ClCompile Include="src\engine\platform\vulkan\rendering\shaders\VKShader.cpp">
       <Filter>platform\vulkan\rendering\shaders</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\vulkan\rendering\shaders\basic\VKBasicShader.cpp">
@@ -935,6 +946,12 @@
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\engines\RenderingEngine.cpp">
       <Filter>prehistoric\core\engines</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\layers\Layer.cpp">
+      <Filter>prehistoric\core\layers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\layers\LayerStack.cpp">
+      <Filter>prehistoric\core\layers</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\model\Mesh.cpp">
       <Filter>prehistoric\core\model</Filter>

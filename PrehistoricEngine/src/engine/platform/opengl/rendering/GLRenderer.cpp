@@ -7,6 +7,24 @@ namespace Prehistoric
 {
 	void GLRenderer::PrepareRendering()
 	{
+		if (window->isResized())
+		{
+			uint32_t width = window->getWidth();
+			uint32_t height = window->getHeight();
+
+			window->getSwapchain()->SetWindowSize(width, height);
+
+			//Recreate the pipelines
+			std::vector<Pipeline*> pipes = manager->get<Pipeline>();
+			for (Pipeline* pipe : pipes)
+			{
+				pipe->setViewportSize({ (float)width, (float)height });
+				pipe->setScissorSize({ width, height });
+				pipe->RecreatePipeline();
+			}
+
+			window->setResized(false);
+		}
 	}
 
 	void GLRenderer::EndRendering()

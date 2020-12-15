@@ -49,8 +49,9 @@ namespace Prehistoric
 	void VKRenderer::PrepareRendering()
 	{
 		VKSwapchain* swapchain = (VKSwapchain*)window->getSwapchain();
+		swapchain->GetNextImageIndex();
 
-		if (!swapchain->GetNextImageIndex())
+		if (window->isResized())
 		{
 			delete renderpass.release();
 			primaryFramebuffers.clear();
@@ -68,6 +69,7 @@ namespace Prehistoric
 			VKDevice* device = (VKDevice*)context->getDevice();
 
 			renderpass = std::make_unique<VKRenderpass>(physicalDevice, device->getDevice(), swapchain->getSwapchainImageFormat());
+			swapchain->setRenderpass(renderpass.get());
 
 			size_t NumImages = swapchain->getSwapchainImageViews().size();
 			primaryFramebuffers.resize(NumImages);
@@ -95,8 +97,12 @@ namespace Prehistoric
 			std::vector<Pipeline*> pipes = manager->get<Pipeline>();
 			for (Pipeline* pipe : pipes)
 			{
+				pipe->setViewportSize({ (float)width, (float)height });
+				pipe->setScissorSize({ width, height });
 				pipe->RecreatePipeline();
 			}
+
+			window->setResized(false);
 		}
 
 		uint32_t index = swapchain->getAquiredImageIndex();

@@ -44,7 +44,8 @@ namespace Prehistoric
 
 		uint32_t getWidth() const { return width; }
 		uint32_t getHeight() const { return height; }
-		bool getClosed() const { return closed; }
+		bool isClosed() const { return closed; }
+		bool isResized() const { return resized; }
 
 		Swapchain* getSwapchain() const { return swapchain.get(); }
 		Context* getContext() const { return context.get(); }
@@ -53,6 +54,8 @@ namespace Prehistoric
 		void setHeight(uint32_t height) { this->height = height; FrameworkConfig::windowHeight = height; }
 		void setClosed(const bool& closed) { this->closed = closed; }
 		void setClearColour(const Vector4f& clearColour) { swapchain->setClearColour(clearColour); }
+
+		void setResized(bool resized) { this->resized = resized; }
 
 		void setEventCallback(EventCallbackFn function) { this->eventCallback = function; }
 		EventCallbackFn getEventCallback() const { return eventCallback; }
@@ -64,6 +67,8 @@ namespace Prehistoric
 		const char* title;
 		bool fullscreen;
 		bool closed;
+
+		bool resized;
 
 		std::unique_ptr<Context> context;
 		std::unique_ptr<Swapchain> swapchain;

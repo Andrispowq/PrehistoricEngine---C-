@@ -10,7 +10,7 @@
 namespace Prehistoric
 {
 	Window::Window()
-		: swapchain(nullptr), context(nullptr)
+		: swapchain(nullptr), context(nullptr), resized(false)
 	{
 		this->width = FrameworkConfig::windowWidth;
 		this->height = FrameworkConfig::windowHeight;

@@ -65,7 +65,7 @@ namespace Prehistoric
 	{
 		if (FrameworkConfig::api == OpenGL)
 		{
-			renderer = std::make_unique<GLRenderer>(window.get(), camera.get());
+			renderer = std::make_unique<GLRenderer>(window.get(), camera.get(), manager);
 		}
 		else if (FrameworkConfig::api == Vulkan)
 		{

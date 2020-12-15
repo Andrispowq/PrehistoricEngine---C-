@@ -24,7 +24,7 @@ namespace Prehistoric
 		}
 
 		Window* window = (Window*)glfwGetWindowUserPointer((GLFWwindow*)event.getHandle());
-		window->getSwapchain()->SetWindowSize(event.getWidth(), event.getHeight());
+		window->setResized(true);
 		return true;
 	}
 
@@ -234,23 +234,27 @@ namespace Prehistoric
 			glfwGetWindowPos(window, &oldX, &oldY);
 			glfwGetWindowSize(window, &oldWidth, &oldHeight);
 
-			const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+			GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+			const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
 			width = mode->width;
 			height = mode->height;
 
-			glfwSetWindowMonitor(window, glfwGetWindowMonitor(window), 0, 0, width, height, 0);
+			glfwSetWindowMonitor(window, monitor, 0, 0, width, height, mode->refreshRate);
 		}
 		else
 		{
 			width = oldWidth;
 			height = oldHeight;
 
-			glfwSetWindowMonitor(window, nullptr, oldX, oldY, width, height, 0);
+			GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+			const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+			glfwSetWindowMonitor(window, nullptr, oldX, oldY, width, height, mode->refreshRate);
 		}
 
 		this->fullscreen = fullscreen;
-		swapchain->SetWindowSize(width, height);
+		this->resized = true;
 	}
 
 	bool WindowsWindow::IsFullscreen() const

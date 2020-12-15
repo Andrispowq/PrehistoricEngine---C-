@@ -126,7 +126,7 @@ namespace Prehistoric
 			lastTime = startTime;
 
 			//This piece of code is put here so that whenever the window is iconified, the only code that runs is what is absolutely necessary
-			//The code before this check is necessary so that the elapsed time is not tracked, but updated (lastTime = startTime)
+			//The code before this check is necessary so that the elapsed time is not tracked, but updated (lastTime = startTime)*
 			if (InputInstance.IsPause())
 			{
 				//Checks for updates, so that we can restore the window later

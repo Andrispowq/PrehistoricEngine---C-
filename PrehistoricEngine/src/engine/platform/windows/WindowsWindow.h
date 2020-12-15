@@ -42,6 +42,7 @@ namespace Prehistoric
 		int oldX, oldY;
 
 		GLFWwindow* window;
+		GLFWmonitor* monitor;
 	};
 };
 

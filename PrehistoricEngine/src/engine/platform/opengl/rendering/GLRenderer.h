@@ -5,18 +5,22 @@
 
 #include <glew.h>
 
+#include "prehistoric/core/resources/AssembledAssetManager.h"
+
 namespace Prehistoric
 {
 	class GLRenderer : public Renderer
 	{
 	public:
-		GLRenderer(Window* window, Camera* camera) : Renderer(window, camera) {}
+		GLRenderer(Window* window, Camera* camera, AssembledAssetManager* manager) : Renderer(window, camera), manager(manager) {}
 		virtual ~GLRenderer() {}
 
 		virtual void PrepareRendering();
 		virtual void EndRendering();
 
 		virtual void Render() override;
+	private:
+		AssembledAssetManager* manager;
 	};
 };
 
