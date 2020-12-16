@@ -3,7 +3,7 @@
 
 #include "prehistoric/common/framework/Window.h"
 
-#include <glew.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include "prehistoric/common/texture/TextureLoader.h"

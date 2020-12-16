@@ -3,6 +3,8 @@
 
 namespace Prehistoric
 {
+	static Window::EventCallbackFn static_callback;
+
 	static bool key_pressed_callback(KeyPressedEvent& event)
 	{
 		auto pushedKeys = InputInstance.getPushedKeys();
@@ -119,8 +121,56 @@ namespace Prehistoric
 		return true;
 	}
 
+	static bool joystick_connected_callback(JoystickConnectedEvent& event)
+	{
+		auto joysticks = InputInstance.getJoysticks();
+		JoystickID jid = event.getJoystickID();
+		uint16_t id = (uint16_t)jid;
+
+		if (!glfwJoystickIsGamepad(id))
+		{
+			PR_LOG_WARNING("Joystick %u is not a gamepad, and thus cannot be used by the engine!\n", id);
+			return false;
+		}
+
+		auto index = std::find(joysticks.begin(), joysticks.end(), jid);
+		if (index == joysticks.end())
+		{
+			joysticks.push_back(jid);
+		}
+
+		InputInstance.setJoysticks(joysticks);
+
+		return true;
+	}
+
+	static bool joystick_disconnected_callback(JoystickDisconnectedEvent& event)
+	{
+		auto joysticks = InputInstance.getJoysticks();
+		JoystickID jid = event.getJoystickID();
+		uint16_t id = (uint16_t)jid;
+
+		if (!glfwJoystickIsGamepad(id))
+		{
+			PR_LOG_WARNING("Joystick %u is not a gamepad, and thus cannot be used by the engine!\n", id);
+			return false;
+		}
+
+		auto index = std::find(joysticks.begin(), joysticks.end(), jid);
+		if (index == joysticks.end())
+		{
+			joysticks.erase(index);
+		}
+
+		InputInstance.setJoysticks(joysticks);
+
+		return true;
+	}
+
 	bool WindowsInput::Init(Window* window) const
 	{
+		static_callback = window->getEventCallback();
+
 		GLFWwindow* id = reinterpret_cast<GLFWwindow*>(window->getWindowHandle());
 
 		glfwSetKeyCallback(id, [](GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -193,6 +243,20 @@ namespace Prehistoric
 			wnd->getEventCallback()((Event&)ev);
 		});
 
+		glfwSetJoystickCallback([](int jid, int event)
+		{
+			if (event == GLFW_CONNECTED)
+			{
+				JoystickConnectedEvent ev((JoystickID)jid);
+				static_callback((Event&)ev); //TODO: this is not a pretty thing, this should disappear later on
+			}
+			else
+			{
+				JoystickDisconnectedEvent ev((JoystickID)jid);
+				static_callback((Event&)ev); //TODO: this is not a pretty thing, this should disappear later on
+			}
+		});
+
 		return true;
 	}
 
@@ -203,38 +267,26 @@ namespace Prehistoric
 		pushedKeys.clear();
 		pushedButtons.clear();
 
-		//Set up joystick/gamepad
 		for (uint32_t i = 0; i < MAX_NUM_JOYSTICKS; i++)
 		{
 			joystickButtons[i].clear();
 			joystickAxes[i].clear();
+		}
 
-			if (glfwJoystickPresent(GLFW_JOYSTICK_1 + i))
+		//Set up joystick/gamepad
+		for (uint32_t i = 0; i < joysticks.size(); i++)
+		{
+			GLFWgamepadstate state;
+			glfwGetGamepadState(GLFW_JOYSTICK_1 + i, &state);
+
+			for (uint32_t j = 0; j < sizeof(state.buttons) / sizeof(state.buttons[0]); j++)
 			{
-				const char* name = glfwGetJoystickName(GLFW_JOYSTICK_1 + i);
+				joystickButtons[i].push_back((int)state.buttons[j]);
+			}
 
-				if (name == NULL)
-					PR_LOG_ERROR("There is no joystick/gamepad number %i present!\n", i + 1);
-
-				if (glfwJoystickIsGamepad(GLFW_JOYSTICK_1 + i))
-				{
-					GLFWgamepadstate state;
-					glfwGetGamepadState(GLFW_JOYSTICK_1 + i, &state);
-
-					for (uint32_t j = 0; j < sizeof(state.buttons) / sizeof(state.buttons[0]); j++)
-					{
-						joystickButtons[i].push_back(state.buttons[j]);
-					}
-
-					for (uint32_t j = 0; j < sizeof(state.axes) / sizeof(state.axes[0]); j++)
-					{
-						joystickAxes[i].push_back(state.axes[j]);
-					}
-				}
-				else
-				{
-					PR_LOG_WARNING("Joystick %i is not a gamepad, and thus cannot be used by the game!\n", i + 1);
-				}
+			for (uint32_t j = 0; j < sizeof(state.axes) / sizeof(state.axes[0]); j++)
+			{
+				joystickAxes[i].push_back((float)state.axes[j]);
 			}
 		}
 
@@ -250,6 +302,8 @@ namespace Prehistoric
 		d.Dispatch<MouseButtonReleasedEvent>(mouse_button_released_callback);
 		d.Dispatch<MouseMovedEvent>(mouse_moved_callback);
 		d.Dispatch<MouseScrolledEvent>(mouse_scrolled_callback);
+		d.Dispatch<JoystickConnectedEvent>(joystick_connected_callback);
+		d.Dispatch<JoystickDisconnectedEvent>(joystick_disconnected_callback);
 	}
 
 	void WindowsInput::setCursorPositionOnScreen(Window* window, const Vector2f& cursorPosition)

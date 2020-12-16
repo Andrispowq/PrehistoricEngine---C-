@@ -47,6 +47,7 @@ namespace Prehistoric
 
 		//Engines' initialisation
 		renderingEngine = std::make_unique<RenderingEngine>();
+		renderingEngine->getWindow()->setEventCallback(std::bind(&CoreEngine::OnEvent, this, std::placeholders::_1));
 		audioEngine = std::make_unique<AudioEngine>();
 
 		//Input initialisation
@@ -55,7 +56,6 @@ namespace Prehistoric
 		//Manager and the renderers in the rendering engine
 		manager = std::make_unique<AssembledAssetManager>(renderingEngine->getWindow());
 		renderingEngine->Init(manager.get());
-		renderingEngine->getWindow()->setEventCallback(std::bind(&CoreEngine::OnEvent, this, std::placeholders::_1));
 	}
 
 	void CoreEngine::LoadScene(const std::string& worldFile)

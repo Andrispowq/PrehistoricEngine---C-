@@ -3,7 +3,7 @@
 
 #include "prehistoric/common/rendering/framebuffer/Framebuffer.h"
 
-#include <glew.h>
+#include <glad/glad.h>
 
 namespace Prehistoric
 {

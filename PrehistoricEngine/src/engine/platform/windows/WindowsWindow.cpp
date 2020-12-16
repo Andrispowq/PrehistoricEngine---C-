@@ -121,7 +121,9 @@ namespace Prehistoric
 		}
 
 		//Input is static so we can use it in the callbacks, but window is not, so we need a way to get it
+		//For the joystick callbacks, we can't access the window, so we use this hack by setting the primary monitor's user pointer to the Window
 		glfwSetWindowUserPointer(window, (void*)this);
+		glfwSetMonitorUserPointer(glfwGetPrimaryMonitor(), (void*)this);
 
 		ImageData data = TextureLoader::LoadTextureData("res/textures/logo.png");
 

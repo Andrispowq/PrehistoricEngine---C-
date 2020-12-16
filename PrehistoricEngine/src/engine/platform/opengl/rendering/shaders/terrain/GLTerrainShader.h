@@ -3,7 +3,7 @@
 
 #include "Includes.hpp"
 
-#include <glew.h>
+#include <glad/glad.h>
 
 #include "platform/opengl/rendering/shaders/GLShader.h"
 

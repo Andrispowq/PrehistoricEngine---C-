@@ -3,7 +3,7 @@
 
 #include "prehistoric/common/buffer/ShaderStorageBuffer.h"
 
-#include <glew.h>
+#include <glad/glad.h>
 
 namespace Prehistoric
 {

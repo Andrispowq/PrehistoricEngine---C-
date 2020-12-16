@@ -12,14 +12,6 @@
 
 namespace Prehistoric
 {
-	struct WindowData
-	{
-		uint32_t width;
-		uint32_t height;
-
-		std::unique_ptr<Swapchain> swapchain;
-	};
-
 	class Window
 	{
 	public:

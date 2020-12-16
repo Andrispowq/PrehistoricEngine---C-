@@ -106,14 +106,11 @@ namespace Prehistoric
 		: Context(window)
 	{
 		glfwMakeContextCurrent(reinterpret_cast<GLFWwindow*>(window->getWindowHandle()));
+		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
-		GLenum error = glewInit();
-
-		glewExperimental = GL_FALSE;
-
-		if (error != GLEW_OK)
+		if (status != 1)
 		{
-			PR_LOG_ERROR("The initialisation of OpenGL Extension Wrangler Library (GLEW) has failed! The error: \n%s\n", glewGetErrorString(error));
+			PR_LOG_ERROR("The initialisation of GLAD has failed! The error: %i\n", status);
 
 			glfwTerminate();
 		}

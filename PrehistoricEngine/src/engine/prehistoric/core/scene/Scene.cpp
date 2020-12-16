@@ -66,14 +66,14 @@ namespace Prehistoric
 		{
 			loader.LoadWorld(worldFile, root, window, manager);
 
-			root->AddChild("Atmosphere", new Atmosphere(window, manager));
+			//root->AddChild("Atmosphere", new Atmosphere(window, manager));
 
-			Terrain* terrain = new Terrain(window, camera, manager, "res/config/terrain_0.cfg");
-			terrain->UpdateQuadtree();
+			//Terrain* terrain = new Terrain(window, camera, manager, "res/config/terrain_0.cfg");
+			//terrain->UpdateQuadtree();
 
-			root->AddChild("Terrain", terrain);
+			//root->AddChild("Terrain", terrain);
 
-			GameObject* slider = new GUISlider(window, manager, 0.0f, 2.0f, terrain->getMaps()->getHeightmap(), &EngineConfig::rendererExposure, sizeof(float), true);
+			/*GameObject* slider = new GUISlider(window, manager, 0.0f, 2.0f, terrain->getMaps()->getHeightmap(), &EngineConfig::rendererExposure, sizeof(float), true);
 			slider->SetPosition({ 0.5f, 0.5f, 0 });
 			slider->SetScale({ 0.125f, 0.05f, 1 });
 			root->AddChild("slider", slider);
@@ -81,7 +81,7 @@ namespace Prehistoric
 			GameObject* slider2 = new GUISlider(window, manager, 1.0f, 3.4f, terrain->getMaps()->getHeightmap(), &EngineConfig::rendererGamma, sizeof(float), true);
 			slider2->SetPosition({ 0.5f, 0.25f, 0 });
 			slider2->SetScale({ 0.125f, 0.05f, 1 });
-			root->AddChild("slider2", slider2);
+			root->AddChild("slider2", slider2);*/
 
 			EnvironmentMapRenderer::instance = new EnvironmentMapRenderer(window, manager);
 			EnvironmentMapRenderer::instance->GenerateEnvironmentMap();

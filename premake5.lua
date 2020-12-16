@@ -18,12 +18,13 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
 IncludeDir["GLFW"] = "%{wks.location}/PrehistoricEngine/vendor/GLFW/include"
+IncludeDir["GLAD"] = "%{wks.location}/PrehistoricEngine/vendor/GLAD/include"
 IncludeDir["Vulkan"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/Vulkan"
-IncludeDir["GLEW"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/GLEW"
 IncludeDir["AL"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/AL"
 IncludeDir["STB"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/stb"
 
 include "PrehistoricEngine/vendor/GLFW"
+include "PrehistoricEngine/vendor/GLAD"
 
 project "PrehistoricEngine"
     location "PrehistoricEngine"
@@ -54,8 +55,8 @@ project "PrehistoricEngine"
     includedirs
     {
         "%{IncludeDir.GLFW}",
+        "%{IncludeDir.GLAD}",
         "%{IncludeDir.Vulkan}",
-        "%{IncludeDir.GLEW}",
         "%{IncludeDir.AL}",
         "%{IncludeDir.STB}",
         "%{prj.location}/src/engine"
@@ -64,10 +65,10 @@ project "PrehistoricEngine"
     links
     {
         "%{wks.location}/PrehistoricEngine/Dependencies/lib/Vulkan/vulkan-1.lib",
-        "%{wks.location}/PrehistoricEngine/Dependencies/lib/GLEW/glew32s.lib",
         "%{wks.location}/PrehistoricEngine/Dependencies/lib/AL/OpenAL32.lib",
         "opengl32.lib",
-        "GLFW"
+        "GLFW",
+        "GLAD"
     }
 
     filter "system:windows"
@@ -75,8 +76,7 @@ project "PrehistoricEngine"
 
         defines
         {
-            "PR_FAST_MATH",
-            "GLEW_STATIC"
+            "PR_FAST_MATH"
         }
     
     filter "configurations:Debug"
@@ -114,8 +114,8 @@ project "Prehistoric"
     includedirs
     {
         "%{IncludeDir.GLFW}",
+        "%{IncludeDir.GLAD}",
         "%{IncludeDir.Vulkan}",
-        "%{IncludeDir.GLEW}",
         "%{IncludeDir.AL}",
         "%{IncludeDir.STB}",
         "%{prj.location}/src",

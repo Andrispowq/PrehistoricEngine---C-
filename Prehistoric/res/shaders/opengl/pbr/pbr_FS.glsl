@@ -157,7 +157,12 @@ void main()
 	vec3 diffuse = irradiance * albedoColour;
 	
 	const float MAX_REFLECTION_LOD = 4.0;
-	vec3 prefilteredColour = textureLod(prefilterMap, R,  roughness * MAX_REFLECTION_LOD).rgb;
+	float lod = roughness * MAX_REFLECTION_LOD;
+	float lodf = floor(lod);
+	float lodc = ceil(lod);
+	vec3 a = textureLod(prefilterMap, R, lodf).rgb;
+	vec3 b = textureLod(prefilterMap, R, lodc).rgb;
+	vec3 prefilteredColour = mix(a, b, lod - lodf);
 	vec2 envBRDF = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
 	vec3 specular = prefilteredColour * (F * envBRDF.x + envBRDF.y);
 
@@ -187,8 +192,8 @@ float DistributionGGX(vec3 N, vec3 H, float roughness)
 
 float GeometrySchlickGGX(float NdotV, float roughness)
 {
-    float r = (roughness + 1.0);
-    float k = (r * r) / 8.0;
+    float r = roughness;
+    float k = (r * r) / 2.0;
 
     float num = NdotV;
     float denom = NdotV * (1.0 - k) + k;

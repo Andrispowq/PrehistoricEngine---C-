@@ -3,7 +3,7 @@
 
 #include "prehistoric/common/buffer/PatchVertexBuffer.h"
 
-#include <glew.h>
+#include <glad/glad.h>
 
 namespace Prehistoric
 {

@@ -3,7 +3,7 @@
 
 #include "prehistoric/common/framework/swapchain/Swapchain.h"
 
-#include <glew.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 namespace Prehistoric

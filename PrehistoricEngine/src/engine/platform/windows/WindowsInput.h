@@ -9,6 +9,7 @@
 
 #include "prehistoric/core/events/KeyEvent.h"
 #include "prehistoric/core/events/MouseEvent.h"
+#include "prehistoric/core/events/JoystickEvent.h"
 
 namespace Prehistoric
 {

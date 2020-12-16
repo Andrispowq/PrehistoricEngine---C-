@@ -85,7 +85,7 @@ namespace Prehistoric
 		}
 	}
 
-	void VKTexture::SamplerProperties(SamplerFilter filter, TextureWrapMode wrapMode)
+	void VKTexture::SamplerProperties(SamplerFilter filter, TextureWrapMode wrapMode, bool generate_mipmaps)
 	{
 		//We recreate the sampler
 		vkDestroySampler(device->getDevice(), textureSampler, nullptr);
@@ -173,6 +173,10 @@ namespace Prehistoric
 		{
 			PR_LOG_RUNTIME_ERROR("Failed to create texture sampler!\n");
 		}
+	}
+
+	void VKTexture::GenerateMipmaps()
+	{
 	}
 
 	VkFormat VKTexture::getFormat(ImageFormat format) const

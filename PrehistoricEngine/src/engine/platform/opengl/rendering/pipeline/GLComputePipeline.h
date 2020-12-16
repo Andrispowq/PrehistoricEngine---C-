@@ -4,7 +4,7 @@
 #include "prehistoric/common/rendering/pipeline/ComputePipeline.h"
 #include "GLPipeline.h"
 
-#include <glew.h>
+#include <glad/glad.h>
 
 #include "platform/opengl/texture/GLTexture.h"
 

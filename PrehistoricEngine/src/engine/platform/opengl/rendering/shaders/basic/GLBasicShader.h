@@ -3,7 +3,7 @@
 
 #include "platform/opengl/rendering/shaders/GLShader.h"
 
-#include <glew.h>
+#include <glad/glad.h>
 
 #include "prehistoric/core/node/GameObject.h"
 #include "prehistoric/core/node/movement/Camera.h"

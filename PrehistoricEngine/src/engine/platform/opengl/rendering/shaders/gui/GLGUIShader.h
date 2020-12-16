@@ -1,7 +1,7 @@
 #ifndef GL_GUI_SHADER_H
 #define GL_GUI_SHADER_H
 
-#include <glew.h>
+#include <glad/glad.h>
 
 #include "platform/opengl/rendering/shaders/GLShader.h"
 

@@ -1,5 +1,5 @@
 #include "Includes.hpp"
-#include <glew.h>
+#include <glad/glad.h>
 #include "VkPipeline.h"
 #include "platform/vulkan/framework/swapchain/VKSwapchain.h"
 #include "platform/vulkan/rendering/shaders/VkShader.h"

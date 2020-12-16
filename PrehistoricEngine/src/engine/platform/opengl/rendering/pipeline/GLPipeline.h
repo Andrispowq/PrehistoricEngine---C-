@@ -3,7 +3,7 @@
 
 #include "prehistoric/common/rendering/pipeline/Pipeline.h"
 
-#include <glew.h>
+#include <glad/glad.h>
 
 #include "prehistoric/common/framework/Window.h"
 

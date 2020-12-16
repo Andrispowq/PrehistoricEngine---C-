@@ -3,7 +3,7 @@
 
 #include "prehistoric/common/rendering/shaders/Shader.h"
 
-#include <glew.h>
+#include <glad/glad.h>
 
 #include <fstream>
 

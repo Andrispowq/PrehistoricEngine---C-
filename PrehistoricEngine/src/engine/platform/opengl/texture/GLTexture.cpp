@@ -65,10 +65,10 @@ namespace Prehistoric
 
 	void GLTexture::UploadHDRTextureData(float* data)
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_RGB, GL_FLOAT, data);
 	}
 
-	void GLTexture::SamplerProperties(SamplerFilter filter, TextureWrapMode wrapMode)
+	void GLTexture::SamplerProperties(SamplerFilter filter, TextureWrapMode wrapMode, bool generate_mipmaps)
 	{
 		GLenum type_ = getTexType(type);
 
@@ -85,12 +85,14 @@ namespace Prehistoric
 		case Trilinear:
 			glTexParameteri(type_, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 			glTexParameteri(type_, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glGenerateMipmap(type_);
+			if (generate_mipmaps)
+				glGenerateMipmap(type_);
 			break;
 		case Anisotropic:
 			glTexParameteri(type_, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 			glTexParameteri(type_, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glGenerateMipmap(type_);
+			if (generate_mipmaps)
+				glGenerateMipmap(type_);
 
 			if (GL_EXT_texture_filter_anisotropic)
 			{
@@ -141,6 +143,11 @@ namespace Prehistoric
 		}
 	}
 
+	void GLTexture::GenerateMipmaps()
+	{
+		glGenerateMipmap(getTexType(type));
+	}
+
 	Texture* GLTexture::GenTexture(const std::string& file, SamplerFilter filter, TextureWrapMode wrapMode)
 	{
 		Texture* texture = TextureLoader::LoadTexture(file, nullptr);
@@ -149,7 +156,7 @@ namespace Prehistoric
 		return texture;
 	}
 
-	Texture* GLTexture::Storage3D(uint32_t width, uint32_t height, uint32_t level, ImageFormat format, SamplerFilter filter, TextureWrapMode wrapMode)
+	Texture* GLTexture::Storage3D(uint32_t width, uint32_t height, uint32_t level, ImageFormat format, SamplerFilter filter, TextureWrapMode wrapMode, bool generate_mipmaps)
 	{
 		Texture* texture = new GLTexture(width, height, format, TEXTURE_CUBE_MAP);
 		texture->Bind();
@@ -159,19 +166,19 @@ namespace Prehistoric
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, level, getInternalFormat(format), width, height, 0, getFormat(format), GL_FLOAT, nullptr);
 		}
 
-		texture->SamplerProperties(filter, wrapMode);
+		texture->SamplerProperties(filter, wrapMode, generate_mipmaps);
 		texture->Unbind();
 		return texture;
 	}
 
-	Texture* GLTexture::Storage2D(uint32_t width, uint32_t height, uint32_t levels, ImageFormat format, SamplerFilter filter, TextureWrapMode wrapMode)
+	Texture* GLTexture::Storage2D(uint32_t width, uint32_t height, uint32_t levels, ImageFormat format, SamplerFilter filter, TextureWrapMode wrapMode, bool generate_mipmaps)
 	{
 		Texture* texture = new GLTexture(width, height, format);
 		texture->Bind();
 
 		glTexStorage2D(GL_TEXTURE_2D, levels, getInternalFormat(format), width, height);
 
-		texture->SamplerProperties(filter, wrapMode);
+		texture->SamplerProperties(filter, wrapMode, generate_mipmaps);
 		texture->Unbind();
 		return texture;
 	}
@@ -217,11 +224,11 @@ namespace Prehistoric
 	GLenum GLTexture::getFormat(ImageFormat format)
 	{
 		if (format == R8_SRGB || format == R8_LINEAR)
-			return GL_R;
+			return GL_RED;
 		if (format == R16_SFLOAT || format == R16_LINEAR)
-			return GL_R;
+			return GL_RED;
 		if (format == R32_SFLOAT || format == R32_LINEAR)
-			return GL_R;
+			return GL_RED;
 		if (format == R8G8_SRGB || format == R8G8_LINEAR)
 			return GL_RG;
 		if (format == R16G16_SFLOAT || format == R16G16_LINEAR)

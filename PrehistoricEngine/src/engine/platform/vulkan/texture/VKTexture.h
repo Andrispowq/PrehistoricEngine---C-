@@ -23,7 +23,8 @@ namespace Prehistoric
 		virtual void UploadTextureData(unsigned char* pixels, ImageFormat format) override;
 		virtual void Generate() override;
 
-		virtual void SamplerProperties(SamplerFilter filter, TextureWrapMode wrapMode) override;
+		virtual void SamplerProperties(SamplerFilter filter, TextureWrapMode wrapMode, bool generate_mipmaps = true) override;
+		virtual void GenerateMipmaps() override;
 
 		VkImageView& getTextureImageView() { return textureImageView; }
 		VkSampler& getTextureSampler() { return textureSampler; }

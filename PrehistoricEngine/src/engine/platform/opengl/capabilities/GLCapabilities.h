@@ -3,7 +3,7 @@
 
 #include "prehistoric/common/capabilities/Capabilities.h"
 
-#include <glew.h>
+#include <glad/glad.h>
 
 namespace Prehistoric
 {

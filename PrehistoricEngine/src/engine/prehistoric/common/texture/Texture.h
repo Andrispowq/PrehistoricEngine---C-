@@ -39,7 +39,8 @@ namespace Prehistoric
 		virtual void UploadTextureData(unsigned char* data, ImageFormat format) = 0;
 		virtual void Generate() = 0;
 
-		virtual void SamplerProperties(SamplerFilter filter, TextureWrapMode wrapMode) = 0;
+		virtual void SamplerProperties(SamplerFilter filter, TextureWrapMode wrapMode, bool generate_mipmaps = true) = 0;
+		virtual void GenerateMipmaps() = 0;
 
 		inline uint32_t getWidth() const { return width; }
 		inline uint32_t getHeight() const { return height; }

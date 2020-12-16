@@ -8,7 +8,7 @@
 
 #define InputInstance Input::getInstance()
 
-#define MAX_NUM_JOYSTICKS 2
+#define MAX_NUM_JOYSTICKS 16
 
 namespace Prehistoric
 {
@@ -54,11 +54,15 @@ namespace Prehistoric
 		inline std::vector<int> getPushedButtons() const { return pushedButtons; }
 		inline std::vector<int> getButtonsHolding() const { return buttonsHolding; }
 
+		inline std::vector<JoystickID> getJoysticks() const { return joysticks; }
+
 		inline void setPushedKeys(const std::vector<int>& pushedKeys) { this->pushedKeys = pushedKeys; }
 		inline void setKeysHolding(const std::vector<int>& keysHolding) { this->keysHolding = keysHolding; }
 
 		inline void setPushedButtons(const std::vector<int>& pushedButtons) { this->pushedButtons = pushedButtons; }
 		inline void setButtonsHolding(const std::vector<int>& buttonsHolding) { this->buttonsHolding = buttonsHolding; }
+
+		inline void setJoysticks(const std::vector<JoystickID>& joysticks) { this->joysticks = joysticks; }
 	protected:
 		Input() : scrollOffset(0.0f), pause(false) {};
 		virtual ~Input() {}
@@ -73,6 +77,8 @@ namespace Prehistoric
 
 		std::vector<int> joystickButtons[MAX_NUM_JOYSTICKS];
 		std::vector<float> joystickAxes[MAX_NUM_JOYSTICKS];
+
+		std::vector<JoystickID> joysticks;
 
 		Vector2f cursorPosition;
 		Vector2f lockedCursorPosition;

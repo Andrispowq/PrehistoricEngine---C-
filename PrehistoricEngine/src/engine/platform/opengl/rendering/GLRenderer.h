@@ -3,7 +3,7 @@
 
 #include "prehistoric/common/rendering/Renderer.h"
 
-#include <glew.h>
+#include <glad/glad.h>
 
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 

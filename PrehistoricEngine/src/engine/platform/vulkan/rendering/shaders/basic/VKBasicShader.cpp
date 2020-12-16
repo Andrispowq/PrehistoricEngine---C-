@@ -1,5 +1,5 @@
 #include "Includes.hpp"
-#include <glew.h>
+#include <glad/glad.h>
 #include "VKBasicShader.h"
 
 namespace Prehistoric

@@ -99,7 +99,7 @@ namespace Prehistoric
 		framebuffer->addDepthAttachment(size, size);
 		window->getSwapchain()->SetWindowSize(size, size);
 
-		environmentMap = GLTexture::Storage3D(size, size, 0, R8G8B8A8_LINEAR, Bilinear, ClampToEdge);
+		environmentMap = GLTexture::Storage3D(size, size, 0, R8G8B8_LINEAR, Trilinear, ClampToEdge, false);
 		environmentMapID = manager->getAssetManager()->addResource<Texture>(environmentMap);
 
 		environmentMapPipeline->BindPipeline(nullptr);
@@ -114,14 +114,14 @@ namespace Prehistoric
 		environmentMapPipeline->UnbindPipeline();
 
 		environmentMap->Bind();
-		environmentMap->SamplerProperties(Trilinear, Repeat);
+		environmentMap->GenerateMipmaps();
 
 		//Rendering the diffuse irradiance map
 		size = EnvironmentMapConfig::irradianceMapResolution;
 		framebuffer->addDepthAttachment(size, size);
 		window->getSwapchain()->SetWindowSize(size, size);
 
-		irradianceMap = GLTexture::Storage3D(size, size, 0, R8G8B8A8_LINEAR, Bilinear, ClampToEdge);
+		irradianceMap = GLTexture::Storage3D(size, size, 0, R8G8B8_LINEAR, Bilinear, ClampToEdge, false);
 		irradianceMapID = manager->getAssetManager()->addResource<Texture>(irradianceMap);
 
 		irradiancePipeline->BindPipeline(nullptr);
@@ -140,7 +140,7 @@ namespace Prehistoric
 		//Rendering the pre-filter enviroment map
 		size = EnvironmentMapConfig::prefilterMapResolution;
 
-		prefilterMap = GLTexture::Storage3D(size, size, 0, R8G8B8A8_LINEAR, Trilinear, ClampToEdge);
+		prefilterMap = GLTexture::Storage3D(size, size, 0, R8G8B8_LINEAR, Trilinear, ClampToEdge, true);
 		prefilterMapID = manager->getAssetManager()->addResource<Texture>(prefilterMap);
 
 		prefilterPipeline->BindPipeline(nullptr);
@@ -178,7 +178,7 @@ namespace Prehistoric
 	{
 		backgroundPipeline->BindPipeline(nullptr);
 
-		environmentShader->UpdateUniforms(camera->getProjectionMatrix(), camera->getViewMatrix(), irradianceMap);
+		environmentShader->UpdateUniforms(camera->getProjectionMatrix(), camera->getViewMatrix(), prefilterMap);
 		backgroundPipeline->RenderPipeline();
 
 		backgroundPipeline->UnbindPipeline();

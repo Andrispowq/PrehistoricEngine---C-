@@ -1,5 +1,5 @@
 #include "Includes.hpp"
-#include <glew.h>
+#include <glad/glad.h>
 #include "VKUtil.h"
 #include "platform/vulkan/framework/device/VKDevice.h"
 #include "platform/vulkan/rendering/pipeline/VKPipeline.h"

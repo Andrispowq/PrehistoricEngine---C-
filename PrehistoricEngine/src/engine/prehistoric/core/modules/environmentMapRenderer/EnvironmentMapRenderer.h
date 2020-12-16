@@ -39,9 +39,9 @@ namespace Prehistoric
 		VertexBuffer* cubeBuffer;
 
 		Texture* equirectangularMap;
-		Texture* environmentMap;
-		Texture* irradianceMap;
-		Texture* prefilterMap;
+		Texture* environmentMap = nullptr;
+		Texture* irradianceMap = nullptr;
+		Texture* prefilterMap = nullptr;
 		Texture* brdfMap;
 
 		GLEnvironmentMapShader* environmentMapShader;

@@ -1,6 +1,11 @@
-[11:12:4]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(std::string&), path: res/textures/logo.png: 0.4941ms
-[11:12:4]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(std::string&), path: res/textures/default.png: 4.6663ms
-[11:12:4]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(std::string&), path: res/textures/oakFloor/oakFloor_DIF.png: 189.197ms
-[11:12:4]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(std::string&), path: res/textures/oakFloor/oakFloor_NRM.png: 216.763ms
-[11:12:5]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(std::string&), path: res/textures/oakFloor/oakFloor_MET.png: 162.489ms
-[11:12:5]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(std::string&), path: res/textures/oakFloor/oakFloor_RGH.png: 161.798ms
+[10:1:20]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(std::string&), path: res/textures/logo.png: 0.639ms
+[10:1:20]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(std::string&), path: res/textures/oakFloor/oakFloor_DIF.png: 191.9ms
+[10:1:21]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(std::string&), path: res/textures/oakFloor/oakFloor_NRM.png: 219.241ms
+[10:1:21]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(std::string&), path: res/textures/oakFloor/oakFloor_MET.png: 164.643ms
+[10:1:21]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(std::string&), path: res/textures/oakFloor/oakFloor_RGH.png: 158.167ms
+[10:1:24]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(std::string&), path: res/textures/metalFloor/metalFloor_DIF.png: 2868.64ms
+[10:1:25]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(std::string&), path: res/textures/metalFloor/metalFloor_NRM.png: 688.498ms
+[10:1:25]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(std::string&), path: res/textures/metalFloor/metalFloor_MET.png: 49.2515ms
+[10:1:25]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(std::string&), path: res/textures/metalFloor/metalFloor_RGH.png: 53.1338ms
+[10:1:25]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(std::string&), path: res/textures/default.png: 3.5478ms
+[10:1:25]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(std::string&), path: res/textures/environmentMaps/rooitou_park_2k.hdr: 451.216ms

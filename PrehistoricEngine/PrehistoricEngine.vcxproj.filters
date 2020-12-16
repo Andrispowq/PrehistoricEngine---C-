@@ -548,6 +548,9 @@
     <ClInclude Include="src\engine\prehistoric\core\events\Event.h">
       <Filter>prehistoric\core\events</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\events\JoystickEvent.h">
+      <Filter>prehistoric\core\events</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\events\KeyEvent.h">
       <Filter>prehistoric\core\events</Filter>
     </ClInclude>
