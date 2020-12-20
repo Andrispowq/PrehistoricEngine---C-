@@ -62,4 +62,5 @@ void main()
 
 	world_position_FS = worldPosition.xyz;
 	world_normal_FS = N;
+	world_tangent_FS = T;
 }

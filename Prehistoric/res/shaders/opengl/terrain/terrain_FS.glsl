@@ -15,7 +15,7 @@ struct Material
 	float horizontalScale;
 	float metallic;
 	float roughness;
-	float occlusion;
+	float ambientOcclusion;
 };
 
 struct Light
@@ -42,9 +42,9 @@ uniform int numberOfLights;
 uniform float gamma;
 uniform float exposure;
 
-//uniform samplerCube irradianceMap;
-//uniform samplerCube prefilterMap;
-//uniform sampler2D brdfLUT;
+uniform samplerCube irradianceMap;
+uniform samplerCube prefilterMap;
+uniform sampler2D brdfLUT;
 
 const float PI = 3.141592653589793;
 const float emissionFactor = 3;
@@ -71,7 +71,7 @@ void main()
 		float attenuation = clamp(- dist / (highDetailRange - 50) + 1, 0, 1);
 		
 		vec3 bitangent = normalize(cross(tangent_FS, N));
-		mat3 tbn = mat3(tangent_FS, N, bitangent);//mat3(bitangent, N, tangent_FS);
+		mat3 tbn = mat3(tangent_FS, N, bitangent);
 		
 		vec3 bumpNormal;
 		for(int i = 0; i < 3; i++)
@@ -93,7 +93,7 @@ void main()
 	float occlusion;
 	
 	vec3 V = normalize(cameraPosition - position_FS);
-	vec3 R = reflect(V, N);
+	vec3 R = reflect(-V, N);
 	
 	for(int i = 0; i < 3; i++)
 	{
@@ -111,10 +111,10 @@ void main()
 		else
 			roughness += materials[i].roughness * blendValueArray[i];
 		
-		if(materials[i].occlusion == -1)
+		if(materials[i].ambientOcclusion == -1)
 			occlusion += texture(materials[i].occlusionMap, texCoords).r * blendValueArray[i];
 		else
-			occlusion += materials[i].occlusion * blendValueArray[i];
+			occlusion += materials[i].ambientOcclusion * blendValueArray[i];
 	}
 	
 	albedoColour = pow(albedoColour, vec3(gamma));
@@ -149,7 +149,7 @@ void main()
             
         // add to outgoing radiance Lo
         float NdotL = max(dot(N, L), 0);
-		Lo += (kD * albedoColour / PI/* + specular*/) * radiance * NdotL; //TODO: in the terrain_FS this is a temporary solution, as the specular part causes some visual bugs
+		Lo += (kD * albedoColour / PI + specular) * radiance * NdotL;
     }
 	
 	vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0), F0, roughness);
@@ -158,22 +158,20 @@ void main()
 	vec3 kD = 1 - kS;
 	kD *= 1 - metallic;
 	
-	vec3 irradiance = vec3(0.23, 0.78, 0.88);//texture(irradianceMap, N).rgb;
+	vec3 irradiance = texture(irradianceMap, N).rgb;
 	vec3 diffuse = irradiance * albedoColour;
 	
-	/*const float MAX_REFLECTION_LOD = 4;
+	const float MAX_REFLECTION_LOD = 4.0;
 	vec3 prefilteredColor = textureLod(prefilterMap, R,  roughness * MAX_REFLECTION_LOD).rgb;
-	vec2 envBRDF = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;*/
-	//vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
+	vec2 envBRDF = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
+	vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
 	
-	vec3 ambient = (kD * diffuse + 0) * occlusion;
-
-	//vec3 ambient = vec3(0.03);
+	vec3 ambient = (kD * diffuse + specular) * occlusion;
 	
-	vec3 colour = ambient * albedoColour + Lo;
+	vec3 colour = ambient + Lo;
 	
 	colour = 1.0 - exp(-colour * exposure);
-	colour = pow(colour, vec3(1 / gamma));
+	colour = pow(colour, vec3(1.0 / gamma));
 
 	outColour = vec4(colour, 1);
 }
@@ -195,7 +193,7 @@ float DistributionGGX(vec3 N, vec3 H, float roughness)
 float GeometrySchlickGGX(float NdotV, float roughness)
 {
     float r = (roughness + 1.0);
-    float k = (r * r) / 8.0;
+    float k = (r * r) / 2.0;
 
     float num = NdotV;
     float denom = NdotV * (1.0 - k) + k;

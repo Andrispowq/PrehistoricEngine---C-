@@ -16,7 +16,7 @@ struct Material
 	float horizontalScale;
 	float metallic;
 	float roughness;
-	float occlusion;
+	float ambientOcclusion;
 };
 
 in vec2 mapCoord_GS[];

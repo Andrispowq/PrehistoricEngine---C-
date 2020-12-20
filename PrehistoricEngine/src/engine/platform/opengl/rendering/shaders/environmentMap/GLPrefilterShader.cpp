@@ -29,6 +29,6 @@ namespace Prehistoric
 		SetUniformi("environmentMap", 0);
 
 		SetUniformf("roughness", roughness);
-		SetUniformi("resolution", EnvironmentMapConfig::prefilterMapResolution);
+		SetUniformf("resolution", (float)EnvironmentMapConfig::prefilterMapResolution);
 	}
 };

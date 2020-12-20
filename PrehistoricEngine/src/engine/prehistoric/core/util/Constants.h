@@ -27,7 +27,7 @@
 #define HORIZONTAL_SCALE "horizontalScale"
 #define METALLIC "metallic"
 #define ROUGHNESS "roughness"
-#define OCCLUSION "occlusion"
+#define OCCLUSION "ambientOcclusion"
 #define EMISSION "emission"
 #define ALPHA "alpha"
 

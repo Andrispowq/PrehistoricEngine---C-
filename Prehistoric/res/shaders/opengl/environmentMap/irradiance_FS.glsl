@@ -10,7 +10,7 @@ const float PI = 3.1415926535897932384626433832795;
 
 void main()
 {		
-    vec3 N = normalize(position_FS);
+    vec3 N = normalize(vec3(position_FS.xy, -position_FS.z));
 	
 	vec3 irradiance = vec3(0.0);
 	
@@ -21,7 +21,7 @@ void main()
 	const float TWO_PI = PI * 2.0;
 	const float HALF_PI = PI * 0.5;
 
-	float samplePhi = (2.0f * PI) / (180.0f * 4.0f);// 0.025;
+	float samplePhi = (2.0f * PI) / (180.0f * 4.0f);//0.025;
 	float sampleTheta = (0.5f * PI) / (64.0f * 4.0f);//0.025;
 	int nrSamples = 0;
 	

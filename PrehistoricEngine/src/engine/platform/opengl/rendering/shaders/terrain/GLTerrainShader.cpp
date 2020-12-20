@@ -5,6 +5,8 @@
 #include "prehistoric/core/modules/terrain/Terrain.h"
 #include "prehistoric/core/model/material/Material.h"
 
+#include "prehistoric/core/config/EnvironmentMapConfig.h"
+
 namespace Prehistoric
 {
 	GLTerrainShader::GLTerrainShader()
@@ -54,13 +56,13 @@ namespace Prehistoric
 			AddUniform(uniformName + DISPLACEMENT_MAP);
 			AddUniform(uniformName + METALLIC_MAP);
 			AddUniform(uniformName + ROUGHNESS_MAP);
-			//AddUniform(uniformName + OCCLUSION_MAP);
+			AddUniform(uniformName + OCCLUSION_MAP);
 
 			AddUniform(uniformName + HEIGHT_SCALE);
 			AddUniform(uniformName + HORIZONTAL_SCALE);
 			AddUniform(uniformName + METALLIC);
 			AddUniform(uniformName + ROUGHNESS);
-			//AddUniform(uniformName. + OCCLUSION);
+			AddUniform(uniformName + OCCLUSION);
 		}
 
 		for (unsigned int i = 0; i < EngineConfig::lightsMaxNumber; i++)
@@ -77,9 +79,9 @@ namespace Prehistoric
 		AddUniform("exposure");
 		AddUniform("numberOfLights");
 
-		//AddUniform("irradianceMap");
-		//AddUniform("prefilterMap");
-		//AddUniform("brdfLUT");
+		AddUniform("irradianceMap");
+		AddUniform("prefilterMap");
+		AddUniform("brdfLUT");
 	}
 
 	void GLTerrainShader::UpdateShaderUniforms(Camera* camera, const std::vector<Light*>& lights, uint32_t instance_index) const
@@ -154,7 +156,15 @@ namespace Prehistoric
 		node->getMaps()->getSplatmap()->Bind(2);
 		SetUniformi("splatmap", 2);
 
-		uint32_t texUnit = 3;
+		EnvironmentMapConfig::irradianceMap->Bind(3);
+		EnvironmentMapConfig::prefilterMap->Bind(4);
+		EnvironmentMapConfig::brdfLUT->Bind(5);
+
+		SetUniformi("irradianceMap", 3);
+		SetUniformi("prefilterMap", 4);
+		SetUniformi("brdfLUT", 5);
+
+		uint32_t texUnit = 6;
 
 		for (unsigned int i = 0; i < 3; i++)
 		{
@@ -183,11 +193,15 @@ namespace Prehistoric
 			SetUniformi(uniformName + ROUGHNESS_MAP, texUnit);
 			texUnit++;
 
+			material->getTexture(OCCLUSION_MAP)->Bind(texUnit);
+			SetUniformi(uniformName + OCCLUSION_MAP, texUnit);
+			texUnit++;
+
 			SetUniformf(uniformName + HEIGHT_SCALE, material->getFloat(HEIGHT_SCALE));
 			SetUniformf(uniformName + HORIZONTAL_SCALE, material->getFloat(HORIZONTAL_SCALE));
 			SetUniformf(uniformName + METALLIC, material->getFloat(METALLIC));
 			SetUniformf(uniformName + ROUGHNESS, material->getFloat(ROUGHNESS));
-			//SetUniformf(uniformName + OCCLUSION, material->getFloat(OCCLUSION));
+			SetUniformf(uniformName + OCCLUSION, material->getFloat(OCCLUSION));
 		}
 	}
 

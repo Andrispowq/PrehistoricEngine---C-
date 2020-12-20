@@ -80,7 +80,7 @@ vec3 getColour(sampler2D map, float alternateValue, vec2 texCoords)
 
 void main()
 {
-	vec3 albedoColour = pow(getColour(material.albedoMap, material.colour, texture_FS), vec3(gamma));
+	vec3 albedoColour = pow(getColour(material.albedoMap, material.colour, texture_FS), vec3(2.2));
 	
 	float metallic = getColour(material.metallicMap, material.metallic, texture_FS).r;
 	float roughness = getColour(material.roughnessMap, material.roughness, texture_FS).r;
@@ -91,7 +91,7 @@ void main()
 	float dist = length(camera_position - position_FS);
 	vec3 normal = normalize(normal_FS);	
 
-	vec3 Norm_world;
+	vec3 Norm_world = world_normal_FS;
 	if(dist < highDetailRange && material.usesNormalMap == 1)
 	{
 		float attenuation = clamp(-dist / highDetailRange + 1.0, 0.0, 1.0);
@@ -158,11 +158,7 @@ void main()
 	
 	const float MAX_REFLECTION_LOD = 4.0;
 	float lod = roughness * MAX_REFLECTION_LOD;
-	float lodf = floor(lod);
-	float lodc = ceil(lod);
-	vec3 a = textureLod(prefilterMap, R, lodf).rgb;
-	vec3 b = textureLod(prefilterMap, R, lodc).rgb;
-	vec3 prefilteredColour = mix(a, b, lod - lodf);
+	vec3 prefilteredColour = textureLod(prefilterMap, R, lod).rgb;
 	vec2 envBRDF = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
 	vec3 specular = prefilteredColour * (F * envBRDF.x + envBRDF.y);
 

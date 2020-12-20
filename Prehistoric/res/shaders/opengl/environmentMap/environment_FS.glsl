@@ -10,7 +10,7 @@ uniform float exposure;
 
 void main()
 {
-	vec3 envColour = textureLod(environmentMap, normalize(position_FS), 0.2).rgb;
+	vec3 envColour = textureLod(environmentMap, normalize(position_FS), 0.0).rgb;
 	
 	envColour = 1.0 - exp(-envColour * exposure);
 	envColour = pow(envColour, vec3(1.0 / gamma));

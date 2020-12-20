@@ -178,7 +178,7 @@ namespace Prehistoric
 	{
 		backgroundPipeline->BindPipeline(nullptr);
 
-		environmentShader->UpdateUniforms(camera->getProjectionMatrix(), camera->getViewMatrix(), prefilterMap);
+		environmentShader->UpdateUniforms(camera->getProjectionMatrix(), camera->getViewMatrix(), environmentMap);
 		backgroundPipeline->RenderPipeline();
 
 		backgroundPipeline->UnbindPipeline();
