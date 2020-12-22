@@ -109,7 +109,7 @@ vec2 morph(vec2 localPosition, float height, int morphArea)
 		fixPointLongitude = location + vec2(gap, 0);
 	}
 
-	float planarFactor;
+	/*float planarFactor;
 	if (cameraPosition.y > abs(scaleY))
 		planarFactor = 1;
 	else
@@ -118,7 +118,12 @@ vec2 morph(vec2 localPosition, float height, int morphArea)
 	distLatitude = length(cameraPosition - (worldMatrix
 		* vec4(fixPointLatitude.x, planarFactor, fixPointLatitude.y, 1)).xyz);
 	distLongitude = length(cameraPosition - (worldMatrix 
-		* vec4(fixPointLongitude.x, planarFactor, fixPointLongitude.y, 1)).xyz);
+		* vec4(fixPointLongitude.x, planarFactor, fixPointLongitude.y, 1)).xyz);*/
+
+	distLatitude = length(cameraPosition - (worldMatrix
+		* vec4(fixPointLatitude.x, height, fixPointLatitude.y, 1)).xyz);
+	distLongitude = length(cameraPosition - (worldMatrix
+		* vec4(fixPointLongitude.x, height, fixPointLongitude.y, 1)).xyz);
 	
 	if(distLatitude > morphArea)
 		morphing.x = morphLatitude(localPosition);

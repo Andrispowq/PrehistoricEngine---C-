@@ -36,9 +36,9 @@ namespace Prehistoric
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
-	void GLFramebuffer::SetDrawAttachments(uint32_t attachments ...)
+	void GLFramebuffer::SetDrawAttachments(uint32_t n, uint32_t* attachments)
 	{
-		glDrawBuffers(sizeof(attachments) / sizeof(uint32_t), &attachments);
+		glDrawBuffers(n, attachments);
 	}
 
 	void GLFramebuffer::addDepthAttachment(uint32_t width, uint32_t height)
@@ -65,7 +65,15 @@ namespace Prehistoric
 
 	void GLFramebuffer::Blit(Framebuffer* destination, uint32_t width, uint32_t height, uint32_t source_attachment, uint32_t dest_attachment)
 	{
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, static_cast<GLFramebuffer*>(destination)->id);
+		if (destination == 0)
+		{
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		}
+		else
+		{
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, static_cast<GLFramebuffer*>(destination)->id);
+		}
+
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, id);
 		glReadBuffer(GL_COLOR_ATTACHMENT0 + source_attachment);
 		glDrawBuffer(GL_COLOR_ATTACHMENT0 + dest_attachment);

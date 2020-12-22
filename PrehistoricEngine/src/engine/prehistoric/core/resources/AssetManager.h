@@ -21,6 +21,7 @@
 #include "platform/opengl/rendering/shaders/pbr/GLPBRShader.h"
 #include "platform/opengl/rendering/shaders/terrain/GLTerrainShader.h"
 #include "platform/opengl/rendering/shaders/terrain/GLTerrainWireframeShader.h"
+#include "platform/opengl/rendering/shaders/deferred/GLDeferredShader.h"
 
 #include "platform/vulkan/rendering/shaders/basic/VKBasicShader.h"
 #include "platform/vulkan/rendering/shaders/pbr/VKPBRShader.h"
@@ -171,6 +172,10 @@ namespace Prehistoric
 				else if (path == "gpgpu_terrain_heights")
 				{
 					shader = new GLTerrainHeightsShader();
+				}
+				else if (path == "deferred")
+				{
+					shader = new GLDeferredShader();
 				}
 			}
 			else if (FrameworkConfig::api == Vulkan)

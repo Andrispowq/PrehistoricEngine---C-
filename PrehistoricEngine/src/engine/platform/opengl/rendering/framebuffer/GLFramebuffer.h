@@ -17,7 +17,7 @@ namespace Prehistoric
 		virtual void Unbind() override;
 
 		virtual void Clear(const Vector4f& colour) override;
-		virtual void SetDrawAttachments(uint32_t attachments...) override; //TODO: this is OpenGL only!
+		virtual void SetDrawAttachments(uint32_t n, uint32_t* attachments) override; //TODO: this is OpenGL only!
 
 		virtual void addDepthAttachment(uint32_t width, uint32_t height) override;
 		virtual void addColourAttachment2D(Texture* texture, uint32_t attachment = 0, uint32_t mipLevel = 0) override;

@@ -56,32 +56,14 @@ namespace Prehistoric
 			AddUniform(uniformName + DISPLACEMENT_MAP);
 			AddUniform(uniformName + METALLIC_MAP);
 			AddUniform(uniformName + ROUGHNESS_MAP);
-			AddUniform(uniformName + OCCLUSION_MAP);
 
 			AddUniform(uniformName + HEIGHT_SCALE);
 			AddUniform(uniformName + HORIZONTAL_SCALE);
 			AddUniform(uniformName + METALLIC);
 			AddUniform(uniformName + ROUGHNESS);
-			AddUniform(uniformName + OCCLUSION);
-		}
-
-		for (unsigned int i = 0; i < EngineConfig::lightsMaxNumber; i++)
-		{
-			std::string uniformName = "lights[" + std::to_string(i) + "].";
-
-			AddUniform(uniformName + "position");
-			AddUniform(uniformName + "colour");
-			AddUniform(uniformName + "intensity");
 		}
 
 		AddUniform("highDetailRange");
-		AddUniform("gamma");
-		AddUniform("exposure");
-		AddUniform("numberOfLights");
-
-		AddUniform("irradianceMap");
-		AddUniform("prefilterMap");
-		AddUniform("brdfLUT");
 	}
 
 	void GLTerrainShader::UpdateShaderUniforms(Camera* camera, const std::vector<Light*>& lights, uint32_t instance_index) const
@@ -89,46 +71,7 @@ namespace Prehistoric
 		SetUniform("viewProjection", camera->getViewProjectionMatrix());
 		SetUniform("cameraPosition", camera->getPosition());
 
-		uint32_t nOfLights = (uint32_t)lights.size() < EngineConfig::lightsMaxNumber ? (uint32_t)lights.size() : EngineConfig::lightsMaxNumber;
-
-#if defined(PR_DEBUG)
-		for (unsigned int i = 0; i < EngineConfig::lightsMaxNumber; i++)
-		{
-			std::string uniformName = "lights[" + std::to_string(i) + "].";
-
-			if (i < lights.size())
-			{
-				Light* light = lights[i];
-
-				SetUniform(uniformName + "position", light->getParent()->getWorldTransform().getPosition());
-				SetUniform(uniformName + "colour", light->getColour());
-				SetUniform(uniformName + "intensity", light->getIntensity());
-			}
-			else
-			{
-				//Load some dummy values for debug mode so we don't access undefined memory while debugging, but we won't in release mode
-				SetUniform(uniformName + "position", Vector3f());
-				SetUniform(uniformName + "colour", Vector3f());
-				SetUniform(uniformName + "intensity", Vector3f());
-			}
-		}
-#else
-		for (unsigned int i = 0; i < nOfLights; i++)
-		{
-			std::string uniformName = "lights[" + std::to_string(i) + "].";
-
-			Light* light = lights[i];
-
-			SetUniform(uniformName + "position", light->getParent()->getWorldTransform().getPosition());
-			SetUniform(uniformName + "colour", light->getColour());
-			SetUniform(uniformName + "intensity", light->getIntensity());
-		}
-#endif
-
 		SetUniformi("highDetailRange", EngineConfig::rendererHighDetailRange);
-		SetUniformf("gamma", EngineConfig::rendererGamma);
-		SetUniformf("exposure", EngineConfig::rendererExposure);
-		SetUniformi("numberOfLights", nOfLights);
 
 		//Some other stuff that is terrain-related
 		SetUniformf("scaleY", TerrainConfig::scaleY);
@@ -156,15 +99,7 @@ namespace Prehistoric
 		node->getMaps()->getSplatmap()->Bind(2);
 		SetUniformi("splatmap", 2);
 
-		EnvironmentMapConfig::irradianceMap->Bind(3);
-		EnvironmentMapConfig::prefilterMap->Bind(4);
-		EnvironmentMapConfig::brdfLUT->Bind(5);
-
-		SetUniformi("irradianceMap", 3);
-		SetUniformi("prefilterMap", 4);
-		SetUniformi("brdfLUT", 5);
-
-		uint32_t texUnit = 6;
+		uint32_t texUnit = 3;
 
 		for (unsigned int i = 0; i < 3; i++)
 		{
@@ -193,15 +128,10 @@ namespace Prehistoric
 			SetUniformi(uniformName + ROUGHNESS_MAP, texUnit);
 			texUnit++;
 
-			material->getTexture(OCCLUSION_MAP)->Bind(texUnit);
-			SetUniformi(uniformName + OCCLUSION_MAP, texUnit);
-			texUnit++;
-
 			SetUniformf(uniformName + HEIGHT_SCALE, material->getFloat(HEIGHT_SCALE));
 			SetUniformf(uniformName + HORIZONTAL_SCALE, material->getFloat(HORIZONTAL_SCALE));
 			SetUniformf(uniformName + METALLIC, material->getFloat(METALLIC));
 			SetUniformf(uniformName + ROUGHNESS, material->getFloat(ROUGHNESS));
-			SetUniformf(uniformName + OCCLUSION, material->getFloat(OCCLUSION));
 		}
 	}
 

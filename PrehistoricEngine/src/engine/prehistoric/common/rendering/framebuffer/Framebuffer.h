@@ -21,7 +21,7 @@ namespace Prehistoric
 		virtual void Unbind() = 0;
 
 		virtual void Clear(const Vector4f& colour) = 0;
-		virtual void SetDrawAttachments(uint32_t attachments...) = 0; //TODO: this is OpenGL only!
+		virtual void SetDrawAttachments(uint32_t n, uint32_t* attachments) = 0; //TODO: this is OpenGL only!
 
 		virtual void addDepthAttachment(uint32_t width, uint32_t height) = 0;
 		virtual void addColourAttachment2D(Texture* texture, uint32_t attachment = 0, uint32_t mipLevel = 0) = 0;

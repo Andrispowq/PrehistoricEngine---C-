@@ -7,20 +7,26 @@
 
 #define PREHISTORIC_INCLUDE
 
+#include <vulkan/vulkan.h>
+
 PrehistoricApp::PrehistoricApp()
 {
 	//Example creation of an object, without bringing the prehistoric namespace in
 #if defined(PREHISTORIC_INCLUDE)
 	using namespace Prehistoric;
 	
+	//AssembledAssetManager -> stores resources created using resources in the AssetManager (Pipelines, Materials)
+	//AssetManager -> stores raw resources like Textures, Models, Shaders (TODO: sounds)
+	//Window -> used in a lot of primitives' creation, so it's worth having it around
 	AssembledAssetManager* manager = engine.getAssetManager();
+	AssetManager* asset_manager = manager->getAssetManager();
+	Window* window = engine.getRenderingEngine()->getWindow();
 
-	size_t vboID = manager->getAssetManager()->getResource<VertexBuffer>("sphere.obj");
-	size_t shaderID = manager->getAssetManager()->getResource<Shader>("pbr");
-	size_t pipelineID = manager->loadResource<Pipeline>(
-		new GLGraphicsPipeline(engine.getRenderingEngine()->getWindow(), manager->getAssetManager(), shaderID, vboID));
+	size_t vboID = asset_manager->getResource<VertexBuffer>("sphere.obj");
+	size_t shaderID = asset_manager->getResource<Shader>("pbr");
+	size_t pipelineID = manager->loadResource<Pipeline>(new GLGraphicsPipeline(window, asset_manager, shaderID, vboID));
 
-	Material* material = new Material(manager->getAssetManager());
+	Material* material = new Material(asset_manager);
 	material->addVector3f(COLOUR, { 0.64f, 0.53f, 0.23f });
 	material->addFloat(ROUGHNESS, 0.3f);
 	material->addFloat(METALLIC, 1.0f);
@@ -31,7 +37,7 @@ PrehistoricApp::PrehistoricApp()
 	GameObject* obj = new GameObject;
 	obj->SetPosition({ 0, 200, 0 });
 	obj->SetScale({ 10, 10, 10 });
-	obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(pipelineID, materialID, engine.getRenderingEngine()->getWindow(), manager));
+	obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(pipelineID, materialID, window, manager));
 	engine.AddGameObject("someobj", obj);
 #else
 	Prehistoric::AssembledAssetManager* manager = engine.getAssetManager();

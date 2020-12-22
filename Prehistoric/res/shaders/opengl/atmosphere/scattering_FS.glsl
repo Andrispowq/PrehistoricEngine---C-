@@ -1,14 +1,17 @@
 #version 430
 
+layout(location = 0) out vec4 positionMetallic;
+layout(location = 1) out vec4 albedoRoughness;
+layout(location = 2) out vec4 normalLit;
+layout(location = 3) out vec4 emissionExtra;
+
+in vec3 worldPosition;
+
 #define PI 3.1415926535897932384626433832795
 #define iSteps 16
 #define jSteps 8
 
 precision highp float;
-
-layout (location = 0) out vec4 outColour;
-
-in vec3 worldPosition;
 
 uniform mat4 m_projection;
 uniform mat4 m_view;
@@ -31,9 +34,6 @@ uniform float horizontalVerticalShift;
 uniform int width;
 uniform int height;
 uniform int isReflection;
-
-uniform float gamma;
-uniform float exposure;
 
 vec2 rsi(vec3 r0, vec3 rd, float sr)
 {
@@ -174,11 +174,6 @@ void main()
 	
 	float sunradius = length(normalize(ray_world) - normalize(sunPosition));
 
-    // Apply exposure.
-    out_Color = 1.0 - exp(-out_Color * exposure);
-    //out_Color = pow(out_Color, vec3(gamma));
-    //out_Color = pow(out_Color, vec3(1 / gamma));
-
 	// no sun rendering when scene reflection
 	if(sunradius < sunRadius && isReflection == 0)
 	{
@@ -190,5 +185,8 @@ void main()
 		out_LightScattering = mix(vec3(0), sunColour, smoothRadius);
 	}
 	
-	outColour = vec4(out_Color, 1);
+    positionMetallic = vec4(worldPosition, 0.0);
+    albedoRoughness = vec4(out_Color, 0.0);
+    normalLit = vec4(vec3(0.0), 0.0);
+    emissionExtra = vec4(out_LightScattering, 1.0);
 }

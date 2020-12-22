@@ -34,23 +34,7 @@ namespace Prehistoric
 		ambientOcclusion = glGetUniformLocation(program, "material.ambientOcclusion");
 		emission = glGetUniformLocation(program, "material.emission");
 
-		for (uint32_t i = 0; i < EngineConfig::lightsMaxNumber; i++)
-		{
-			std::string name = "lights[" + std::to_string(i);
-
-			AddUniform(name + "].position");
-			AddUniform(name + "].colour");
-			AddUniform(name + "].intensity");
-		}
-
-		AddUniform("irradianceMap");
-		AddUniform("prefilterMap");
-		AddUniform("brdfLUT");
-
-		AddUniform("gamma");
-		AddUniform("exposure");
 		AddUniform("highDetailRange");
-		AddUniform("numberOfLights");
 	}
 
 	void GLPBRShader::UpdateShaderUniforms(Camera* camera, const std::vector<Light*>& lights, uint32_t instance_index) const
@@ -58,53 +42,6 @@ namespace Prehistoric
 		SetUniform("m_view", camera->getViewMatrix());
 		SetUniform("m_projection", camera->getProjectionMatrix());
 		SetUniform("cameraPosition", camera->getPosition());
-
-		uint32_t nOfLights = EngineConfig::lightsMaxNumber > (uint32_t)lights.size() ? (uint32_t)lights.size() : EngineConfig::lightsMaxNumber;
-		SetUniformi("numberOfLights", nOfLights);
-#if defined(PR_DEBUG)
-		for (unsigned int i = 0; i < EngineConfig::lightsMaxNumber; i++)
-		{
-			std::string uniformName = "lights[" + std::to_string(i) + "].";
-
-			if (i < lights.size())
-			{
-				Light* light = lights[i];
-
-				SetUniform(uniformName + "position", light->getParent()->getWorldTransform().getPosition());
-				SetUniform(uniformName + "colour", light->getColour());
-				SetUniform(uniformName + "intensity", light->getIntensity());
-			}
-			else
-			{
-				//Load some dummy values for debug mode so we don't access undefined memory while debugging, but we won't in release mode
-				SetUniform(uniformName + "position", Vector3f());
-				SetUniform(uniformName + "colour", Vector3f());
-				SetUniform(uniformName + "intensity", Vector3f());
-			}
-		}
-#else
-		for (unsigned int i = 0; i < nOfLights; i++)
-		{
-			std::string uniformName = "lights[" + std::to_string(i) + "].";
-
-			Light* light = lights[i];
-
-			SetUniform(uniformName + "position", light->getParent()->getWorldTransform().getPosition());
-			SetUniform(uniformName + "colour", light->getColour());
-			SetUniform(uniformName + "intensity", light->getIntensity());
-		}
-#endif
-
-		EnvironmentMapConfig::irradianceMap->Bind(7);
-		EnvironmentMapConfig::prefilterMap->Bind(8);
-		EnvironmentMapConfig::brdfLUT->Bind(9);
-
-		SetUniformi("irradianceMap", 7);
-		SetUniformi("prefilterMap", 8);
-		SetUniformi("brdfLUT", 9);
-
-		SetUniformf("gamma", EngineConfig::rendererGamma);
-		SetUniformf("exposure", EngineConfig::rendererExposure);
 		SetUniformi("highDetailRange", EngineConfig::rendererHighDetailRange);
 	}
 

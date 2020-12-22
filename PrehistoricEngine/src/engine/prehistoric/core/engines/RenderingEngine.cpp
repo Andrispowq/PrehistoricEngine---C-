@@ -8,8 +8,6 @@
 
 #include "prehistoric/common/util/DeviceProperties.h"
 
-#include "prehistoric/core/modules/environmentMapRenderer/EnvironmentMapRenderer.h"
-
 namespace Prehistoric
 {
 	RenderingEngine::RenderingEngine()
@@ -107,10 +105,6 @@ namespace Prehistoric
 
 		renderer->PrepareRendering();
 		renderer->Render();
-
-		if (FrameworkConfig::api == OpenGL)
-			EnvironmentMapRenderer::instance->RenderCube(camera.get());
-
 		renderer->EndRendering();
 	}
 };

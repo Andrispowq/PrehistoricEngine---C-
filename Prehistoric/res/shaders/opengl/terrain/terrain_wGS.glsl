@@ -13,6 +13,8 @@ struct Material
 
 in vec2 mapCoord_GS[];
 
+out vec3 position_FS;
+
 uniform Material materials[3];
 uniform sampler2D splatmap;
 uniform mat4 viewProjection;
@@ -86,11 +88,15 @@ void main()
 	{
 		vec4 worldPos = gl_in[i].gl_Position + vec4(displacement[i], 0);
 		gl_Position = viewProjection * worldPos;
+		position_FS = worldPos.xyz;
+
 		EmitVertex();
 	}
 	
 	vec4 worldPos = gl_in[0].gl_Position + vec4(displacement[0], 0);
 	gl_Position = viewProjection * worldPos;
+	position_FS = worldPos.xyz;
+
 	EmitVertex();
 	
 	EndPrimitive();
