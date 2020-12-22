@@ -3,18 +3,11 @@
 
 #include "Prehistoric.h"
 
-#include "prehistoric/core/events/ApplicationEvent.h"
-
 class PrehistoricApp : public Prehistoric::Application
 {
 public:
-	PrehistoricApp()
-	{
-	}
-
-	~PrehistoricApp()
-	{
-	}
+	PrehistoricApp();
+	~PrehistoricApp();
 };
 
 Prehistoric::Application* Prehistoric::CreateApplication()

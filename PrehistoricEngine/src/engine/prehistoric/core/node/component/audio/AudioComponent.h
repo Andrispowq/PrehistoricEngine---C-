@@ -8,7 +8,7 @@
 
 namespace Prehistoric
 {
-	class AudioComponent : public Component
+	class PR_API AudioComponent : public Component
 	{
 	public:
 		AudioComponent(size_t audioBuffer, bool is3D = true, bool isStereo = false, bool isLoop = false);

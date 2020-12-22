@@ -5,7 +5,7 @@
 
 namespace Prehistoric
 {
-	class GUISlider : public GUIElement
+	class PR_API GUISlider : public GUIElement
 	{
 	public:
 		GUISlider(Window* window, AssembledAssetManager* manager, float minValue, float maxValue, Texture* texture = nullptr, void* data = nullptr, size_t dataSize = 0, bool visible = true);

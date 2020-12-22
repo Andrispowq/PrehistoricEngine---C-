@@ -14,7 +14,7 @@ namespace Prehistoric
 {
 	class AssembledAssetManager;
 
-	class SplatMapRenderer
+	class PR_API SplatMapRenderer
 	{
 	public:
 		SplatMapRenderer(Window* window, AssembledAssetManager* manager, uint32_t N);

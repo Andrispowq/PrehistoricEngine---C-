@@ -34,7 +34,7 @@ namespace Prehistoric
 	/*
 		This system works like this: every asset is stored here, and when we need one, we just pass in the the size_t ID of the asset, and we get a pointer back
 	*/
-	class AssetManager
+	class PR_API AssetManager
 	{
 	public:
 		AssetManager(Window* window);

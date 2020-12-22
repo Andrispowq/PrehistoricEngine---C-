@@ -12,7 +12,7 @@ namespace Prehistoric
 {
 	class AssembledAssetManager;
 
-	enum class RenderPriority
+	enum class PR_API RenderPriority
 	{
 		_3D = 0,
 		_TRANSPARENCY = 1,
@@ -20,7 +20,7 @@ namespace Prehistoric
 		_POST_PROCESSING = 3
 	};
 
-	class RenderableComponent : public Component
+	class PR_API RenderableComponent : public Component
 	{
 	public:
 		RenderableComponent(size_t pipelineID, Window* window, AssembledAssetManager* manager);

@@ -20,7 +20,7 @@ namespace Prehistoric
 {
 	constexpr static double NANOSECOND = 1000000000;
 
-	class CoreEngine
+	class PR_API CoreEngine
 	{
 	public:
 		CoreEngine(const std::string& configPath = "res/config", const std::string& worldFile = "res/world/testLevel.wrld");

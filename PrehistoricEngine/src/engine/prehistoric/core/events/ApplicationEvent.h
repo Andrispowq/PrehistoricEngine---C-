@@ -5,7 +5,7 @@
 
 namespace Prehistoric 
 {
-	class WindowEvent : public Event
+	class PR_API WindowEvent : public Event
 	{
 	public:
 		void* getHandle() const { return handle; }
@@ -18,7 +18,7 @@ namespace Prehistoric
 		void* handle;
 	};
 
-	class WindowResizeEvent : public WindowEvent
+	class PR_API WindowResizeEvent : public WindowEvent
 	{
 	public:
 		WindowResizeEvent(uint32_t width, uint32_t height, void* handle)
@@ -40,7 +40,7 @@ namespace Prehistoric
 		void* handle;
 	};
 
-	class WindowCloseEvent : public WindowEvent
+	class PR_API WindowCloseEvent : public WindowEvent
 	{
 	public:
 		WindowCloseEvent(void* handle) : WindowEvent(handle) {}
@@ -48,7 +48,7 @@ namespace Prehistoric
 		EVENT_CLASS_TYPE(WindowClose)
 	};
 
-	class WindowFocusEvent : public WindowEvent
+	class PR_API WindowFocusEvent : public WindowEvent
 	{
 	public:
 		WindowFocusEvent(void* handle) : WindowEvent(handle) {}
@@ -56,7 +56,7 @@ namespace Prehistoric
 		EVENT_CLASS_TYPE(WindowFocus)
 	};
 
-	class WindowLostFocusEvent : public WindowEvent
+	class PR_API WindowLostFocusEvent : public WindowEvent
 	{
 	public:
 		WindowLostFocusEvent(void* handle) : WindowEvent(handle) {}
@@ -64,7 +64,7 @@ namespace Prehistoric
 		EVENT_CLASS_TYPE(WindowLostFocus)
 	};
 
-	class WindowIconifiedEvent : public WindowEvent
+	class PR_API WindowIconifiedEvent : public WindowEvent
 	{
 	public:
 		WindowIconifiedEvent(void* handle) : WindowEvent(handle) {}
@@ -72,7 +72,7 @@ namespace Prehistoric
 		EVENT_CLASS_TYPE(WindowIconified)
 	};
 
-	class WindowRestoredEvent : public WindowEvent
+	class PR_API WindowRestoredEvent : public WindowEvent
 	{
 	public:
 		WindowRestoredEvent(void* handle) : WindowEvent(handle) {}
@@ -80,7 +80,7 @@ namespace Prehistoric
 		EVENT_CLASS_TYPE(WindowRestored)
 	};
 
-	class AppInputEvent : public Event
+	class PR_API AppInputEvent : public Event
 	{
 	public:
 		AppInputEvent() = default;
@@ -89,7 +89,7 @@ namespace Prehistoric
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)
 	};
 
-	class AppUpdateEvent : public Event
+	class PR_API AppUpdateEvent : public Event
 	{
 	public:
 		AppUpdateEvent() = default;
@@ -98,7 +98,7 @@ namespace Prehistoric
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)
 	};
 
-	class AppRenderEvent : public Event
+	class PR_API AppRenderEvent : public Event
 	{
 	public:
 		AppRenderEvent() = default;

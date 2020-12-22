@@ -9,7 +9,7 @@ namespace Prehistoric
 {
 	typedef void(*UpdateFunction)(GameObject*, float); //The object, and the delta time
 
-	class GameObject : public Node
+	class PR_API GameObject : public Node
 	{
 	public:
 		GameObject() : updateFunction(nullptr) {}

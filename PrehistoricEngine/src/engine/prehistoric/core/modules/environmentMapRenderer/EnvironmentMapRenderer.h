@@ -15,7 +15,7 @@
 
 namespace Prehistoric
 {
-	class EnvironmentMapRenderer
+	class PR_API EnvironmentMapRenderer
 	{
 	public:
 		static EnvironmentMapRenderer* instance;

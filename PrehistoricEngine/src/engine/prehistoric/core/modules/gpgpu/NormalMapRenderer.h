@@ -14,7 +14,7 @@ namespace Prehistoric
 {
 	class AssembledAssetManager;
 
-	class NormalMapRenderer
+	class PR_API NormalMapRenderer
 	{
 	public:
 		NormalMapRenderer(Window* window, AssembledAssetManager* manager, float strength, uint32_t N);

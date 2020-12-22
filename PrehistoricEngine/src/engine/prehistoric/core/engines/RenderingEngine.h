@@ -11,7 +11,7 @@
 
 namespace Prehistoric
 {
-	class RenderingEngine : public Engine
+	class PR_API RenderingEngine : public Engine
 	{
 	public:
 		RenderingEngine();

@@ -5,7 +5,7 @@
 
 namespace Prehistoric
 {
-	class Light : public Component
+	class PR_API Light : public Component
 	{
 	public:
 		Light(const Vector3f& colour = 0, const Vector3f& intensity = 1, bool sun = false);

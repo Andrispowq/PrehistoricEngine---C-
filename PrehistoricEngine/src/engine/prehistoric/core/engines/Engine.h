@@ -5,7 +5,7 @@
 
 namespace Prehistoric
 {
-	class Engine
+	class PR_API Engine
 	{
 	public:
 		Engine() {}

@@ -6,7 +6,7 @@
 
 namespace Prehistoric
 {
-	class Vertex
+	class PR_API Vertex
 	{
 	public:
 		Vertex(const Vector3f& position, const Vector2f& texture, const Vector3f& normal, const Vector3f& tangent) : position(position), texture(texture), normal(normal), tangent(tangent), textureIndex(-1), normalIndex(-1) {}

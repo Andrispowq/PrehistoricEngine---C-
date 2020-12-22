@@ -15,18 +15,18 @@ namespace Prehistoric
 
 	namespace TerrainConfig
 	{
-		void LoadConfig(const std::string& path);
-		int UpdateMorphingArea(int lod);
+		PR_API void LoadConfig(const std::string& path);
+		PR_API int UpdateMorphingArea(int lod);
 
-		extern float scaleY;
-		extern float scaleXZ;
+		extern PR_API float scaleY;
+		extern PR_API float scaleXZ;
 
-		extern int tessellationFactor;
-		extern float tessellationSlope;
-		extern float tessellationShift;
+		extern PR_API int tessellationFactor;
+		extern PR_API float tessellationSlope;
+		extern PR_API float tessellationShift;
 
-		extern std::vector<int> lodRanges;
-		extern std::vector<int> lodMorphingAreas;
+		extern PR_API std::vector<int> lodRanges;
+		extern PR_API std::vector<int> lodMorphingAreas;
 	};
 };
 

@@ -6,14 +6,14 @@
 
 namespace Prehistoric
 {
-	class Application
+	class PR_API Application
 	{
 	public:
 		Application();
 		virtual ~Application();
 
 		void Run();
-	private:
+	protected:
 		CoreEngine engine;
 	};
 

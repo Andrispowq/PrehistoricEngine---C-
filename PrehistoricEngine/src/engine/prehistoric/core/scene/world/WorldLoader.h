@@ -23,7 +23,7 @@
 
 namespace Prehistoric
 {
-	class WorldLoader
+	class PR_API WorldLoader
 	{
 	public:
 		WorldLoader() {}

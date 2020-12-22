@@ -7,7 +7,7 @@
 
 namespace Prehistoric
 {
-	enum class InputCode : uint16_t
+	enum class PR_API InputCode : uint16_t
 	{
 		/* The unknown key */
 		KEY_UNKNOWN = 0xFFFF,
@@ -184,7 +184,7 @@ namespace Prehistoric
 		GAMEPAD_AXIS_LAST = GAMEPAD_AXIS_RIGHT_TRIGGER
 	};
 
-	enum class JoystickID : uint16_t
+	enum class PR_API JoystickID : uint16_t
 	{
 		JOYSTICK_1 = 0,
 		JOYSTICK_2 = 1,

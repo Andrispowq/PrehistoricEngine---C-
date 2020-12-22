@@ -10,7 +10,7 @@ namespace Prehistoric
 {
 	class RenderableComponent;
 
-	class Renderer
+	class PR_API Renderer
 	{
 	public:
 		Renderer(Window* window, Camera* camera);

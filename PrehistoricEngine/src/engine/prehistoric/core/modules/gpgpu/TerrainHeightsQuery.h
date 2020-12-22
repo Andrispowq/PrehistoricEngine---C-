@@ -17,7 +17,7 @@ namespace Prehistoric
 {
 	class AssembledAssetManager;
 
-	class TerrainHeightsQuery
+	class PR_API TerrainHeightsQuery
 	{
 	public:
 		TerrainHeightsQuery(Window* window, AssembledAssetManager* manager, uint32_t N);

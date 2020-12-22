@@ -10,7 +10,7 @@
 
 namespace Prehistoric
 {
-    typedef struct WAV_HEADER
+    typedef struct PR_API WAV_HEADER
     {
         // RIFF Chunk Descriptor
         uint8_t         RIFF[4];        // RIFF Header Magic header
@@ -30,7 +30,7 @@ namespace Prehistoric
         uint32_t        Subchunk2Size;  // Sampled data length
     } wav_header;
 
-    class AudioEngine : public Engine
+    class PR_API AudioEngine : public Engine
     {
     public:
         AudioEngine();

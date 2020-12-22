@@ -7,6 +7,7 @@
 */
 #if defined(_WIN32)
 	#if defined(_WIN64)
+		#include <Windows.h>
 		#define PR_WINDOWS_64
 	#else
 		#error "Only 64 bit Windows is supported!"
@@ -15,6 +16,7 @@
 	#include <TargetConditionals.h>
 
 	#if TARGET_IPHONE_SIMULATOR == 1
+		#define PR_PLATFORM_IPHONE_SIMULATOR
 		#error "IOS simulator is not supported!"
 	#elif TARGET_OS_IPHONE == 1
 		#define PR_PLATFORM_IOS
@@ -29,6 +31,8 @@
 	#define PR_ANDROID
 	#error "Android is currently not supported!"
 #elif defined(__linux__)
+	#include <signal.h>
+
 	#define PR_LINUX
 	#error "Linux is currently not supported!"
 #else
@@ -39,12 +43,15 @@
 #if defined(PR_WINDOWS_64)
 	#if defined(PR_BUILD_DLL)
 		#define PR_API __declspec(dllexport)
-	#else
+	#elif defined(PR_LOAD_DLL)
 		#define PR_API __declspec(dllimport)
+	#else	
+		#define PR_API
 	#endif
 
 	#define LOAD_LIBRARY(x) LoadLibraryA(x)
 	#define LOAD_FUNCTION(library, x) GetProcAddress(library, x)
+	#define FREE_LIBRARY(x) FreeLibrary(x)
 #else
 	#error "This OS doesn't support DLLs!"
 #endif
@@ -60,6 +67,10 @@
 
 #if defined(PR_WINDOWS_64)
 	#define DEBUG_BREAK() __debugbreak()
+#elif defined(PR_LINUX)
+	#define DEBUG_BREAK() raise(SIGTRAP)
+#else
+	#define DEBUG_BREAK()
 #endif
 
 #endif

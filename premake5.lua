@@ -28,7 +28,7 @@ include "PrehistoricEngine/vendor/GLAD"
 
 project "PrehistoricEngine"
     location "PrehistoricEngine"
-    kind "StaticLib"
+    kind "StaticLib" -- "SharedLib"
     language "C++"
     cppdialect "C++17"
     staticruntime "off"
@@ -50,7 +50,7 @@ project "PrehistoricEngine"
 	{
 		"_CRT_SECURE_NO_WARNINGS",
 		"GLFW_INCLUDE_NONE"
-	}
+    }
 
     includedirs
     {
@@ -70,6 +70,10 @@ project "PrehistoricEngine"
         "GLFW",
         "GLAD"
     }
+    
+    filter "kind:SharedLib"
+       defines { "PR_BUILD_DLL" }
+       postbuildcommands { "{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Prehistoric" }
 
     filter "system:windows"
         systemversion "latest"
@@ -140,6 +144,12 @@ project "Prehistoric"
         {
             "PR_FAST_MATH"
         }
+        
+        -- defines
+        -- {
+        --     "PR_FAST_MATH",
+        --     "PR_LOAD_DLL"
+        -- }
     
     filter "configurations:Debug"
         defines "PR_DEBUG"

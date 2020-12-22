@@ -5,13 +5,11 @@
 
 namespace Prehistoric
 {
-	class Transform
+	class PR_API Transform
 	{
 	public:
 		Transform(const Vector3f& position, const Vector3f& rotation, const Vector3f& scaling)
-			: position(position), rotation(rotation), scaling(scaling) {
-			calculateTransformationMatrix();
-		}
+			: position(position), rotation(rotation), scaling(scaling) { calculateTransformationMatrix(); }
 		Transform() : position(Vector3f()), rotation(Vector3f()), scaling(Vector3f(1)) { calculateTransformationMatrix(); }
 
 		virtual ~Transform() {}

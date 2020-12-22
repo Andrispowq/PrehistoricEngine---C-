@@ -6,7 +6,7 @@
 
 namespace Prehistoric
 {
-	class Timer
+	class PR_API Timer
 	{
 	public:
 		Timer(const std::string& funcName = "unknown", std::ofstream* file = nullptr);

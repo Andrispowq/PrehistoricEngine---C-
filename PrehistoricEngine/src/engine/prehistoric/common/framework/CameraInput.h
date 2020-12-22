@@ -5,7 +5,7 @@
 
 namespace Prehistoric
 {
-	enum InputType
+	enum PR_API InputType
 	{
 		NO_TYPE,
 		KEY_PRESSED, KEY_HELD,
@@ -13,14 +13,14 @@ namespace Prehistoric
 		JOYSTICK_BUTTON_PRESSED, JOYSTICK_AXIS_MOVED_NEGATIVE, JOYSTICK_AXIS_MOVED_POSITIVE
 	};
 
-	struct InputData
+	struct PR_API InputData
 	{
 		InputType type;
 		InputCode code;
 		JoystickID joystickNumber;
 	};
 
-	struct MoveData
+	struct PR_API MoveData
 	{
 		bool moved;
 		float amount;
@@ -39,7 +39,7 @@ namespace Prehistoric
 			return val;
 	}
 
-	class CameraInput
+	class PR_API CameraInput
 	{
 	public:
 		CameraInput(InputData forward, InputData backward, InputData right, InputData left,

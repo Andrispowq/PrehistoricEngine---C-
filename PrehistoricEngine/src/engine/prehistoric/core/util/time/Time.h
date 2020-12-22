@@ -11,8 +11,8 @@ namespace Prehistoric
 
 	namespace Time
 	{
-		double getTime();
-		long long getTimeNanoseconds();
+		PR_API double getTime();
+		PR_API long long getTimeNanoseconds();
 	};
 };
 

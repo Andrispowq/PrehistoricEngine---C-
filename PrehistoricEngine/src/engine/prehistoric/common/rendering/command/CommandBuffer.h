@@ -3,7 +3,7 @@
 
 namespace Prehistoric
 {
-	class CommandBuffer
+	class PR_API CommandBuffer
 	{
 	public:
 		CommandBuffer() {}

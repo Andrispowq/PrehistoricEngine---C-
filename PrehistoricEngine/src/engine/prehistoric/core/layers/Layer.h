@@ -7,7 +7,7 @@
 
 namespace Prehistoric
 {
-	class Layer
+	class PR_API Layer
 	{
 	public:
 		Layer(const std::string& name = "Layer");

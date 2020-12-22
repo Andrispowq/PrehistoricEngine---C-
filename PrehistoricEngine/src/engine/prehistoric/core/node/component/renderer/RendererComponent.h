@@ -9,7 +9,7 @@ namespace Prehistoric
 {
 	class Material;
 
-	class RendererComponent : public RenderableComponent
+	class PR_API RendererComponent : public RenderableComponent
 	{
 	public:
 		RendererComponent(size_t pipelineID, size_t materialID, Window* window, AssembledAssetManager* manager);

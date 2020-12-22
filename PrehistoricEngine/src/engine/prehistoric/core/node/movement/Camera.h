@@ -7,7 +7,7 @@
 
 namespace Prehistoric
 {
-    class Camera
+    class PR_API Camera
     {
     public:
         Camera(float moveAmt = 0.1f, float rotAmt = 0.8f, float mouseSensitivity = 0.8f, float fov = 70.0f, const Vector3f& position = Vector3f()); //There coordinates are just to spawn on a mountain

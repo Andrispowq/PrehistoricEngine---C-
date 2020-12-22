@@ -5,7 +5,7 @@
 
 namespace Prehistoric
 {
-	class GUIButton : public GUIElement
+	class PR_API GUIButton : public GUIElement
 	{
 	public:
 		GUIButton(Window* window, AssembledAssetManager* manager, Texture* texture = nullptr, void* data = nullptr, size_t dataSize = 0, bool visible = true);

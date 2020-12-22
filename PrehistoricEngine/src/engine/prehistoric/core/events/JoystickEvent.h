@@ -6,7 +6,7 @@
 
 namespace Prehistoric
 {
-	class JoystickEvent : public Event
+	class PR_API JoystickEvent : public Event
 	{
 	public:
 		JoystickID getJoystickID() const { return id; }
@@ -19,7 +19,7 @@ namespace Prehistoric
 		JoystickID id;
 	};
 
-	class JoystickConnectedEvent : public JoystickEvent
+	class PR_API JoystickConnectedEvent : public JoystickEvent
 	{
 	public:
 		JoystickConnectedEvent(JoystickID id)
@@ -35,7 +35,7 @@ namespace Prehistoric
 		EVENT_CLASS_TYPE(JoystickConnected)
 	};
 
-	class JoystickDisconnectedEvent : public JoystickEvent
+	class PR_API JoystickDisconnectedEvent : public JoystickEvent
 	{
 	public:
 		JoystickDisconnectedEvent(JoystickID id)

@@ -18,29 +18,29 @@ namespace Prehistoric
 		Planned:
 			Vulkan_RTX, DirectX_11, DirectX_12, DirectX_DXR
 	*/
-	enum API
+	enum PR_API API
 	{
 		OpenGL, Vulkan, Vulkan_RTX, DirectX_11, DirectX_12, DirectX_DXR, NO_API
 	};
 
 	namespace FrameworkConfig
 	{
-		void LoadConfig(const std::string& path);
+		PR_API void LoadConfig(const std::string& path);
 
-		extern std::string windowName;
-		extern uint32_t windowWidth;
-		extern uint32_t windowHeight;
-		extern bool windowFullScreen;
-		extern bool windowResizable;
-		extern bool windowVSync;
-		extern uint32_t windowNumSamples;
-		extern uint32_t windowMaxFPS;
+		extern PR_API std::string windowName;
+		extern PR_API uint32_t windowWidth;
+		extern PR_API uint32_t windowHeight;
+		extern PR_API bool windowFullScreen;
+		extern PR_API bool windowResizable;
+		extern PR_API bool windowVSync;
+		extern PR_API uint32_t windowNumSamples;
+		extern PR_API uint32_t windowMaxFPS;
 
-		extern std::map<API, Vector2i> apiVersions;
+		extern PR_API std::map<API, Vector2i> apiVersions;
 
-		extern API api;
-		extern Vector2i apiVersion;
-		extern bool apiVulkanUseValidationLayers;
+		extern PR_API API api;
+		extern PR_API Vector2i apiVersion;
+		extern PR_API bool apiVulkanUseValidationLayers;
 	};
 };
 

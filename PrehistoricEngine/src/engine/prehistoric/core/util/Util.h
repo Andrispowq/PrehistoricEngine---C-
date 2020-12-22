@@ -7,8 +7,8 @@ namespace Prehistoric
 {
 	namespace Util
 	{
-		std::vector<std::string> Split(const std::string& s, char delim);
-		std::vector<std::string> RemoveEmptyStrings(const std::vector<std::string>& vec);
+		PR_API std::vector<std::string> Split(const std::string& s, char delim);
+		PR_API std::vector<std::string> RemoveEmptyStrings(const std::vector<std::string>& vec);
 	};
 };
 

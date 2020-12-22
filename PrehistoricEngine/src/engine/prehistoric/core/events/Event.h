@@ -5,7 +5,7 @@
 
 namespace Prehistoric
 {
-	enum class EventType
+	enum class PR_API EventType
 	{
 		None = 0,
 		WindowClose, WindowResize, WindowFocus, WindowLostFocus, WindowIconified, WindowRestored,
@@ -15,7 +15,7 @@ namespace Prehistoric
 		JoystickConnected, JoystickDisconnected
 	};
 
-	enum EventCategory
+	enum PR_API EventCategory
 	{
 		None = 0,
 		EventCategoryApplication = BIT(0),
@@ -32,7 +32,7 @@ namespace Prehistoric
 
 #define EVENT_CLASS_CATEGORY(category) virtual int getCategoryFlags() const override { return category; }
 
-	class Event
+	class PR_API Event
 	{
 		friend class EventDispatcher;
 	public:
@@ -51,7 +51,7 @@ namespace Prehistoric
 		bool handled = false;
 	};
 
-	class EventDispatcher
+	class PR_API EventDispatcher
 	{
 		template<typename T>
 		using EventFn = std::function<bool(T&)>;
@@ -75,7 +75,7 @@ namespace Prehistoric
 		Event& event;
 	};
 
-	inline std::ostream& operator<<(std::ostream& os, const Event& e)
+	inline PR_API std::ostream& operator<<(std::ostream& os, const Event& e)
 	{
 		return os << e.toString();
 	}

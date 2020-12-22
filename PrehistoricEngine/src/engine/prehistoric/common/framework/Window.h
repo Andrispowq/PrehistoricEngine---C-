@@ -12,7 +12,7 @@
 
 namespace Prehistoric
 {
-	class Window
+	class PR_API Window
 	{
 	public:
 		using EventCallbackFn = std::function<void(Event&)>;

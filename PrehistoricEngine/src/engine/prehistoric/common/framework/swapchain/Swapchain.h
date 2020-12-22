@@ -9,7 +9,7 @@ namespace Prehistoric
 {
 	class Window;
 
-	class Swapchain
+	class PR_API Swapchain
 	{
 	public:
 		Swapchain(Window* window) : window(window) {}

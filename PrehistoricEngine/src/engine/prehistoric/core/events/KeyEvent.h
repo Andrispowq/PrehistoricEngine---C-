@@ -6,7 +6,7 @@
 
 namespace Prehistoric
 {
-	class KeyEvent : public Event
+	class PR_API KeyEvent : public Event
 	{
 	public:
 		InputCode getKeyCode() const { return keyCode; }
@@ -21,7 +21,7 @@ namespace Prehistoric
 		void* handle;
 	};
 
-	class KeyPressedEvent : public KeyEvent
+	class PR_API KeyPressedEvent : public KeyEvent
 	{
 	public:
 		KeyPressedEvent(InputCode keycode, void* handle, uint16_t repeatCount)
@@ -41,7 +41,7 @@ namespace Prehistoric
 		uint16_t repeatCount;
 	};
 
-	class KeyReleasedEvent : public KeyEvent
+	class PR_API KeyReleasedEvent : public KeyEvent
 	{
 	public:
 		KeyReleasedEvent(InputCode keycode, void* handle)
