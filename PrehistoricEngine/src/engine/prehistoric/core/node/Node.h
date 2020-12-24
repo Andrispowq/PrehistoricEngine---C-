@@ -21,7 +21,7 @@ namespace Prehistoric
 
         Node* AddChild(const std::string& key, Node* child);
 
-        inline Transform getWorldTransform() const { return worldTransform; }
+        inline const Transform& getWorldTransform() const { return worldTransform; }
 
         inline Node* getChild(const std::string& key) const { return children.at(key).get(); }
 

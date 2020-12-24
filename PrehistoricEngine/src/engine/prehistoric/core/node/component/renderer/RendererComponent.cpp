@@ -12,8 +12,11 @@ namespace Prehistoric
 	RendererComponent::RendererComponent(size_t pipelineID, size_t materialID, Window* window, AssembledAssetManager* manager)
 		: RenderableComponent(pipelineID, window, manager)
 	{
+		type = ComponentType::RendererComponent;
+
 		materialIndex = materialID;
 		manager->addReference<Material>(materialID);
+		material = manager->getResourceByID<Material>(materialIndex);
 
 		if (FrameworkConfig::api == Vulkan)
 		{
@@ -24,6 +27,8 @@ namespace Prehistoric
 	RendererComponent::RendererComponent(Window* window, AssembledAssetManager* manager)
 		: RenderableComponent(window, manager)
 	{
+		type = ComponentType::RendererComponent;
+
 		materialIndex = -1;
 	}
 
@@ -57,10 +62,5 @@ namespace Prehistoric
 
 		pipeline->getShader()->UpdateObjectUniforms(parent, instance_index);
 		pipeline->RenderPipeline();
-	}
-
-	Material* RendererComponent::getMaterial() const
-	{
-		return manager->getResourceByID<Material>(materialIndex);
 	}
 };

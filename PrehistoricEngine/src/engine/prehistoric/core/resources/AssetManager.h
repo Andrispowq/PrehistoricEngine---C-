@@ -22,6 +22,7 @@
 #include "platform/opengl/rendering/shaders/terrain/GLTerrainShader.h"
 #include "platform/opengl/rendering/shaders/terrain/GLTerrainWireframeShader.h"
 #include "platform/opengl/rendering/shaders/deferred/GLDeferredShader.h"
+#include "platform/opengl/rendering/shaders/deferred/GLAlphaCoverageShader.h"
 #include "platform/opengl/rendering/shaders/deferred/GLFXAAShader.h"
 
 #include "platform/vulkan/rendering/shaders/basic/VKBasicShader.h"
@@ -177,6 +178,10 @@ namespace Prehistoric
 				else if (path == "deferred")
 				{
 					shader = new GLDeferredShader();
+				}
+				else if (path == "alpha_coverage")
+				{
+					shader = new GLAlphaCoverageShader();
 				}
 				else if (path == "fxaa")
 				{

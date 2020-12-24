@@ -40,7 +40,7 @@ namespace Prehistoric
 	void GLAtmosphereScatteringShader::UpdateUniforms(GameObject* atm, Matrix4f view, Matrix4f proj) const
 	{
 		SetUniform("m_transform", Matrix4f::Identity());
-		SetUniform("sunPosition", ((Atmosphere*)atm)->getSunPosition());
+		SetUniform("sunPosition", ((Atmosphere*)atm)->getSun()->getParent()->getWorldTransform().getPosition());
 		SetUniform("m_view", view);
 		SetUniform("m_projection", proj);
 
@@ -90,6 +90,6 @@ namespace Prehistoric
 	void GLAtmosphereScatteringShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const
 	{
 		SetUniform("m_transform", object->getWorldTransform().getTransformationMatrix());
-		SetUniform("sunPosition", ((Atmosphere*)object)->getSunPosition());
+		SetUniform("sunPosition", ((Atmosphere*)object)->getSun()->getParent()->getWorldTransform().getPosition());
 	}
 };

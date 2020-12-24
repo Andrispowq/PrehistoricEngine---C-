@@ -76,7 +76,7 @@ namespace Prehistoric
 			Terrain* terrain = new Terrain(window, camera, manager, "res/config/terrain_0.cfg");
 			terrain->UpdateQuadtree();
 
-			//root->AddChild("Terrain", terrain);
+			root->AddChild("Terrain", terrain);
 
 			GameObject* slider = new GUISlider(window, manager, 0.0f, 2.0f, terrain->getMaps()->getHeightmap(), &EngineConfig::rendererExposure, sizeof(float), true);
 			slider->SetPosition({ 0.5f, 0.5f, 0 });

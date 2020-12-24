@@ -12,6 +12,7 @@ namespace Prehistoric
 		size_t def_ID = manager->getResource<Texture>("res/textures/default.png");
 		manager->addReference<Texture>(def_ID);
 		textureIDs.insert(std::make_pair("DEFAULT_TEX", def_ID));
+		textures.insert(std::make_pair("DEFAULT_TEX", manager->getResourceByID<Texture>(def_ID)));
 	}
 
 	Material::~Material()
@@ -26,6 +27,7 @@ namespace Prehistoric
 	{
 		manager->addReference<Texture>(textureID);
 		textureIDs.insert(std::make_pair(key, textureID));
+		textures.insert(std::make_pair(key, manager->getResourceByID<Texture>(textureID)));
 	}
 
 	void Material::addVector4f(const std::string& key, Vector4f value)
@@ -55,11 +57,11 @@ namespace Prehistoric
 
 	Texture* Material::getTexture(const std::string& key) const
 	{
-		auto index = textureIDs.find(key);
-		if (index == textureIDs.end())
-			return manager->getResourceByID<Texture>(textureIDs.begin()->second);
+		auto index = textures.find(key);
+		if (index == textures.end())
+			return textures.begin()->second;
 
-		return manager->getResourceByID<Texture>(index->second);
+		return index->second;
 	}
 
 	Vector4f Material::getVector4f(const std::string& key) const
@@ -109,6 +111,6 @@ namespace Prehistoric
 
 	Texture* Material::getDefault() const
 	{
-		return manager->getResourceByID<Texture>(textureIDs.at("DEFAULT_TEX"));
+		return textures.at("DEFAULT_TEX");
 	}
 };

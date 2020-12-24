@@ -22,7 +22,7 @@ namespace Prehistoric
 		inline Vector3f getRotation() const { return rotation; }
 		inline Vector3f getScaling() const { return scaling; }
 
-		inline Matrix4f getTransformationMatrix() const { return transformationMatrix; }
+		inline const Matrix4f& getTransformationMatrix() const { return transformationMatrix; }
 		Matrix4f getModelViewProjectionMatrix(const Camera& camera) const;
 
 		inline void setPosition(const Vector3f& position) { this->position = position; calculateTransformationMatrix(); }

@@ -15,7 +15,7 @@ void main()
 	float green = -0.00025 * (abs(position_FS.y) - 2800) + baseColor.y;
 	float blue = -0.00019 * (abs(position_FS.y) - 2800) + baseColor.z;
 
-	positionMetallic = vec4(position_FS, 0.0);
+	positionMetallic = vec4(vec3(position_FS), 0.0);
 	albedoRoughness = vec4(vec3(red, green, blue), 0.0);
 	normalLit = vec4(vec3(0.0), 0.0);
 	emissionExtra = vec4(vec3(0.0), 0.0);

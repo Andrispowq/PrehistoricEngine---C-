@@ -1,6 +1,6 @@
 #version 430
 
-layout(local_size_x = 1, local_size_y = 1) in;
+layout(local_size_x = 16, local_size_y = 16) in;
 
 layout(binding = 0, rgba32f) uniform writeonly image2D outColour;
 
@@ -17,10 +17,12 @@ struct Light
 
 uniform Light lights[max_lights];
 
-uniform sampler2D positionMetallic;
-uniform sampler2D albedoRoughness;
-uniform sampler2D normalLit;
-uniform sampler2D emissionExtra;
+uniform sampler2DMS positionMetallic;
+uniform sampler2DMS albedoRoughness;
+uniform sampler2DMS normalLit;
+uniform sampler2DMS emissionExtra;
+
+uniform sampler2D alphaCoverage;
 
 uniform samplerCube irradianceMap;
 uniform samplerCube prefilterMap;
@@ -34,25 +36,12 @@ uniform float gamma;
 uniform float exposure;
 
 uniform vec2 dimension;
-uniform int albedoSamples;
 
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 float GeometrySchlickGGX(float NdotV, float roughness);
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
 vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness);
 vec3 fresnelSchlick(float cosTheta, vec3 F0);
-
-vec4 readMSTexture(sampler2DMS tex, ivec2 texCoords)
-{
-    vec4 colour = vec4(0.0);
-
-    for (int i = 0; i < albedoSamples; i++)
-        colour += texelFetch(tex, texCoords, i);
-
-    colour /= float(albedoSamples);
-
-    return colour;
-}
 
 void main()
 {
@@ -61,88 +50,194 @@ void main()
 
     vec2 texelSize = vec2(1.0) / dimension;
 
-    vec3 position = texture(positionMetallic, texCoord).rgb;
-    vec3 albedo = texture(albedoRoughness, texCoord).rgb;
-    vec3 normal = texture(normalLit, texCoord).rgb;
-    vec3 emission = texture(emissionExtra, texCoord).rgb;
+    vec4 coverage = texture(alphaCoverage, texCoord);
+    vec3 colour = vec3(0.0);
 
-    float metallic = texture(positionMetallic, texCoord).a;
-    float roughness = texture(albedoRoughness, texCoord).a;
-    float lit = texture(normalLit, texCoord).a;
-    float extra = texture(emissionExtra, texCoord).a;
-
-    if (lit == 0.0)
+    if (coverage.r == 1.0)
     {
-        //TODO: this means that the emission value is a light scattering value instead
-        if (extra == 1.0)
+        for (int j = 0; j < samples; j++)
         {
+            vec4 pM = texelFetch(positionMetallic, x, j);
+            vec4 aR = texelFetch(albedoRoughness, x, j);
+            vec4 nL = texelFetch(normalLit, x, j);
+            vec4 eE = texelFetch(emissionExtra, x, j);
+
+            vec3 position = pM.rgb;
+            vec3 albedo = aR.rgb;
+            vec3 normal = nL.rgb;
+            vec3 emission = eE.rgb;
+
+            float metallic = pM.a;
+            float roughness = aR.a;
+            float lit = nL.a;
+            float extra = eE.a;
+
+            if (lit == 0.0)
+            {
+                //TODO: this means that the emission value is a light scattering value instead
+                if (extra == 1.0)
+                {
+                    imageStore(outColour, x, vec4(albedo, 1.0));
+                    return;
+                }
+
+                imageStore(outColour, x, vec4(albedo, 1.0));
+                return;
+            }
+            else if (lit == 0.5)
+            {
+                albedo = 1.0 - exp(-albedo * exposure);
+                albedo = pow(albedo, vec3(1.0 / gamma));
+
+                imageStore(outColour, x, vec4(albedo, 1.0));
+                return;
+            }
+
+            vec3 N = normalize(normal);
+            vec3 V = normalize(cameraPosition - position);
+            vec3 R = normalize(reflect(-V, N));
+
+            vec3 F0 = vec3(0.04);
+            F0 = mix(F0, albedo, metallic);
+
+            vec3 Lo = vec3(0);
+            for (int i = 0; i < numberOfLights; ++i)
+            {
+                vec3 L = normalize(lights[i].position - position);
+                vec3 H = normalize(V + L);
+                float dist = length(lights[i].position - position);
+                float attenuation = 1 / pow(dist, 2);
+                vec3 radiance = lights[i].colour * lights[i].intensity * attenuation;
+
+                float NDF = DistributionGGX(N, H, roughness);
+                float G = GeometrySmith(N, V, L, roughness);
+                vec3 F = fresnelSchlick(max(dot(H, V), 0), F0);
+
+                vec3 kS = F;
+                vec3 kD = vec3(1) - kS;
+                kD *= 1 - metallic;
+
+                vec3 numerator = NDF * G * F;
+                float denominator = 4 * max(dot(N, V), 0) * max(dot(N, L), 0);
+                vec3 specular = numerator / max(denominator, 0.001);
+
+                float NdotL = max(dot(N, L), 0);
+                Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+            }
+
+            vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0), F0, roughness);
+
+            vec3 kS = F;
+            vec3 kD = 1.0 - kS;
+            kD *= 1.0 - metallic;
+
+            vec3 irradiance = texture(irradianceMap, N).rgb;
+            vec3 diffuse = irradiance * albedo;
+
+            const float MAX_REFLECTION_LOD = 4.0;
+            float lod = roughness * MAX_REFLECTION_LOD;
+            vec3 prefilteredColour = textureLod(prefilterMap, R, lod).rgb;
+            vec2 envBRDF = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
+            vec3 specular = prefilteredColour * (F * envBRDF.x + envBRDF.y);
+
+            //The extra in a lit mode represents the occlusion value
+            vec3 ambient = (kD * diffuse + specular) * extra;
+
+            colour += ambient + Lo + max(emission * emissionFactor, 0.0);
+        }
+
+        colour /= float(samples);
+    }
+    else
+    {
+        vec4 pM = texelFetch(positionMetallic, x, 0);
+        vec4 aR = texelFetch(albedoRoughness, x, 0);
+        vec4 nL = texelFetch(normalLit, x, 0);
+        vec4 eE = texelFetch(emissionExtra, x, 0);
+
+        vec3 position = pM.rgb;
+        vec3 albedo = aR.rgb;
+        vec3 normal = nL.rgb;
+        vec3 emission = eE.rgb;
+
+        float metallic = pM.a;
+        float roughness = aR.a;
+        float lit = nL.a;
+        float extra = eE.a;
+
+        if (lit == 0.0)
+        {
+            //TODO: this means that the emission value is a light scattering value instead
+            if (extra == 1.0)
+            {
+                imageStore(outColour, x, vec4(albedo, 1.0));
+                return;
+            }
+
+            imageStore(outColour, x, vec4(albedo, 1.0));
+            return;
+        }
+        else if (lit == 0.5)
+        {
+            albedo = 1.0 - exp(-albedo * exposure);
+            albedo = pow(albedo, vec3(1.0 / gamma));
+
             imageStore(outColour, x, vec4(albedo, 1.0));
             return;
         }
 
-        imageStore(outColour, x, vec4(albedo, 1.0));
-        return;
-    }
-    else if (lit == 0.5)
-    {
-        albedo = 1.0 - exp(-albedo * exposure);
-        albedo = pow(albedo, vec3(1.0 / gamma));
+        vec3 N = normalize(normal);
+        vec3 V = normalize(cameraPosition - position);
+        vec3 R = normalize(reflect(-V, N));
 
-        imageStore(outColour, x, vec4(albedo, 1.0));
-        return;
-    }
+        vec3 F0 = vec3(0.04);
+        F0 = mix(F0, albedo, metallic);
 
-    vec3 N = normalize(normal);
-    vec3 V = normalize(cameraPosition - position);
-    vec3 R = normalize(reflect(-V, N));
+        vec3 Lo = vec3(0);
+        for (int i = 0; i < numberOfLights; ++i)
+        {
+            vec3 L = normalize(lights[i].position - position);
+            vec3 H = normalize(V + L);
+            float dist = length(lights[i].position - position);
+            float attenuation = 1 / pow(dist, 2);
+            vec3 radiance = lights[i].colour * lights[i].intensity * attenuation;
 
-    vec3 F0 = vec3(0.04);
-    F0 = mix(F0, albedo, metallic);
+            float NDF = DistributionGGX(N, H, roughness);
+            float G = GeometrySmith(N, V, L, roughness);
+            vec3 F = fresnelSchlick(max(dot(H, V), 0), F0);
 
-    vec3 Lo = vec3(0);
-    for (int i = 0; i < numberOfLights; ++i)
-    {
-        vec3 L = normalize(lights[i].position - position);
-        vec3 H = normalize(V + L);
-        float dist = length(lights[i].position - position);
-        float attenuation = 1 / pow(dist, 2);
-        vec3 radiance = lights[i].colour * lights[i].intensity * attenuation;
+            vec3 kS = F;
+            vec3 kD = vec3(1) - kS;
+            kD *= 1 - metallic;
 
-        float NDF = DistributionGGX(N, H, roughness);
-        float G = GeometrySmith(N, V, L, roughness);
-        vec3 F = fresnelSchlick(max(dot(H, V), 0), F0);
+            vec3 numerator = NDF * G * F;
+            float denominator = 4 * max(dot(N, V), 0) * max(dot(N, L), 0);
+            vec3 specular = numerator / max(denominator, 0.001);
+
+            float NdotL = max(dot(N, L), 0);
+            Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+        }
+
+        vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0), F0, roughness);
 
         vec3 kS = F;
-        vec3 kD = vec3(1) - kS;
-        kD *= 1 - metallic;
+        vec3 kD = 1.0 - kS;
+        kD *= 1.0 - metallic;
 
-        vec3 numerator = NDF * G * F;
-        float denominator = 4 * max(dot(N, V), 0) * max(dot(N, L), 0);
-        vec3 specular = numerator / max(denominator, 0.001);
+        vec3 irradiance = texture(irradianceMap, N).rgb;
+        vec3 diffuse = irradiance * albedo;
 
-        float NdotL = max(dot(N, L), 0);
-        Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+        const float MAX_REFLECTION_LOD = 4.0;
+        float lod = roughness * MAX_REFLECTION_LOD;
+        vec3 prefilteredColour = textureLod(prefilterMap, R, lod).rgb;
+        vec2 envBRDF = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
+        vec3 specular = prefilteredColour * (F * envBRDF.x + envBRDF.y);
+
+        //The extra in a lit mode represents the occlusion value
+        vec3 ambient = (kD * diffuse + specular) * extra;
+
+        colour = ambient + Lo + max(emission * emissionFactor, 0.0);
     }
-
-    vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0), F0, roughness);
-
-    vec3 kS = F;
-    vec3 kD = 1.0 - kS;
-    kD *= 1.0 - metallic;
-
-    vec3 irradiance = texture(irradianceMap, N).rgb;
-    vec3 diffuse = irradiance * albedo;
-
-    const float MAX_REFLECTION_LOD = 4.0;
-    float lod = roughness * MAX_REFLECTION_LOD;
-    vec3 prefilteredColour = textureLod(prefilterMap, R, lod).rgb;
-    vec2 envBRDF = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
-    vec3 specular = prefilteredColour * (F * envBRDF.x + envBRDF.y);
-
-    //The extra in a lit mode represents the occlusion value
-    vec3 ambient = (kD * diffuse + specular) * extra;
-
-    vec3 colour = ambient + Lo + max(emission * emissionFactor, 0.0);
 
     colour = 1.0 - exp(-colour * exposure);
     colour = pow(colour, vec3(1.0 / gamma));

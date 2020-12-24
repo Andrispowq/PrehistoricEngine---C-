@@ -185,7 +185,7 @@ void main()
 		out_LightScattering = mix(vec3(0), sunColour, smoothRadius);
 	}
 	
-    positionMetallic = vec4(worldPosition, 0.0);
+    positionMetallic = vec4(vec3(position_FS), 0.0);
     albedoRoughness = vec4(out_Color, 0.0);
     normalLit = vec4(vec3(0.0), 0.0);
     emissionExtra = vec4(out_LightScattering, 1.0);

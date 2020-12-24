@@ -317,9 +317,6 @@
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\deferred\GLDeferredShader.h">
       <Filter>platform\opengl\rendering\shaders\deferred</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\deferred\GLFXAAShader.h">
-      <Filter>platform\opengl\rendering\shaders\deferred</Filter>
-    </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLBRDFIntegrateShader.h">
       <Filter>platform\opengl\rendering\shaders\environmentMap</Filter>
     </ClInclude>
@@ -692,6 +689,8 @@
     <ClInclude Include="src\engine\prehistoric\core\util\time\Timer.h">
       <Filter>prehistoric\core\util\time</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\deferred\GLAlphaCoverageShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\deferred\GLFXAAShader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -741,9 +740,6 @@
       <Filter>platform\opengl\rendering\shaders\basic</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\deferred\GLDeferredShader.cpp">
-      <Filter>platform\opengl\rendering\shaders\deferred</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\deferred\GLFXAAShader.cpp">
       <Filter>platform\opengl\rendering\shaders\deferred</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLBRDFIntegrateShader.cpp">
@@ -1073,5 +1069,7 @@
     <ClCompile Include="src\engine\prehistoric\core\util\time\Timer.cpp">
       <Filter>prehistoric\core\util\time</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\deferred\GLAlphaCoverageShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\deferred\GLFXAAShader.cpp" />
   </ItemGroup>
 </Project>

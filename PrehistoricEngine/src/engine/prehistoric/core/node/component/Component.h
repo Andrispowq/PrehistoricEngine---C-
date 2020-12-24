@@ -7,10 +7,19 @@ namespace Prehistoric
 {
 	class GameObject;
 
+	enum class ComponentType
+	{
+		General,
+		AudioComponent,
+		RenderableComponent,
+		RendererComponent,
+		LightComponent
+	};
+
 	class Component
 	{
 	public:
-		Component() : parent(nullptr) {}
+		Component() : parent(nullptr), type(ComponentType::General) {}
 		virtual ~Component() {}
 
 		virtual void PreUpdate(CoreEngine* engine) {}
@@ -18,8 +27,12 @@ namespace Prehistoric
 
 		inline GameObject* getParent() const { return parent; }
 		inline void setParent(GameObject* parent) { this->parent = parent; }
+
+		virtual ComponentType getComponentType() const { return type; };
+		static ComponentType getStaticComponentType() { return ComponentType::General; };
 	protected:
 		GameObject* parent;
+		ComponentType type;
 	};
 };
 

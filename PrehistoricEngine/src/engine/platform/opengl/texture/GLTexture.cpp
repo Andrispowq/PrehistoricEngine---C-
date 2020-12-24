@@ -163,7 +163,8 @@ namespace Prehistoric
 
 		if (multisample)
 		{
-			glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, FrameworkConfig::windowNumSamples, getInternalFormat(format), width, height, false);
+			//glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, FrameworkConfig::windowNumSamples, getInternalFormat(format), width, height, false);
+			glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, FrameworkConfig::windowNumSamples, getInternalFormat(format), width, height, true);
 		}
 		else
 		{

@@ -22,7 +22,9 @@ namespace Prehistoric
 
 		virtual void Render() override;
 
+		Texture* getAlphaCoverage() const { return alphaCoverage; }
 		Texture* getOutputTexture() const { return outputImage; }
+		Texture* getFXAATexture() const { return fxaaTexture; }
 
 		Texture* getPositionMetallic() const { return positionMetalic; }
 		Texture* getAlbedoRoughness() const { return albedoRoughness; }
@@ -31,12 +33,13 @@ namespace Prehistoric
 
 	private:
 		std::unique_ptr<GLFramebuffer> deferredFBO;
-		std::unique_ptr<GLFramebuffer> resolveFBO;
 
 		Texture* positionMetalic; //RGB -> position, A -> metallic
 		Texture* albedoRoughness; //RGB -> albedo, A -> roughness
 		Texture* normalLit; //RGB -> normal, A -> whether that pixel should be shaded (makes sure that the atmosphere is not shaded)
 		Texture* emissionExtra; //RGB -> emission, A -> some extra value which might be needed later on (perhaps object ID)
+
+		Texture* alphaCoverage;
 
 		/* ---------- Deferred Configurations ---------- 
 
@@ -49,12 +52,17 @@ namespace Prehistoric
 		   ---------- Deferred Configurations ---------- */
 
 		size_t quadVBO;
+		size_t alphaCoverageShader;
+		
 		size_t deferredShader;
 		size_t fxaaShader;
 		size_t renderShader;
 
 		Texture* outputImage;
-		Texture* fxaaImage;
+		Texture* fxaaTexture;
+
+		Pipeline* alphaCoveragePipeline;
+
 		Pipeline* deferredPipeline;
 		Pipeline* fxaaPipeline;
 		Pipeline* renderPipeline;

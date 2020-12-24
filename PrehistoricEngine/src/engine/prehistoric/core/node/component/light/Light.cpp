@@ -5,9 +5,10 @@
 
 namespace Prehistoric
 {
-	Light::Light(const Vector3f& colour, const Vector3f& intensity, bool sun)
-		: colour(colour), intensity(intensity), sun(sun)
+	Light::Light(const Vector3f& colour, const Vector3f& intensity)
+		: colour(colour), intensity(intensity)
 	{
+		type = ComponentType::LightComponent;
 	}
 
 	void Light::PreRender(Renderer* renderer)

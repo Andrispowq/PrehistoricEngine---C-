@@ -99,7 +99,6 @@ namespace Prehistoric
 		uint32_t status;
 		if ((status = glCheckFramebufferStatus(GL_FRAMEBUFFER)) != GL_FRAMEBUFFER_COMPLETE)
 		{
-			GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE;
 			PR_LOG_ERROR("ERROR: Framebuffer is not complete, status: %x\n", status);
 		}
 	}

@@ -14,6 +14,8 @@ namespace Prehistoric
 	RenderableComponent::RenderableComponent(size_t pipelineID, Window* window, AssembledAssetManager* manager)
 		: priority(RenderPriority::_3D)
 	{
+		type = ComponentType::RenderableComponent;
+
 		this->window = window;
 		this->manager = manager;
 
@@ -24,6 +26,8 @@ namespace Prehistoric
 	RenderableComponent::RenderableComponent(Window* window, AssembledAssetManager* manager)
 		: priority(RenderPriority::_3D)
 	{
+		type = ComponentType::RendererComponent;
+
 		pipelineIndex = -1;
 
 		this->window = window;

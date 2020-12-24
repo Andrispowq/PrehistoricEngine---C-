@@ -1,6 +1,7 @@
 # Binary output
 **/bin/
 **/bin-int/
+**/profiling/
 Output/
 !vendor/premake/bin/
 

@@ -49,7 +49,7 @@ namespace Prehistoric
 	{
 		SetUniform(m_transform, object->getWorldTransform().getTransformationMatrix());
 
-		Material* material = dynamic_cast<RendererComponent*>(object->GetComponent(RENDERER_COMPONENT))->getMaterial();
+		Material* material = static_cast<RendererComponent*>(object->GetComponent(RENDERER_COMPONENT))->getMaterial();
 
 		material->getTexture("albedoMap")->Bind(0);
 		SetUniformi(albedoMap, 0);

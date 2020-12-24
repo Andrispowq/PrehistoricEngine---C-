@@ -30,7 +30,6 @@ namespace Prehistoric
 		Camera* getCamera() const { return camera; }
 
 		inline std::vector<Light*> getLights() const { return lights; }
-		inline Light* getSun() const { return sun; }
 
 		inline bool isWireframeMode() const { return wireframeMode; }
 		inline void setWireframeMode(bool wire) { this->wireframeMode = wire; }
@@ -45,7 +44,6 @@ namespace Prehistoric
 		std::unordered_map<Pipeline*, std::vector<RenderableComponent*>> models_2d;
 
 		std::vector<Light*> lights;
-		Light* sun = nullptr; //Not owned
 
 		bool wireframeMode;
 	};

@@ -48,9 +48,6 @@ namespace Prehistoric
 
 	void Renderer::AddLight(Light* light)
 	{
-		if (light->isSun())
-			sun = light;
-
 		lights.push_back(light);
 	}
 };

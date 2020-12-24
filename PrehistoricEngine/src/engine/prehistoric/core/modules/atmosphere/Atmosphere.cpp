@@ -36,14 +36,5 @@ namespace Prehistoric
 		}
 
 		AddComponent(RENDERER_COMPONENT, new RendererComponent(pipelineID, manager->loadResource<Material>(nullptr), window, manager));
-
-		sunPosition = AtmosphereConfig::sunPosition;
-	}
-
-	void Atmosphere::PreUpdate(CoreEngine* engine)
-	{
-		//sun logic can go in here
-		if (engine->getRenderingEngine()->getRenderer()->getSun() != nullptr)
-			sunPosition = engine->getRenderingEngine()->getRenderer()->getSun()->getParent()->getWorldTransform().getPosition();
 	}
 };

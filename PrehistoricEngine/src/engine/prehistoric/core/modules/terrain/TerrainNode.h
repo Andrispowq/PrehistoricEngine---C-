@@ -41,7 +41,7 @@ namespace Prehistoric
 		Vector2f getIndex() const { return index; }
 		float getGap() const { return gap; }
 
-		Transform getLocalTransform() const { return localTransform; }
+		const Transform& getLocalTransform() const { return localTransform; }
 
 		TerrainNode(const TerrainNode&) = default;
 

@@ -145,6 +145,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\Includes.hpp" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\deferred\GLAlphaCoverageShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\deferred\GLFXAAShader.h" />
     <ClInclude Include="src\engine\Prehistoric.h" />
     <ClInclude Include="src\engine\platform\Platform.h" />
     <ClInclude Include="src\engine\platform\opengl\buffer\GLMeshVertexBuffer.h" />
@@ -163,7 +165,6 @@
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\basic\GLBasicShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\deferred\GLDeferredShader.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\deferred\GLFXAAShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLBRDFIntegrateShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLEnvironmentMapShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLEnvironmentShader.h" />
@@ -304,12 +305,13 @@
     <ClCompile Include="src\engine\platform\opengl\rendering\pipeline\GLComputePipeline.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\pipeline\GLGraphicsPipeline.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\pipeline\GLPipeline.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\deferred\GLAlphaCoverageShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\deferred\GLFXAAShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\GLShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereScatteringShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\basic\GLBasicShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\deferred\GLDeferredShader.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\deferred\GLFXAAShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLBRDFIntegrateShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLEnvironmentMapShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLEnvironmentShader.cpp" />

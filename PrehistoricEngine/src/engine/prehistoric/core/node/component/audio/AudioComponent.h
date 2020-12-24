@@ -34,6 +34,8 @@ namespace Prehistoric
 		void setStereo(bool is_Stereo);
 		void setLoop(bool is_Loop);
 
+		static ComponentType getStaticComponentType() { return ComponentType::AudioComponent; }
+
 	private:
 		uint32_t sourceID;
 		uint32_t bufferID;

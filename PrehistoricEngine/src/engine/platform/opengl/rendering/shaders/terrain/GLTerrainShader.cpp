@@ -140,7 +140,7 @@ namespace Prehistoric
 		TerrainNode* node = (TerrainNode*)object;
 
 		SetUniform(location_localMatrix, node->getLocalTransform().getTransformationMatrix());
-		SetUniform(location_worldMatrix, object->getWorldTransform().getTransformationMatrix());
+		SetUniform(location_worldMatrix, node->getWorldTransform().getTransformationMatrix());
 
 		SetUniform(location_location, node->getLocation());
 		SetUniform(location_index, node->getIndex());

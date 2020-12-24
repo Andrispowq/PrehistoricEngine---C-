@@ -10,14 +10,14 @@ namespace Prehistoric
 	GLDeferredShader::GLDeferredShader() : GLShader()
 	{
 		AddShader(ResourceLoader::LoadShaderGL("opengl/deferred/deferred_CS.glsl"), COMPUTE_SHADER);
-		//AddShader(ResourceLoader::LoadShaderGL("opengl/deferred/deferred_VS.glsl"), VERTEX_SHADER);
-		//AddShader(ResourceLoader::LoadShaderGL("opengl/deferred/deferred_FS.glsl"), FRAGMENT_SHADER);
 		CompileShader();
 
 		AddUniform("positionMetallic");
 		AddUniform("albedoRoughness");
 		AddUniform("normalLit");
 		AddUniform("emissionExtra");
+
+		AddUniform("alphaCoverage");
 
 		AddUniform("irradianceMap");
 		AddUniform("prefilterMap");
@@ -48,18 +48,22 @@ namespace Prehistoric
 		rend->getNormalLit()->Bind(2);
 		rend->getEmissionExtra()->Bind(3);
 
+		rend->getAlphaCoverage()->Bind(4);
+
 		SetUniformi("positionMetallic", 0);
 		SetUniformi("albedoRoughness", 1);
 		SetUniformi("normalLit", 2);
 		SetUniformi("emissionExtra", 3);
 
-		EnvironmentMapConfig::irradianceMap->Bind(4);
-		EnvironmentMapConfig::prefilterMap->Bind(5);
-		EnvironmentMapConfig::brdfLUT->Bind(6);
+		SetUniformi("alphaCoverage", 4);
 
-		SetUniformi("irradianceMap", 4);
-		SetUniformi("prefilterMap", 5);
-		SetUniformi("brdfLUT", 6);
+		EnvironmentMapConfig::irradianceMap->Bind(5);
+		EnvironmentMapConfig::prefilterMap->Bind(6);
+		EnvironmentMapConfig::brdfLUT->Bind(7);
+
+		SetUniformi("irradianceMap", 5);
+		SetUniformi("prefilterMap", 6);
+		SetUniformi("brdfLUT", 7);
 
 		SetUniform("cameraPosition", camera->getPosition());
 		Window* window = renderer->getWindow();

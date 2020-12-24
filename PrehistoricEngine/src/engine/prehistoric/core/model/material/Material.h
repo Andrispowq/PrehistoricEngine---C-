@@ -37,6 +37,7 @@ namespace Prehistoric
 		AssetManager* manager;
 
 		std::unordered_map<std::string, size_t> textureIDs;
+		std::unordered_map<std::string, Texture*> textures; //Used for faster lookups
 		std::unordered_map<std::string, Vector4f> vector4s;
 		std::unordered_map<std::string, Vector3f> vector3s;
 		std::unordered_map<std::string, Vector2f> vector2s;

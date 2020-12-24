@@ -36,6 +36,8 @@ namespace Prehistoric
 		inline RenderPriority getPriority() const { return priority; }
 		inline void setPriority(RenderPriority priority) { this->priority = priority; }
 
+		static ComponentType getStaticComponentType() { return ComponentType::RenderableComponent; }
+
 		RenderableComponent(const RenderableComponent&) = delete;
 		RenderableComponent(const RenderableComponent&&) = delete;
 		RenderableComponent& operator=(RenderableComponent) = delete;

@@ -8,7 +8,7 @@ namespace Prehistoric
 	class Light : public Component
 	{
 	public:
-		Light(const Vector3f& colour = 0, const Vector3f& intensity = 1, bool sun = false);
+		Light(const Vector3f& colour = 0, const Vector3f& intensity = 1);
 		virtual ~Light() {}
 
 		virtual void PreRender(Renderer* renderer) override;
@@ -16,17 +16,14 @@ namespace Prehistoric
 		inline Vector3f getColour() const { return colour; }
 		inline Vector3f getIntensity() const { return intensity; }
 
-		inline bool isSun() const { return sun; }
-
 		inline void setColour(const Vector3f& colour) { this->colour = colour; }
 		inline void setIntensity(const Vector3f& intensity) { this->intensity = intensity; }
 
-		inline void setSun(bool sun) { this->sun = sun; }
+		static ComponentType getStaticComponentType() { return ComponentType::LightComponent; }
+
 	private:
 		Vector3f colour;
 		Vector3f intensity;
-
-		bool sun;
 	};
 };
 

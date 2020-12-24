@@ -8,8 +8,6 @@ namespace Prehistoric
 	GLFXAAShader::GLFXAAShader()
 	{
 		AddShader(ResourceLoader::LoadShaderGL("opengl/deferred/fxaa_CS.glsl"), COMPUTE_SHADER);
-		//AddShader(ResourceLoader::LoadShaderGL("opengl/deferred/deferred_VS.glsl"), VERTEX_SHADER);
-		//AddShader(ResourceLoader::LoadShaderGL("opengl/deferred/deferred_FS.glsl"), FRAGMENT_SHADER);
 		CompileShader();
 
 		AddUniform("sceneSampler");

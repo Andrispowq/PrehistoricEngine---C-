@@ -26,16 +26,15 @@ namespace Prehistoric
 		Atmosphere(Window* window, AssembledAssetManager* manager);
 		virtual ~Atmosphere() {}
 
-		virtual void PreUpdate(CoreEngine* engine) override;
-
-		inline Vector3f getSunPosition() const { return sunPosition; }
+		inline Light* getSun() const { return sun; }
+		inline void setSun(Light* sun) { this->sun = sun; }
 
 		Atmosphere(const Atmosphere&) = default;
 
 	private:
 		Window* window;
 
-		Vector3f sunPosition;
+		Light* sun;
 	};
 };
 

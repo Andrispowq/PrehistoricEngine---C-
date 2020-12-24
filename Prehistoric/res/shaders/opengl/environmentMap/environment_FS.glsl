@@ -13,7 +13,7 @@ void main()
 {
 	vec3 envColour = textureLod(environmentMap, normalize(position_FS), 0.0).rgb;
 		
-	positionMetallic = vec4(position_FS, 0.0);
+	positionMetallic = vec4(vec3(0.0), 0.0);
 	albedoRoughness = vec4(envColour, 0.0);
 	normalLit = vec4(vec3(0.0), 0.5);
 	emissionExtra = vec4(vec3(0.0), 0.0);

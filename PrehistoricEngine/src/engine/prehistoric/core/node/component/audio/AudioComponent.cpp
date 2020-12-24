@@ -7,6 +7,8 @@ namespace Prehistoric
 {
     AudioComponent::AudioComponent(size_t audioBuffer, bool is3D, bool isStereo, bool isLoop)
     {
+        type = ComponentType::AudioComponent;
+
         alGenSources(1, &sourceID);
 
         setGain(1.0f);
@@ -20,6 +22,8 @@ namespace Prehistoric
 
     AudioComponent::AudioComponent(const std::string& audio, bool is3D, bool isStereo, bool isLoop)
     {
+        type = ComponentType::AudioComponent;
+
         alGenSources(1, &sourceID);
 
         setGain(1.0f);
