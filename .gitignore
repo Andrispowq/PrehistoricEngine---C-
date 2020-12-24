@@ -1,12 +1,11 @@
 # Binary output
 **/bin/
 **/bin-int/
-**/profiling/
 Output/
 !vendor/premake/bin/
 
 # Prehistoric Engine files
-*.log
+**.log
 
 # Github and Visual Studio files
 .git/
