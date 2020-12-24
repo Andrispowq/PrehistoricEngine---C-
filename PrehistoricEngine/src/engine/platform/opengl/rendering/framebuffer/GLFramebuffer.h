@@ -19,9 +19,14 @@ namespace Prehistoric
 		virtual void Clear(const Vector4f& colour) override;
 		virtual void SetDrawAttachments(uint32_t n, uint32_t* attachments) override; //TODO: this is OpenGL only!
 
-		virtual void addDepthAttachment(uint32_t width, uint32_t height) override;
+		virtual void addDepthAttachment(uint32_t width, uint32_t height, bool multisample = false) override;
+
 		virtual void addColourAttachment2D(Texture* texture, uint32_t attachment = 0, uint32_t mipLevel = 0) override;
+		virtual void addColourAttachmentMultisample2D(uint32_t attachment = 0) override;
+
 		virtual void addColourAttachment3D(Texture* texture, uint32_t face, uint32_t attachment = 0, uint32_t mipLevel = 0) override;
+
+		void Check() const;
 
 		virtual void Blit(Framebuffer* destination, uint32_t width, uint32_t height, uint32_t source_attachment = 0, uint32_t dest_attachment = 0) override;
 
@@ -29,6 +34,7 @@ namespace Prehistoric
 		uint32_t id;
 
 		uint32_t depthAttachment;
+		std::vector<std::pair<uint32_t, uint32_t>> multisampleAttachments;
 	};
 };
 

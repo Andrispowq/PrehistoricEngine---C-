@@ -1,8 +1,8 @@
-#version 330
+#version 430
 
-layout(location = 0) out vec4 outColour;
+layout(local_size_x = 1, local_size_y = 1) in;
 
-in vec2 texture_FS;
+layout(binding = 0, rgba32f) uniform writeonly image2D outColour;
 
 const float PI = 3.141592653589793;
 const float emissionFactor = 3;
@@ -10,9 +10,9 @@ const int max_lights = 10;
 
 struct Light
 {
-    vec3 position;
-    vec3 colour;
-    vec3 intensity;
+	vec3 position;
+	vec3 colour;
+	vec3 intensity;
 };
 
 uniform Light lights[max_lights];
@@ -29,8 +29,12 @@ uniform sampler2D brdfLUT;
 uniform vec3 cameraPosition;
 
 uniform int numberOfLights;
+uniform int samples;
 uniform float gamma;
 uniform float exposure;
+
+uniform vec2 dimension;
+uniform int albedoSamples;
 
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 float GeometrySchlickGGX(float NdotV, float roughness);
@@ -38,29 +42,45 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
 vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness);
 vec3 fresnelSchlick(float cosTheta, vec3 F0);
 
+vec4 readMSTexture(sampler2DMS tex, ivec2 texCoords)
+{
+    vec4 colour = vec4(0.0);
+
+    for (int i = 0; i < albedoSamples; i++)
+        colour += texelFetch(tex, texCoords, i);
+
+    colour /= float(albedoSamples);
+
+    return colour;
+}
+
 void main()
 {
+    ivec2 x = ivec2(gl_GlobalInvocationID.xy);
+    vec2 texCoord = gl_GlobalInvocationID.xy / dimension;
 
-    vec3 position = texture(positionMetallic, texture_FS).rgb;
-    vec3 albedo = texture(albedoRoughness, texture_FS).rgb;
-    vec3 normal = texture(normalLit, texture_FS).rgb;
-    vec3 emission = texture(emissionExtra, texture_FS).rgb;
+    vec2 texelSize = vec2(1.0) / dimension;
 
-    float metallic = texture(positionMetallic, texture_FS).a;
-    float roughness = texture(albedoRoughness, texture_FS).a;
-    float lit = texture(normalLit, texture_FS).a;
-    float extra = texture(emissionExtra, texture_FS).a;
+    vec3 position = texture(positionMetallic, texCoord).rgb;
+    vec3 albedo = texture(albedoRoughness, texCoord).rgb;
+    vec3 normal = texture(normalLit, texCoord).rgb;
+    vec3 emission = texture(emissionExtra, texCoord).rgb;
+
+    float metallic = texture(positionMetallic, texCoord).a;
+    float roughness = texture(albedoRoughness, texCoord).a;
+    float lit = texture(normalLit, texCoord).a;
+    float extra = texture(emissionExtra, texCoord).a;
 
     if (lit == 0.0)
     {
         //TODO: this means that the emission value is a light scattering value instead
         if (extra == 1.0)
         {
-            outColour = vec4(albedo, 1.0);
+            imageStore(outColour, x, vec4(albedo, 1.0));
             return;
         }
 
-        outColour = vec4(albedo, 1.0);
+        imageStore(outColour, x, vec4(albedo, 1.0));
         return;
     }
     else if (lit == 0.5)
@@ -68,7 +88,7 @@ void main()
         albedo = 1.0 - exp(-albedo * exposure);
         albedo = pow(albedo, vec3(1.0 / gamma));
 
-        outColour = vec4(albedo, 1.0);
+        imageStore(outColour, x, vec4(albedo, 1.0));
         return;
     }
 
@@ -127,7 +147,7 @@ void main()
     colour = 1.0 - exp(-colour * exposure);
     colour = pow(colour, vec3(1.0 / gamma));
 
-    outColour = vec4(colour, 1.0);
+    imageStore(outColour, x, vec4(colour, 1.0));
 }
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)

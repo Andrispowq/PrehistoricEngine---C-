@@ -11,8 +11,8 @@ namespace Prehistoric
 {
 	namespace OBJLoader
 	{
-		PR_API MeshVertexBuffer* LoadModel(const std::string& path, const std::string& objectFile, const std::string& materialFile, Window* window);
-		PR_API Mesh LoadMesh(const std::string& path, const std::string& objectFile, const std::string& materialFile, Window* window);
+		MeshVertexBuffer* LoadModel(const std::string& path, const std::string& objectFile, const std::string& materialFile, Window* window);
+		Mesh LoadMesh(const std::string& path, const std::string& objectFile, const std::string& materialFile, Window* window);
 
 		size_t ProcessVertex(const std::vector<std::string>& vertex, std::vector<Vertex>& vertices, std::vector<uint16_t>& indices);
 		void CalculateTangents(size_t v0i, size_t v1i, size_t v2i, std::vector<Vertex>& vertices, const std::vector<Vector2f>& textureCoords);

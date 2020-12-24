@@ -5,6 +5,8 @@
 #include "prehistoric/core/modules/gui/GUIElement.h"
 #include "prehistoric/core/util/ModelFabricator.h"
 
+#include "platform/opengl/rendering/pipeline/GLComputePipeline.h"
+
 #include "prehistoric/core/modules/environmentMapRenderer/EnvironmentMapRenderer.h"
 
 namespace Prehistoric
@@ -22,6 +24,9 @@ namespace Prehistoric
 		normalLit = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
 		emissionExtra = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
 
+		outputImage = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
+		fxaaImage = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
+
 		deferredFBO->Bind();
 		deferredFBO->addDepthAttachment(width, height);
 		
@@ -30,14 +35,27 @@ namespace Prehistoric
 		deferredFBO->addColourAttachment2D(normalLit, 2);
 		deferredFBO->addColourAttachment2D(emissionExtra, 3);
 
+		deferredFBO->Check();
 		deferredFBO->Unbind();
 
 		AssetManager* man = manager->getAssetManager();
-		vboID = man->addResource<VertexBuffer>(ModelFabricator::CreateQuad(window));
-		man->getResourceByID<VertexBuffer>(vboID)->setFrontFace(FrontFace::DOUBLE_SIDED);
-		shaderID = man->getResource<Shader>("deferred");
 
-		pipeline = new GLGraphicsPipeline(window, man, shaderID, vboID);
+		quadVBO = man->addResource<VertexBuffer>(ModelFabricator::CreateQuad(window));
+		man->getResourceByID<VertexBuffer>(quadVBO)->setFrontFace(FrontFace::DOUBLE_SIDED);
+
+		deferredShader = man->getResource<Shader>("deferred");
+		fxaaShader = man->getResource<Shader>("fxaa");
+		renderShader = man->getResource<Shader>("gui");
+
+		deferredPipeline = new GLComputePipeline(window, man, deferredShader);
+		fxaaPipeline = new GLComputePipeline(window, man, fxaaShader);
+		renderPipeline = new GLGraphicsPipeline(window, man, renderShader, quadVBO);
+
+		static_cast<GLComputePipeline*>(deferredPipeline)->setInvocationSize({ width, height, 1 });
+		static_cast<GLComputePipeline*>(deferredPipeline)->addTextureBinding(0, outputImage, WRITE_ONLY);
+
+		static_cast<GLComputePipeline*>(fxaaPipeline)->setInvocationSize({ width, height, 1 });
+		static_cast<GLComputePipeline*>(fxaaPipeline)->addTextureBinding(0, fxaaImage, WRITE_ONLY);
 	}
 
 	GLRenderer::~GLRenderer()
@@ -46,6 +64,13 @@ namespace Prehistoric
 		delete albedoRoughness;
 		delete normalLit;
 		delete emissionExtra;
+		
+		delete outputImage;
+		delete fxaaImage;
+
+		delete deferredPipeline;
+		delete fxaaPipeline;
+		delete renderPipeline;
 	}
 
 	void GLRenderer::PrepareRendering()
@@ -63,10 +88,23 @@ namespace Prehistoric
 			delete normalLit;
 			delete emissionExtra;
 
+			delete outputImage;
+			delete fxaaImage;
+
 			positionMetalic = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
 			albedoRoughness = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
 			normalLit = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
 			emissionExtra = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
+
+			static_cast<GLComputePipeline*>(deferredPipeline)->removeTextureBinding(0);
+			outputImage = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
+			static_cast<GLComputePipeline*>(deferredPipeline)->setInvocationSize({ width, height, 1 });
+			static_cast<GLComputePipeline*>(deferredPipeline)->addTextureBinding(0, outputImage, WRITE_ONLY);
+
+			static_cast<GLComputePipeline*>(fxaaPipeline)->removeTextureBinding(0);
+			fxaaImage = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
+			static_cast<GLComputePipeline*>(fxaaPipeline)->setInvocationSize({ width, height, 1 });
+			static_cast<GLComputePipeline*>(fxaaPipeline)->addTextureBinding(0, fxaaImage, WRITE_ONLY);
 
 			deferredFBO->Bind();
 			deferredFBO->addDepthAttachment(width, height);
@@ -76,6 +114,7 @@ namespace Prehistoric
 			deferredFBO->addColourAttachment2D(normalLit, 2);
 			deferredFBO->addColourAttachment2D(emissionExtra, 3);
 
+			deferredFBO->Check();
 			deferredFBO->Unbind();
 
 			//Recreate the pipelines
@@ -148,10 +187,20 @@ namespace Prehistoric
 		//Render using the deferred shader
 		deferredFBO->Unbind();
 
-		pipeline->BindPipeline(nullptr);
-		static_cast<GLDeferredShader*>(pipeline->getShader())->UpdateUniforms(this, camera, lights);
-		pipeline->RenderPipeline();
-		pipeline->UnbindPipeline();
+		deferredPipeline->BindPipeline(nullptr);
+		static_cast<GLDeferredShader*>(deferredPipeline->getShader())->UpdateUniforms(this, camera, lights);
+		deferredPipeline->RenderPipeline();
+		deferredPipeline->UnbindPipeline();
+
+		fxaaPipeline->BindPipeline(nullptr);
+		static_cast<GLFXAAShader*>(fxaaPipeline->getShader())->UpdateUniforms(this, camera, lights);
+		fxaaPipeline->RenderPipeline();
+		fxaaPipeline->UnbindPipeline();
+
+		renderPipeline->BindPipeline(nullptr);
+		static_cast<GLGUIShader*>(renderPipeline->getShader())->UpdateCustomUniforms(fxaaImage);
+		renderPipeline->RenderPipeline();
+		renderPipeline->UnbindPipeline();
 
 		//TODO: disable alpha blending and depth testing
 		for (auto pipeline : models_2d)

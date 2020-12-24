@@ -9,7 +9,7 @@ namespace Prehistoric
 {
 	class AssetManager;
 
-	class PR_API Material
+	class Material
 	{
 	public:
 		Material(AssetManager* manager);

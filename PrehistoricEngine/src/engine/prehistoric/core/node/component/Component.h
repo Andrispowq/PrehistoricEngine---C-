@@ -7,7 +7,7 @@ namespace Prehistoric
 {
 	class GameObject;
 
-	class PR_API Component
+	class Component
 	{
 	public:
 		Component() : parent(nullptr) {}

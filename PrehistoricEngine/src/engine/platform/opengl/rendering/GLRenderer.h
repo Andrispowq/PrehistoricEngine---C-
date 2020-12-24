@@ -22,6 +22,8 @@ namespace Prehistoric
 
 		virtual void Render() override;
 
+		Texture* getOutputTexture() const { return outputImage; }
+
 		Texture* getPositionMetallic() const { return positionMetalic; }
 		Texture* getAlbedoRoughness() const { return albedoRoughness; }
 		Texture* getNormalLit() const { return normalLit; }
@@ -29,15 +31,33 @@ namespace Prehistoric
 
 	private:
 		std::unique_ptr<GLFramebuffer> deferredFBO;
+		std::unique_ptr<GLFramebuffer> resolveFBO;
 
 		Texture* positionMetalic; //RGB -> position, A -> metallic
 		Texture* albedoRoughness; //RGB -> albedo, A -> roughness
 		Texture* normalLit; //RGB -> normal, A -> whether that pixel should be shaded (makes sure that the atmosphere is not shaded)
 		Texture* emissionExtra; //RGB -> emission, A -> some extra value which might be needed later on (perhaps object ID)
 
-		size_t vboID;
-		size_t shaderID;
-		Pipeline* pipeline;
+		/* ---------- Deferred Configurations ---------- 
+
+			Lit: 0.0 -> there is no shading on the object
+				Extra: 1.0 -> the emission part is interpreted as the light scattering value
+			Lit: 0.5 -> the object is not shaded, but exposure and gamma correction is applied on it
+			Lit: 1.0 -> the object is fully shaded
+				Extra: this value represents the occlusion value of that pixel
+
+		   ---------- Deferred Configurations ---------- */
+
+		size_t quadVBO;
+		size_t deferredShader;
+		size_t fxaaShader;
+		size_t renderShader;
+
+		Texture* outputImage;
+		Texture* fxaaImage;
+		Pipeline* deferredPipeline;
+		Pipeline* fxaaPipeline;
+		Pipeline* renderPipeline;
 
 		AssembledAssetManager* manager;
 	};

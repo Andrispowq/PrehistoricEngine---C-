@@ -7,7 +7,7 @@
 
 namespace Prehistoric
 {
-	class PR_API Mesh
+	class Mesh
 	{
 	public:
 		Mesh(const Mesh& mesh);

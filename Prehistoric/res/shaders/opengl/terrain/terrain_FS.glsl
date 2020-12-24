@@ -72,7 +72,7 @@ void main()
 	{
 		vec2 texCoords = mapCoord_FS * materials[i].horizontalScale;
 	
-		albedoColour += texture(materials[i].albedoMap, texCoords).rgb * blendValueArray[i];
+		albedoColour += pow(texture(materials[i].albedoMap, texCoords).rgb, vec3(2.2)) * blendValueArray[i];
 	
 		if(materials[i].metallic == -1)
 			metallic += texture(materials[i].metallicMap, texCoords).r * blendValueArray[i];

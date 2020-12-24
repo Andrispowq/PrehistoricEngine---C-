@@ -5,7 +5,7 @@
 
 namespace Prehistoric
 {
-	class PR_API Transform
+	class Transform
 	{
 	public:
 		Transform(const Vector3f& position, const Vector3f& rotation, const Vector3f& scaling)

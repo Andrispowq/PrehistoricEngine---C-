@@ -7,7 +7,7 @@ namespace Prehistoric
 	static void sun_move_function(GameObject* object, float frameTime)
 	{
 		constexpr float range = 32000.0f;
-		constexpr float anglesPerSecond = 0.5f;
+		constexpr float anglesPerSecond = 0.0f;//0.5f;
 
 		static float angle = 170.0f;
 
@@ -66,9 +66,9 @@ namespace Prehistoric
 		{
 			loader.LoadWorld(worldFile, root, window, manager);
 
-			//root->AddChild("Atmosphere", new Atmosphere(window, manager));
+			/*root->AddChild("Atmosphere", new Atmosphere(window, manager));
 
-			/*GameObject* sun = new GameObject();
+			GameObject* sun = new GameObject();
 			sun->setUpdateFunction(sun_move_function);
 			sun->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0.95f, 0.87f), Vector3f(10000000000.0f), true));
 			root->AddChild("sun", sun);*/
@@ -76,7 +76,7 @@ namespace Prehistoric
 			Terrain* terrain = new Terrain(window, camera, manager, "res/config/terrain_0.cfg");
 			terrain->UpdateQuadtree();
 
-			root->AddChild("Terrain", terrain);
+			//root->AddChild("Terrain", terrain);
 
 			GameObject* slider = new GUISlider(window, manager, 0.0f, 2.0f, terrain->getMaps()->getHeightmap(), &EngineConfig::rendererExposure, sizeof(float), true);
 			slider->SetPosition({ 0.5f, 0.5f, 0 });

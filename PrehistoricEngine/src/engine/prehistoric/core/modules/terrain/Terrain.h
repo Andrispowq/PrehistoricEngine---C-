@@ -7,7 +7,7 @@
 
 namespace Prehistoric
 {
-	class PR_API Terrain : public Node
+	class Terrain : public Node
 	{
 	public:
 		Terrain(Window* window, Camera* camera, AssembledAssetManager* manager, const std::string& terrainConfigFile);

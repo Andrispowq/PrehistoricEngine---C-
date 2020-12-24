@@ -12,7 +12,7 @@
 
 namespace Prehistoric
 {
-	class PR_API TerrainMaps
+	class TerrainMaps
 	{
 	public:
 		TerrainMaps(Window* window, AssembledAssetManager* manager, const std::string& terrainConfigFile);

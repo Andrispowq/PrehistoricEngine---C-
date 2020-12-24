@@ -20,7 +20,7 @@ namespace Prehistoric
 {
 	class AssembledAssetManager;
 
-	class PR_API Atmosphere : public GameObject
+	class Atmosphere : public GameObject
 	{
 	public:
 		Atmosphere(Window* window, AssembledAssetManager* manager);

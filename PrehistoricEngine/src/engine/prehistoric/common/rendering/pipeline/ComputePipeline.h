@@ -30,6 +30,9 @@ namespace Prehistoric
 		void addTextureBinding(uint32_t binding, Texture* texture, AccessMask accessMask) { textureBindingTable.insert(std::make_pair(binding, std::make_pair(texture, accessMask))); }
 		void addSSBOBinding(uint32_t binding, ShaderStorageBuffer* ssbo, AccessMask accessMask) { ssboBindingTable.insert(std::make_pair(binding, std::make_pair(ssbo, accessMask))); }
 		void setInvocationSize(const Vector3u& size) { this->invocationSize = size; }
+
+		void removeTextureBinding(uint32_t binding) { textureBindingTable.erase(binding); }
+		void removeSSBOBinding(uint32_t binding) { ssboBindingTable.erase(binding); }
 	protected:
 		Vector3u invocationSize;
 

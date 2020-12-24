@@ -7,7 +7,7 @@
 
 namespace Prehistoric
 {
-	class PR_API AssembledAssetManager
+	class AssembledAssetManager
 	{
 	public:
 		AssembledAssetManager(Window* window);

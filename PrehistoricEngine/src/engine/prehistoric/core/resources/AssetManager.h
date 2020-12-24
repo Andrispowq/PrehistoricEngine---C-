@@ -22,6 +22,7 @@
 #include "platform/opengl/rendering/shaders/terrain/GLTerrainShader.h"
 #include "platform/opengl/rendering/shaders/terrain/GLTerrainWireframeShader.h"
 #include "platform/opengl/rendering/shaders/deferred/GLDeferredShader.h"
+#include "platform/opengl/rendering/shaders/deferred/GLFXAAShader.h"
 
 #include "platform/vulkan/rendering/shaders/basic/VKBasicShader.h"
 #include "platform/vulkan/rendering/shaders/pbr/VKPBRShader.h"
@@ -35,7 +36,7 @@ namespace Prehistoric
 	/*
 		This system works like this: every asset is stored here, and when we need one, we just pass in the the size_t ID of the asset, and we get a pointer back
 	*/
-	class PR_API AssetManager
+	class AssetManager
 	{
 	public:
 		AssetManager(Window* window);
@@ -176,6 +177,10 @@ namespace Prehistoric
 				else if (path == "deferred")
 				{
 					shader = new GLDeferredShader();
+				}
+				else if (path == "fxaa")
+				{
+					shader = new GLFXAAShader();
 				}
 			}
 			else if (FrameworkConfig::api == Vulkan)

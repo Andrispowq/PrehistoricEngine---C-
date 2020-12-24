@@ -10,7 +10,7 @@ namespace Prehistoric
 {
 	namespace ModelFabricator
 	{
-		PR_API MeshVertexBuffer* CreateQuad(Window* window);
+		MeshVertexBuffer* CreateQuad(Window* window);
 	};
 };
 

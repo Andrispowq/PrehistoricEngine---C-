@@ -25,7 +25,7 @@ namespace Prehistoric
 //On x64 Windows we use SIMD to offer faster math
 #if defined(PR_WINDOWS_64) && defined(PR_FAST_MATH) 
 
-	class PR_API Vector2f
+	class Vector2f
 	{
 	public:
 		Vector2f(const Vector2f& v) { this->x = v.x; this->y = v.y; }
@@ -95,7 +95,7 @@ namespace Prehistoric
 		};
 	};
 
-	class PR_API Vector3f
+	class Vector3f
 	{
 	public:
 		Vector3f(const Vector3f& v) { this->x = v.x; this->y = v.y; this->z = v.z; }
@@ -176,7 +176,7 @@ namespace Prehistoric
 		};
 	};
 
-	class PR_API Vector4f
+	class Vector4f
 	{
 	public:
 		Vector4f(const Vector4f& v) { this->x = v.x; this->y = v.y; this->z = v.z; this->w = v.w; }
@@ -265,7 +265,7 @@ namespace Prehistoric
 		};
 	};
 
-	class PR_API Quaternionf
+	class Quaternionf
 	{
 	public:
 		Quaternionf(const Quaternionf& v) { this->x = v.x; this->y = v.y; this->z = v.z; this->w = v.w; }
@@ -360,7 +360,7 @@ namespace Prehistoric
 		};
 	};
 
-	class PR_API Matrix4f
+	class Matrix4f
 	{
 	public:
 		Matrix4f(const Matrix4f& v);
@@ -441,7 +441,7 @@ namespace Prehistoric
 #endif
 
 	template<typename T>
-	class PR_API Vector2
+	class Vector2
 	{
 	public:
 		Vector2<T>(const Vector2<T>& v) { this->x = v.x; this->y = v.y; }
@@ -523,7 +523,7 @@ namespace Prehistoric
 	};
 
 	template<typename T>
-	class PR_API Vector3
+	class Vector3
 	{
 	public:
 		Vector3<T>(const Vector3<T>& v) { this->x = v.x; this->y = v.y; this->z = v.z; }
@@ -632,7 +632,7 @@ namespace Prehistoric
 	template<typename T> class Quaternion;
 
 	template<typename T>
-	class PR_API Vector4
+	class Vector4
 	{
 	public:
 		Vector4<T>(const Vector4<T>& v) { this->x = v.x; this->y = v.y; this->z = v.z; this->w = v.w; }
@@ -727,7 +727,7 @@ namespace Prehistoric
 	};
 
 	template<typename T>
-	class PR_API Quaternion
+	class Quaternion
 	{
 	public:
 		Quaternion<T>(const Quaternion<T>& v) { this->x = v.x; this->y = v.y; this->z = v.z; this->w = v.w; }
@@ -853,7 +853,7 @@ namespace Prehistoric
 	typedef Quaternion<double> Quaterniond;
 
 #if !defined(PR_WINDOWS_64) || !defined(PR_FAST_MATH)
-	class PR_API Matrix4f
+	class Matrix4f
 	{
 	public:
 		Matrix4f(const Matrix4f& v);

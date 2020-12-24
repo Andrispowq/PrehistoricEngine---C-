@@ -18,12 +18,12 @@
 
 namespace Prehistoric
 {
-	enum class PR_API GUIType
+	enum class GUIType
 	{
 		Element, Button, Slider
 	};
 
-	class PR_API GUIElement : public GameObject
+	class GUIElement : public GameObject
 	{
 	public:
 		GUIElement(Window* window, AssembledAssetManager* manager, Texture* texture = nullptr, void* data = nullptr, size_t dataSize = 0, bool visible = true);

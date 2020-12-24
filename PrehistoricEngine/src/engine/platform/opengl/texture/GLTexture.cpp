@@ -4,23 +4,23 @@
 
 namespace Prehistoric
 {
-	static GLenum getTexType(ImageType type)
+	static GLenum getTexType(ImageType type, bool multisample)
 	{
-		switch (type)
-		{
-		case TEXTURE_2D:
-			return GL_TEXTURE_2D;
-		case TEXTURE_ARRAY_2D:
+		if (type == TEXTURE_2D)
+			if (multisample)
+				return GL_TEXTURE_2D_MULTISAMPLE;
+			else
+				return GL_TEXTURE_2D;
+		else if (type == TEXTURE_ARRAY_2D)
 			return GL_TEXTURE_2D_ARRAY;
-		case TEXTURE_CUBE_MAP:
+		else if (type == TEXTURE_CUBE_MAP)
 			return GL_TEXTURE_CUBE_MAP;
-		default:
-			return -1;
-		}
+
+		return -1;
 	}
 
-	GLTexture::GLTexture(uint32_t width, uint32_t height, ImageFormat format, ImageType type)
-		: Texture(width, height, format, type)
+	GLTexture::GLTexture(uint32_t width, uint32_t height, ImageFormat format, ImageType type, bool multisample)
+		: Texture(width, height, format, type), multisample(multisample)
 	{
 		glGenTextures(1, &id);
 	}
@@ -38,12 +38,12 @@ namespace Prehistoric
 	void GLTexture::Bind(uint32_t slot) const
 	{
 		glActiveTexture(GL_TEXTURE0 + slot);
-		glBindTexture(getTexType(type), id);
+		glBindTexture(getTexType(type, multisample), id);
 	}
 
 	void GLTexture::Unbind() const
 	{
-		glBindTexture(getTexType(type), 0);
+		glBindTexture(getTexType(type, multisample), 0);
 	}
 
 	void GLTexture::UploadTextureData(unsigned char* data, ImageFormat format)
@@ -70,7 +70,7 @@ namespace Prehistoric
 
 	void GLTexture::SamplerProperties(SamplerFilter filter, TextureWrapMode wrapMode, bool generate_mipmaps)
 	{
-		GLenum type_ = getTexType(type);
+		GLenum type_ = getTexType(type, multisample);
 
 		switch (filter)
 		{
@@ -145,7 +145,7 @@ namespace Prehistoric
 
 	void GLTexture::GenerateMipmaps()
 	{
-		glGenerateMipmap(getTexType(type));
+		glGenerateMipmap(getTexType(type, multisample));
 	}
 
 	Texture* GLTexture::GenTexture(const std::string& file, SamplerFilter filter, TextureWrapMode wrapMode)
@@ -153,6 +153,25 @@ namespace Prehistoric
 		Texture* texture = TextureLoader::LoadTexture(file, nullptr);
 		texture->Bind();
 		texture->SamplerProperties(filter, wrapMode);
+		return texture;
+	}
+
+	Texture* GLTexture::Storage2D(uint32_t width, uint32_t height, uint32_t levels, ImageFormat format, SamplerFilter filter, TextureWrapMode wrapMode, bool generate_mipmaps, bool multisample)
+	{
+		Texture* texture = new GLTexture(width, height, format, TEXTURE_2D, multisample);
+		texture->Bind();
+
+		if (multisample)
+		{
+			glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, FrameworkConfig::windowNumSamples, getInternalFormat(format), width, height, false);
+		}
+		else
+		{
+			glTexStorage2D(GL_TEXTURE_2D, levels, getInternalFormat(format), width, height);
+			texture->SamplerProperties(filter, wrapMode, generate_mipmaps);
+		}
+
+		texture->Unbind();
 		return texture;
 	}
 
@@ -171,22 +190,13 @@ namespace Prehistoric
 		return texture;
 	}
 
-	Texture* GLTexture::Storage2D(uint32_t width, uint32_t height, uint32_t levels, ImageFormat format, SamplerFilter filter, TextureWrapMode wrapMode, bool generate_mipmaps)
-	{
-		Texture* texture = new GLTexture(width, height, format);
-		texture->Bind();
-
-		glTexStorage2D(GL_TEXTURE_2D, levels, getInternalFormat(format), width, height);
-
-		texture->SamplerProperties(filter, wrapMode, generate_mipmaps);
-		texture->Unbind();
-		return texture;
-	}
-
-	GLenum GLTexture::getImageType(ImageType type)
+	GLenum GLTexture::getImageType(ImageType type, bool multisample)
 	{
 		if (type == TEXTURE_2D)
-			return GL_TEXTURE_2D;
+			if (multisample)
+				return GL_TEXTURE_2D_MULTISAMPLE;
+			else
+				return GL_TEXTURE_2D;
 		else if (type == TEXTURE_ARRAY_2D)
 			return GL_TEXTURE_2D_ARRAY;
 		else if (type == TEXTURE_CUBE_MAP)

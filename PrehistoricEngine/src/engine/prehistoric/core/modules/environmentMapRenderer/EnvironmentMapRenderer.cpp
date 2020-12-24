@@ -2,6 +2,7 @@
 #include "EnvironmentMapRenderer.h"
 
 #include "prehistoric/core/config/EnvironmentMapConfig.h"
+#include "prehistoric/core/modules/atmosphere/Atmosphere.h"
 
 #include "platform/opengl/texture/GLTexture.h"
 //#include "platform/vulkan/texture/VKTexture.h"

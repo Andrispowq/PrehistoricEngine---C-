@@ -10,30 +10,30 @@ namespace Prehistoric
 {
 	namespace AtmosphereConfig
 	{
-		PR_API void LoadConfig(const std::string& path);
+		void LoadConfig(const std::string& path);
 
-		extern PR_API Vector3f sunPosition;
-		extern PR_API float sunRadius;
-		extern PR_API Vector3f sunColour;
-		extern PR_API float sunIntensity;
+		extern Vector3f sunPosition;
+		extern float sunRadius;
+		extern Vector3f sunColour;
+		extern float sunIntensity;
 
-		extern PR_API Vector3f fogColour;
-		extern PR_API float fogBrightness;
+		extern Vector3f fogColour;
+		extern float fogBrightness;
 
-		extern PR_API float planetRadius;
-		extern PR_API float atmosphereRadius;
+		extern float planetRadius;
+		extern float atmosphereRadius;
 
-		extern PR_API Vector3f rayleigh;
-		extern PR_API float rayleighHeightScale;
-		extern PR_API float mie;
-		extern PR_API float mieHeightScale;
-		extern PR_API float mieDirection;
+		extern Vector3f rayleigh;
+		extern float rayleighHeightScale;
+		extern float mie;
+		extern float mieHeightScale;
+		extern float mieDirection;
 
-		extern PR_API float sightRange;
-		extern PR_API float ambient;
-		extern PR_API float horizontalVerticalShift;
-		extern PR_API float bloomFactor;
-		extern PR_API bool scatteringEnabled;
+		extern float sightRange;
+		extern float ambient;
+		extern float horizontalVerticalShift;
+		extern float bloomFactor;
+		extern bool scatteringEnabled;
 	};
 };
 

@@ -27,7 +27,7 @@ namespace Prehistoric
 	/*
 		TODO: the scene will have a function later on, but it is just some legacy code right now
 	*/
-	class PR_API Scene
+	class Scene
 	{
 	public:
 		Scene(GameObject* root, Window* window, AssembledAssetManager* manager, Camera* camera, const std::string& worldFile);

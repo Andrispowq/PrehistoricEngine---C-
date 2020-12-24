@@ -14,7 +14,7 @@
 
 namespace Prehistoric
 {
-	class PR_API TerrainNode : public GameObject
+	class TerrainNode : public GameObject
 	{
 	public:
 		TerrainNode() {}

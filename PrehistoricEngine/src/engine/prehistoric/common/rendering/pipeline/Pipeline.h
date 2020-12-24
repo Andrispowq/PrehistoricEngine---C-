@@ -11,7 +11,7 @@ namespace Prehistoric
 {
 	class AssetManager;
 
-	class PR_API Pipeline
+	class Pipeline
 	{
 	public:
 		Pipeline(Window* window, AssetManager* manager, size_t shaderID);

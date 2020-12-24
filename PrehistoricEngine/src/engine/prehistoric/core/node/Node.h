@@ -10,7 +10,7 @@ namespace Prehistoric
 {
     class CoreEngine;
 
-    class PR_API Node
+    class Node
     {
     public:
         Node() : parent(nullptr) {}

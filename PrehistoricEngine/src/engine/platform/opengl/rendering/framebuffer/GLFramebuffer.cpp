@@ -17,6 +17,11 @@ namespace Prehistoric
 		if (depthAttachment == -1)
 			glDeleteRenderbuffers(1, &depthAttachment);
 
+		for (auto attachment : multisampleAttachments)
+		{
+			glDeleteRenderbuffers(1, &attachment.second);
+		}
+
 		glDeleteFramebuffers(1, &id);
 	}
 
@@ -41,26 +46,62 @@ namespace Prehistoric
 		glDrawBuffers(n, attachments);
 	}
 
-	void GLFramebuffer::addDepthAttachment(uint32_t width, uint32_t height)
+	void GLFramebuffer::addDepthAttachment(uint32_t width, uint32_t height, bool multisample)
 	{
+		this->width = width;
+		this->height = width;
+
 		if (depthAttachment != -1)
 			glDeleteRenderbuffers(1, &depthAttachment);
 
 		glGenRenderbuffers(1, &depthAttachment);
-
 		glBindRenderbuffer(GL_RENDERBUFFER, depthAttachment);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthAttachment);
+
+		if (multisample)
+		{
+			glRenderbufferStorageMultisample(GL_RENDERBUFFER, FrameworkConfig::windowNumSamples, GL_DEPTH_COMPONENT24, width, height);
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthAttachment);
+		}
+		else
+		{
+			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthAttachment);
+		}
 	}
 
 	void GLFramebuffer::addColourAttachment2D(Texture* texture, uint32_t attachment, uint32_t mipLevel)
 	{
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment, GL_TEXTURE_2D, static_cast<GLTexture*>(texture)->getTextureID(), mipLevel);
+		GLTexture* tex = (GLTexture*)texture;
+		if (tex->isMultisample())
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment, GL_TEXTURE_2D_MULTISAMPLE, tex->getTextureID(), mipLevel);
+		else
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment, GL_TEXTURE_2D, tex->getTextureID(), mipLevel);
+	}
+
+	void GLFramebuffer::addColourAttachmentMultisample2D(uint32_t attachment)
+	{
+		uint32_t id;
+		glGenRenderbuffers(1, &id);
+		glBindRenderbuffer(GL_RENDERBUFFER, id);
+		glRenderbufferStorageMultisample(GL_RENDERBUFFER, FrameworkConfig::windowNumSamples, GL_RGBA16, width, height);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment, GL_RENDERBUFFER, id);
+
+		multisampleAttachments.push_back(std::make_pair(attachment, id));
 	}
 
 	void GLFramebuffer::addColourAttachment3D(Texture* texture, uint32_t face, uint32_t attachment, uint32_t mipLevel)
 	{
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, static_cast<GLTexture*>(texture)->getTextureID(), mipLevel);
+	}
+
+	void GLFramebuffer::Check() const
+	{
+		uint32_t status;
+		if ((status = glCheckFramebufferStatus(GL_FRAMEBUFFER)) != GL_FRAMEBUFFER_COMPLETE)
+		{
+			GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE;
+			PR_LOG_ERROR("ERROR: Framebuffer is not complete, status: %x\n", status);
+		}
 	}
 
 	void GLFramebuffer::Blit(Framebuffer* destination, uint32_t width, uint32_t height, uint32_t source_attachment, uint32_t dest_attachment)

@@ -36,12 +36,12 @@ namespace Prehistoric
 	class Log
 	{
 	public:
-		static PR_API std::ofstream* file;
+		static std::ofstream* file;
 
-		static PR_API void Init();
-		static PR_API void Shutdown();
+		static void Init();
+		static void Shutdown();
 
-		template<typename... Args> static PR_API void log_Internal(size_t line, const char* file, const std::string& message, Args... args)
+		template<typename... Args> static void log_Internal(size_t line, const char* file, const std::string& message, Args... args)
 		{
 			time_t rawtime;
 			struct tm* timeinfo;
@@ -60,7 +60,7 @@ namespace Prehistoric
 			printf(str.str().c_str(), args...);
 		}
 
-		template<typename... Args> static PR_API void log(size_t line, const char* file, const std::string& colour, const std::string& message, Args... args)
+		template<typename... Args> static void log(size_t line, const char* file, const std::string& colour, const std::string& message, Args... args)
 		{
 #ifdef PR_COLOURED_LOGGING_FUNCTIONS
 			std::cout << "\033" << colour;
@@ -68,7 +68,7 @@ namespace Prehistoric
 			log_Internal(line, file, message, args...);
 		}
 
-		template<typename... Args> static PR_API void log_RuntimeError(size_t line, const char* file, const std::string& colour, const std::string& message, Args... args)
+		template<typename... Args> static void log_RuntimeError(size_t line, const char* file, const std::string& colour, const std::string& message, Args... args)
 		{
 #ifdef PR_COLOURED_LOGGING_FUNCTIONS
 			std::cout << "\033" << colour;

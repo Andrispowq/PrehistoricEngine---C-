@@ -7,7 +7,7 @@
 
 namespace Prehistoric
 {
-	class PR_API LayerStack
+	class LayerStack
 	{
 	public:
 		LayerStack() = default;

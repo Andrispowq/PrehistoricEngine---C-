@@ -5,7 +5,7 @@ namespace Prehistoric
 {
 	class Window;
 
-	class PR_API Context
+	class Context
 	{
 	public:
 		Context(Window* window) : window(window) {}

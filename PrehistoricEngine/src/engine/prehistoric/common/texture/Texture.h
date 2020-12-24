@@ -4,28 +4,28 @@
 namespace Prehistoric
 {
 	//from vulkan.h
-	enum PR_API ImageFormat
+	enum ImageFormat
 	{
 		R8G8B8A8_SRGB, R8G8B8_SRGB, R8G8B8_16_SRGB, D32_SFLOAT, R16_SFLOAT, R32_SFLOAT, R8_SRGB, R8G8_SRGB, R16G16_SFLOAT,
 		R8G8B8A8_LINEAR, R8G8B8_LINEAR, R8G8B8_16_LINEAR, D32_LINEAR, R16_LINEAR, R32_LINEAR, R8_LINEAR, R8G8_LINEAR, R16G16_LINEAR
 	};
 
-	enum PR_API ImageType
+	enum ImageType
 	{
 		TEXTURE_2D, TEXTURE_ARRAY_2D, TEXTURE_CUBE_MAP
 	};
 
-	enum PR_API SamplerFilter
+	enum SamplerFilter
 	{
 		Nearest, Bilinear, Trilinear, Anisotropic
 	};
 
-	enum PR_API TextureWrapMode
+	enum TextureWrapMode
 	{
 		ClampToEdge, ClampToBorder, Repeat, MirrorRepeat
 	};
 
-	class PR_API Texture
+	class Texture
 	{
 	public:
 		Texture(uint32_t width, uint32_t height, ImageFormat format = R8G8B8A8_LINEAR, ImageType type = TEXTURE_2D);

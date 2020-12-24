@@ -19,6 +19,16 @@ namespace Prehistoric
 		AddUniform("progress");
 	}
 
+	void GLGUIShader::UpdateCustomUniforms(Texture* texture) const
+	{
+		SetUniform("m_transform", Matrix4f::Identity());
+
+		texture->Bind();
+		SetUniformi("image", 0);
+
+		SetUniformf("progress", 1.0f);
+	}
+
 	void GLGUIShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const
 	{
 		SetUniform("m_transform", object->getWorldTransform().getTransformationMatrix());

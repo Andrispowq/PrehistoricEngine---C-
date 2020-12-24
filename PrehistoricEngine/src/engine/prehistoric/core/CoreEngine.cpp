@@ -22,9 +22,9 @@ namespace Prehistoric
 		delete scene.release();
 		delete root.release();
 
-		delete manager.release();
 		delete audioEngine.release();
 		delete renderingEngine.release();
+		delete manager.release();
 
 		Log::Shutdown();
 	}

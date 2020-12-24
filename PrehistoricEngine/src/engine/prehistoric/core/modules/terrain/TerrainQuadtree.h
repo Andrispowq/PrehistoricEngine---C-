@@ -19,7 +19,7 @@
 
 namespace Prehistoric
 {
-	class PR_API TerrainQuadtree : public Node
+	class TerrainQuadtree : public Node
 	{
 	public:
 		TerrainQuadtree(Window* window, Camera* camera, TerrainMaps* maps, AssembledAssetManager* manager);

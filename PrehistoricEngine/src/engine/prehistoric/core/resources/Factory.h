@@ -7,7 +7,7 @@
 namespace Prehistoric
 {
 	template<typename T>
-	class PR_API Factory
+	class Factory
 	{
 	public:
 		Factory(size_t max_allocations)

@@ -10,18 +10,18 @@ namespace Prehistoric
 {
     namespace EnvironmentMapConfig
     {
-        PR_API void LoadConfig(const std::string& path);
+        void LoadConfig(const std::string& path);
 
-        extern PR_API std::string environmentMapLocation;
-        extern PR_API uint32_t environmentMapResolution;
-        extern PR_API uint32_t irradianceMapResolution;
-        extern PR_API uint32_t prefilterMapResolution;
-        extern PR_API uint32_t prefilterLevels;
+        extern std::string environmentMapLocation;
+        extern uint32_t environmentMapResolution;
+        extern uint32_t irradianceMapResolution;
+        extern uint32_t prefilterMapResolution;
+        extern uint32_t prefilterLevels;
 
-        extern PR_API Texture* environmentMap;
-        extern PR_API Texture* irradianceMap;
-        extern PR_API Texture* prefilterMap;
-        extern PR_API Texture* brdfLUT;
+        extern Texture* environmentMap;
+        extern Texture* irradianceMap;
+        extern Texture* prefilterMap;
+        extern Texture* brdfLUT;
     };
 };
 

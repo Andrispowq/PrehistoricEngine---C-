@@ -9,8 +9,9 @@ namespace Prehistoric
 {
 	GLDeferredShader::GLDeferredShader() : GLShader()
 	{
-		AddShader(ResourceLoader::LoadShaderGL("opengl/deferred/deferred_VS.glsl"), VERTEX_SHADER);
-		AddShader(ResourceLoader::LoadShaderGL("opengl/deferred/deferred_FS.glsl"), FRAGMENT_SHADER);
+		AddShader(ResourceLoader::LoadShaderGL("opengl/deferred/deferred_CS.glsl"), COMPUTE_SHADER);
+		//AddShader(ResourceLoader::LoadShaderGL("opengl/deferred/deferred_VS.glsl"), VERTEX_SHADER);
+		//AddShader(ResourceLoader::LoadShaderGL("opengl/deferred/deferred_FS.glsl"), FRAGMENT_SHADER);
 		CompileShader();
 
 		AddUniform("positionMetallic");
@@ -23,6 +24,7 @@ namespace Prehistoric
 		AddUniform("brdfLUT");
 
 		AddUniform("cameraPosition");
+		AddUniform("dimension");
 
 		AddUniform("gamma");
 		AddUniform("exposure");
@@ -60,6 +62,8 @@ namespace Prehistoric
 		SetUniformi("brdfLUT", 6);
 
 		SetUniform("cameraPosition", camera->getPosition());
+		Window* window = renderer->getWindow();
+		SetUniform("dimension", Vector2f((float)window->getWidth(), (float)window->getHeight()));
 
 		SetUniformf("gamma", EngineConfig::rendererGamma);
 		SetUniformf("exposure", EngineConfig::rendererExposure);
