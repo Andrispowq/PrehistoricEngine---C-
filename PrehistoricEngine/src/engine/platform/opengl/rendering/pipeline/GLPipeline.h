@@ -12,15 +12,12 @@ namespace Prehistoric
 	class GLPipeline : public Pipeline
 	{
 	public:
-		GLPipeline(Window* window, AssetManager* manager, size_t shaderID);
+		GLPipeline(Window* window, ResourceStorage* resourceStorage, ShaderHandle shader);
 		virtual ~GLPipeline() {}
 
 		virtual void BindPipeline(CommandBuffer* buffer) const override;
 		virtual void RenderPipeline() const override;
 		virtual void UnbindPipeline() const override;
-
-	private:
-		mutable CommandBuffer* buffer; //The current commandbuffer
 	};
 };
 

@@ -15,10 +15,10 @@ namespace Prehistoric
 	class VKPipeline : public Pipeline
 	{
 	public:
-		VKPipeline(Window* window, AssetManager* manager, size_t shaderID);
+		VKPipeline(Window* window, ResourceStorage* resourceStorage, ShaderHandle shader);
 		virtual ~VKPipeline() {}
 
-		virtual void BindPipeline(CommandBuffer* buffer) const override { getShader()->Bind(buffer); this->buffer = buffer; }
+		virtual void BindPipeline(CommandBuffer* buffer) const override { shader->Bind(buffer); this->buffer = buffer; }
 		virtual void RenderPipeline() const override {}
 		virtual void UnbindPipeline() const override {}
 
@@ -30,8 +30,6 @@ namespace Prehistoric
 
 		Window* window;
 		VKSwapchain* swapchain;
-
-		mutable CommandBuffer* buffer; //The currently used commandbuffer
 	};
 };
 

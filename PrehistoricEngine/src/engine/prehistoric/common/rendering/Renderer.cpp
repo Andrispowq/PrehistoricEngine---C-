@@ -7,8 +7,8 @@
 
 namespace Prehistoric
 {
-	Renderer::Renderer(Window* window, Camera* camera)
-		: window(window), camera(camera), wireframeMode(false)
+	Renderer::Renderer(Window* window, Camera* camera, ResourceStorage* resourceStorage)
+		: window(window), camera(camera), resourceStorage(resourceStorage), wireframeMode(false)
 	{
 	}
 

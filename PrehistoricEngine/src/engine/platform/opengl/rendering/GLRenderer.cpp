@@ -9,10 +9,15 @@
 
 #include "prehistoric/core/modules/environmentMapRenderer/EnvironmentMapRenderer.h"
 
+#include "platform/opengl/rendering/shaders/deferred/GLDeferredShader.h"
+#include "platform/opengl/rendering/shaders/deferred/GLAlphaCoverageShader.h"
+#include "platform/opengl/rendering/shaders/deferred/GLFXAAShader.h"
+#include "platform/opengl/rendering/shaders/gui/GLGUIShader.h"
+
 namespace Prehistoric
 {
-	GLRenderer::GLRenderer(Window* window, Camera* camera, AssembledAssetManager* manager) 
-		: Renderer(window, camera), manager(manager), deferredFBO{nullptr}
+	GLRenderer::GLRenderer(Window* window, Camera* camera, ResourceStorage* resourceStorage)
+		: Renderer(window, camera, resourceStorage), deferredFBO{nullptr}
 	{
 		deferredFBO = std::make_unique<GLFramebuffer>(window);
 
@@ -39,20 +44,18 @@ namespace Prehistoric
 		deferredFBO->Check();
 		deferredFBO->Unbind();
 
-		AssetManager* man = manager->getAssetManager();
+		quadVBO = resourceStorage->storeVertexBuffer(ModelFabricator::CreateQuad(window));
+		quadVBO.pointer->setFrontFace(FrontFace::DOUBLE_SIDED);
 
-		quadVBO = man->addResource<VertexBuffer>(ModelFabricator::CreateQuad(window));
-		man->getResourceByID<VertexBuffer>(quadVBO)->setFrontFace(FrontFace::DOUBLE_SIDED);
+		alphaCoverageShader = resourceStorage->loadShader("alpha_coverage").value();
+		deferredShader = resourceStorage->loadShader("deferred").value();
+		fxaaShader = resourceStorage->loadShader("fxaa").value();
+		renderShader = resourceStorage->loadShader("gui").value();
 
-		alphaCoverageShader = man->getResource<Shader>("alpha_coverage");
-		deferredShader = man->getResource<Shader>("deferred");
-		//fxaaShader = man->getResource<Shader>("fxaa");
-		renderShader = man->getResource<Shader>("gui");
-
-		alphaCoveragePipeline = new GLComputePipeline(window, man, alphaCoverageShader);
-		deferredPipeline = new GLComputePipeline(window, man, deferredShader);
-		//fxaaPipeline = new GLComputePipeline(window, man, fxaaShader);
-		renderPipeline = new GLGraphicsPipeline(window, man, renderShader, quadVBO);
+		alphaCoveragePipeline = new GLComputePipeline(window, resourceStorage, alphaCoverageShader);
+		deferredPipeline = new GLComputePipeline(window, resourceStorage, deferredShader);
+		fxaaPipeline = new GLComputePipeline(window, resourceStorage, fxaaShader);
+		renderPipeline = new GLGraphicsPipeline(window, resourceStorage, renderShader, quadVBO);
 
 		static_cast<GLComputePipeline*>(alphaCoveragePipeline)->setInvocationSize({ width / 16, height / 16, 1 });
 		static_cast<GLComputePipeline*>(alphaCoveragePipeline)->addTextureBinding(0, alphaCoverage, WRITE_ONLY);
@@ -133,7 +136,7 @@ namespace Prehistoric
 			deferredFBO->Unbind();
 
 			//Recreate the pipelines
-			std::vector<Pipeline*> pipes = manager->get<Pipeline>();
+			std::vector<Pipeline*> pipes = resourceStorage->get<Pipeline>();
 			for (Pipeline* pipe : pipes)
 			{
 				pipe->setViewportSize({ (float)width, (float)height });

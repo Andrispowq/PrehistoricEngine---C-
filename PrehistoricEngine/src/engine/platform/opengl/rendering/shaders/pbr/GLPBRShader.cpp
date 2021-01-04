@@ -20,18 +20,12 @@ namespace Prehistoric
 
 		albedoMap = glGetUniformLocation(program, "material.albedoMap");
 		normalMap = glGetUniformLocation(program, "material.normalMap");
-		displacementMap = glGetUniformLocation(program, "material.displacementMap");
-		roughnessMap = glGetUniformLocation(program, "material.roughnessMap");
-		metallicMap = glGetUniformLocation(program, "material.metallicMap");
-		occlusionMap = glGetUniformLocation(program, "material.occlusionMap");
+		mrotMap = glGetUniformLocation(program, "material.mrotMap");
 		emissionMap = glGetUniformLocation(program, "material.emissionMap");
 
 		colour = glGetUniformLocation(program, "material.colour");
 		usesNormalMap = glGetUniformLocation(program, "material.usesNormalMap");
-		heightScale = glGetUniformLocation(program, "material.heightScale");
-		roughness = glGetUniformLocation(program, "material.roughness");
-		metallic = glGetUniformLocation(program, "material.metallic");
-		ambientOcclusion = glGetUniformLocation(program, "material.ambientOcclusion");
+		mrot = glGetUniformLocation(program, "material.mrot");
 		emission = glGetUniformLocation(program, "material.emission");
 
 		AddUniform("highDetailRange");
@@ -55,23 +49,14 @@ namespace Prehistoric
 		SetUniformi(albedoMap, 0);
 		material->getTexture("normalMap")->Bind(1);
 		SetUniformi(normalMap, 1);
-		material->getTexture("displacementMap")->Bind(2);
-		SetUniformi(displacementMap, 2);
-		material->getTexture("metallicMap")->Bind(3);
-		SetUniformi(metallicMap, 3);
-		material->getTexture("roughnessMap")->Bind(4);
-		SetUniformi(roughnessMap, 4);
-		material->getTexture("occlusionMap")->Bind(5);
-		SetUniformi(occlusionMap, 5);
-		material->getTexture("emissionMap")->Bind(6);
-		SetUniformi(emissionMap, 6);
+		material->getTexture("mrotMap")->Bind(2);
+		SetUniformi(mrotMap, 2);
+		material->getTexture("emissionMap")->Bind(3);
+		SetUniformi(emissionMap, 3);
 
 		SetUniform(colour, material->getVector3f("colour"));
 		SetUniformi(usesNormalMap, material->exists("normalMap"));
-		SetUniformf(heightScale, material->getFloat("heightScale"));
-		SetUniformf(metallic, material->getFloat("metallic"));
-		SetUniformf(roughness, material->getFloat("roughness"));
-		SetUniformf(ambientOcclusion, material->getFloat("ambientOcclusion"));
+		SetUniform(mrot, material->getVector4f("mrot"));
 		SetUniform(emission, material->getVector3f("emission"));
 	}
 };

@@ -1,6 +1,7 @@
 #include "Includes.hpp"
 #include "GLTexture.h"
-#include "prehistoric/common/texture/TextureLoader.h"
+
+#include "prehistoric/core/config/FrameworkConfig.h"
 
 namespace Prehistoric
 {
@@ -146,14 +147,6 @@ namespace Prehistoric
 	void GLTexture::GenerateMipmaps()
 	{
 		glGenerateMipmap(getTexType(type, multisample));
-	}
-
-	Texture* GLTexture::GenTexture(const std::string& file, SamplerFilter filter, TextureWrapMode wrapMode)
-	{
-		Texture* texture = TextureLoader::LoadTexture(file, nullptr);
-		texture->Bind();
-		texture->SamplerProperties(filter, wrapMode);
-		return texture;
 	}
 
 	Texture* GLTexture::Storage2D(uint32_t width, uint32_t height, uint32_t levels, ImageFormat format, SamplerFilter filter, TextureWrapMode wrapMode, bool generate_mipmaps, bool multisample)

@@ -1,27 +1,27 @@
 #include "Includes.hpp"
 #include "TerrainHeightsQuery.h"
 
-#include "prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/core/resources/ResourceStorage.h"
 
 namespace Prehistoric
 {
-	TerrainHeightsQuery::TerrainHeightsQuery(Window* window, AssembledAssetManager* manager, uint32_t N)
+	TerrainHeightsQuery::TerrainHeightsQuery(Window* window, ResourceStorage* resourceStorage, uint32_t N)
 	{
 		this->window = window;
-		this->manager = manager;
+		this->resourceStorage = resourceStorage;
 
 		this->N = N;
 
 		//TODO: Create the Vulkan equivalent of the GLComputePipeline
 		if (FrameworkConfig::api == OpenGL)
 		{
-			pipeline = new GLComputePipeline(window, manager->getAssetManager(), manager->getAssetManager()->getResource<Shader>("gpgpu_terrain_heights"));
-			pipelineID = manager->loadResource<Pipeline>(pipeline);
-			manager->addReference<Pipeline>(pipelineID);
+			pipeline = resourceStorage->storePipeline(new GLComputePipeline(window, resourceStorage, resourceStorage->loadShader("gpgpu_terrain_heights").value()));
+			resourceStorage->addReference<Pipeline>(pipeline.handle);
 		}
 		else if (FrameworkConfig::api == Vulkan)
 		{
-			//pipeline = new VKComputePipeline(new VKTerrainHeightsShader());
+			//pipeline = resourceStorage->storePipeline(new VKComputePipeline(window, resourceStorage, resourceStorage->loadShader("gpgpu_terrain_heights").value()));
+			//resourceStorage->addReference<Pipeline>(pipeline.handle);
 		}
 
 		heights = new float[N * N];
@@ -40,7 +40,7 @@ namespace Prehistoric
 
 		if (FrameworkConfig::api == OpenGL)
 		{
-			GLComputePipeline* glPipe = reinterpret_cast<GLComputePipeline*>(pipeline);
+			GLComputePipeline* glPipe = reinterpret_cast<GLComputePipeline*>(pipeline.pointer);
 			glPipe->setInvocationSize({ N / 16, N / 16, 1 });
 			glPipe->addSSBOBinding(0, buffer, WRITE_ONLY);
 		}
@@ -54,7 +54,7 @@ namespace Prehistoric
 
 	TerrainHeightsQuery::~TerrainHeightsQuery()
 	{
-		manager->removeReference<Pipeline>(pipelineID);
+		resourceStorage->removeReference<Pipeline>(pipeline.handle);
 		delete buffer;
 	}
 

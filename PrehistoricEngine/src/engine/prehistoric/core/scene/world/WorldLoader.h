@@ -19,6 +19,8 @@
 #include "platform/opengl/rendering/pipeline/GLGraphicsPipeline.h"
 #include "platform/vulkan/rendering/pipeline/VKGraphicsPipeline.h"
 
+#include "prehistoric/core/resources/ResourceStorage.h"
+
 #include "Includes.hpp"
 
 namespace Prehistoric
@@ -29,18 +31,18 @@ namespace Prehistoric
 		WorldLoader() {}
 		virtual ~WorldLoader() {}
 
-		void LoadWorld(const std::string& worldFile, GameObject* root, Window* window, AssembledAssetManager* manager);
+		void LoadWorld(const std::string& worldFile, GameObject* root, Window* window, ResourceStorage* resourceStorage);
 	private:
 		std::string directoryModels;
 		std::string directoryTextures;
 
 		//Rendering stuff
-		std::unordered_map<std::string, size_t> textures;
-		std::unordered_map<std::string, size_t> materials;
+		std::unordered_map<std::string, TextureHandle> textures;
+		std::unordered_map<std::string, MaterialHandle> materials;
 
-		std::unordered_map<std::string, size_t> models;
-		std::unordered_map<std::string, size_t> shaders;
-		std::unordered_map<std::string, size_t> pipelines;
+		std::unordered_map<std::string, VertexBufferHandle> models;
+		std::unordered_map<std::string, ShaderHandle> shaders;
+		std::unordered_map<std::string, PipelineHandle> pipelines;
 	};
 };
 

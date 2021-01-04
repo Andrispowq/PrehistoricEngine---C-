@@ -5,7 +5,7 @@
 
 #include <glad/glad.h>
 
-#include "prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/core/resources/ResourceStorage.h"
 
 #include "platform/opengl/rendering/framebuffer/GLFramebuffer.h"
 
@@ -14,7 +14,7 @@ namespace Prehistoric
 	class GLRenderer : public Renderer
 	{
 	public:
-		GLRenderer(Window* window, Camera* camera, AssembledAssetManager* manager);
+		GLRenderer(Window* window, Camera* camera, ResourceStorage* resourceStorage);
 		virtual ~GLRenderer();
 
 		virtual void PrepareRendering();
@@ -51,12 +51,12 @@ namespace Prehistoric
 
 		   ---------- Deferred Configurations ---------- */
 
-		size_t quadVBO;
-		size_t alphaCoverageShader;
-		
-		size_t deferredShader;
-		size_t fxaaShader;
-		size_t renderShader;
+		VertexBufferHandle quadVBO;
+		ShaderHandle alphaCoverageShader;
+
+		ShaderHandle deferredShader;
+		ShaderHandle fxaaShader;
+		ShaderHandle renderShader;
 
 		Texture* outputImage;
 		Texture* fxaaTexture;
@@ -66,8 +66,6 @@ namespace Prehistoric
 		Pipeline* deferredPipeline;
 		Pipeline* fxaaPipeline;
 		Pipeline* renderPipeline;
-
-		AssembledAssetManager* manager;
 	};
 };
 

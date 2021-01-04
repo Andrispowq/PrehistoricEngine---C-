@@ -6,6 +6,8 @@
 #include "prehistoric/common/rendering/pipeline/Pipeline.h"
 #include "prehistoric/common/framework/Window.h"
 
+#include "prehistoric/core/resources/ResourceStorage.h"
+
 #include "Includes.hpp"
 
 namespace Prehistoric
@@ -23,15 +25,15 @@ namespace Prehistoric
 	class RenderableComponent : public Component
 	{
 	public:
-		RenderableComponent(size_t pipelineID, Window* window, AssembledAssetManager* manager);
-		RenderableComponent(Window* window, AssembledAssetManager* manager);
+		RenderableComponent(PipelineHandle pipeline, Window* window, ResourceStorage* resourceStorage);
+		RenderableComponent(Window* window, ResourceStorage* resourceStorage);
 		virtual ~RenderableComponent();
 
 		virtual void Render(Renderer* renderer) const = 0;
 		virtual void BatchRender(uint32_t instance_index = 0) const = 0;
 
-		inline size_t getPipelineIndex() const { return pipelineIndex; }
-		Pipeline* getPipeline() const;
+		Pipeline* getPipeline() const { return pipeline.pointer; }
+		PipelineHandle getPipelineHandle() const { return pipeline; }
 
 		inline RenderPriority getPriority() const { return priority; }
 		inline void setPriority(RenderPriority priority) { this->priority = priority; }
@@ -42,11 +44,11 @@ namespace Prehistoric
 		RenderableComponent(const RenderableComponent&&) = delete;
 		RenderableComponent& operator=(RenderableComponent) = delete;
 	protected:
-		AssembledAssetManager* manager;
+		ResourceStorage* resourceStorage;
 
 		Window* window;
 
-		size_t pipelineIndex;
+		PipelineHandle pipeline;
 		RenderPriority priority;
 	};
 };

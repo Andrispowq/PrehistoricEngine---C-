@@ -14,18 +14,12 @@ struct Material
 {
 	sampler2D albedoMap;
 	sampler2D normalMap;
-	sampler2D displacementMap;
-	sampler2D metallicMap;
-	sampler2D roughnessMap;
-	sampler2D occlusionMap;
+	sampler2D mrotMap;
 	sampler2D emissionMap;
 	
 	vec3 colour;
 	int usesNormalMap;
-	float heightScale;
-	float metallic;
-	float roughness;
-	float ambientOcclusion;
+	vec4 mrot;
 	vec3 emission;
 };
 
@@ -33,34 +27,39 @@ uniform Material material;
 uniform vec3 cameraPosition;
 uniform int highDetailRange;
 
-vec3 getColour(sampler2D map, vec3 alternateValue, vec2 texCoords, bool power)
-{
-	if (alternateValue.r == -1)
-		if (power)
-			return pow(texture(map, texCoords).rgb, vec3(2.2));
-		else
-			return texture(map, texCoords).rgb;
-	else
-		return alternateValue;
-}
-
-vec3 getColour(sampler2D map, float alternateValue, vec2 texCoords)
-{
-	if(alternateValue == -1)
-		return texture(map, texCoords).rgb;
-	else
-		return vec3(alternateValue);
-}
-
 void main()
 {
-	vec3 albedoColour = getColour(material.albedoMap, material.colour, texture_FS, true);
+	vec3 albedoColour = material.colour;
+	vec4 mrot = material.mrot;
+	vec3 emission = material.emission;
 	
-	float metallic = getColour(material.metallicMap, material.metallic, texture_FS).r;
-	float roughness = getColour(material.roughnessMap, material.roughness, texture_FS).r;
-	float occlusion = getColour(material.occlusionMap, material.ambientOcclusion, texture_FS).r;
+	if (albedoColour.r == -1)
+	{
+		albedoColour = pow(texture(material.albedoMap, texture_FS).rgb, vec3(2.2));
+	}
 	
-	vec3 emission = getColour(material.emissionMap, material.emission, texture_FS, false);
+	vec4 mrotMap = texture(material.mrotMap, texture_FS);
+	if (mrot.r == -1)
+	{
+		mrot.r = mrotMap.r;
+	}
+	if (mrot.g == -1)
+	{
+		mrot.g = mrotMap.g;
+	}
+	if (mrot.b == -1)
+	{
+		mrot.b = mrotMap.b;
+	}
+	if (mrot.a == -1)
+	{
+		mrot.a = mrotMap.a;
+	}
+
+	if (emission.r == -1)
+	{
+		emission = texture(material.emissionMap, texture_FS).rgb;
+	}
 
 	float dist = length(cameraPosition - position_FS);
 	vec3 normal = normalize(normal_FS);	
@@ -80,8 +79,8 @@ void main()
 	
 	vec3 N = normalize(normal);
 
-	positionMetallic = vec4(position_FS, metallic);
-	albedoRoughness = vec4(albedoColour, roughness);
+	positionMetallic = vec4(position_FS, mrot.r);
+	albedoRoughness = vec4(albedoColour, mrot.g);
 	normalLit = vec4(N, 1.0);
-	emissionExtra = vec4(emission, occlusion);
+	emissionExtra = vec4(emission, mrot.b);
 }

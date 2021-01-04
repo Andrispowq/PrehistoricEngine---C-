@@ -17,21 +17,18 @@ namespace Prehistoric
 	class NormalMapRenderer
 	{
 	public:
-		NormalMapRenderer(Window* window, AssembledAssetManager* manager, float strength, uint32_t N);
+		NormalMapRenderer(Window* window, ResourceStorage* resourceStorage, float strength, uint32_t N);
 		virtual ~NormalMapRenderer();
 
 		void Render(Texture* heightmap);
 
-		Texture* getNormalmap() const { return normalmap; }
+		TextureHandle getNormalmap() const { return normalmap; }
 	private:
 		Window* window;
-		AssembledAssetManager* manager;
+		ResourceStorage* resourceStorage;
 
-		size_t pipelineID;
-		size_t textureID;
-
-		Pipeline* pipeline;
-		Texture* normalmap;
+		PipelineHandle pipeline;
+		TextureHandle normalmap;
 
 		float strength;
 		uint32_t N;

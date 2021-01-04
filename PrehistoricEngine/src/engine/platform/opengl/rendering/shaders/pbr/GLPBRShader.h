@@ -29,18 +29,12 @@ namespace Prehistoric
 
 		int albedoMap;
 		int normalMap;
-		int displacementMap;
-		int metallicMap;
-		int roughnessMap;
-		int occlusionMap;
+		int mrotMap;
 		int emissionMap;
 
 		int colour;
 		int usesNormalMap;
-		int heightScale;
-		int metallic;
-		int roughness;
-		int ambientOcclusion;
+		int mrot;
 		int emission;
 	};
 };

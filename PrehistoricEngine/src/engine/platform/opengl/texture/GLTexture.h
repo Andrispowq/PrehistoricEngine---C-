@@ -30,7 +30,6 @@ namespace Prehistoric
 		inline bool isMultisample() const { return multisample; }
 	public:
 		//These methods give the caller the responsibility of deleting the generated textures! They must be registered to the AssetManagers list
-		static Texture* GenTexture(const std::string& file, SamplerFilter filter = Trilinear, TextureWrapMode wrapMode = Repeat);
 		static Texture* Storage2D(uint32_t width, uint32_t height, uint32_t levels = 1, ImageFormat format = R8G8B8A8_LINEAR, SamplerFilter filter = Trilinear, TextureWrapMode wrapMode = Repeat, bool generate_mipmaps = true, bool multisample = false);
 		static Texture* Storage3D(uint32_t width, uint32_t height, uint32_t level = 0, ImageFormat format = R8G8B8A8_LINEAR, SamplerFilter filter = Trilinear, TextureWrapMode wrapMode = Repeat, bool generate_mipmaps = true);
 

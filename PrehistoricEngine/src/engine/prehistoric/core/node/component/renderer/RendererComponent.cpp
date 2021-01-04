@@ -5,37 +5,35 @@
 #include "prehistoric/core/node/GameObject.h"
 #include "prehistoric/core/model/material/Material.h"
 
-#include "prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/core/resources/ResourceStorage.h"
+
+#include "platform/vulkan/rendering/shaders/VKShader.h"
 
 namespace Prehistoric
 {
-	RendererComponent::RendererComponent(size_t pipelineID, size_t materialID, Window* window, AssembledAssetManager* manager)
-		: RenderableComponent(pipelineID, window, manager)
+	RendererComponent::RendererComponent(PipelineHandle pipeline, MaterialHandle material, Window* window, ResourceStorage* resourceStorage)
+		: RenderableComponent(pipeline, window, resourceStorage)
 	{
 		type = ComponentType::RendererComponent;
 
-		materialIndex = materialID;
-		manager->addReference<Material>(materialID);
-		material = manager->getResourceByID<Material>(materialIndex);
+		this->material = material;
+		resourceStorage->addReference<Material>(material.handle);
 
 		if (FrameworkConfig::api == Vulkan)
 		{
-			static_cast<VKShader*>(manager->getResourceByID<Pipeline>(pipelineID)->getShader())->RegisterInstance();
+			static_cast<VKShader*>(pipeline->getShader())->RegisterInstance();
 		}
 	}
 
-	RendererComponent::RendererComponent(Window* window, AssembledAssetManager* manager)
-		: RenderableComponent(window, manager)
+	RendererComponent::RendererComponent(Window* window, ResourceStorage* resourceStorage)
+		: RenderableComponent(window, resourceStorage)
 	{
 		type = ComponentType::RendererComponent;
-
-		materialIndex = -1;
 	}
 
 	RendererComponent::~RendererComponent()
 	{
-		manager->removeReference<Material>(materialIndex);
-		materialIndex = -1;
+		resourceStorage->removeReference<Material>(material.handle);
 	}
 
 	void RendererComponent::PreRender(Renderer* renderer)
@@ -45,8 +43,6 @@ namespace Prehistoric
 
 	void RendererComponent::Render(Renderer* renderer) const
 	{
-		Pipeline* pipeline = getPipeline();
-
 		pipeline->BindPipeline(renderer->getDrawCommandBuffer());
 		pipeline->getShader()->UpdateShaderUniforms(renderer->getCamera(), renderer->getLights());
 		pipeline->getShader()->UpdateSharedUniforms(parent);
@@ -58,8 +54,6 @@ namespace Prehistoric
 
 	void RendererComponent::BatchRender(uint32_t instance_index) const
 	{
-		Pipeline* pipeline = getPipeline();
-
 		pipeline->getShader()->UpdateObjectUniforms(parent, instance_index);
 		pipeline->RenderPipeline();
 	}

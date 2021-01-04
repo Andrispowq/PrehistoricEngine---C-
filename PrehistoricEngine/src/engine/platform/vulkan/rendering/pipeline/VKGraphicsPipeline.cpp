@@ -1,11 +1,10 @@
 #include "Includes.hpp"
-#include <glad/glad.h>
 #include "VKGraphicsPipeline.h"
 
 namespace Prehistoric
 {
-	VKGraphicsPipeline::VKGraphicsPipeline(Window* window, AssetManager* manager, size_t shaderID, size_t vboID)
-		: VKPipeline(window, manager, shaderID), GraphicsPipeline(manager, vboID)
+	VKGraphicsPipeline::VKGraphicsPipeline(Window* window, ResourceStorage* resourceStorage, ShaderHandle shader, VertexBufferHandle vbo)
+		: VKPipeline(window, resourceStorage, shader), GraphicsPipeline(resourceStorage, vbo)
 	{
 		CreatePipeline();
 	}
@@ -20,19 +19,19 @@ namespace Prehistoric
 		VKPipeline::BindPipeline(buffer);
 
 		vkCmdBindPipeline(((VKCommandBuffer*)buffer)->getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
-		getVertexBuffer()->Bind(buffer);
+		vbo->Bind(buffer);
 	}
 
 	void VKGraphicsPipeline::RenderPipeline() const
 	{
 		VKPipeline::RenderPipeline();
 
-		getVertexBuffer()->Draw(buffer);
+		vbo->Draw(buffer);
 	}
 
 	void VKGraphicsPipeline::UnbindPipeline() const
 	{
-		getVertexBuffer()->Unbind();
+		vbo->Unbind();
 
 		VKPipeline::UnbindPipeline();
 	}

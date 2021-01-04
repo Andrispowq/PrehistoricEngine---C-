@@ -20,7 +20,7 @@ namespace Prehistoric
 	class TerrainHeightsQuery
 	{
 	public:
-		TerrainHeightsQuery(Window* window, AssembledAssetManager* manager, uint32_t N);
+		TerrainHeightsQuery(Window* window, ResourceStorage* resourceStorage, uint32_t N);
 		virtual ~TerrainHeightsQuery();
 
 		void Query(Texture* heightmap);
@@ -28,10 +28,9 @@ namespace Prehistoric
 		float* getHeights() { return heights; }
 	private:
 		Window* window;
-		AssembledAssetManager* manager;
+		ResourceStorage* resourceStorage;
 
-		size_t pipelineID;
-		Pipeline* pipeline;
+		PipelineHandle pipeline;
 
 		float* heights;
 		ShaderStorageBuffer* buffer;

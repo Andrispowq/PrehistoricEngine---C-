@@ -15,12 +15,12 @@ namespace Prehistoric
 	class TerrainMaps
 	{
 	public:
-		TerrainMaps(Window* window, AssembledAssetManager* manager, const std::string& terrainConfigFile);
+		TerrainMaps(Window* window, ResourceStorage* resourceStorage, const std::string& terrainConfigFile);
 		virtual ~TerrainMaps();
 
-		Texture* getHeightmap() const { return heightmap; }
-		Texture* getNormalmap() const { return normalmap; }
-		Texture* getSplatmap() const { return splatmap; }
+		Texture* getHeightmap() const { return heightmap.pointer; }
+		Texture* getNormalmap() const { return normalmap.pointer; }
+		Texture* getSplatmap() const { return splatmap.pointer; }
 
 		float* getHeights() const { return heights; }
 
@@ -29,13 +29,11 @@ namespace Prehistoric
 		void LoadConfigFile(const std::string& terrainConfigFile);
 	private:
 		Window* window;
-		AssembledAssetManager* manager;
+		ResourceStorage* resourceStorage;
 
-		size_t heightmapID;
-
-		Texture* heightmap;
-		Texture* normalmap;
-		Texture* splatmap;
+		TextureHandle heightmap;
+		TextureHandle normalmap;
+		TextureHandle splatmap;
 
 		float* heights;
 

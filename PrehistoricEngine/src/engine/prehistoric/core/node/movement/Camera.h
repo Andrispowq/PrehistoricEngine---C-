@@ -34,9 +34,9 @@ namespace Prehistoric
 
         inline float getFov() const { return fovY; }
 
-        inline Matrix4f getViewMatrix() const { return viewMatrix; }
-        inline Matrix4f getProjectionMatrix() const { return projectionMatrix; }
-        inline Matrix4f getViewProjectionMatrix() const { return viewProjectionMatrix; }
+        inline const Matrix4f& getViewMatrix() const { return viewMatrix; }
+        inline const Matrix4f& getProjectionMatrix() const { return projectionMatrix; }
+        inline const Matrix4f& getViewProjectionMatrix() const { return viewProjectionMatrix; }
 
         inline void setSpeedControl(InputData data) { this->speedControl = data; }
 

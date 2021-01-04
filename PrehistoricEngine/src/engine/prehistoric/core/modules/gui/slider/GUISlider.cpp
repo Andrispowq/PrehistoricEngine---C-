@@ -3,8 +3,8 @@
 
 namespace Prehistoric
 {
-	GUISlider::GUISlider(Window* window, AssembledAssetManager* manager, float minValue, float maxValue, Texture* texture, void* data, size_t dataSize, bool visible)
-		: GUIElement(window, manager, texture, data, dataSize, visible), minValue(minValue), maxValue(maxValue), progress(0.5f)
+	GUISlider::GUISlider(Window* window, ResourceStorage* resourceStorage, float minValue, float maxValue, Texture* texture, void* data, size_t dataSize, bool visible)
+		: GUIElement(window, resourceStorage, texture, data, dataSize, visible), minValue(minValue), maxValue(maxValue), progress(0.5f)
 	{
 		type = GUIType::Slider;
 	}

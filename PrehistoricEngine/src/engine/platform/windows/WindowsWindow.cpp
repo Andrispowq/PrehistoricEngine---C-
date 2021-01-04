@@ -84,14 +84,13 @@ namespace Prehistoric
 		//Setting window properties and creating the window
 		if (FrameworkConfig::api == OpenGL)
 		{
-			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
+			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		}
 		else
 		{
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		}
 
-		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, FrameworkConfig::apiVersion.x);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, FrameworkConfig::apiVersion.y);
 		glfwWindowHint(GLFW_RESIZABLE, FrameworkConfig::windowResizable);
@@ -125,7 +124,7 @@ namespace Prehistoric
 		glfwSetWindowUserPointer(window, (void*)this);
 		glfwSetMonitorUserPointer(glfwGetPrimaryMonitor(), (void*)this);
 
-		ImageData data = TextureLoader::LoadTextureData("res/textures/logo.png");
+		ImageData data = TextureLoader::LoadTextureData(this, "res/textures/logo.png");
 
 		GLFWimage image;
 		image.width = data.width;

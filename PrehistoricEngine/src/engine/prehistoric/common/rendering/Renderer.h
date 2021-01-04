@@ -6,6 +6,8 @@
 
 #include "prehistoric/common/rendering/pipeline/Pipeline.h"
 
+#include "prehistoric/core/resources/ResourceStorage.h"
+
 namespace Prehistoric
 {
 	class RenderableComponent;
@@ -13,7 +15,7 @@ namespace Prehistoric
 	class Renderer
 	{
 	public:
-		Renderer(Window* window, Camera* camera);
+		Renderer(Window* window, Camera* camera, ResourceStorage* resourceStorage);
 		virtual ~Renderer() {}
 
 		virtual void PrepareRendering() = 0;
@@ -35,6 +37,8 @@ namespace Prehistoric
 		inline void setWireframeMode(bool wire) { this->wireframeMode = wire; }
 
 	protected:
+		ResourceStorage* resourceStorage;
+
 		Window* window;
 		Camera* camera;
 

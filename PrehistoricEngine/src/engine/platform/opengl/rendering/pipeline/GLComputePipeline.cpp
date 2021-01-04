@@ -1,10 +1,12 @@
 #include "Includes.hpp"
 #include "GLComputePipeline.h"
 
+#include "prehistoric/core/resources/ResourceStorage.h"
+
 namespace Prehistoric
 {
-	GLComputePipeline::GLComputePipeline(Window* window, AssetManager* manager, size_t shaderID)
-		: GLPipeline(window, manager, shaderID), ComputePipeline()
+	GLComputePipeline::GLComputePipeline(Window* window, ResourceStorage* resourceStorage, ShaderHandle shader)
+		: GLPipeline(window, resourceStorage, shader), ComputePipeline()
 	{
 	}
 
@@ -46,10 +48,11 @@ namespace Prehistoric
 
 	void GLComputePipeline::UnbindPipeline() const
 	{
+		GLPipeline::UnbindPipeline();
+
 		for (const auto& ssbo : ssboBindingTable)
 		{
 			ssbo.second.first->Unbind();
 		}
-
 	}
 };

@@ -229,7 +229,6 @@
     <ClInclude Include="src\engine\prehistoric\common\rendering\pipeline\RayTracingPipeline.h" />
     <ClInclude Include="src\engine\prehistoric\common\rendering\shaders\Shader.h" />
     <ClInclude Include="src\engine\prehistoric\common\texture\Texture.h" />
-    <ClInclude Include="src\engine\prehistoric\common\texture\TextureLoader.h" />
     <ClInclude Include="src\engine\prehistoric\common\util\DeviceProperties.h" />
     <ClInclude Include="src\engine\prehistoric\common\util\InitDevice.h" />
     <ClInclude Include="src\engine\prehistoric\common\util\RenderUtils.h" />
@@ -274,9 +273,12 @@
     <ClInclude Include="src\engine\prehistoric\core\node\component\renderer\RenderableComponent.h" />
     <ClInclude Include="src\engine\prehistoric\core\node\component\renderer\RendererComponent.h" />
     <ClInclude Include="src\engine\prehistoric\core\node\movement\Camera.h" />
-    <ClInclude Include="src\engine\prehistoric\core\resources\AssembledAssetManager.h" />
-    <ClInclude Include="src\engine\prehistoric\core\resources\AssetManager.h" />
     <ClInclude Include="src\engine\prehistoric\core\resources\Factory.h" />
+    <ClInclude Include="src\engine\prehistoric\core\resources\Loader.h" />
+    <ClInclude Include="src\engine\prehistoric\core\resources\loaders\ShaderLoader.h" />
+    <ClInclude Include="src\engine\prehistoric\core\resources\loaders\TextureLoader.h" />
+    <ClInclude Include="src\engine\prehistoric\core\resources\loaders\VertexBufferLoader.h" />
+    <ClInclude Include="src\engine\prehistoric\core\resources\ResourceStorage.h" />
     <ClInclude Include="src\engine\prehistoric\core\scene\Scene.h" />
     <ClInclude Include="src\engine\prehistoric\core\scene\world\WorldLoader.h" />
     <ClInclude Include="src\engine\prehistoric\core\util\Constants.h" />
@@ -374,7 +376,6 @@
     <ClCompile Include="src\engine\prehistoric\common\rendering\pipeline\RayTracingPipeline.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\rendering\shaders\Shader.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\texture\Texture.cpp" />
-    <ClCompile Include="src\engine\prehistoric\common\texture\TextureLoader.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\util\DeviceProperties.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\util\InitDevice.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\CoreEngine.cpp" />
@@ -411,8 +412,11 @@
     <ClCompile Include="src\engine\prehistoric\core\node\component\renderer\RenderableComponent.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\node\component\renderer\RendererComponent.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\node\movement\Camera.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\resources\AssembledAssetManager.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\resources\AssetManager.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\resources\Loader.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\resources\loaders\ShaderLoader.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\resources\loaders\TextureLoader.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\resources\loaders\VertexBufferLoader.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\resources\ResourceStorage.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\scene\Scene.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\scene\world\WorldLoader.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\util\ModelFabricator.cpp" />

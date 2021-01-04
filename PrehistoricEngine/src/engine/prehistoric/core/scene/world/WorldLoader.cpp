@@ -1,14 +1,10 @@
 #include "Includes.hpp"
 #include "WorldLoader.h"
 
-#include "prehistoric/core/resources/AssembledAssetManager.h"
-
 namespace Prehistoric
 {
-	void WorldLoader::LoadWorld(const std::string& worldFile, GameObject* root, Window* window, AssembledAssetManager* manager)
+	void WorldLoader::LoadWorld(const std::string& worldFile, GameObject* root, Window* window, ResourceStorage* resourceStorage)
 	{
-		AssetManager* manager_ = manager->getAssetManager();
-
 		std::ifstream file;
 		file.open(worldFile.c_str());
 
@@ -43,38 +39,37 @@ namespace Prehistoric
 				{
 					if (nameTokens[1] == "load")
 					{
-						size_t ID = manager_->getResource<VertexBuffer>(tokens[2]);
-						VertexBuffer* buff = manager_->getResourceByID<VertexBuffer>(ID);
+						VertexBufferHandle vbo = resourceStorage->loadVertexBuffer(std::nullopt, directoryModels + tokens[2]).value();
 
 						if (tokens.size() > 3)
 						{
 							if (tokens[3] == "clockwise")
 							{
-								buff->setFrontFace(FrontFace::CLOCKWISE);
+								vbo->setFrontFace(FrontFace::CLOCKWISE);
 							}
 							else if (tokens[3] == "counter-clockwise")
 							{
-								buff->setFrontFace(FrontFace::COUNTER_CLOCKWISE);
+								vbo->setFrontFace(FrontFace::COUNTER_CLOCKWISE);
 							}
 							else
 							{
-								buff->setFrontFace(FrontFace::DOUBLE_SIDED);
+								vbo->setFrontFace(FrontFace::DOUBLE_SIDED);
 							}
 						}
 						else
 						{
-							buff->setFrontFace(FrontFace::DOUBLE_SIDED);
+							vbo->setFrontFace(FrontFace::DOUBLE_SIDED);
 						}
 
 						//We don't want to save .obj as the key
-						models.insert(std::make_pair(tokens[1], ID));
+						models.insert(std::make_pair(tokens[1], vbo));
 					}
 				}
 				if (nameTokens[0] == "textures")
 				{
 					if (nameTokens[1] == "load")
 					{
-						textures.insert(std::make_pair(tokens[1], manager->getAssetManager()->getResource<Texture>(directoryTextures + tokens[2])));
+						textures.insert(std::make_pair(tokens[1], resourceStorage->loadTexture(directoryTextures + tokens[2]).value()));
 					}
 				}
 
@@ -83,8 +78,8 @@ namespace Prehistoric
 				{
 					if (nameTokens[1] == "add")
 					{
-						Material* material = new Material(manager->getAssetManager());
-						materials.insert(std::make_pair(tokens[1], manager->loadResource<Material>(material)));
+						MaterialHandle material = resourceStorage->storeMaterial(new Material(resourceStorage));
+						materials.insert(std::make_pair(tokens[1], material));
 					}
 					else
 					{
@@ -96,7 +91,7 @@ namespace Prehistoric
 							continue;
 						}
 
-						Material* material = manager->getResourceByID<Material>(materials.at(nameTokens[1]));
+						MaterialHandle material = materials.at(nameTokens[1]);
 
 						if (nameTokens[2] == "texture")
 						{
@@ -232,50 +227,48 @@ namespace Prehistoric
 						{
 							std::vector<std::string> compTokens = Util::Split(tokens[2], ',');
 
-							size_t vboID = models.at(compTokens[0]);
-							size_t shaderID = -1;
+							VertexBufferHandle vbo = models.at(compTokens[0]);
+							ShaderHandle shader;
 
-							size_t materialID = materials.at(compTokens[2]);
-							size_t pipelineID = -1;
+							MaterialHandle material = materials.at(compTokens[2]);
+							PipelineHandle pipeline;
 
 							auto shaderIndex = shaders.find(compTokens[1]);
 							if (shaderIndex != shaders.end())
 							{
-								shaderID = shaderIndex->second;
+								shader = shaderIndex->second;
 							}
 							else
 							{
-								shaderID = manager->getAssetManager()->getResource<Shader>(compTokens[1]);
-								shaders.insert(std::make_pair(compTokens[1], shaderID));
+								shader = resourceStorage->loadShader(compTokens[1]).value();
+								shaders.insert(std::make_pair(compTokens[1], shader));
 							}
 
 							auto pipelineIndex = pipelines.find(compTokens[0] + "," + compTokens[1]);
 							if (pipelineIndex != pipelines.end())
 							{
-								pipelineID = pipelineIndex->second;
+								pipeline = pipelineIndex->second;
 							}
 							else
 							{
-								Pipeline* pipeline = nullptr;
+								Pipeline* _pipeline = nullptr;
 
 								if (FrameworkConfig::api == OpenGL)
 								{
-									pipeline = new GLGraphicsPipeline(window, manager->getAssetManager(), shaderID, vboID);
-
-									reinterpret_cast<GLGraphicsPipeline*>(pipeline)->SetBackfaceCulling(true);
+									_pipeline = new GLGraphicsPipeline(window, resourceStorage, shader, vbo);
+									reinterpret_cast<GLGraphicsPipeline*>(_pipeline)->setBackfaceCulling(true);
 								}
 								else if (FrameworkConfig::api == Vulkan)
 								{
-									pipeline = new VKGraphicsPipeline(window, manager->getAssetManager(), shaderID, vboID);
-
-									reinterpret_cast<VKGraphicsPipeline*>(pipeline)->SetBackfaceCulling(false);;
+									_pipeline = new VKGraphicsPipeline(window, resourceStorage, shader, vbo);
+									reinterpret_cast<VKGraphicsPipeline*>(_pipeline)->setBackfaceCulling(true);
 								}
 
-								pipelineID = manager->loadResource<Pipeline>(pipeline);
-								pipelines.insert(std::make_pair(compTokens[0] + "," + compTokens[1], pipelineID));
+								pipeline = resourceStorage->storePipeline(_pipeline);
+								pipelines.emplace(std::make_pair(compTokens[0] + "," + compTokens[1], pipeline));
 							}
 
-							RendererComponent* renderer = new RendererComponent(pipelineID, materialID, window, manager);
+							RendererComponent* renderer = new RendererComponent(pipeline, material, window, resourceStorage);
 
 							obj->AddComponent(tokens[1], renderer);
 						}
@@ -317,50 +310,48 @@ namespace Prehistoric
 								{
 									std::vector<std::string> compTokens = Util::Split(tokens[2], ',');
 
-									size_t vboID = models.at(compTokens[0]);
-									size_t shaderID = -1;
+									VertexBufferHandle vbo = models.at(compTokens[0]);
+									ShaderHandle shader;
 
-									size_t materialID = materials.at(compTokens[2]);
-									size_t pipelineID = -1;
+									MaterialHandle material = materials.at(compTokens[2]);
+									PipelineHandle pipeline;
 
 									auto shaderIndex = shaders.find(compTokens[1]);
 									if (shaderIndex != shaders.end())
 									{
-										shaderID = shaderIndex->second;
+										shader = shaderIndex->second;
 									}
 									else
 									{
-										shaderID = manager->getAssetManager()->getResource<Shader>(compTokens[1]);
-										shaders.insert(std::make_pair(compTokens[1], shaderID));
+										shader = resourceStorage->loadShader(compTokens[1]).value();
+										shaders.insert(std::make_pair(compTokens[1], shader));
 									}
 
 									auto pipelineIndex = pipelines.find(compTokens[0] + "," + compTokens[1]);
 									if (pipelineIndex != pipelines.end())
 									{
-										pipelineID = pipelineIndex->second;
+										pipeline = pipelineIndex->second;
 									}
 									else
 									{
-										Pipeline* pipeline = nullptr;
+										Pipeline* _pipeline = nullptr;
 
 										if (FrameworkConfig::api == OpenGL)
 										{
-											pipeline = new GLGraphicsPipeline(window, manager->getAssetManager(), shaderID, vboID);
-
-											reinterpret_cast<GLGraphicsPipeline*>(pipeline)->SetBackfaceCulling(true);
+											_pipeline = new GLGraphicsPipeline(window, resourceStorage, shader, vbo);
+											reinterpret_cast<GLGraphicsPipeline*>(_pipeline)->setBackfaceCulling(true);
 										}
 										else if (FrameworkConfig::api == Vulkan)
 										{
-											pipeline = new VKGraphicsPipeline(window, manager->getAssetManager(), shaderID, vboID);
-
-											reinterpret_cast<VKGraphicsPipeline*>(pipeline)->SetBackfaceCulling(false);;
+											_pipeline = new VKGraphicsPipeline(window, resourceStorage, shader, vbo);
+											reinterpret_cast<VKGraphicsPipeline*>(_pipeline)->setBackfaceCulling(true);
 										}
 
-										pipelineID = manager->loadResource<Pipeline>(pipeline);
-										pipelines.insert(std::make_pair(compTokens[0] + "," + compTokens[1], pipelineID));
+										pipeline = resourceStorage->storePipeline(_pipeline);
+										pipelines.insert(std::make_pair(compTokens[0] + "," + compTokens[1], pipeline));
 									}
 
-									RendererComponent* renderer = new RendererComponent(pipelineID, materialID, window, manager);
+									RendererComponent* renderer = new RendererComponent(pipeline, material, window, resourceStorage);
 
 									obj->AddComponent(tokens[1], renderer);
 
@@ -376,7 +367,7 @@ namespace Prehistoric
 									light->setColour({ (float)std::atof(posTokens[0].c_str()), (float)std::atof(posTokens[1].c_str()), (float)std::atof(posTokens[2].c_str()) });
 									light->setIntensity((float)std::atof(compTokens[1].c_str()));
 
-									objToAdd->AddComponent("Light", light);
+									obj->AddComponent("Light", light);
 
 									break;
 								}

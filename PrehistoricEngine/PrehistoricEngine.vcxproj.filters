@@ -509,9 +509,6 @@
     <ClInclude Include="src\engine\prehistoric\common\texture\Texture.h">
       <Filter>prehistoric\common\texture</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\common\texture\TextureLoader.h">
-      <Filter>prehistoric\common\texture</Filter>
-    </ClInclude>
     <ClInclude Include="src\engine\prehistoric\common\util\DeviceProperties.h">
       <Filter>prehistoric\common\util</Filter>
     </ClInclude>
@@ -581,9 +578,6 @@
     <ClInclude Include="src\engine\prehistoric\core\model\material\Material.h">
       <Filter>prehistoric\core\model\material</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\model\obj\OBJLoader.h">
-      <Filter>prehistoric\core\model\obj</Filter>
-    </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\modules\atmosphere\Atmosphere.h">
       <Filter>prehistoric\core\modules\atmosphere</Filter>
     </ClInclude>
@@ -644,12 +638,6 @@
     <ClInclude Include="src\engine\prehistoric\core\node\movement\Camera.h">
       <Filter>prehistoric\core\node\movement</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\resources\AssembledAssetManager.h">
-      <Filter>prehistoric\core\resources</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\resources\AssetManager.h">
-      <Filter>prehistoric\core\resources</Filter>
-    </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\resources\Factory.h">
       <Filter>prehistoric\core\resources</Filter>
     </ClInclude>
@@ -691,6 +679,14 @@
     </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\deferred\GLAlphaCoverageShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\deferred\GLFXAAShader.h" />
+    <ClInclude Include="src\engine\prehistoric\core\resources\ResourceStorage.h" />
+    <ClInclude Include="src\engine\prehistoric\core\resources\Loader.h" />
+    <ClInclude Include="src\engine\prehistoric\core\model\obj\OBJLoader.h">
+      <Filter>prehistoric\core\model\obj</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\resources\loaders\ShaderLoader.h" />
+    <ClInclude Include="src\engine\prehistoric\core\resources\loaders\TextureLoader.h" />
+    <ClInclude Include="src\engine\prehistoric\core\resources\loaders\VertexBufferLoader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -928,9 +924,6 @@
     <ClCompile Include="src\engine\prehistoric\common\texture\Texture.cpp">
       <Filter>prehistoric\common\texture</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\common\texture\TextureLoader.cpp">
-      <Filter>prehistoric\common\texture</Filter>
-    </ClCompile>
     <ClCompile Include="src\engine\prehistoric\common\util\DeviceProperties.cpp">
       <Filter>prehistoric\common\util</Filter>
     </ClCompile>
@@ -978,9 +971,6 @@
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\model\material\Material.cpp">
       <Filter>prehistoric\core\model\material</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\model\obj\OBJLoader.cpp">
-      <Filter>prehistoric\core\model\obj</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\modules\atmosphere\Atmosphere.cpp">
       <Filter>prehistoric\core\modules\atmosphere</Filter>
@@ -1039,12 +1029,6 @@
     <ClCompile Include="src\engine\prehistoric\core\node\movement\Camera.cpp">
       <Filter>prehistoric\core\node\movement</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\resources\AssembledAssetManager.cpp">
-      <Filter>prehistoric\core\resources</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\resources\AssetManager.cpp">
-      <Filter>prehistoric\core\resources</Filter>
-    </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\scene\Scene.cpp">
       <Filter>prehistoric\core\scene</Filter>
     </ClCompile>
@@ -1071,5 +1055,13 @@
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\deferred\GLAlphaCoverageShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\deferred\GLFXAAShader.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\resources\ResourceStorage.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\resources\Loader.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\model\obj\OBJLoader.cpp">
+      <Filter>prehistoric\core\model\obj</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\resources\loaders\ShaderLoader.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\resources\loaders\TextureLoader.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\resources\loaders\VertexBufferLoader.cpp" />
   </ItemGroup>
 </Project>

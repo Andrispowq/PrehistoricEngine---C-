@@ -6,7 +6,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "prehistoric/common/texture/TextureLoader.h"
+#include "prehistoric/core/resources/loaders/TextureLoader.h"
 #include "prehistoric/core/config/FrameworkConfig.h"
 #include "platform/Platform.h"
 

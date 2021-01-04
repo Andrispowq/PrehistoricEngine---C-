@@ -17,21 +17,18 @@ namespace Prehistoric
 	class SplatMapRenderer
 	{
 	public:
-		SplatMapRenderer(Window* window, AssembledAssetManager* manager, uint32_t N);
+		SplatMapRenderer(Window* window, ResourceStorage* resourceStorage, uint32_t N);
 		virtual ~SplatMapRenderer();
 
 		void Render(Texture* normalmap);
 
-		Texture* getSplatmap() { return splatmap; }
+		TextureHandle getSplatmap() { return splatmap; }
 	private:
 		Window* window;
-		AssembledAssetManager* manager;
+		ResourceStorage* resourceStorage;
 
-		size_t pipelineID;
-		size_t textureID;
-
-		Pipeline* pipeline;
-		Texture* splatmap;
+		PipelineHandle pipeline;
+		TextureHandle splatmap;
 
 		uint32_t N;
 	};

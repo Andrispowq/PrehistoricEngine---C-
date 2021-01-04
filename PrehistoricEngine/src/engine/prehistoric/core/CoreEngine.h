@@ -14,7 +14,7 @@
 #include "prehistoric/core/config/AtmosphereConfig.h"
 #include "prehistoric/core/config/EnvironmentMapConfig.h"
 
-#include "prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/core/resources/ResourceStorage.h"
 
 namespace Prehistoric
 {
@@ -39,7 +39,7 @@ namespace Prehistoric
 		inline RenderingEngine* getRenderingEngine() const { return renderingEngine.get(); }
 		inline AudioEngine* getAudioEngine() const { return audioEngine.get(); }
 
-		inline AssembledAssetManager* getAssetManager() const { return manager.get(); }
+		inline ResourceStorage* getResourceStorage() const { return resourceStorage.get(); }
 
 		inline float getFrameTime() const { return (float)frameTime; }
 
@@ -59,7 +59,7 @@ namespace Prehistoric
 		std::unique_ptr<Scene> scene;
 
 		//The asset manager
-		std::unique_ptr<AssembledAssetManager> manager;
+		std::unique_ptr<ResourceStorage> resourceStorage;
 
 		//Engines
 		std::unique_ptr<RenderingEngine> renderingEngine;

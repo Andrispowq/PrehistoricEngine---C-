@@ -8,14 +8,14 @@
 
 #include "prehistoric/core/CoreEngine.h"
 
-#include "prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/core/resources/ResourceStorage.h"
 
 namespace Prehistoric
 {
-	size_t GUIElement::vboID = -1;
-	size_t GUIElement::pipelineID = -1;
+	VertexBufferHandle GUIElement::vbo = { nullptr, -1 };
+	PipelineHandle GUIElement::pipeline = { nullptr, -1 };
 
-	GUIElement::GUIElement(Window* window, AssembledAssetManager* manager, Texture* texture, void* data, size_t dataSize, bool visible)
+	GUIElement::GUIElement(Window* window, ResourceStorage* resourceStorage, Texture* texture, void* data, size_t dataSize, bool visible)
 		: type(GUIType::Element)
 	{
 		this->texture = texture;
@@ -25,29 +25,26 @@ namespace Prehistoric
 
 		this->window = window;
 
-		if (vboID == -1)
+		if (vbo.handle == -1)
 		{
-			vboID = manager->getAssetManager()->addResource<VertexBuffer>(ModelFabricator::CreateQuad(window));
-			manager->getAssetManager()->getResourceByID<VertexBuffer>(vboID)->setFrontFace(FrontFace::CLOCKWISE);
-		}
+			ShaderHandle shader;
 
-		if (pipelineID == -1)
-		{
-			size_t shaderID;
+			vbo = resourceStorage->loadVertexBuffer(std::nullopt, "quad").value();
+			vbo->setFrontFace(FrontFace::CLOCKWISE);
 
 			if (FrameworkConfig::api == OpenGL)
 			{
-				shaderID = manager->getAssetManager()->getResource<Shader>("gui");
-				pipelineID = manager->loadResource<Pipeline>(new GLGraphicsPipeline(window, manager->getAssetManager(), shaderID, vboID));
+				shader = resourceStorage->loadShader("gui").value();
+				pipeline = resourceStorage->storePipeline(new GLGraphicsPipeline(window, resourceStorage, shader, vbo));
 			}
 			else if (FrameworkConfig::api == Vulkan)
 			{
-				shaderID = manager->getAssetManager()->getResource<Shader>("basic");
-				pipelineID = manager->loadResource<Pipeline>(new VKGraphicsPipeline(window, manager->getAssetManager(), shaderID, vboID));
+				//shader = resourceStorage->loadShader("gui").value();
+				//pipeline = resourceStorage->storePipeline(new VKGraphicsPipeline(window, resourceStorage, shader, vbo));
 			}
 		}
 
-		RendererComponent* renderer = new RendererComponent(pipelineID, manager->loadResource<Material>(nullptr), window, manager);
+		RendererComponent* renderer = new RendererComponent(pipeline, resourceStorage->storeMaterial(nullptr), window, resourceStorage);
 		renderer->setPriority(RenderPriority::_2D);
 
 		AddComponent(RENDERER_COMPONENT, renderer);
@@ -84,11 +81,5 @@ namespace Prehistoric
 		}
 
 		return false;
-	}
-
-	GUIElement::~GUIElement()
-	{
-		//this data is most likely getting a pointer to a stack variable, so it is not ideal to delete it
-		//delete data;
 	}
 };

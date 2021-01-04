@@ -1,67 +1,65 @@
 #include "Includes.hpp"
 #include "Material.h"
 
-#include "prehistoric/core/resources/AssetManager.h"
+#include "prehistoric/core/resources/ResourceStorage.h"
 
 namespace Prehistoric
 {
-	Material::Material(AssetManager* manager)
+	Material::Material(ResourceStorage* resourceStorage)
 	{
-		this->manager = manager;
+		this->resourceStorage = resourceStorage;
 
-		size_t def_ID = manager->getResource<Texture>("res/textures/default.png");
-		manager->addReference<Texture>(def_ID);
-		textureIDs.insert(std::make_pair("DEFAULT_TEX", def_ID));
-		textures.insert(std::make_pair("DEFAULT_TEX", manager->getResourceByID<Texture>(def_ID)));
+		TextureHandle def = resourceStorage->loadTexture("res/textures/default.png").value();
+		resourceStorage->addReference<Texture>(def.handle);
+		textures.emplace(std::make_pair("DEFAULT_TEX", def));
 	}
 
 	Material::~Material()
 	{
-		for (auto& tex : textureIDs)
+		for (auto& tex : textures)
 		{
-			manager->removeReference<Texture>(tex.second);
+			resourceStorage->removeReference<Texture>(tex.second.handle);
 		}
 	}
 
-	void Material::addTexture(const std::string& key, size_t textureID)
+	void Material::addTexture(const std::string& key, TextureHandle texture)
 	{
-		manager->addReference<Texture>(textureID);
-		textureIDs.insert(std::make_pair(key, textureID));
-		textures.insert(std::make_pair(key, manager->getResourceByID<Texture>(textureID)));
+		resourceStorage->addReference<Texture>(texture.handle);
+		textures.emplace(std::make_pair(key, texture));
 	}
 
 	void Material::addVector4f(const std::string& key, Vector4f value)
 	{
-		vector4s.insert(std::make_pair(key, value));
+		vector4s.emplace(std::make_pair(key, value));
 	}
 
 	void Material::addVector3f(const std::string& key, Vector3f value)
 	{
-		vector3s.insert(std::make_pair(key, value));
+		vector3s.emplace(std::make_pair(key, value));
 	}
 
 	void Material::addVector2f(const std::string& key, Vector2f value)
 	{
-		vector2s.insert(std::make_pair(key, value));
+		vector2s.emplace(std::make_pair(key, value));
 	}
 
 	void Material::addFloat(const std::string& key, float value)
 	{
-		floats.insert(std::make_pair(key, value));
+		floats.emplace(std::make_pair(key, value));
 	}
 
 	void Material::addInt(const std::string& key, int value)
 	{
-		ints.insert(std::make_pair(key, value));
+		ints.emplace(std::make_pair(key, value));
 	}
 
 	Texture* Material::getTexture(const std::string& key) const
 	{
 		auto index = textures.find(key);
 		if (index == textures.end())
-			return textures.begin()->second;
+			return textures.begin()->second.pointer;
 
-		return index->second;
+		return index->second.pointer;
 	}
 
 	Vector4f Material::getVector4f(const std::string& key) const
@@ -111,6 +109,6 @@ namespace Prehistoric
 
 	Texture* Material::getDefault() const
 	{
-		return textures.at("DEFAULT_TEX");
+		return textures.at("DEFAULT_TEX").pointer;
 	}
 };

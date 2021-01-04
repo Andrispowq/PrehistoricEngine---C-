@@ -18,7 +18,7 @@ namespace Prehistoric
 	class VKGraphicsPipeline : public VKPipeline, public GraphicsPipeline
 	{
 	public:
-		VKGraphicsPipeline(Window* window, AssetManager* manager, size_t shaderID, size_t vboID);
+		VKGraphicsPipeline(Window* window, ResourceStorage* resourceStorage, ShaderHandle shader, VertexBufferHandle vbo);
 		virtual ~VKGraphicsPipeline();
 
 		virtual void BindPipeline(CommandBuffer* buffer) const override;

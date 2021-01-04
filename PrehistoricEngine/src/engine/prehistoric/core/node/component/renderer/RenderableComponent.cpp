@@ -7,41 +7,33 @@
 
 #include "platform/vulkan/rendering/shaders/VKShader.h"
 
-#include "prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/core/resources/ResourceStorage.h"
 
 namespace Prehistoric
 {
-	RenderableComponent::RenderableComponent(size_t pipelineID, Window* window, AssembledAssetManager* manager)
+	RenderableComponent::RenderableComponent(PipelineHandle pipeline, Window* window, ResourceStorage* resourceStorage)
 		: priority(RenderPriority::_3D)
 	{
 		type = ComponentType::RenderableComponent;
 
 		this->window = window;
-		this->manager = manager;
+		this->resourceStorage = resourceStorage;
 
-		pipelineIndex = pipelineID;
-		manager->addReference<Pipeline>(pipelineID);
+		this->pipeline = pipeline;
+		resourceStorage->addReference<Pipeline>(pipeline.handle);
 	}
 
-	RenderableComponent::RenderableComponent(Window* window, AssembledAssetManager* manager)
+	RenderableComponent::RenderableComponent(Window* window, ResourceStorage* resourceStorage)
 		: priority(RenderPriority::_3D)
 	{
 		type = ComponentType::RendererComponent;
 
-		pipelineIndex = -1;
-
 		this->window = window;
-		this->manager = manager;
+		this->resourceStorage = resourceStorage;
 	}
 
 	RenderableComponent::~RenderableComponent()
 	{
-		manager->removeReference<Pipeline>(pipelineIndex);
-		pipelineIndex = -1;
-	}
-
-	Pipeline* RenderableComponent::getPipeline() const
-	{
-		return manager->getResourceByID<Pipeline>(pipelineIndex);
+		resourceStorage->removeReference<Pipeline>(pipeline.handle);
 	}
 };

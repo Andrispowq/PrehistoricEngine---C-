@@ -12,8 +12,8 @@ namespace Prehistoric
 	class RendererComponent : public RenderableComponent
 	{
 	public:
-		RendererComponent(size_t pipelineID, size_t materialID, Window* window, AssembledAssetManager* manager);
-		RendererComponent(Window* window, AssembledAssetManager* manager);
+		RendererComponent(PipelineHandle pipeline, MaterialHandle material, Window* window, ResourceStorage* resourceStorage);
+		RendererComponent(Window* window, ResourceStorage* resourceStorage);
 
 		virtual ~RendererComponent();
 
@@ -22,14 +22,12 @@ namespace Prehistoric
 		void Render(Renderer* renderer) const override;
 		void BatchRender(uint32_t instance_index = 0) const override;
 
-		inline size_t getMaterialIndex() const { return materialIndex; }
-		Material* getMaterial() const { return material; }
+		Material* getMaterial() const { return material.pointer; }
 
 		static ComponentType getStaticComponentType() { return ComponentType::RendererComponent; }
 
 	private:
-		size_t materialIndex;
-		Material* material;
+		MaterialHandle material;
 	};
 };
 

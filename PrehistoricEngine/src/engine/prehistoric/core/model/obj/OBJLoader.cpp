@@ -1,160 +1,16 @@
 #include "Includes.hpp"
 #include "OBJLoader.h"
 
-#include "platform/opengl/buffer/GLMeshVertexBuffer.h"
-#include "platform/vulkan/buffer/VKMeshVertexBuffer.h"
-
 namespace Prehistoric
 {
 	namespace OBJLoader
 	{
-		MeshVertexBuffer* OBJLoader::LoadModel(const std::string& path, const std::string& objectFile, const std::string& materialFile, Window* window)
-		{
-			Mesh mesh = std::move(LoadMesh(path, objectFile, materialFile, window));
-			MeshVertexBuffer* vertexBuffer = nullptr;
-
-			if (FrameworkConfig::api == OpenGL)
-			{
-				vertexBuffer = new GLMeshVertexBuffer(mesh);
-			}
-			else
-			{
-				vertexBuffer = new VKMeshVertexBuffer(mesh, window);
-			}
-
-			return vertexBuffer;
-		}
-
-		Mesh OBJLoader::LoadMesh(const std::string& path, const std::string& objectFile, const std::string& materialFile, Window* window)
+		Mesh OBJLoader::LoadMesh(const std::string& path, const std::string& objectFile, const std::string& materialFile)
 		{
 			double start = Time::getTime();
 
 			std::ifstream obj;
-			//std::ifstream mtl;
-
-			//if (materialFile != "")
-			//	mtl.open((path + materialFile).c_str());
-
 			std::string line;
-
-			//Loading material file
-			/*std::string currentMtl = "";
-
-			std::unordered_map<std::string, Material*> materials;
-
-			if (mtl.is_open())
-			{
-				while (mtl.good())
-				{
-					std::getline(mtl, line);
-					std::vector<std::string> tokens = Util::RemoveEmptyStrings(Util::Split(line, ' '));
-
-					if (tokens.size() == 0)
-						continue;
-
-					if (tokens[0] == "newmtl")
-					{
-						Material* material = new Material(manager, window);
-						materials.emplace(tokens[1], material);
-						currentMtl = tokens[1];
-					}
-
-					if (tokens[0] == "map_Kd")
-					{
-						if (tokens.size() > 1)
-						{
-							materials[currentMtl]->addTexture(ALBEDO_MAP, manager->addTexture(TextureLoader::LoadTexture(path + "/" + tokens[2], window)));
-						}
-					}
-					if (tokens[0] == "map_bump")
-					{
-						if (tokens.size() > 1)
-						{
-							materials[currentMtl]->addTexture(NORMAL_MAP, manager->addTexture(TextureLoader::LoadTexture(path + "/" + tokens[2], window)));
-						}
-					}
-					if (tokens[0] == "map_Km")
-					{
-						if (tokens.size() > 1)
-						{
-							materials[currentMtl]->addTexture(METALLIC_MAP, manager->addTexture(TextureLoader::LoadTexture(path + "/" + tokens[2], window)));
-						}
-					}
-					if (tokens[0] == "map_Kr")
-					{
-						if (tokens.size() > 1)
-						{
-							materials[currentMtl]->addTexture(ROUGHNESS_MAP, manager->addTexture(TextureLoader::LoadTexture(path + "/" + tokens[2], window)));
-						}
-					}
-					if (tokens[0] == "map_Ko")
-					{
-						if (tokens.size() > 1)
-						{
-							materials[currentMtl]->addTexture(OCCLUSION_MAP, manager->addTexture(TextureLoader::LoadTexture(path + "/" + tokens[2], window)));
-						}
-					}
-					if (tokens[0] == "map_Ke")
-					{
-						if (tokens.size() > 1)
-						{
-							materials[currentMtl]->addTexture(EMISSION_MAP, manager->addTexture(TextureLoader::LoadTexture(path + "/" + tokens[2], window)));
-						}
-					}
-					if (tokens[0] == "map_Ka")
-					{
-						if (tokens.size() > 1)
-						{
-							materials[currentMtl]->addTexture(ROUGHNESS_MAP, manager->addTexture(TextureLoader::LoadTexture(path + "/" + tokens[2], window)));
-						}
-					}
-					if (tokens[0] == "Kd")
-					{
-						Vector3f color = Vector3f((float)std::atof(tokens[1].c_str()), (float)std::atof(tokens[2].c_str()), (float)std::atof(tokens[3].c_str()));
-						materials[currentMtl]->addVector3f(COLOUR, color);
-					}
-					if (tokens[0] == "Km")
-					{
-						materials[currentMtl]->addFloat(METALLIC, (float)std::atof(tokens[1].c_str()));
-					}
-					if (tokens[0] == "Kr")
-					{
-						materials[currentMtl]->addFloat(ROUGHNESS, (float)std::atof(tokens[1].c_str()));
-					}
-					if (tokens[0] == "Ko")
-					{
-						materials[currentMtl]->addFloat(OCCLUSION, (float)std::atof(tokens[1].c_str()));
-					}
-					if (tokens[0] == "Ke")
-					{
-						Vector3f emission = Vector3f((float)std::atof(tokens[1].c_str()), (float)std::atof(tokens[2].c_str()), (float)std::atof(tokens[3].c_str()));
-						materials[currentMtl]->addVector3f(EMISSION, emission);
-					}
-					if (tokens[0] == "Ka")
-					{
-						Vector3f alpha = Vector3f((float)std::atof(tokens[1].c_str()), (float)std::atof(tokens[2].c_str()), (float)std::atof(tokens[3].c_str()));
-						materials[currentMtl]->addVector3f(ALPHA, alpha);
-					}
-					if (tokens[0] == "illum")
-					{
-						if (tokens.size() > 1)
-						{
-							materials[currentMtl]->addFloat("illumiation", (float)std::atof(tokens[1].c_str()));
-						}
-					}
-					if (tokens[0] == "Ns")
-					{
-						if (tokens.size() > 1)
-						{
-							materials[currentMtl]->addFloat("shininess", (float)std::atof(tokens[1].c_str()));
-						}
-					}
-				}
-			}
-			else if (materialFile != "")
-			{
-				PR_LOG_ERROR("Material file %s couldn't be opened!\n", (path + materialFile).c_str());
-			}*/
 
 			obj.open(path + objectFile);
 
@@ -297,9 +153,9 @@ namespace Prehistoric
 			float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
 			Vector3f tangent = ((e1 * deltaUV2.y - e2 * deltaUV1.y) * r).normalise();
 
-			v0.addTangent(tangent);//v0.tangent = tangent;
-			v1.addTangent(tangent);//v1.tangent = tangent;
-			v2.addTangent(tangent);//v2.tangent = tangent;
+			v0.addTangent(tangent);
+			v1.addTangent(tangent);
+			v2.addTangent(tangent);
 		}
 
 		void OBJLoader::SetVertexData(std::vector<Vertex>& vertices, const std::vector<Vector2f>& textureCoords, const std::vector<Vector3f>& normals)

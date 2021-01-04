@@ -4,7 +4,7 @@
 #include "Engine.h"
 
 #include "prehistoric/core/node/movement/Camera.h"
-#include "prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/core/resources/ResourceStorage.h"
 
 #include "prehistoric/common/framework/Window.h"
 #include "prehistoric/common/rendering/Renderer.h"
@@ -17,7 +17,7 @@ namespace Prehistoric
 		RenderingEngine();
 		virtual ~RenderingEngine();
 
-		void Init(AssembledAssetManager* manager);
+		void Init(ResourceStorage* resourceStorage);
 
 		virtual void OnEvent(Event& event) override;
 

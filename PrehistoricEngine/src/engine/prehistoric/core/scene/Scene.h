@@ -17,7 +17,7 @@
 
 #include "prehistoric/core/modules/atmosphere/Atmosphere.h"
 
-#include "prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/core/resources/ResourceStorage.h"
 
 #include "prehistoric/core/modules/environmentMapRenderer/EnvironmentMapRenderer.h"
 #include "prehistoric/core/node/component/audio/AudioComponent.h"
@@ -30,7 +30,7 @@ namespace Prehistoric
 	class Scene
 	{
 	public:
-		Scene(GameObject* root, Window* window, AssembledAssetManager* manager, Camera* camera, const std::string& worldFile);
+		Scene(GameObject* root, Window* window, ResourceStorage* resourceStorage, Camera* camera, const std::string& worldFile);
 		virtual ~Scene() {}
 
 		Scene(const Scene&) = default;

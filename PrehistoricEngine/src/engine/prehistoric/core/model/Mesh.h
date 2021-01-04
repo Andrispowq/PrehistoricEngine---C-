@@ -32,6 +32,7 @@ namespace Prehistoric
 
 		Mesh(Mesh&&) = default;
 		Mesh& operator=(const Mesh& mesh) = default;
+		Mesh& operator=(Mesh&& mesh) = default;
 	private:
 		std::vector<Vertex> vertices;
 		std::vector<uint16_t> indices;

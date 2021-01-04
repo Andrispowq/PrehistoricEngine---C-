@@ -1,58 +1,58 @@
 #include "Includes.hpp"
 #include "SplatMapRenderer.h"
 
-#include "prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/core/resources/ResourceStorage.h"
 
 namespace Prehistoric
 {
-	SplatMapRenderer::SplatMapRenderer(Window* window, AssembledAssetManager* manager, uint32_t N)
+	SplatMapRenderer::SplatMapRenderer(Window* window, ResourceStorage* resourceStorage, uint32_t N)
 	{
 		this->window = window;
-		this->manager = manager;
+		this->resourceStorage = resourceStorage;
 
 		this->N = N;
 
 		//TODO: Create the Vulkan equivalent of the GLComputePipeline
 		if (FrameworkConfig::api == OpenGL)
 		{
-			pipeline = new GLComputePipeline(window, manager->getAssetManager(), manager->getAssetManager()->getResource<Shader>("gpgpu_splat"));
-			pipelineID = manager->loadResource<Pipeline>(pipeline);
-			manager->addReference<Pipeline>(pipelineID);
+			pipeline = resourceStorage->storePipeline(new GLComputePipeline(window, resourceStorage, resourceStorage->loadShader("gpgpu_splat").value()));
+			resourceStorage->addReference<Pipeline>(pipeline.handle);
 		}
 		else if (FrameworkConfig::api == Vulkan)
 		{
-			//pipeline = new VKComputePipeline(new VKSplatMapShader());
+			//pipeline = resourceStorage->storePipeline(new VKComputePipeline(window, resourceStorage, resourceStorage->loadShader("gpgpu_splat").value()));
+			//resourceStorage->addReference<Pipeline>(pipeline.handle);
 		}
 
 		if (FrameworkConfig::api == OpenGL)
 		{
-			splatmap = GLTexture::Storage2D(N, N, (uint32_t)(log(N) / log(2)), R8G8B8A8_LINEAR, Bilinear);
-			textureID = manager->getAssetManager()->addResource<Texture>(splatmap);
-			manager->getAssetManager()->addReference<Texture>(textureID);
+			splatmap = resourceStorage->storeTexture(GLTexture::Storage2D(N, N, (uint32_t)(log(N) / log(2)), R8G8B8A8_LINEAR, Bilinear));
+			resourceStorage->addReference<Texture>(splatmap.handle);
 		}
 		else if (FrameworkConfig::api == Vulkan)
 		{
-			//splatmap = VKTexture::Storage2D(N, N, (uint32_t) (log(N) / log(2)), R8G8B8A8_LINEAR, Bilinear);
+			//splatmap = resourceStorage->storeTexture(VKTexture::Storage2D(N, N, (uint32_t)(log(N) / log(2)), R8G8B8A8_LINEAR, Bilinear));
+			//resourceStorage->addReference<Pipeline>(splatmap.handle);
 		}
 
 		if (FrameworkConfig::api == OpenGL)
 		{
-			GLComputePipeline* glPipe = reinterpret_cast<GLComputePipeline*>(pipeline);
+			GLComputePipeline* glPipe = reinterpret_cast<GLComputePipeline*>(pipeline.pointer);
 			glPipe->setInvocationSize({ N / 16, N / 16, 1 });
-			glPipe->addTextureBinding(0, splatmap, WRITE_ONLY);
+			glPipe->addTextureBinding(0, splatmap.pointer, WRITE_ONLY);
 		}
 		else if (FrameworkConfig::api == Vulkan)
 		{
 			/*VKComputePipeline* vkPipe = reinterpret_cast<VKComputePipeline*>(pipeline);
 			vkPipe->setInvocationSize({ float(N / 16), float(N / 16), 1.0f });
-			vkPipe->addTextureBinding(0, splatmap, WRITE_ONLY);*/
+			vkPipe->addTextureBinding(0, splatmap.pointer, WRITE_ONLY);*/
 		}
 	}
 
 	SplatMapRenderer::~SplatMapRenderer()
 	{
-		manager->getAssetManager()->removeReference<Texture>(textureID);
-		manager->removeReference<Pipeline>(pipelineID);
+		resourceStorage->removeReference<Texture>(splatmap.handle);
+		resourceStorage->removeReference<Pipeline>(pipeline.handle);
 	}
 
 	void SplatMapRenderer::Render(Texture* normalmap)

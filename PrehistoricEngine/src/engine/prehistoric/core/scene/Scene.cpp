@@ -18,32 +18,30 @@ namespace Prehistoric
 		object->SetPosition({ x, y, 0 });
 	}
 
-	Scene::Scene(GameObject* root, Window* window, AssembledAssetManager* manager, Camera* camera, const std::string& worldFile)
+	Scene::Scene(GameObject* root, Window* window, ResourceStorage* resourceStorage, Camera* camera, const std::string& worldFile)
 	{
 		WorldLoader loader;
 
 		if (FrameworkConfig::api == Vulkan)
 		{
-			size_t vboID = manager->getAssetManager()->getResource<VertexBuffer>("quad.obj");
-			manager->getAssetManager()->getResourceByID<VertexBuffer>(vboID)->setFrontFace(FrontFace::COUNTER_CLOCKWISE);
-			size_t shaderID = manager->getAssetManager()->getResource<Shader>("pbr");
+			VertexBufferHandle vbo = resourceStorage->loadVertexBuffer(std::nullopt, "quad.obj").value();
+			vbo->setFrontFace(FrontFace::COUNTER_CLOCKWISE);
+			ShaderHandle shader = resourceStorage->loadShader("pbr").value();
 
-			size_t pipelineID = manager->loadResource<Pipeline>(new VKGraphicsPipeline(window, manager->getAssetManager(), shaderID, vboID));
+			PipelineHandle pipeline = resourceStorage->storePipeline(new VKGraphicsPipeline(window, resourceStorage, shader, vbo));
 
-			Material* material = new Material(manager->getAssetManager());
-			material->addTexture(ALBEDO_MAP, manager->getAssetManager()->getResource<Texture>("res/textures/oakFloor/oakFloor_DIF.png"));
-			material->addTexture(NORMAL_MAP, manager->getAssetManager()->getResource<Texture>("res/textures/oakFloor/oakFloor_NRM.png"));
-			material->addTexture(METALLIC_MAP, manager->getAssetManager()->getResource<Texture>("res/textures/oakFloor/oakFloor_MET.png"));
-			material->addTexture(ROUGHNESS_MAP, manager->getAssetManager()->getResource<Texture>("res/textures/oakFloor/oakFloor_RGH.png"));
-
-			size_t materialID = manager->loadResource<Material>(material);
+			MaterialHandle material = resourceStorage->storeMaterial(new Material(resourceStorage));
+			material->addTexture(ALBEDO_MAP, resourceStorage->loadTexture("res/textures/oakFloor/oakFloor_DIF.png").value());
+			material->addTexture(NORMAL_MAP, resourceStorage->loadTexture("res/textures/oakFloor/oakFloor_NRM.png").value());
+			material->addTexture(METALLIC_MAP, resourceStorage->loadTexture("res/textures/oakFloor/oakFloor_MET.png").value());
+			material->addTexture(ROUGHNESS_MAP, resourceStorage->loadTexture("res/textures/oakFloor/oakFloor_RGH.png").value());
 
 			//material->addFloat(METALLIC, 0.7f);
 			//material->addFloat(ROUGHNESS, 0.3f);
 			material->addFloat(OCCLUSION, 1);
 
-			RendererComponent* renderer = new RendererComponent(pipelineID, materialID, window, manager);
-			//RendererComponent* renderer2 = new RendererComponent(pipelineID, materialID, window, manager);
+			RendererComponent* renderer = new RendererComponent(pipeline, material, window, resourceStorage);
+			//RendererComponent* renderer2 = new RendererComponent(pipeline, material, window, resourceStorage);
 
 			GameObject* obj = new GameObject();
 			obj->AddComponent(RENDERER_COMPONENT, renderer);
@@ -64,38 +62,38 @@ namespace Prehistoric
 		}
 		else
 		{
-			loader.LoadWorld(worldFile, root, window, manager);
+			loader.LoadWorld(worldFile, root, window, resourceStorage);
 
-			/*root->AddChild("Atmosphere", new Atmosphere(window, manager));
+			root->AddChild("Atmosphere", new Atmosphere(window, resourceStorage));
 
 			GameObject* sun = new GameObject();
 			sun->setUpdateFunction(sun_move_function);
-			sun->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0.95f, 0.87f), Vector3f(10000000000.0f), true));
-			root->AddChild("sun", sun);*/
+			sun->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0.95f, 0.87f), Vector3f(10000000000.0f)));
+			root->AddChild("sun", sun);
 
-			Terrain* terrain = new Terrain(window, camera, manager, "res/config/terrain_0.cfg");
+			Terrain* terrain = new Terrain(window, camera, resourceStorage, "res/config/terrain_0.cfg");
 			terrain->UpdateQuadtree();
 
 			root->AddChild("Terrain", terrain);
 
-			GameObject* slider = new GUISlider(window, manager, 0.0f, 2.0f, terrain->getMaps()->getHeightmap(), &EngineConfig::rendererExposure, sizeof(float), true);
+			GameObject* slider = new GUISlider(window, resourceStorage, 0.0f, 2.0f, terrain->getMaps()->getHeightmap(), &EngineConfig::rendererExposure, sizeof(float), true);
 			slider->SetPosition({ 0.5f, 0.5f, 0 });
 			slider->SetScale({ 0.125f, 0.05f, 1 });
 			root->AddChild("slider", slider);
 
-			GameObject* slider2 = new GUISlider(window, manager, 1.0f, 3.4f, terrain->getMaps()->getHeightmap(), &EngineConfig::rendererGamma, sizeof(float), true);
+			GameObject* slider2 = new GUISlider(window, resourceStorage, 1.0f, 3.4f, terrain->getMaps()->getHeightmap(), &EngineConfig::rendererGamma, sizeof(float), true);
 			slider2->SetPosition({ 0.5f, 0.25f, 0 });
 			slider2->SetScale({ 0.125f, 0.05f, 1 });
 			root->AddChild("slider2", slider2);
 
-			EnvironmentMapRenderer::instance = new EnvironmentMapRenderer(window, manager);
+			EnvironmentMapRenderer::instance = new EnvironmentMapRenderer(window, resourceStorage);
 			EnvironmentMapRenderer::instance->GenerateEnvironmentMap();
 
-			size_t vboID = manager->getAssetManager()->getResource<VertexBuffer>("sphere.obj");
-			manager->getAssetManager()->getResourceByID<VertexBuffer>(vboID)->setFrontFace(FrontFace::CLOCKWISE);
-			size_t shaderID = manager->getAssetManager()->getResource<Shader>("pbr");
+			VertexBufferHandle vbo = resourceStorage->loadVertexBuffer(std::nullopt, "sphere.obj").value();
+			vbo->setFrontFace(FrontFace::CLOCKWISE);
+			ShaderHandle shader = resourceStorage->loadShader("pbr").value();
 
-			size_t pipelineID = manager->loadResource<Pipeline>(new GLGraphicsPipeline(window, manager->getAssetManager(), shaderID, vboID));
+			PipelineHandle pipeline = resourceStorage->storePipeline(new GLGraphicsPipeline(window, resourceStorage, shader, vbo));
 
 			float space = 4.0f;
 			float count = 7.0f;
@@ -104,16 +102,13 @@ namespace Prehistoric
 			{
 				for (float y = -(count / 2.0f); y <= (count / 2.0f); y++)
 				{
-					Material* material = new Material(manager->getAssetManager());
+					MaterialHandle material = resourceStorage->storeMaterial(new Material(resourceStorage));
 					material->addVector3f(COLOUR, { 1 });
-					material->addFloat(METALLIC, (y + count / 2.0f) / (count + 1.0f));
-					material->addFloat(ROUGHNESS, x == -(count / 2.0f) ? 0.05f : (x + count / 2.0f) / (count + 1.0f));
-					material->addFloat(OCCLUSION, 1);
-					size_t materialID = manager->loadResource<Material>(material);
+					material->addVector4f(MROT, { (y + count / 2.0f) / (count + 1.0f), x == -(count / 2.0f) ? 0.05f : (x + count / 2.0f) / (count + 1.0f), 1.0f, 0.0f });
 
 					GameObject* obj = new GameObject;
 					obj->SetPosition({ x * space, y * space, -50 });
-					obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(pipelineID, materialID, window, manager));
+					obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(pipeline, material, window, resourceStorage));
 					root->AddChild(std::string("obj" + std::to_string(x) + std::to_string(y)), obj);
 				}
 			}

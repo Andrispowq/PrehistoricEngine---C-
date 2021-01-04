@@ -3,6 +3,7 @@
 //Material texture names
 #define ALBEDO_MAP "albedoMap"
 #define NORMAL_MAP "normalMap"
+#define MROT_MAP "mrotMap"
 #define DISPLACEMENT_MAP "displacementMap"
 #define METALLIC_MAP "metallicMap"
 #define ROUGHNESS_MAP "roughnessMap"
@@ -13,6 +14,7 @@
 //Specific textures' postfixes to be able to identify which texture contains which data
 #define ALBEDO_MAP_POSTFIX "_DIF"
 #define NORMAL_MAP_POSTFIX "_NRM"
+#define MROT_MAP_POSTFIX "_MROT"
 #define DISPLACEMENT_MAP_POSTFIX "_DISP"
 #define METALLIC_MAP_POSTFIX "_MET"
 #define ROUGHNESS_MAP_POSTFIX "_RGH"
@@ -23,6 +25,7 @@
 //Material constant uniform names
 #define COLOUR "colour"
 #define USES_NORMAL_MAP "usesNormalMap"
+#define MROT "mrot"
 #define HEIGHT_SCALE "heightScale"
 #define HORIZONTAL_SCALE "horizontalScale"
 #define METALLIC "metallic"

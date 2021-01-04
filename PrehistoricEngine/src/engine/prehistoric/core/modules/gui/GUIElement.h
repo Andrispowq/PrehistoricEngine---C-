@@ -26,8 +26,8 @@ namespace Prehistoric
 	class GUIElement : public GameObject
 	{
 	public:
-		GUIElement(Window* window, AssembledAssetManager* manager, Texture* texture = nullptr, void* data = nullptr, size_t dataSize = 0, bool visible = true);
-		virtual ~GUIElement();
+		GUIElement(Window* window, ResourceStorage* resourceStorage, Texture* texture = nullptr, void* data = nullptr, size_t dataSize = 0, bool visible = true);
+		virtual ~GUIElement() {}
 
 		virtual void PreUpdate(CoreEngine* engine) override;
 		virtual void PreRender(Renderer* renderer) override;
@@ -51,6 +51,8 @@ namespace Prehistoric
 
 		GUIElement(const GUIElement&) = default;
 	protected:
+		Window* window;
+
 		GUIType type;
 
 		bool visible;
@@ -59,12 +61,10 @@ namespace Prehistoric
 		void* data;
 		size_t dataSize;
 
-		static size_t vboID;
-		static size_t pipelineID;
+		static VertexBufferHandle vbo;
+		static PipelineHandle pipeline;
 
 		Texture* texture;
-
-		Window* window;
 	};
 };
 

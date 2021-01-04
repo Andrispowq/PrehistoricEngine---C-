@@ -18,8 +18,8 @@ namespace Prehistoric
 	{
 	public:
 		TerrainNode() {}
-		TerrainNode(Factory<TerrainNode>* factory, Window* window, Camera* camera, AssembledAssetManager* manager, TerrainMaps* maps,
-			size_t pipelineID, size_t wireframePipelineID, const Vector2f& location, int lod, const Vector2f& index);
+		TerrainNode(Factory<TerrainNode>* factory, Window* window, Camera* camera, ResourceStorage* resourceStorage, TerrainMaps* maps,
+			PipelineHandle pipeline, PipelineHandle wireframePipeline, const Vector2f& location, int lod, const Vector2f& index);
 		virtual ~TerrainNode();
 
 		virtual void PreRender(Renderer* renderer) override;
@@ -75,7 +75,7 @@ namespace Prehistoric
 		}*/
 	private:
 		Factory<TerrainNode>* factory;
-		AssembledAssetManager* manager;
+		ResourceStorage* resourceStorage;
 
 		Window* window;
 		Camera* camera;

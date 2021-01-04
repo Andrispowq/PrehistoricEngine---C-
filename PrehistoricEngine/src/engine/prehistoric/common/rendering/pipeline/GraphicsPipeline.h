@@ -3,29 +3,26 @@
 
 #include "Pipeline.h"
 
-#include "prehistoric/core/resources/AssetManager.h"
+#include "prehistoric/core/resources/ResourceStorage.h"
 
 namespace Prehistoric
 {
 	class GraphicsPipeline
 	{
 	public:
-		GraphicsPipeline(AssetManager* manager, size_t vboID);
-		GraphicsPipeline() : backfaceCulling(false), vboID(-1) {}
+		GraphicsPipeline(ResourceStorage* resourceStorage, VertexBufferHandle handle);
+		GraphicsPipeline() : backfaceCulling(false) {}
 
 		virtual ~GraphicsPipeline();
 
-		VertexBuffer* getVertexBuffer() const { return manager->getResourceByID<VertexBuffer>(vboID); }
+		VertexBuffer* getVertexBuffer() const { return vbo.pointer; }
 
-		void setVertexBufferID(size_t vboID);
-
-		bool IsBackfaceCulling() const { return backfaceCulling; }
-		void SetBackfaceCulling(bool backfaceCulling) { this->backfaceCulling = backfaceCulling; }
+		bool isBackfaceCulling() const { return backfaceCulling; }
+		void setBackfaceCulling(bool backfaceCulling) { this->backfaceCulling = backfaceCulling; }
 	protected:
-		AssetManager* manager;
+		ResourceStorage* resourceStorage;
 
-		size_t vboID;
-
+		VertexBufferHandle vbo;
 		bool backfaceCulling;
 	};
 };

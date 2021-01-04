@@ -2,34 +2,23 @@
 #include "Pipeline.h"
 
 #include "prehistoric/core/config/FrameworkConfig.h"
-#include "prehistoric/core/resources/AssetManager.h"
+#include "prehistoric/core/resources/ResourceStorage.h"
 
 namespace Prehistoric
 {
-	Pipeline::Pipeline(Window* window, AssetManager* manager, size_t shaderID)
+	Pipeline::Pipeline(Window* window, ResourceStorage* resourceStorage, ShaderHandle shader)
 		: viewportStart{ 0, 0 }, viewportSize{ (float)FrameworkConfig::windowWidth, (float)FrameworkConfig::windowHeight },
 		scissorStart{ 0, 0 }, scissorSize{ FrameworkConfig::windowWidth, FrameworkConfig::windowHeight }
 	{
 		this->window = window;
-		this->assetManager = manager;
+		this->resourceStorage = resourceStorage;
 
-		this->shaderID = shaderID;
-		manager->addReference<Shader>(shaderID);
+		this->shader = shader;
+		resourceStorage->addReference<Shader>(shader.handle);
 	}
 
 	Pipeline::~Pipeline()
 	{
-		assetManager->removeReference<Shader>(shaderID);
-		shaderID = -1;
-	}
-
-	Shader* Pipeline::getShader() const
-	{
-		return assetManager->getResourceByID<Shader>(shaderID);
-	}
-
-	void Pipeline::setShaderID(size_t shaderID)
-	{
-		this->shaderID = shaderID;
+		resourceStorage->removeReference<Shader>(shader.handle);
 	}
 };

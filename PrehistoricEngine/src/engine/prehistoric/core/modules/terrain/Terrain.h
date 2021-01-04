@@ -10,7 +10,7 @@ namespace Prehistoric
 	class Terrain : public Node
 	{
 	public:
-		Terrain(Window* window, Camera* camera, AssembledAssetManager* manager, const std::string& terrainConfigFile);
+		Terrain(Window* window, Camera* camera, ResourceStorage* resourceStorage, const std::string& terrainConfigFile);
 		virtual ~Terrain() {}
 
 		void PreRender(Renderer* renderer) override;

@@ -2,8 +2,9 @@
 #include "GLDeferredShader.h"
 
 #include "prehistoric/core/config/EnvironmentMapConfig.h"
-
 #include "platform/opengl/rendering/GLRenderer.h"
+
+#include "prehistoric/core/node/GameObject.h"
 
 namespace Prehistoric
 {
@@ -25,6 +26,8 @@ namespace Prehistoric
 
 		AddUniform("cameraPosition");
 		AddUniform("dimension");
+
+		AddUniform("m_projection");
 
 		AddUniform("gamma");
 		AddUniform("exposure");

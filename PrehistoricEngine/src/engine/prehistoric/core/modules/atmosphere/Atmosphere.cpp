@@ -2,39 +2,39 @@
 #include "Atmosphere.h"
 
 #include "prehistoric/core/CoreEngine.h"
-#include "prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/core/resources/ResourceStorage.h"
 
 namespace Prehistoric
 {
-	Atmosphere::Atmosphere(Window* window, AssembledAssetManager* manager)
+	Atmosphere::Atmosphere(Window* window, ResourceStorage* resourceStorage)
 		: window(window)
 	{
 		SetScale(Vector3f(EngineConfig::rendererFarPlane / 2.f));
 
-		size_t vboID = manager->getAssetManager()->getResource<VertexBuffer>("dome/sphericalDome.obj");
+		VertexBufferHandle vbo = resourceStorage->loadVertexBuffer(OBJLoader::LoadMesh("dome/", "sphericalDome.obj", ""), "dome").value();
 
-		size_t shaderID = -1;
-		size_t pipelineID = -1;
+		ShaderHandle shader;
+		PipelineHandle pipeline;
 
 		if (FrameworkConfig::api == OpenGL)
 		{
 			if (AtmosphereConfig::scatteringEnabled)
-				shaderID = manager->getAssetManager()->getResource<Shader>("atmosphere_scattering");
+				shader = resourceStorage->loadShader("atmosphere_scattering").value();
 			else
-				shaderID = manager->getAssetManager()->getResource<Shader>("atmosphere");
+				shader = resourceStorage->loadShader("atmosphere").value();
 
-			pipelineID = manager->loadResource<Pipeline>(new GLGraphicsPipeline(window, manager->getAssetManager(), shaderID, vboID));
+			pipeline = resourceStorage->storePipeline(new GLGraphicsPipeline(window, resourceStorage, shader, vbo));
 		}
 		else if (FrameworkConfig::api == Vulkan)
 		{
-			/*if (AtmosphereConfig::scatteringEnabled)
-				shaderID = manager->getAssetManager()->getResource<Shader>("atmosphere_scattering");
+			if (AtmosphereConfig::scatteringEnabled)
+				shader = resourceStorage->loadShader("atmosphere_scattering").value();
 			else
-				shaderID = manager->getAssetManager()->getResource<Shader>("atmosphere");*/
+				shader = resourceStorage->loadShader("atmosphere").value();
 
-			pipelineID = manager->loadResource<Pipeline>(new VKGraphicsPipeline(window, manager->getAssetManager(), shaderID, vboID));
+			pipeline = resourceStorage->storePipeline(new VKGraphicsPipeline(window, resourceStorage, shader, vbo));
 		}
 
-		AddComponent(RENDERER_COMPONENT, new RendererComponent(pipelineID, manager->loadResource<Material>(nullptr), window, manager));
+		AddComponent(RENDERER_COMPONENT, new RendererComponent(pipeline, resourceStorage->storeMaterial(nullptr), window, resourceStorage));
 	}
 };

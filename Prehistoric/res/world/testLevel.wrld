@@ -35,13 +35,11 @@ models.load sphereModel sphere.obj clockwise
 
 textures.load oak_DIF oakFloor/oakFloor_DIF.png
 textures.load oak_NRM oakFloor/oakFloor_NRM.png
-textures.load oak_MET oakFloor/oakFloor_MET.png
-textures.load oak_RGH oakFloor/oakFloor_RGH.png
+textures.load oak_MROT oakFloor/oakFloor_MROT.png
 
 textures.load metal_DIF metalFloor/metalFloor_DIF.png
 textures.load metal_NRM metalFloor/metalFloor_NRM.png
-textures.load metal_MET metalFloor/metalFloor_MET.png
-textures.load metal_RGH metalFloor/metalFloor_RGH.png
+textures.load metal_MROT metalFloor/metalFloor_MROT.png
 
 # CREATING MATERIALS FROM TEXTURES AND OTHER DATA
 # add will create a new Material
@@ -49,47 +47,37 @@ textures.load metal_RGH metalFloor/metalFloor_RGH.png
 materials.add mat_quad
 materials.mat_quad.texture albedo oak_DIF
 materials.mat_quad.texture normal oak_NRM
-materials.mat_quad.texture metallic oak_MET
-materials.mat_quad.texture roughness oak_RGH
-materials.mat_quad.float ambientOcclusion 1
+materials.mat_quad.texture mrot oak_MROT
+materials.mat_quad.vec4 mrot -1,-1,-1,0
 materials.mat_quad.vec3 emission 0,0,0
 
 materials.add mat_metal
 materials.mat_metal.texture albedo metal_DIF
 materials.mat_metal.texture normal metal_NRM
-materials.mat_metal.texture metallic metal_MET
-materials.mat_metal.texture roughness metal_RGH
-materials.mat_metal.float ambientOcclusion 1
+materials.mat_metal.texture mrot metal_MROT
+materials.mat_metal.vec4 mrot -1,-1,-1,0
 materials.mat_metal.vec3 emission 0,0,0
 
 materials.add mat_sphere
 materials.mat_sphere.vec3 colour 1,1,1
 materials.mat_sphere.texture normal metal_NRM
-materials.mat_sphere.float metallic 1
-materials.mat_sphere.float roughness 0.1
-materials.mat_sphere.float ambientOcclusion 1
+materials.mat_sphere.vec4 mrot 1,0.1,1,-1
 materials.mat_sphere.vec3 emission 0,0,0
 
 materials.add mat_light0
 materials.mat_light0.vec3 colour 0.78,0.56,0.45
 materials.mat_light0.texture normal oak_NRM
-materials.mat_light0.float metallic 0.4
-materials.mat_light0.float roughness 0.3
-materials.mat_light0.float ambientOcclusion 1
+materials.mat_sphere.vec4 mrot 0.4,0.3,1,-1
 materials.mat_light0.vec3 emission 0,0,0
 
 materials.add mat_light1
 materials.mat_light1.vec3 colour 0.78,0.56,0.45
-materials.mat_light1.float metallic 1.0
-materials.mat_light1.float roughness 0.5
-materials.mat_light1.float ambientOcclusion 1
+materials.mat_sphere.vec4 mrot 1,0.5,1,-1
 # materials.mat_light1.vec3 emission 0,0,0.2
 
 materials.add mat_light2
 materials.mat_light2.vec3 colour 0.78,0.56,0.45
-materials.mat_light2.float metallic 0.0
-materials.mat_light2.float roughness 0.3
-materials.mat_light2.float ambientOcclusion 1
+materials.mat_sphere.vec4 mrot 0,0.3,1,-1
 # materials.mat_light2.vec3 emission 0.2,0,0
 
 # GAMEOBJECT CREATION

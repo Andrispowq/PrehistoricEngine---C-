@@ -59,15 +59,15 @@ namespace Prehistoric
 		delete camera.release();
 	}
 
-	void RenderingEngine::Init(AssembledAssetManager* manager)
+	void RenderingEngine::Init(ResourceStorage* resourceStorage)
 	{
 		if (FrameworkConfig::api == OpenGL)
 		{
-			renderer = std::make_unique<GLRenderer>(window.get(), camera.get(), manager);
+			renderer = std::make_unique<GLRenderer>(window.get(), camera.get(), resourceStorage);
 		}
 		else if (FrameworkConfig::api == Vulkan)
 		{
-			renderer = std::make_unique<VKRenderer>(window.get(), camera.get(), manager);
+			renderer = std::make_unique<VKRenderer>(window.get(), camera.get(), resourceStorage);
 		}
 
 		glEnable(GL_DEPTH_TEST);

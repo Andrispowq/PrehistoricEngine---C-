@@ -1,12 +1,12 @@
 #include "Includes.hpp"
 #include "NormalMapRenderer.h"
 
-#include "prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/core/resources/ResourceStorage.h"
 
 namespace Prehistoric
 {
-	NormalMapRenderer::NormalMapRenderer(Window* window, AssembledAssetManager* manager, float strength, uint32_t N)
-		: manager(manager)
+	NormalMapRenderer::NormalMapRenderer(Window* window, ResourceStorage* resourceStorage, float strength, uint32_t N)
+		: resourceStorage(resourceStorage)
 	{
 		this->window = window;
 
@@ -16,46 +16,44 @@ namespace Prehistoric
 		//TODO: Create the Vulkan equivalent of the GLComputePipeline
 		if (FrameworkConfig::api == OpenGL)
 		{
-			pipeline = new GLComputePipeline(window, manager->getAssetManager(), manager->getAssetManager()->getResource<Shader>("gpgpu_normal"));
-			pipelineID = manager->loadResource<Pipeline>(pipeline);
-			manager->addReference<Pipeline>(pipelineID);
+			pipeline = resourceStorage->storePipeline(new GLComputePipeline(window, resourceStorage, resourceStorage->loadShader("gpgpu_normal").value()));
+			resourceStorage->addReference<Pipeline>(pipeline.handle);
 		}
 		else if (FrameworkConfig::api == Vulkan)
 		{
-			//pipeline = new VKComputePipeline(window, manager->getAssetManager(), manager->getAssetManager()->getResource<Shader>("gpgpu_normal"));
-			//pipelineID = manager->loadResource<Pipeline>(pipeline);
-			//manager->addReference<Pipeline>(pipelineID);
+			//pipeline = resourceStorage->storePipeline(new VKComputePipeline(window, resourceStorage, resourceStorage->loadShader("gpgpu_normal").value()));
+			//resourceStorage->addReference<Pipeline>(pipeline.handle);
 		}
 
 		if (FrameworkConfig::api == OpenGL)
 		{
-			normalmap = GLTexture::Storage2D(N, N, (uint32_t)(log(N) / log(2)), R8G8B8A8_LINEAR, Bilinear);
-			textureID = manager->getAssetManager()->addResource<Texture>(normalmap);
-			manager->getAssetManager()->addReference<Texture>(textureID);
+			normalmap = resourceStorage->storeTexture(GLTexture::Storage2D(N, N, (uint32_t)(log(N) / log(2)), R8G8B8A8_LINEAR, Bilinear));
+			resourceStorage->addReference<Texture>(normalmap.handle);
 		}
 		else if (FrameworkConfig::api == Vulkan)
 		{
-			//textureID = manager->getAssetManager()->addResource<Texture>(VKTexture::Storage2D(N, N, (uint32_t) (log(N) / log(2)), R8G8B8A8_LINEAR, Bilinear));
+			//normalmap = resourceStorage->storeTexture(VKTexture::Storage2D(N, N, (uint32_t)(log(N) / log(2)), R8G8B8A8_LINEAR, Bilinear));
+			//resourceStorage->addReference<Pipeline>(normalmap.handle);
 		}
 
 		if (FrameworkConfig::api == OpenGL)
 		{
-			GLComputePipeline* glPipe = reinterpret_cast<GLComputePipeline*>(pipeline);
+			GLComputePipeline* glPipe = reinterpret_cast<GLComputePipeline*>(pipeline.pointer);
 			glPipe->setInvocationSize({ N / 16, N / 16, 1 });
-			glPipe->addTextureBinding(0, normalmap, WRITE_ONLY);
+			glPipe->addTextureBinding(0, normalmap.pointer, WRITE_ONLY);
 		}
 		else if (FrameworkConfig::api == Vulkan)
 		{
-			/*VKComputePipeline* vkPipe = reinterpret_cast<VKComputePipeline*>(pipeline);
+			/*VKComputePipeline* vkPipe = reinterpret_cast<VKComputePipeline*>(pipeline.pointer);
 			vkPipe->setInvocationSize({ float(N / 16), float(N / 16), 1.0f });
-			vkPipe->addTextureBinding(0, normalmap, WRITE_ONLY);*/
+			vkPipe->addTextureBinding(0, normalmap.pointer, WRITE_ONLY);*/
 		}
 	}
 
 	NormalMapRenderer::~NormalMapRenderer()
 	{
-		manager->getAssetManager()->removeReference<Texture>(textureID);
-		manager->removeReference<Pipeline>(pipelineID);
+		resourceStorage->removeReference<Texture>(normalmap.handle);
+		resourceStorage->removeReference<Pipeline>(pipeline.handle);
 	}
 
 	void NormalMapRenderer::Render(Texture* heightmap)

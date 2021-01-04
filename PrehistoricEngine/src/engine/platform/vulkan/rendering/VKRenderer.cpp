@@ -8,8 +8,8 @@
 
 namespace Prehistoric
 {
-	VKRenderer::VKRenderer(Window* window, Camera* camera, AssembledAssetManager* manager)
-		: Renderer(window, camera), commandPool(nullptr), renderpass(nullptr), manager(manager)
+	VKRenderer::VKRenderer(Window* window, Camera* camera, ResourceStorage* resourceStorage)
+		: Renderer(window, camera, resourceStorage), commandPool(nullptr), renderpass(nullptr)
 	{
 		VKContext* context = (VKContext*)window->getContext();
 		VKSwapchain* swapchain = (VKSwapchain*)window->getSwapchain();
@@ -94,7 +94,7 @@ namespace Prehistoric
 			}
 
 			//Recreate the pipelines
-			std::vector<Pipeline*> pipes = manager->get<Pipeline>();
+			std::vector<Pipeline*> pipes = resourceStorage->get<Pipeline>();
 			for (Pipeline* pipe : pipes)
 			{
 				pipe->setViewportSize({ (float)width, (float)height });
