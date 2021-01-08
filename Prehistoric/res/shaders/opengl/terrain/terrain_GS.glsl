@@ -7,16 +7,11 @@ struct Material
 {
 	sampler2D albedoMap;
 	sampler2D normalMap;
-	sampler2D displacementMap;
-	sampler2D metallicMap;
-	sampler2D roughnessMap;
-	sampler2D occlusionMap;
+	sampler2D mrotMap;
 	
 	float heightScale;
 	float horizontalScale;
-	float metallic;
-	float roughness;
-	float ambientOcclusion;
+	vec4 mrot;
 };
 
 in vec2 mapCoord_GS[];
@@ -81,8 +76,8 @@ void main()
 			float scale = 0;
 			for(int j = 0; j < 3; j++)
 			{
-				scale += texture(materials[j].displacementMap, mapCoord_GS[i]
-							* materials[j].horizontalScale).r 
+				scale += texture(materials[j].mrotMap, mapCoord_GS[i]
+							* materials[j].horizontalScale).a 
 							* materials[j].heightScale
 							* blendValueArray[j];
 			}

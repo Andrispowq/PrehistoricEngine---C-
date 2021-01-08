@@ -5,7 +5,7 @@
 #include "prehistoric/common/texture/Texture.h"
 #include "prehistoric/common/buffer/MeshVertexBuffer.h"
 
-#include "prehistoric/core/resources/ResourceStorage.h"
+#include "prehistoric/core/resources/AssembledAssetManager.h"
 
 #include "platform/opengl/rendering/shaders/environmentMap/GLBRDFIntegrateShader.h"
 #include "platform/opengl/rendering/shaders/environmentMap/GLEnvironmentShader.h"
@@ -20,7 +20,7 @@ namespace Prehistoric
 	public:
 		static EnvironmentMapRenderer* instance;
 
-		EnvironmentMapRenderer(Window* window, ResourceStorage* resourceStorage);
+		EnvironmentMapRenderer(Window* window, AssembledAssetManager* manager);
 		virtual ~EnvironmentMapRenderer() {}
 
 		void GenerateEnvironmentMap();
@@ -33,7 +33,7 @@ namespace Prehistoric
 
 	private:
 		Window* window;
-		ResourceStorage* resourceStorage;
+		AssembledAssetManager* manager;
 
 		Framebuffer* framebuffer;
 		VertexBufferHandle cubeBuffer;

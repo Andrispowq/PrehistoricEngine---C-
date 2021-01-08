@@ -6,10 +6,12 @@
 #include "platform/vulkan/framework/context/VKContext.h"
 #include "platform/vulkan/framework/swapchain/VKSwapchain.h"
 
+#include "prehistoric/core/resources/AssetManager.h"
+
 namespace Prehistoric
 {
-	VKRenderer::VKRenderer(Window* window, Camera* camera, ResourceStorage* resourceStorage)
-		: Renderer(window, camera, resourceStorage), commandPool(nullptr), renderpass(nullptr)
+	VKRenderer::VKRenderer(Window* window, Camera* camera, AssembledAssetManager* manager)
+		: Renderer(window, camera, manager), commandPool(nullptr), renderpass(nullptr)
 	{
 		VKContext* context = (VKContext*)window->getContext();
 		VKSwapchain* swapchain = (VKSwapchain*)window->getSwapchain();
@@ -94,7 +96,7 @@ namespace Prehistoric
 			}
 
 			//Recreate the pipelines
-			std::vector<Pipeline*> pipes = resourceStorage->get<Pipeline>();
+			std::vector<Pipeline*> pipes = manager->get<Pipeline>();
 			for (Pipeline* pipe : pipes)
 			{
 				pipe->setViewportSize({ (float)width, (float)height });

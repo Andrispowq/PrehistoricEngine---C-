@@ -15,11 +15,11 @@ namespace Prehistoric
             {
                 if (FrameworkConfig::api == OpenGL)
                 {
-                    ret = new GLMeshVertexBuffer(ext->mesh.value());
+                    ret = new GLMeshVertexBuffer(window, ext->mesh.value());
                 }
                 else
                 {
-                    ret = new VKMeshVertexBuffer(ext->mesh.value(), window);
+                    ret = new VKMeshVertexBuffer(window, ext->mesh.value());
                 }
             }
             else
@@ -27,11 +27,11 @@ namespace Prehistoric
                 Mesh mesh = OBJLoader::LoadMesh(path, "", "");
                 if (FrameworkConfig::api == OpenGL)
                 {
-                    ret = new GLMeshVertexBuffer(mesh);
+                    ret = new GLMeshVertexBuffer(window, mesh);
                 }
                 else
                 {
-                    ret = new VKMeshVertexBuffer(mesh, window);
+                    ret = new VKMeshVertexBuffer(window, mesh);
                 }
             }
 

@@ -16,12 +16,9 @@ namespace Prehistoric
 		AddUniform("material", GEOMETRY_SHADER | FRAGMENT_SHADER, UniformBuffer, 1, 0, Vector4f::size() * 2 + sizeof(int) + sizeof(float) * 4);
 
 		AddUniform(ALBEDO_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 1, 0, nullptr);
-		AddUniform(DISPLACEMENT_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 2, 0, nullptr);
-		AddUniform(NORMAL_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 3, 0, nullptr);
-		AddUniform(METALLIC_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 4, 0, nullptr);
-		AddUniform(ROUGHNESS_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 5, 0, nullptr);
-		AddUniform(OCCLUSION_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 6, 0, nullptr);
-		AddUniform(EMISSION_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 7, 0, nullptr);
+		AddUniform(NORMAL_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 2, 0, nullptr);
+		AddUniform(MROT_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 3, 0, nullptr);
+		AddUniform(EMISSION_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 4, 0, nullptr);
 
 		AddUniform("m_transform", VERTEX_SHADER, UniformBuffer, 2, 0, sizeof(float) * 16);
 
@@ -72,21 +69,14 @@ namespace Prehistoric
 		//Offset values are copied from shaders
 		SetUniform("m_transform", object->getWorldTransform().getTransformationMatrix(), instance_index);
 
-		SetUniform("material", material->getVector3f(COLOUR), 0, instance_index);
-		SetUniform("material", material->getVector3f(EMISSION), 16, instance_index);
-		SetUniformi("material", material->exists(NORMAL_MAP), 32, instance_index);
-		SetUniformf("material", material->getFloat(HEIGHT_SCALE), 36, instance_index);
-		SetUniformf("material", material->getFloat(METALLIC), 40, instance_index);
-		SetUniformf("material", material->getFloat(ROUGHNESS), 44, instance_index);
-		SetUniformf("material", material->getFloat(OCCLUSION), 48, instance_index);
+		SetUniform("material", material->getVector4f(MROT), 0, instance_index);
+		SetUniform("material", material->getVector3f(COLOUR), 16, instance_index);
+		SetUniform("material", material->getVector3f(EMISSION), 32, instance_index);
+		SetUniformi("material", material->exists(NORMAL_MAP), 48, instance_index);
 
 		SetTexture(ALBEDO_MAP, material->getTexture(ALBEDO_MAP), instance_index);
-		SetTexture(DISPLACEMENT_MAP, material->getTexture(DISPLACEMENT_MAP), instance_index);
 		SetTexture(NORMAL_MAP, material->getTexture(NORMAL_MAP), instance_index);
-		SetTexture(METALLIC_MAP, material->getTexture(METALLIC_MAP), instance_index);
-		SetTexture(ROUGHNESS_MAP, material->getTexture(ROUGHNESS_MAP), instance_index);
-		SetTexture(OCCLUSION_MAP, material->getTexture(OCCLUSION_MAP), instance_index);
-		SetTexture(EMISSION_MAP, material->getTexture(EMISSION_MAP), instance_index);
+		SetTexture(MROT_MAP, material->getTexture(MROT_MAP), instance_index);
 
 		BindSets(commandBuffer, 1, 2, instance_index);
 	}

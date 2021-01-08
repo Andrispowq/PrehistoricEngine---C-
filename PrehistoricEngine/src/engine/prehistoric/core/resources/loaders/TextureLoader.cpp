@@ -94,11 +94,14 @@ namespace Prehistoric
 
 	ImageData TextureLoader::LoadTextureData(Window* window, const std::string& path)
 	{
-		PR_PROFILE(std::string("Prehistoric::TextureLoader::LoadTextureData(std::string&), path: " + path));
+		PR_PROFILE(std::string("Prehistoric::TextureLoader::LoadTextureData(), path: " + path));
 		if (FrameworkConfig::api == OpenGL)
 			stbi_set_flip_vertically_on_load(1);
 
 		std::ifstream stream(path, std::ios::ate | std::ios::binary);
+		if (!stream.is_open())
+			PR_LOG_RUNTIME_ERROR("Texture file %s couldn't be opened!\n", path.c_str());
+
 		size_t size = (size_t)stream.tellg();
 		stream.seekg(0);
 		unsigned char* buffer = new unsigned char[size];

@@ -1,16 +1,14 @@
 #include "Includes.hpp"
 #include "Material.h"
 
-#include "prehistoric/core/resources/ResourceStorage.h"
-
 namespace Prehistoric
 {
-	Material::Material(ResourceStorage* resourceStorage)
+	Material::Material(AssetManager* manager)
 	{
-		this->resourceStorage = resourceStorage;
+		this->manager = manager;
 
-		TextureHandle def = resourceStorage->loadTexture("res/textures/default.png").value();
-		resourceStorage->addReference<Texture>(def.handle);
+		TextureHandle def = manager->loadTexture("res/textures/default.png").value();
+		manager->addReference<Texture>(def.handle);
 		textures.emplace(std::make_pair("DEFAULT_TEX", def));
 	}
 
@@ -18,13 +16,13 @@ namespace Prehistoric
 	{
 		for (auto& tex : textures)
 		{
-			resourceStorage->removeReference<Texture>(tex.second.handle);
+			manager->removeReference<Texture>(tex.second.handle);
 		}
 	}
 
 	void Material::addTexture(const std::string& key, TextureHandle texture)
 	{
-		resourceStorage->addReference<Texture>(texture.handle);
+		manager->addReference<Texture>(texture.handle);
 		textures.emplace(std::make_pair(key, texture));
 	}
 

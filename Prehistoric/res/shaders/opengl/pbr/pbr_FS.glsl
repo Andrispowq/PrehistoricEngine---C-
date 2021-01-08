@@ -63,18 +63,18 @@ void main()
 
 	float dist = length(cameraPosition - position_FS);
 	vec3 normal = normalize(normal_FS);	
-	if(dist < highDetailRange && material.usesNormalMap == 1)
+	if(dist < (highDetailRange - 50) && material.usesNormalMap == 1)
 	{
-		float attenuation = clamp(-dist / highDetailRange + 1.0, 0.0, 1.0);
+		float attenuation = clamp(-dist / (highDetailRange - 50) + 1.0, 0.0, 1.0);
 
-		normal = 2.0 * texture(material.normalMap, texture_FS).rbg - 1.0;
-		normal = normalize(normal);
-		normal.xz *= attenuation;
+		vec3 bumpNormal = 2.0 * texture(material.normalMap, texture_FS).rbg - 1.0;
+		bumpNormal = normalize(bumpNormal);
 
-		vec3 B = normalize(cross(tangent_FS, normal_FS));
-		mat3 tbn = mat3(tangent_FS, normal_FS, B);
+		vec3 B = normalize(cross(tangent_FS, normal));
+		mat3 tbn = mat3(tangent_FS, normal, B);
 
-		normal = tbn * normal;
+		bumpNormal.xz *= attenuation;
+		normal = tbn * bumpNormal;
 	}
 	
 	vec3 N = normalize(normal);

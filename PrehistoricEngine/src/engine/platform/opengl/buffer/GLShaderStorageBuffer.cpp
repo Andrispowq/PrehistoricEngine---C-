@@ -9,8 +9,8 @@ namespace Prehistoric
 
 		'data' gets managed by OpenGL
 	*/
-	GLShaderStorageBuffer::GLShaderStorageBuffer(void* data, const Layout& layout)
-		: ShaderStorageBuffer(data, layout)
+	GLShaderStorageBuffer::GLShaderStorageBuffer(Window* window, void* data, const Layout& layout)
+		: ShaderStorageBuffer(window, data, layout)
 	{
 		this->data = data;
 		this->layout = layout;

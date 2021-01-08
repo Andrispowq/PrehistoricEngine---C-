@@ -1,39 +1,39 @@
 #include "Includes.hpp"
 #include "NormalMapRenderer.h"
 
-#include "prehistoric/core/resources/ResourceStorage.h"
-
 namespace Prehistoric
 {
-	NormalMapRenderer::NormalMapRenderer(Window* window, ResourceStorage* resourceStorage, float strength, uint32_t N)
-		: resourceStorage(resourceStorage)
+	NormalMapRenderer::NormalMapRenderer(Window* window, AssembledAssetManager* manager, float strength, uint32_t N)
+		: manager(manager)
 	{
 		this->window = window;
 
 		this->strength = strength;
 		this->N = N;
 
+		AssetManager* man = manager->getAssetManager();
+
 		//TODO: Create the Vulkan equivalent of the GLComputePipeline
 		if (FrameworkConfig::api == OpenGL)
 		{
-			pipeline = resourceStorage->storePipeline(new GLComputePipeline(window, resourceStorage, resourceStorage->loadShader("gpgpu_normal").value()));
-			resourceStorage->addReference<Pipeline>(pipeline.handle);
+			pipeline = manager->storePipeline(new GLComputePipeline(window, man, man->loadShader("gpgpu_normal").value()));
+			manager->addReference<Pipeline>(pipeline.handle);
 		}
 		else if (FrameworkConfig::api == Vulkan)
 		{
-			//pipeline = resourceStorage->storePipeline(new VKComputePipeline(window, resourceStorage, resourceStorage->loadShader("gpgpu_normal").value()));
-			//resourceStorage->addReference<Pipeline>(pipeline.handle);
+			//pipeline = manager->storePipeline(new VKComputePipeline(window, man, man->loadShader("gpgpu_normal").value()));
+			//manager->addReference<Pipeline>(pipeline.handle);
 		}
 
 		if (FrameworkConfig::api == OpenGL)
 		{
-			normalmap = resourceStorage->storeTexture(GLTexture::Storage2D(N, N, (uint32_t)(log(N) / log(2)), R8G8B8A8_LINEAR, Bilinear));
-			resourceStorage->addReference<Texture>(normalmap.handle);
+			normalmap = man->storeTexture(GLTexture::Storage2D(N, N, (uint32_t)(log(N) / log(2)), R8G8B8A8_LINEAR, Bilinear));
+			man->addReference<Texture>(normalmap.handle);
 		}
 		else if (FrameworkConfig::api == Vulkan)
 		{
-			//normalmap = resourceStorage->storeTexture(VKTexture::Storage2D(N, N, (uint32_t)(log(N) / log(2)), R8G8B8A8_LINEAR, Bilinear));
-			//resourceStorage->addReference<Pipeline>(normalmap.handle);
+			//normalmap = man->storeTexture(VKTexture::Storage2D(N, N, (uint32_t)(log(N) / log(2)), R8G8B8A8_LINEAR, Bilinear));
+			//man->addReference<Pipeline>(normalmap.handle);
 		}
 
 		if (FrameworkConfig::api == OpenGL)
@@ -52,8 +52,8 @@ namespace Prehistoric
 
 	NormalMapRenderer::~NormalMapRenderer()
 	{
-		resourceStorage->removeReference<Texture>(normalmap.handle);
-		resourceStorage->removeReference<Pipeline>(pipeline.handle);
+		manager->getAssetManager()->removeReference<Texture>(normalmap.handle);
+		manager->removeReference<Pipeline>(pipeline.handle);
 	}
 
 	void NormalMapRenderer::Render(Texture* heightmap)

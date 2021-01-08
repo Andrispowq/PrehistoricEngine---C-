@@ -1,38 +1,38 @@
 #include "Includes.hpp"
 #include "SplatMapRenderer.h"
 
-#include "prehistoric/core/resources/ResourceStorage.h"
-
 namespace Prehistoric
 {
-	SplatMapRenderer::SplatMapRenderer(Window* window, ResourceStorage* resourceStorage, uint32_t N)
+	SplatMapRenderer::SplatMapRenderer(Window* window, AssembledAssetManager* manager, uint32_t N)
 	{
 		this->window = window;
-		this->resourceStorage = resourceStorage;
+		this->manager = manager;
 
 		this->N = N;
+
+		AssetManager* man = manager->getAssetManager();
 
 		//TODO: Create the Vulkan equivalent of the GLComputePipeline
 		if (FrameworkConfig::api == OpenGL)
 		{
-			pipeline = resourceStorage->storePipeline(new GLComputePipeline(window, resourceStorage, resourceStorage->loadShader("gpgpu_splat").value()));
-			resourceStorage->addReference<Pipeline>(pipeline.handle);
+			pipeline = manager->storePipeline(new GLComputePipeline(window, man, man->loadShader("gpgpu_splat").value()));
+			manager->addReference<Pipeline>(pipeline.handle);
 		}
 		else if (FrameworkConfig::api == Vulkan)
 		{
-			//pipeline = resourceStorage->storePipeline(new VKComputePipeline(window, resourceStorage, resourceStorage->loadShader("gpgpu_splat").value()));
-			//resourceStorage->addReference<Pipeline>(pipeline.handle);
+			//pipeline = manager->storePipeline(new VKComputePipeline(window, man, man->loadShader("gpgpu_splat").value()));
+			//manager->addReference<Pipeline>(pipeline.handle);
 		}
 
 		if (FrameworkConfig::api == OpenGL)
 		{
-			splatmap = resourceStorage->storeTexture(GLTexture::Storage2D(N, N, (uint32_t)(log(N) / log(2)), R8G8B8A8_LINEAR, Bilinear));
-			resourceStorage->addReference<Texture>(splatmap.handle);
+			splatmap = man->storeTexture(GLTexture::Storage2D(N, N, (uint32_t)(log(N) / log(2)), R8G8B8A8_LINEAR, Bilinear));
+			man->addReference<Texture>(splatmap.handle);
 		}
 		else if (FrameworkConfig::api == Vulkan)
 		{
-			//splatmap = resourceStorage->storeTexture(VKTexture::Storage2D(N, N, (uint32_t)(log(N) / log(2)), R8G8B8A8_LINEAR, Bilinear));
-			//resourceStorage->addReference<Pipeline>(splatmap.handle);
+			//splatmap = man->storeTexture(VKTexture::Storage2D(N, N, (uint32_t)(log(N) / log(2)), R8G8B8A8_LINEAR, Bilinear));
+			//man->addReference<Pipeline>(splatmap.handle);
 		}
 
 		if (FrameworkConfig::api == OpenGL)
@@ -51,8 +51,8 @@ namespace Prehistoric
 
 	SplatMapRenderer::~SplatMapRenderer()
 	{
-		resourceStorage->removeReference<Texture>(splatmap.handle);
-		resourceStorage->removeReference<Pipeline>(pipeline.handle);
+		manager->getAssetManager()->removeReference<Texture>(splatmap.handle);
+		manager->removeReference<Pipeline>(pipeline.handle);
 	}
 
 	void SplatMapRenderer::Render(Texture* normalmap)

@@ -12,8 +12,8 @@ namespace Prehistoric
 	class RendererComponent : public RenderableComponent
 	{
 	public:
-		RendererComponent(PipelineHandle pipeline, MaterialHandle material, Window* window, ResourceStorage* resourceStorage);
-		RendererComponent(Window* window, ResourceStorage* resourceStorage);
+		RendererComponent(Window* window, AssembledAssetManager* manager, PipelineHandle pipeline, MaterialHandle material);
+		RendererComponent(Window* window, AssembledAssetManager* manager);
 
 		virtual ~RendererComponent();
 

@@ -19,7 +19,7 @@
 #include "platform/opengl/rendering/pipeline/GLGraphicsPipeline.h"
 #include "platform/vulkan/rendering/pipeline/VKGraphicsPipeline.h"
 
-#include "prehistoric/core/resources/ResourceStorage.h"
+#include "prehistoric/core/resources/AssembledAssetManager.h"
 
 #include "Includes.hpp"
 
@@ -31,7 +31,7 @@ namespace Prehistoric
 		WorldLoader() {}
 		virtual ~WorldLoader() {}
 
-		void LoadWorld(const std::string& worldFile, GameObject* root, Window* window, ResourceStorage* resourceStorage);
+		void LoadWorld(const std::string& worldFile, GameObject* root, Window* window, AssembledAssetManager* manager);
 	private:
 		std::string directoryModels;
 		std::string directoryTextures;

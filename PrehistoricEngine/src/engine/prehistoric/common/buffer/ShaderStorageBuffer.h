@@ -3,6 +3,7 @@
 
 #include "prehistoric/core/util/math/Math.h"
 
+#include "prehistoric/common/framework/Window.h"
 #include "prehistoric/common/rendering/command/CommandBuffer.h"
 
 namespace Prehistoric
@@ -94,7 +95,7 @@ namespace Prehistoric
 	class ShaderStorageBuffer
 	{
 	public:
-		ShaderStorageBuffer(void* data, const Layout& layout) : data(data), layout(layout) {}
+		ShaderStorageBuffer(Window* window, void* data, const Layout& layout) : window(window), data(data), layout(layout) {}
 		virtual ~ShaderStorageBuffer() = 0;
 
 		virtual void Bind(CommandBuffer* commandBuffer, uint32_t binding) const = 0;
@@ -105,6 +106,8 @@ namespace Prehistoric
 
 		void* getMappedData() const { return data; }
 	protected:
+		Window* window;
+
 		void* data;
 		Layout layout;
 	};

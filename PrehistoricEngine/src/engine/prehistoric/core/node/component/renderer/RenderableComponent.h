@@ -6,7 +6,7 @@
 #include "prehistoric/common/rendering/pipeline/Pipeline.h"
 #include "prehistoric/common/framework/Window.h"
 
-#include "prehistoric/core/resources/ResourceStorage.h"
+#include "prehistoric/core/resources/AssembledAssetManager.h"
 
 #include "Includes.hpp"
 
@@ -25,8 +25,8 @@ namespace Prehistoric
 	class RenderableComponent : public Component
 	{
 	public:
-		RenderableComponent(PipelineHandle pipeline, Window* window, ResourceStorage* resourceStorage);
-		RenderableComponent(Window* window, ResourceStorage* resourceStorage);
+		RenderableComponent(Window* window, AssembledAssetManager* manager, PipelineHandle pipeline);
+		RenderableComponent(Window* window, AssembledAssetManager* manager);
 		virtual ~RenderableComponent();
 
 		virtual void Render(Renderer* renderer) const = 0;
@@ -44,7 +44,7 @@ namespace Prehistoric
 		RenderableComponent(const RenderableComponent&&) = delete;
 		RenderableComponent& operator=(RenderableComponent) = delete;
 	protected:
-		ResourceStorage* resourceStorage;
+		AssembledAssetManager* manager;
 
 		Window* window;
 

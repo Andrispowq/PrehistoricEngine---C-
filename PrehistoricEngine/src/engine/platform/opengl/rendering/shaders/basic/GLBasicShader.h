@@ -28,12 +28,10 @@ namespace Prehistoric
 		int m_transform;
 
 		int albedoMap;
-		int metallicMap;
-		int roughnessMap;
+		int mrotMap;
 
 		int colour;
-		int metallic;
-		int roughness;
+		int mrot;
 	};
 };
 

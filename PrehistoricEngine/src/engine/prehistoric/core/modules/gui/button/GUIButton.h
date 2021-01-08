@@ -8,7 +8,7 @@ namespace Prehistoric
 	class GUIButton : public GUIElement
 	{
 	public:
-		GUIButton(Window* window, ResourceStorage* resourceStorage, Texture* texture = nullptr, void* data = nullptr, size_t dataSize = 0, bool visible = true);
+		GUIButton(Window* window, AssembledAssetManager* manager, Texture* texture = nullptr, void* data = nullptr, size_t dataSize = 0, bool visible = true);
 
 		virtual void PreUpdate(CoreEngine* engine) override;
 

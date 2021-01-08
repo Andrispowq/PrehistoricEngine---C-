@@ -2,16 +2,17 @@
 #include "Atmosphere.h"
 
 #include "prehistoric/core/CoreEngine.h"
-#include "prehistoric/core/resources/ResourceStorage.h"
+#include "prehistoric/core/resources/AssembledAssetManager.h"
 
 namespace Prehistoric
 {
-	Atmosphere::Atmosphere(Window* window, ResourceStorage* resourceStorage)
+	Atmosphere::Atmosphere(Window* window, AssembledAssetManager* manager)
 		: window(window)
 	{
 		SetScale(Vector3f(EngineConfig::rendererFarPlane / 2.f));
-
-		VertexBufferHandle vbo = resourceStorage->loadVertexBuffer(OBJLoader::LoadMesh("dome/", "sphericalDome.obj", ""), "dome").value();
+		
+		AssetManager* man = manager->getAssetManager();
+		VertexBufferHandle vbo = man->loadVertexBuffer(OBJLoader::LoadMesh("res/models/dome/", "sphericalDome.obj", ""), "sphericalDome.obj").value();
 
 		ShaderHandle shader;
 		PipelineHandle pipeline;
@@ -19,22 +20,22 @@ namespace Prehistoric
 		if (FrameworkConfig::api == OpenGL)
 		{
 			if (AtmosphereConfig::scatteringEnabled)
-				shader = resourceStorage->loadShader("atmosphere_scattering").value();
+				shader = man->loadShader("atmosphere_scattering").value();
 			else
-				shader = resourceStorage->loadShader("atmosphere").value();
+				shader = man->loadShader("atmosphere").value();
 
-			pipeline = resourceStorage->storePipeline(new GLGraphicsPipeline(window, resourceStorage, shader, vbo));
+			pipeline = manager->storePipeline(new GLGraphicsPipeline(window, man, shader, vbo));
 		}
 		else if (FrameworkConfig::api == Vulkan)
 		{
 			if (AtmosphereConfig::scatteringEnabled)
-				shader = resourceStorage->loadShader("atmosphere_scattering").value();
+				shader = man->loadShader("atmosphere_scattering").value();
 			else
-				shader = resourceStorage->loadShader("atmosphere").value();
+				shader = man->loadShader("atmosphere").value();
 
-			pipeline = resourceStorage->storePipeline(new VKGraphicsPipeline(window, resourceStorage, shader, vbo));
+			pipeline = manager->storePipeline(new VKGraphicsPipeline(window, man, shader, vbo));
 		}
 
-		AddComponent(RENDERER_COMPONENT, new RendererComponent(pipeline, resourceStorage->storeMaterial(nullptr), window, resourceStorage));
+		AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, manager->storeMaterial(nullptr)));
 	}
 };

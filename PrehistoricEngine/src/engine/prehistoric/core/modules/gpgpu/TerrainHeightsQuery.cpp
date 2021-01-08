@@ -1,27 +1,27 @@
 #include "Includes.hpp"
 #include "TerrainHeightsQuery.h"
 
-#include "prehistoric/core/resources/ResourceStorage.h"
-
 namespace Prehistoric
 {
-	TerrainHeightsQuery::TerrainHeightsQuery(Window* window, ResourceStorage* resourceStorage, uint32_t N)
+	TerrainHeightsQuery::TerrainHeightsQuery(Window* window, AssembledAssetManager* manager, uint32_t N)
 	{
 		this->window = window;
-		this->resourceStorage = resourceStorage;
+		this->manager = manager;
 
 		this->N = N;
+
+		AssetManager* man = manager->getAssetManager();
 
 		//TODO: Create the Vulkan equivalent of the GLComputePipeline
 		if (FrameworkConfig::api == OpenGL)
 		{
-			pipeline = resourceStorage->storePipeline(new GLComputePipeline(window, resourceStorage, resourceStorage->loadShader("gpgpu_terrain_heights").value()));
-			resourceStorage->addReference<Pipeline>(pipeline.handle);
+			pipeline = manager->storePipeline(new GLComputePipeline(window, man, man->loadShader("gpgpu_terrain_heights").value()));
+			manager->addReference<Pipeline>(pipeline.handle);
 		}
 		else if (FrameworkConfig::api == Vulkan)
 		{
-			//pipeline = resourceStorage->storePipeline(new VKComputePipeline(window, resourceStorage, resourceStorage->loadShader("gpgpu_terrain_heights").value()));
-			//resourceStorage->addReference<Pipeline>(pipeline.handle);
+			//pipeline = manager->storePipeline(new VKComputePipeline(window, man, man->loadShader("gpgpu_terrain_heights").value()));
+			//manager->addReference<Pipeline>(pipeline.handle);
 		}
 
 		heights = new float[N * N];
@@ -31,7 +31,7 @@ namespace Prehistoric
 
 		if (FrameworkConfig::api == OpenGL)
 		{
-			buffer = new GLShaderStorageBuffer(heights, layout);
+			buffer = new GLShaderStorageBuffer(window, heights, layout);
 		}
 		else if (FrameworkConfig::api == Vulkan)
 		{
@@ -54,7 +54,7 @@ namespace Prehistoric
 
 	TerrainHeightsQuery::~TerrainHeightsQuery()
 	{
-		resourceStorage->removeReference<Pipeline>(pipeline.handle);
+		manager->removeReference<Pipeline>(pipeline.handle);
 		delete buffer;
 	}
 

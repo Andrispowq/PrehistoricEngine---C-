@@ -47,7 +47,7 @@ namespace Prehistoric
 		{
 			std::string uniformName = "materials[" + std::to_string(i) + "].";
 
-			AddUniform(uniformName + DISPLACEMENT_MAP);
+			AddUniform(uniformName + MROT_MAP);
 
 			AddUniform(uniformName + HEIGHT_SCALE);
 			AddUniform(uniformName + HORIZONTAL_SCALE);
@@ -93,10 +93,10 @@ namespace Prehistoric
 			std::string uniformName = "materials[" + std::to_string(i) + "].";
 
 			TerrainMaps* maps = node->getMaps();
-			Material* material = maps->getMaterials()[i];
+			MaterialHandle material = maps->getMaterials()[i];
 
-			material->getTexture(DISPLACEMENT_MAP)->Bind(texUnit);
-			SetUniformi(uniformName + DISPLACEMENT_MAP, texUnit);
+			material->getTexture(MROT_MAP)->Bind(texUnit);
+			SetUniformi(uniformName + MROT_MAP, texUnit);
 			texUnit++;
 
 			SetUniformf(uniformName + HEIGHT_SCALE, material->getFloat(HEIGHT_SCALE));

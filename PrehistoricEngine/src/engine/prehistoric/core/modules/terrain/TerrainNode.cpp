@@ -2,13 +2,13 @@
 #include "TerrainNode.h"
 
 #include "TerrainQuadtree.h"
-#include "prehistoric/core/resources/ResourceStorage.h"
+#include "prehistoric/core/resources/AssembledAssetManager.h"
 
 namespace Prehistoric
 {
-	TerrainNode::TerrainNode(Factory<TerrainNode>* factory, Window* window, Camera* camera, ResourceStorage* resourceStorage, TerrainMaps* maps,
+	TerrainNode::TerrainNode(Factory<TerrainNode>* factory, Window* window, Camera* camera, AssembledAssetManager* manager, TerrainMaps* maps,
 		PipelineHandle pipeline, PipelineHandle wireframePipeline, const Vector2f& location, int lod, const Vector2f& index)
-		: factory(factory), window(window), camera(camera), resourceStorage(resourceStorage), maps(maps), location(location), lod(lod), index(index)
+		: factory(factory), window(window), camera(camera), manager(manager), maps(maps), location(location), lod(lod), index(index)
 	{
 		this->gap = 1.0f / float(TerrainQuadtree::rootNodes * pow(2, lod));
 
@@ -21,9 +21,9 @@ namespace Prehistoric
 		worldTransform.setScaling({ TerrainConfig::scaleXZ, TerrainConfig::scaleY, TerrainConfig::scaleXZ });
 		worldTransform.setPosition({ -TerrainConfig::scaleXZ / 2.0f, 0, -TerrainConfig::scaleXZ / 2.0f });
 
-		rendererComponent = new RendererComponent(pipeline, resourceStorage->storeMaterial(nullptr), window, resourceStorage);
-		wireframeRendererComponent = new RendererComponent(wireframePipeline, resourceStorage->storeMaterial(nullptr), window, resourceStorage);
-
+		rendererComponent = new RendererComponent(window, manager, pipeline, manager->storeMaterial(nullptr));
+		wireframeRendererComponent = new RendererComponent(window, manager, wireframePipeline, manager->storeMaterial(nullptr));
+		
 		AddComponent(RENDERER_COMPONENT, rendererComponent);
 		AddComponent(WIREFRAME_RENDERER_COMPONENT, wireframeRendererComponent);
 
@@ -110,7 +110,7 @@ namespace Prehistoric
 					ss << ", lod: ";
 					ss << lod;
 
-					AddChild(ss.str(), new/*(*factory)*/ TerrainNode(factory, window, camera, resourceStorage, maps, rendererComponent->getPipelineHandle(), wireframeRendererComponent->getPipelineHandle(),
+					AddChild(ss.str(), new/*(*factory)*/ TerrainNode(factory, window, camera, manager, maps, rendererComponent->getPipelineHandle(), wireframeRendererComponent->getPipelineHandle(),
 						location + Vector2f(float(i), float(j)) * (gap / 2.f), lod, { float(i), float(j) }));
 				}
 			}

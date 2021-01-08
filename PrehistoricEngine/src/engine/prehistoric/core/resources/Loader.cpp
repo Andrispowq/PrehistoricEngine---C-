@@ -4,6 +4,7 @@
 namespace Prehistoric
 {
 	Loader::Loader(Window* window)
+		: window(window)
 	{
 	}
 

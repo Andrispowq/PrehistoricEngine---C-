@@ -16,16 +16,14 @@
 
 #include "prehistoric/core/node/component/renderer/RendererComponent.h"
 
-#include "prehistoric/core/resources/ResourceStorage.h"
+#include "prehistoric/core/resources/AssembledAssetManager.h"
 
 namespace Prehistoric
 {
-	class AssembledAssetManager;
-
 	class Atmosphere : public GameObject
 	{
 	public:
-		Atmosphere(Window* window, ResourceStorage* resourceStorage);
+		Atmosphere(Window* window, AssembledAssetManager* manager);
 		virtual ~Atmosphere() {}
 
 		inline Light* getSun() const { return sun; }

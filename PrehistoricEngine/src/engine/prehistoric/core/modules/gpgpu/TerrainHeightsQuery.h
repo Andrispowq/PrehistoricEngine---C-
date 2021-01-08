@@ -13,14 +13,14 @@
 #include "platform/opengl/rendering/shaders/gpgpu/GLTerrainHeightsShader.h"
 //#include "platform/vulkan/rendering/shaders/gpgpu/VKerrainHeightsShader.h"
 
+#include "prehistoric/core/resources/AssembledAssetManager.h"
+
 namespace Prehistoric
 {
-	class AssembledAssetManager;
-
 	class TerrainHeightsQuery
 	{
 	public:
-		TerrainHeightsQuery(Window* window, ResourceStorage* resourceStorage, uint32_t N);
+		TerrainHeightsQuery(Window* window, AssembledAssetManager* manager, uint32_t N);
 		virtual ~TerrainHeightsQuery();
 
 		void Query(Texture* heightmap);
@@ -28,7 +28,7 @@ namespace Prehistoric
 		float* getHeights() { return heights; }
 	private:
 		Window* window;
-		ResourceStorage* resourceStorage;
+		AssembledAssetManager* manager;
 
 		PipelineHandle pipeline;
 

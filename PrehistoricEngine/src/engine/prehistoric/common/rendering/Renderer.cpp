@@ -5,10 +5,12 @@
 
 #include "prehistoric/core/node/component/light/Light.h"
 
+#include "prehistoric/core/resources/AssembledAssetManager.h"
+
 namespace Prehistoric
 {
-	Renderer::Renderer(Window* window, Camera* camera, ResourceStorage* resourceStorage)
-		: window(window), camera(camera), resourceStorage(resourceStorage), wireframeMode(false)
+	Renderer::Renderer(Window* window, Camera* camera, AssembledAssetManager* manager)
+		: window(window), camera(camera), manager(manager), wireframeMode(false)
 	{
 	}
 

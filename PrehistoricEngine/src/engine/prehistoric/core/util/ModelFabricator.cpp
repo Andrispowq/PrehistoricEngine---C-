@@ -22,11 +22,11 @@ namespace Prehistoric
 
 			if (FrameworkConfig::api == OpenGL)
 			{
-				vbo = new GLMeshVertexBuffer(mesh);
+				vbo = new GLMeshVertexBuffer(window, mesh);
 			}
 			else if (FrameworkConfig::api == Vulkan)
 			{
-				vbo = new VKMeshVertexBuffer(mesh, window);
+				vbo = new VKMeshVertexBuffer(window, mesh);
 			}
 
 			return vbo;

@@ -5,19 +5,16 @@
 #include "prehistoric/core/node/GameObject.h"
 #include "prehistoric/core/model/material/Material.h"
 
-#include "prehistoric/core/resources/ResourceStorage.h"
-
 #include "platform/vulkan/rendering/shaders/VKShader.h"
 
 namespace Prehistoric
 {
-	RendererComponent::RendererComponent(PipelineHandle pipeline, MaterialHandle material, Window* window, ResourceStorage* resourceStorage)
-		: RenderableComponent(pipeline, window, resourceStorage)
+	RendererComponent::RendererComponent(Window* window, AssembledAssetManager* manager, PipelineHandle pipeline, MaterialHandle material)
+		: RenderableComponent(window, manager, pipeline), material(material)
 	{
 		type = ComponentType::RendererComponent;
 
-		this->material = material;
-		resourceStorage->addReference<Material>(material.handle);
+		manager->addReference<Material>(material.handle);
 
 		if (FrameworkConfig::api == Vulkan)
 		{
@@ -25,15 +22,15 @@ namespace Prehistoric
 		}
 	}
 
-	RendererComponent::RendererComponent(Window* window, ResourceStorage* resourceStorage)
-		: RenderableComponent(window, resourceStorage)
+	RendererComponent::RendererComponent(Window* window, AssembledAssetManager* manager)
+		: RenderableComponent(window, manager)
 	{
 		type = ComponentType::RendererComponent;
 	}
 
 	RendererComponent::~RendererComponent()
 	{
-		resourceStorage->removeReference<Material>(material.handle);
+		manager->removeReference<Material>(material.handle);
 	}
 
 	void RendererComponent::PreRender(Renderer* renderer)

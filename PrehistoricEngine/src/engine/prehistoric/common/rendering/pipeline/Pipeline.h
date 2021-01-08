@@ -7,18 +7,14 @@
 #include "prehistoric/core/util/math/Math.h"
 #include "prehistoric/common/framework/Window.h"
 
-#if !defined(HANDLE_OF)
-#define HANDLE_OF(type) typedef struct type##_handle_t { type* pointer = nullptr; size_t handle = -1; type* operator->() { return pointer;}; type* const operator->() const { return pointer;} } type##Handle
-#endif
+#include "prehistoric/core/resources/AssetManager.h"
 
 namespace Prehistoric
 {
-	class ResourceStorage;
-
 	class Pipeline
 	{
 	public:
-		Pipeline(Window* window, ResourceStorage* resourceStorage, ShaderHandle shader);
+		Pipeline(Window* window, AssetManager* manager, ShaderHandle shader);
 		Pipeline() : samples(0) {}
 
 		virtual ~Pipeline();
@@ -46,7 +42,7 @@ namespace Prehistoric
 
 	public:
 		Window* window;
-		ResourceStorage* resourceStorage;
+		AssetManager* manager;
 
 		ShaderHandle shader;
 
@@ -60,8 +56,6 @@ namespace Prehistoric
 	protected:
 		mutable CommandBuffer* buffer; //The current commandbuffer
 	};
-
-	HANDLE_OF(Pipeline);
 };
 
 #endif

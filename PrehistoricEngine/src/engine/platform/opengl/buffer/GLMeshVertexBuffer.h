@@ -10,7 +10,7 @@ namespace Prehistoric
 	class GLMeshVertexBuffer : public MeshVertexBuffer
 	{
 	public:
-		GLMeshVertexBuffer(const Mesh& mesh);
+		GLMeshVertexBuffer(Window* window, const Mesh& mesh);
 		virtual ~GLMeshVertexBuffer() override;
 
 		void Bind(CommandBuffer* commandBuffer) const override;

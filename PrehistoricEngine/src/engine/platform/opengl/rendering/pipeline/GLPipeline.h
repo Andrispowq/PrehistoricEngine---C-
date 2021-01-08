@@ -12,7 +12,7 @@ namespace Prehistoric
 	class GLPipeline : public Pipeline
 	{
 	public:
-		GLPipeline(Window* window, ResourceStorage* resourceStorage, ShaderHandle shader);
+		GLPipeline(Window* window, AssetManager* manager, ShaderHandle shader);
 		virtual ~GLPipeline() {}
 
 		virtual void BindPipeline(CommandBuffer* buffer) const override;

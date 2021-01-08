@@ -8,14 +8,14 @@
 
 #include "prehistoric/core/CoreEngine.h"
 
-#include "prehistoric/core/resources/ResourceStorage.h"
+#include "prehistoric/core/resources/AssembledAssetManager.h"
 
 namespace Prehistoric
 {
 	VertexBufferHandle GUIElement::vbo = { nullptr, -1 };
 	PipelineHandle GUIElement::pipeline = { nullptr, -1 };
 
-	GUIElement::GUIElement(Window* window, ResourceStorage* resourceStorage, Texture* texture, void* data, size_t dataSize, bool visible)
+	GUIElement::GUIElement(Window* window, AssembledAssetManager* manager, Texture* texture, void* data, size_t dataSize, bool visible)
 		: type(GUIType::Element)
 	{
 		this->texture = texture;
@@ -29,22 +29,22 @@ namespace Prehistoric
 		{
 			ShaderHandle shader;
 
-			vbo = resourceStorage->loadVertexBuffer(std::nullopt, "quad").value();
+			vbo = manager->getAssetManager()->loadVertexBuffer(std::nullopt, "res/models/quad.obj").value();
 			vbo->setFrontFace(FrontFace::CLOCKWISE);
 
 			if (FrameworkConfig::api == OpenGL)
 			{
-				shader = resourceStorage->loadShader("gui").value();
-				pipeline = resourceStorage->storePipeline(new GLGraphicsPipeline(window, resourceStorage, shader, vbo));
+				shader = manager->getAssetManager()->loadShader("gui").value();
+				pipeline = manager->storePipeline(new GLGraphicsPipeline(window, manager->getAssetManager(), shader, vbo));
 			}
 			else if (FrameworkConfig::api == Vulkan)
 			{
-				//shader = resourceStorage->loadShader("gui").value();
-				//pipeline = resourceStorage->storePipeline(new VKGraphicsPipeline(window, resourceStorage, shader, vbo));
+				//shader = manager->getAssetManager()->loadShader("gui").value();
+				//pipeline = manager->storePipeline(new VKGraphicsPipeline(window, manager->getAssetManager(), shader, vbo));
 			}
 		}
 
-		RendererComponent* renderer = new RendererComponent(pipeline, resourceStorage->storeMaterial(nullptr), window, resourceStorage);
+		RendererComponent* renderer = new RendererComponent(window, manager, pipeline, manager->storeMaterial(nullptr));
 		renderer->setPriority(RenderPriority::_2D);
 
 		AddComponent(RENDERER_COMPONENT, renderer);

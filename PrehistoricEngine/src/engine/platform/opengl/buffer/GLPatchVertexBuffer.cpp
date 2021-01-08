@@ -3,8 +3,8 @@
 
 namespace Prehistoric
 {
-	GLPatchVertexBuffer::GLPatchVertexBuffer(const std::vector<Vector2f>& vertices)
-		: PatchVertexBuffer(vertices)
+	GLPatchVertexBuffer::GLPatchVertexBuffer(Window* window, const std::vector<Vector2f>& vertices)
+		: PatchVertexBuffer(window, vertices)
 	{
 		size = (uint32_t)vertices.size();
 

@@ -3,8 +3,8 @@
 
 namespace Prehistoric
 {
-	VKGraphicsPipeline::VKGraphicsPipeline(Window* window, ResourceStorage* resourceStorage, ShaderHandle shader, VertexBufferHandle vbo)
-		: VKPipeline(window, resourceStorage, shader), GraphicsPipeline(resourceStorage, vbo)
+	VKGraphicsPipeline::VKGraphicsPipeline(Window* window, AssetManager* manager, ShaderHandle shader, VertexBufferHandle vbo)
+		: VKPipeline(window, manager, shader), GraphicsPipeline(manager, vbo)
 	{
 		CreatePipeline();
 	}

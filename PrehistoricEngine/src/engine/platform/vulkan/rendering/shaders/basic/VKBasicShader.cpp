@@ -1,5 +1,4 @@
 #include "Includes.hpp"
-#include <glad/glad.h>
 #include "VKBasicShader.h"
 
 namespace Prehistoric
@@ -10,15 +9,13 @@ namespace Prehistoric
 		AddShader(ResourceLoader::LoadShaderVK("vulkan/basic/basic_FS.spv"), FRAGMENT_SHADER);
 
 		AddUniform("camera", VERTEX_SHADER | FRAGMENT_SHADER, UniformBuffer, 0, 0, 2 * sizeof(float) * 16 + Vector3f::size());
-		AddUniform("model", VERTEX_SHADER, UniformBuffer, 0, 1, sizeof(float) * 16);
-		AddUniform("lights", FRAGMENT_SHADER, UniformBuffer, 0, 2, EngineConfig::lightsMaxNumber * 3 * Vector4f::size());
-		AddUniform("material", FRAGMENT_SHADER, UniformBuffer, 0, 3, Vector3f::size() + 4 * sizeof(float));
+		AddUniform("model", VERTEX_SHADER, UniformBuffer, 1, 0, sizeof(float) * 16);
+		AddUniform("lights", FRAGMENT_SHADER, UniformBuffer, 0, 1, EngineConfig::lightsMaxNumber * 3 * Vector4f::size());
+		AddUniform("lightConditions", FRAGMENT_SHADER, UniformBuffer, 0, 2, sizeof(float) * 2);
+		AddUniform("material", FRAGMENT_SHADER, UniformBuffer, 1, 1, Vector3f::size() + 4 * sizeof(float));
 
-		AddUniform("albedoMap", FRAGMENT_SHADER, CombinedImageSampler, 0, 4, 0);
-		AddUniform("metallicMap", FRAGMENT_SHADER, CombinedImageSampler, 0, 5, 0);
-		AddUniform("roughnessMap", FRAGMENT_SHADER, CombinedImageSampler, 0, 6, 0);
-
-		AddUniform("gamma", FRAGMENT_SHADER, UniformBuffer, 0, 7, sizeof(float));
+		AddUniform("albedoMap", FRAGMENT_SHADER, CombinedImageSampler, 1, 2, 0);
+		AddUniform("mrotMap", FRAGMENT_SHADER, CombinedImageSampler, 1, 3, 0);
 
 		descriptorPool->finalise(pipelineLayout);
 	}
@@ -29,7 +26,8 @@ namespace Prehistoric
 		SetUniform("camera", camera->getProjectionMatrix(), 16 * sizeof(float) * 1, instance_index);
 		SetUniform("camera", camera->getPosition(), 16 * sizeof(float) * 2, instance_index);
 
-		SetUniformf("gamma", EngineConfig::rendererGamma, instance_index);
+		SetUniformf("lightConditions", EngineConfig::rendererExposure, sizeof(float) * 0, instance_index);
+		SetUniformf("lightConditions", EngineConfig::rendererGamma, sizeof(float) * 1, instance_index);
 
 		size_t baseOffset = EngineConfig::lightsMaxNumber * Vector4f::size();
 
@@ -52,6 +50,8 @@ namespace Prehistoric
 				SetUniform("lights", Vector4f(), baseOffset * 2 + currentOffset, instance_index);
 			}
 		}
+
+		BindSets(commandBuffer, 0, 1, instance_index);
 	}
 
 	void VKBasicShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const
@@ -61,14 +61,11 @@ namespace Prehistoric
 		Material* material = ((RendererComponent*)object->GetComponent(RENDERER_COMPONENT))->getMaterial();
 
 		SetTexture(ALBEDO_MAP, material->getTexture(ALBEDO_MAP), instance_index);
-		SetTexture(METALLIC_MAP, material->getTexture(METALLIC_MAP), instance_index);
-		SetTexture(ROUGHNESS_MAP, material->getTexture(ROUGHNESS_MAP), instance_index);
+		SetTexture(MROT_MAP, material->getTexture(MROT_MAP), instance_index);
 
 		SetUniform("material", material->getVector3f(COLOUR), instance_index);
-		SetUniformf("material", material->getFloat(METALLIC), Vector3f::size() + sizeof(float), instance_index);
-		SetUniformf("material", material->getFloat(ROUGHNESS), Vector3f::size() + 2 * sizeof(float), instance_index);
-		SetUniformf("material", EngineConfig::rendererGamma, Vector3f::size() + 3 * sizeof(float), instance_index);
+		SetUniform("material", material->getVector4f(MROT), Vector4f::size(), instance_index);
 
-		BindSets(commandBuffer, 0, 2, instance_index);
+		BindSets(commandBuffer, 1, 1, instance_index);
 	}
 };

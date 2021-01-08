@@ -26,7 +26,7 @@ namespace Prehistoric
 	class GUIElement : public GameObject
 	{
 	public:
-		GUIElement(Window* window, ResourceStorage* resourceStorage, Texture* texture = nullptr, void* data = nullptr, size_t dataSize = 0, bool visible = true);
+		GUIElement(Window* window, AssembledAssetManager* manager, Texture* texture = nullptr, void* data = nullptr, size_t dataSize = 0, bool visible = true);
 		virtual ~GUIElement() {}
 
 		virtual void PreUpdate(CoreEngine* engine) override;

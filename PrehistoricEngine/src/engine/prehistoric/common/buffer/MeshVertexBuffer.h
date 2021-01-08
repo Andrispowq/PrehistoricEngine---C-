@@ -3,6 +3,7 @@
 
 #include "VertexBuffer.h"
 
+#include "prehistoric/common/framework/Window.h"
 #include "prehistoric/core/model/Mesh.h"
 
 namespace Prehistoric
@@ -10,7 +11,7 @@ namespace Prehistoric
 	class MeshVertexBuffer : public VertexBuffer
 	{
 	public:
-		MeshVertexBuffer(const Mesh& mesh) : mesh(mesh) {}
+		MeshVertexBuffer(Window* window, const Mesh& mesh) : VertexBuffer(window), mesh(mesh) {}
 
 		virtual ~MeshVertexBuffer() override = 0;
 

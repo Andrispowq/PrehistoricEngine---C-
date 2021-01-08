@@ -22,7 +22,7 @@ namespace Prehistoric
 	class TerrainQuadtree : public Node
 	{
 	public:
-		TerrainQuadtree(Window* window, Camera* camera, TerrainMaps* maps, ResourceStorage* resourceStorage);
+		TerrainQuadtree(Window* window, Camera* camera, TerrainMaps* maps, AssembledAssetManager* manager);
 		virtual ~TerrainQuadtree();
 
 		void UpdateQuadtree();

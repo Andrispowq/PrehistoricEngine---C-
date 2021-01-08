@@ -11,8 +11,8 @@ namespace Prehistoric
 	static char state_frontface = CCW;
 	static char state_culling = CULL;
 
-	GLGraphicsPipeline::GLGraphicsPipeline(Window* window, ResourceStorage* resourceStorage, ShaderHandle shader, VertexBufferHandle vbo)
-		: GLPipeline(window, resourceStorage, shader), GraphicsPipeline(resourceStorage, vbo)
+	GLGraphicsPipeline::GLGraphicsPipeline(Window* window, AssetManager* manager, ShaderHandle shader, VertexBufferHandle vbo)
+		: GLPipeline(window, manager, shader), GraphicsPipeline(manager, vbo)
 	{
 	}
 
@@ -49,7 +49,7 @@ namespace Prehistoric
 			state_culling = NO_CULL;
 		}
 
-		vbo->Draw(nullptr);
+		vbo->Draw(buffer);
 	}
 
 	void GLGraphicsPipeline::UnbindPipeline() const

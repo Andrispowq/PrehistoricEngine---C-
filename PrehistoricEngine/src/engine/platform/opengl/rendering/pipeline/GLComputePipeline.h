@@ -13,7 +13,7 @@ namespace Prehistoric
 	class GLComputePipeline : public GLPipeline, public ComputePipeline
 	{
 	public:
-		GLComputePipeline(Window* window, ResourceStorage* resourceStorage, ShaderHandle shader);
+		GLComputePipeline(Window* window, AssetManager* manager, ShaderHandle shader);
 		virtual ~GLComputePipeline() {}
 
 		virtual void BindPipeline(CommandBuffer* buffer) const override;

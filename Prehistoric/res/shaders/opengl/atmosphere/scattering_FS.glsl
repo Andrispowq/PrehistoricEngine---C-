@@ -158,7 +158,7 @@ void main()
 	
 	vec3 out_LightScattering = vec3(0);
 
-    vec3 out_Color = atmosphere(
+    vec3 out_Colour = atmosphere(
         normalize(ray_world),        	        // normalized ray direction
         vec3(0, planetRadius + 1000, 0),        // ray origin, originally: vec3(0, 6372e3, 0)
         sunPosition,                  	        // position of the sun
@@ -179,14 +179,14 @@ void main()
 	{
 		sunradius /= sunRadius;
 		float smoothRadius = smoothstep(0, 1, 0.1f / sunradius - 0.1f);
-		out_Color = mix(out_Color, sunColour * 4, smoothRadius);
+        out_Colour = mix(out_Colour, sunColour * 4, smoothRadius);
 		
 		smoothRadius = smoothstep(0, 1, 0.18f / sunradius - 0.2f);
 		out_LightScattering = mix(vec3(0), sunColour, smoothRadius);
 	}
 	
-    positionMetallic = vec4(vec3(worldPosition), 0.0);
-    albedoRoughness = vec4(out_Color, 0.0);
+    positionMetallic = vec4(out_Colour, 1.0);//vec3(worldPosition), 0.0);
+    albedoRoughness = vec4(out_Colour, 0.0);
     normalLit = vec4(vec3(0.0), 0.0);
     emissionExtra = vec4(out_LightScattering, 1.0);
 }

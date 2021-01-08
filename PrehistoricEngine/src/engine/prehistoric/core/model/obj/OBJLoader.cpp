@@ -7,7 +7,7 @@ namespace Prehistoric
 	{
 		Mesh OBJLoader::LoadMesh(const std::string& path, const std::string& objectFile, const std::string& materialFile)
 		{
-			double start = Time::getTime();
+			PR_PROFILE("Prehistoric::OBJLoader::LoadMesh(), path: " + path);
 
 			std::ifstream obj;
 			std::string line;
@@ -87,8 +87,6 @@ namespace Prehistoric
 			}
 
 			SetVertexData(vertices, textures, normals);
-
-			PR_LOG_MESSAGE("Time taken to load %s: %fs\n", objectFile.c_str(), (Time::getTime() - start));
 
 			return { vertices, indices };
 		}

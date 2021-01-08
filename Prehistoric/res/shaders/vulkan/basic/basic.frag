@@ -2,18 +2,11 @@
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_KHR_vulkan_glsl : enable
 
-layout(location = 0) out vec4 colour_Out;
+layout(location = 0) out vec4 outColour;
 
-layout(location = 0) in vec3 worldPos_FS;
+layout(location = 0) in vec3 position_FS;
 layout(location = 1) in vec2 texture_FS;
 layout(location = 2) in vec3 normal_FS;
-
-struct Light
-{
-	vec4 position;
-	vec4 colour;
-	vec4 intensity;
-};
 
 const float PI = 3.141592653589793238;
 const int max_lights = 10;
@@ -27,57 +20,59 @@ layout(set = 0, binding = 0) uniform Camera
 
 layout (set = 0, binding = 1, std140) uniform Lights
 {
-    layout(offset = max_lights * 0 * 16) vec3 position[max_lights];
-	layout(offset = max_lights * 1 * 16) vec3 colour[max_lights];
-	layout(offset = max_lights * 2 * 16) vec3 intensity[max_lights];
+    layout (offset = max_lights * 0 * 16) vec3 position[max_lights];
+	layout (offset = max_lights * 1 * 16) vec3 colour[max_lights];
+	layout (offset = max_lights * 2 * 16) vec3 intensity[max_lights];
 } lights;
+
+layout (set = 0, binding = 2, std140) uniform LightConditions
+{
+	layout (offset = 0) float exposure;
+	layout (offset = 4) float gamma;
+};
 
 layout (set = 1, binding = 1, std140) uniform Materials
 {
-    layout (offset = 00) vec3 colour;
-	layout (offset = 16) float metallic;
-	layout (offset = 20) float roughness;
-	
-    layout (offset = 24) float gamma;
+    layout (offset = 00) vec3 colour;	
+	layout (offset = 16) vec4 mrot;
 } material;
 
 layout(set = 1, binding = 2) uniform sampler2D albedoMap;
-layout(set = 1, binding = 3) uniform sampler2D metallicMap;
-layout(set = 1, binding = 4) uniform sampler2D roughnessMap;
+layout(set = 1, binding = 3) uniform sampler2D mrotMap;
 
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 float GeometrySchlickGGX(float NdotV, float roughness);
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
-vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness);
-vec3 fresnelSchlick(float cosTheta, vec3 F0);
-
-vec3 getColor(sampler2D map, vec3 alternateValue, vec2 texCoords)
-{
-	if(alternateValue.r == -1 || alternateValue.g == -1 || alternateValue.b == -1)
-		return texture(map, texCoords).rgb;
-	else
-		return alternateValue;
-}
-
-vec3 getColor(sampler2D map, float alternateValue, vec2 texCoords)
-{
-	if(alternateValue == -1)
-		return texture(map, texCoords).rgb;
-	else
-		return vec3(alternateValue);
-}
+vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness);
+vec3 FresnelSchlick(float cosTheta, vec3 F0);
 
 void main() 
 {
-	vec3 albedoColour = pow(getColor(albedoMap, material.colour, texture_FS), vec3(material.gamma));
+	vec3 albedoColour = material.colour;
+	vec4 mrot = material.mrot;
 	
-	float metallic = getColor(metallicMap, material.metallic, texture_FS).r;
-	float roughness = pow(getColor(roughnessMap, material.roughness, texture_FS).r, 1.0);
+	if (albedoColour.r == -1)
+	{
+		albedoColour = pow(texture(albedoMap, texture_FS).rgb, vec3(2.2));
+	}
 	
-	float dist = length(worldPos_FS - cameraPosition);
+	vec4 mrotMap = texture(mrotMap, texture_FS);
+	if (mrot.r == -1)
+	{
+		mrot.r = mrotMap.r;
+	}
+	if (mrot.g == -1)
+	{
+		mrot.g = mrotMap.g;
+	}
+	
+	float metallic = mrot.r;
+	float roughness = mrot.g;
+	
+	float dist = length(cameraPosition - position_FS);
 
 	vec3 N = normalize(normal_FS);
-	vec3 V = normalize(worldPos_FS - cameraPosition);
+	vec3 V = normalize(cameraPosition - position_FS);
 	vec3 R = reflect(-V, N);
 	
 	vec3 F0 = vec3(0.04); 
@@ -89,16 +84,16 @@ void main()
 	for(int i = 0; i < max_lights; ++i) 
     {
 	    // calculate per-light radiance
-        vec3 L = normalize(lights.position[i] - worldPos_FS);
+        vec3 L = normalize(lights.position[i] - position_FS);
         vec3 H = normalize(V + L);
-        float dist = length(lights.position[i] - worldPos_FS);
+        float dist = length(lights.position[i] - position_FS);
         float attenuation = 1 / pow(dist, 2);
         vec3 radiance = lights.colour[i] * lights.intensity[i] * attenuation; 
         
         // cook-torrance brdf
         float NDF = DistributionGGX(N, H, roughness);
         float G = GeometrySmith(N, V, L, roughness);
-        vec3 F = fresnelSchlickRoughness(max(dot(H, V), 0), F0, roughness);
+        vec3 F = FresnelSchlick(max(dot(H, V), 0), F0);
         
         vec3 kS = F;
         vec3 kD = vec3(1) - kS;
@@ -117,10 +112,10 @@ void main()
 
     vec3 colour = ambient * albedoColour + Lo;
 
-    colour /= colour + vec3(1.0);
-	colour = pow(colour, vec3(1.0 / material.gamma));
+    colour = 1.0 - exp(-colour * exposure);
+	colour = pow(colour, vec3(1.0 / gamma));
 
-    colour_Out = vec4(colour, 1.0);
+    outColour = vec4(colour, 1.0);
 }
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)
@@ -159,12 +154,12 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
     return ggx1 * ggx2;
 }
 
-vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 {
     return F0 + (max(vec3(1 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
 }
 
-vec3 fresnelSchlick(float cosTheta, vec3 F0)
+vec3 FresnelSchlick(float cosTheta, vec3 F0)
 {
     return F0 + (1 - F0) * pow(1.0 - cosTheta, 5.0);
 } 

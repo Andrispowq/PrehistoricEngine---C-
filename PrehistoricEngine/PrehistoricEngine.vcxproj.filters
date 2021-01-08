@@ -679,7 +679,6 @@
     </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\deferred\GLAlphaCoverageShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\deferred\GLFXAAShader.h" />
-    <ClInclude Include="src\engine\prehistoric\core\resources\ResourceStorage.h" />
     <ClInclude Include="src\engine\prehistoric\core\resources\Loader.h" />
     <ClInclude Include="src\engine\prehistoric\core\model\obj\OBJLoader.h">
       <Filter>prehistoric\core\model\obj</Filter>
@@ -687,6 +686,8 @@
     <ClInclude Include="src\engine\prehistoric\core\resources\loaders\ShaderLoader.h" />
     <ClInclude Include="src\engine\prehistoric\core\resources\loaders\TextureLoader.h" />
     <ClInclude Include="src\engine\prehistoric\core\resources\loaders\VertexBufferLoader.h" />
+    <ClInclude Include="src\engine\prehistoric\core\resources\AssetManager.h" />
+    <ClInclude Include="src\engine\prehistoric\core\resources\AssembledAssetManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -1055,7 +1056,6 @@
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\deferred\GLAlphaCoverageShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\deferred\GLFXAAShader.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\resources\ResourceStorage.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\resources\Loader.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\model\obj\OBJLoader.cpp">
       <Filter>prehistoric\core\model\obj</Filter>
@@ -1063,5 +1063,7 @@
     <ClCompile Include="src\engine\prehistoric\core\resources\loaders\ShaderLoader.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\resources\loaders\TextureLoader.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\resources\loaders\VertexBufferLoader.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\resources\AssetManager.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\resources\AssembledAssetManager.cpp" />
   </ItemGroup>
 </Project>

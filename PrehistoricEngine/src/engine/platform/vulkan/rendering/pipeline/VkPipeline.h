@@ -15,7 +15,7 @@ namespace Prehistoric
 	class VKPipeline : public Pipeline
 	{
 	public:
-		VKPipeline(Window* window, ResourceStorage* resourceStorage, ShaderHandle shader);
+		VKPipeline(Window* window, AssetManager* manager, ShaderHandle shader);
 		virtual ~VKPipeline() {}
 
 		virtual void BindPipeline(CommandBuffer* buffer) const override { shader->Bind(buffer); this->buffer = buffer; }

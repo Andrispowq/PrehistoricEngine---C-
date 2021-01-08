@@ -9,16 +9,11 @@ struct Material
 {
 	sampler2D albedoMap;
 	sampler2D normalMap;
-	sampler2D displacementMap;
-	sampler2D metallicMap;
-	sampler2D roughnessMap;
-	sampler2D occlusionMap;
-	
+	sampler2D mrotMap;
+
 	float heightScale;
 	float horizontalScale;
-	float metallic;
-	float roughness;
-	float ambientOcclusion;
+	vec4 mrot;
 };
 
 in vec3 position_FS;
@@ -68,32 +63,41 @@ void main()
 	float roughness;
 	float occlusion;
 	
+	vec4 mrot;
 	for(int i = 0; i < 3; i++)
 	{
 		vec2 texCoords = mapCoord_FS * materials[i].horizontalScale;
 	
 		albedoColour += pow(texture(materials[i].albedoMap, texCoords).rgb, vec3(2.2)) * blendValueArray[i];
-	
-		if(materials[i].metallic == -1)
-			metallic += texture(materials[i].metallicMap, texCoords).r * blendValueArray[i];
-		else
-			metallic += materials[i].metallic * blendValueArray[i];
-		
-		if(materials[i].roughness == -1)
-			roughness += texture(materials[i].roughnessMap, texCoords).r * blendValueArray[i];
-		else
-			roughness += materials[i].roughness * blendValueArray[i];
-		
-		if(materials[i].ambientOcclusion == -1)
-			occlusion += texture(materials[i].occlusionMap, texCoords).r * blendValueArray[i];
-		else
-			occlusion += materials[i].ambientOcclusion * blendValueArray[i];
+
+		vec4 mrot_i = materials[i].mrot;
+		vec4 mrotMap = texture(materials[i].mrotMap, texCoords);
+		if (mrot_i.r == -1)
+		{
+			mrot_i.r = mrotMap.r;
+		}
+		if (mrot_i.g == -1)
+		{
+			mrot_i.g = mrotMap.g;
+		}
+		if (mrot_i.b == -1)
+		{
+			mrot_i.b = mrotMap.b;
+		}
+		if (mrot_i.a == -1)
+		{
+			mrot_i.a = mrotMap.a;
+		}
+
+		mrot += mrot_i * blendValueArray[i];
 	}
-	
-	albedoColour = pow(albedoColour, vec3(2.2));
+
+	metallic = mrot.r;
+	roughness = mrot.g;
+	occlusion = mrot.b;
 
 	positionMetallic = vec4(position_FS, metallic);
 	albedoRoughness = vec4(albedoColour, roughness);
-	normalLit = vec4(N, 1.0);
-	emissionExtra = vec4(vec3(0.0), 1.0);
+	normalLit = vec4(N, 0.9);
+	emissionExtra = vec4(vec3(0.0), occlusion);
 }

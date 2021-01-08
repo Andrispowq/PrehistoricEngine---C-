@@ -1,36 +1,36 @@
 #include "Includes.hpp"
 #include "TerrainMaps.h"
 
-#include "prehistoric/core/resources/ResourceStorage.h"
+#include "prehistoric/core/resources/AssembledAssetManager.h"
 #include "prehistoric/core/model/material/Material.h"
 
 namespace Prehistoric
 {
-	TerrainMaps::TerrainMaps(Window* window, ResourceStorage* resourceStorage, const std::string& terrainConfigFile)
+	TerrainMaps::TerrainMaps(Window* window, AssembledAssetManager* manager, const std::string& terrainConfigFile)
 	{
-		this->resourceStorage = resourceStorage;
+		this->manager = manager;
 
 		LoadConfigFile(terrainConfigFile);
 
-		heightmap = resourceStorage->loadTexture(heightmapLocation).value();
-		resourceStorage->addReference<Texture>(heightmap.handle);
+		heightmap = manager->getAssetManager()->loadTexture(heightmapLocation).value();
+		manager->getAssetManager()->addReference<Texture>(heightmap.handle);
 
-		this->normalmapRendererComponent = new NormalMapRenderer(window, resourceStorage, 60, heightmap->getWidth());
+		this->normalmapRendererComponent = new NormalMapRenderer(window, manager, 60, heightmap->getWidth());
 		normalmapRendererComponent->Render(heightmap.pointer);
 		this->normalmap = normalmapRendererComponent->getNormalmap();
 
-		this->splatmapRendererComponent = new SplatMapRenderer(window, resourceStorage, normalmap->getWidth());
+		this->splatmapRendererComponent = new SplatMapRenderer(window, manager, normalmap->getWidth());
 		splatmapRendererComponent->Render(normalmap.pointer);
 		this->splatmap = splatmapRendererComponent->getSplatmap();
 
-		this->query = new TerrainHeightsQuery(window, resourceStorage, heightmap->getWidth());
+		this->query = new TerrainHeightsQuery(window, manager, heightmap->getWidth());
 		query->Query(heightmap.pointer);
 		this->heights = query->getHeights();
 	}
 
 	TerrainMaps::~TerrainMaps()
 	{
-		resourceStorage->removeReference<Texture>(heightmap.handle);
+		manager->getAssetManager()->removeReference<Texture>(heightmap.handle);
 
 		delete normalmapRendererComponent;
 		delete splatmapRendererComponent;
@@ -63,15 +63,21 @@ namespace Prehistoric
 				{
 					if (nameTokens[1] == "add")
 					{
-						materials.push_back(new Material(resourceStorage));
+						materials.push_back(manager->storeMaterial(new Material(manager->getAssetManager())));
 					}
 					else
 					{
-						Material* material = materials[materials.size() - 1];
+						MaterialHandle material = materials[materials.size() - 1];
 
 						if (nameTokens[2] == "texture")
 						{
-							material->addTexture(tokens[1], resourceStorage->loadTexture(tokens[2]).value());
+							SamplerFilter filter;
+							if (tokens[1] == ALBEDO_MAP)
+								filter = Anisotropic;
+							else
+								filter = Trilinear;
+
+							material->addTexture(tokens[1], manager->getAssetManager()->loadTexture(tokens[2], filter, Repeat).value());
 						}
 						else if (nameTokens[2] == "vec4")
 						{

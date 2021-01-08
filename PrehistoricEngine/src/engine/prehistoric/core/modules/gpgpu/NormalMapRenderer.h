@@ -10,14 +10,14 @@
 #include "platform/opengl/rendering/shaders/gpgpu/GLNormalMapShader.h"
 //#include "platform/vulkan/rendering/shaders/gpgpu/VKNormalMapShader.h"
 
+#include "prehistoric/core/resources/AssembledAssetManager.h"
+
 namespace Prehistoric
 {
-	class AssembledAssetManager;
-
 	class NormalMapRenderer
 	{
 	public:
-		NormalMapRenderer(Window* window, ResourceStorage* resourceStorage, float strength, uint32_t N);
+		NormalMapRenderer(Window* window, AssembledAssetManager* manager, float strength, uint32_t N);
 		virtual ~NormalMapRenderer();
 
 		void Render(Texture* heightmap);
@@ -25,7 +25,7 @@ namespace Prehistoric
 		TextureHandle getNormalmap() const { return normalmap; }
 	private:
 		Window* window;
-		ResourceStorage* resourceStorage;
+		AssembledAssetManager* manager;
 
 		PipelineHandle pipeline;
 		TextureHandle normalmap;

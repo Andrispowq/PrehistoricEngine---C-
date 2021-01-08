@@ -10,7 +10,7 @@ namespace Prehistoric
 	class GLPatchVertexBuffer : public PatchVertexBuffer
 	{
 	public:
-		GLPatchVertexBuffer(const std::vector<Vector2f>& vertices);
+		GLPatchVertexBuffer(Window* window, const std::vector<Vector2f>& vertices);
 		virtual ~GLPatchVertexBuffer() override;
 
 		void Bind(CommandBuffer* commandBuffer) const override;

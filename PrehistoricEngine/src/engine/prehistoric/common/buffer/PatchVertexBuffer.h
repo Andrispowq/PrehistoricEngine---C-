@@ -10,7 +10,7 @@ namespace Prehistoric
 	class PatchVertexBuffer : public VertexBuffer
 	{
 	public:
-		PatchVertexBuffer(const std::vector<Vector2f>& vertices) : vertices(vertices) {}
+		PatchVertexBuffer(Window* window, const std::vector<Vector2f>& vertices) : VertexBuffer(window), vertices(vertices) {}
 		virtual ~PatchVertexBuffer() override = 0;
 
 		virtual void Bind(CommandBuffer* commandBuffer) const override = 0;

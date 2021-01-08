@@ -67,17 +67,17 @@ materials.mat_sphere.vec3 emission 0,0,0
 materials.add mat_light0
 materials.mat_light0.vec3 colour 0.78,0.56,0.45
 materials.mat_light0.texture normal oak_NRM
-materials.mat_sphere.vec4 mrot 0.4,0.3,1,-1
+materials.mat_light0.vec4 mrot 0.4,0.3,1,-1
 materials.mat_light0.vec3 emission 0,0,0
 
 materials.add mat_light1
 materials.mat_light1.vec3 colour 0.78,0.56,0.45
-materials.mat_sphere.vec4 mrot 1,0.5,1,-1
+materials.mat_light1.vec4 mrot 1,0.5,1,-1
 # materials.mat_light1.vec3 emission 0,0,0.2
 
 materials.add mat_light2
 materials.mat_light2.vec3 colour 0.78,0.56,0.45
-materials.mat_sphere.vec4 mrot 0,0.3,1,-1
+materials.mat_light2.vec4 mrot 0,0.3,1,-1
 # materials.mat_light2.vec3 emission 0.2,0,0
 
 # GAMEOBJECT CREATION

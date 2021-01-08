@@ -10,14 +10,14 @@
 #include "platform/opengl/rendering/shaders/gpgpu/GLSplatMapShader.h"
 //#include "platform/vulkan/rendering/shaders/gpgpu/VKSplatMapShader.h"
 
+#include "prehistoric/core/resources/AssembledAssetManager.h"
+
 namespace Prehistoric
 {
-	class AssembledAssetManager;
-
 	class SplatMapRenderer
 	{
 	public:
-		SplatMapRenderer(Window* window, ResourceStorage* resourceStorage, uint32_t N);
+		SplatMapRenderer(Window* window, AssembledAssetManager* manager, uint32_t N);
 		virtual ~SplatMapRenderer();
 
 		void Render(Texture* normalmap);
@@ -25,7 +25,7 @@ namespace Prehistoric
 		TextureHandle getSplatmap() { return splatmap; }
 	private:
 		Window* window;
-		ResourceStorage* resourceStorage;
+		AssembledAssetManager* manager;
 
 		PipelineHandle pipeline;
 		TextureHandle splatmap;

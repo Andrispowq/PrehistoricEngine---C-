@@ -18,7 +18,7 @@ namespace Prehistoric
 	class VKMeshVertexBuffer : public MeshVertexBuffer
 	{
 	public:
-		VKMeshVertexBuffer(const Mesh& mesh, Window* window);
+		VKMeshVertexBuffer(Window* window, const Mesh& mesh);
 		virtual ~VKMeshVertexBuffer() {}
 
 		void Bind(CommandBuffer* commandBuffer) const override;

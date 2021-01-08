@@ -35,13 +35,15 @@ namespace Prehistoric
 	template<typename T>
 	inline T* GameObject::GetComponent() const
 	{
-		for (auto component : components)
+		for (auto& component : components)
 		{
 			if (component.second->getComponentType() == T::getStaticComponentType())
 			{
-				return component.second.get();
+				return (T*)component.second.get();
 			}
 		}
+		
+		return nullptr;
 	}
 };
 

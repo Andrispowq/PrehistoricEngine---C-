@@ -3,11 +3,8 @@
 
 #include "prehistoric/core/model/Mesh.h"
 
+#include "prehistoric/common/framework/Window.h"
 #include "prehistoric/common/rendering/command/CommandBuffer.h"
-
-#if !defined(HANDLE_OF)
-#define HANDLE_OF(type) typedef struct type##_handle_t { type* pointer = nullptr; size_t handle = -1; type* operator->() { return pointer;}; type* const operator->() const { return pointer;} } type##Handle
-#endif
 
 namespace Prehistoric
 {
@@ -19,7 +16,7 @@ namespace Prehistoric
 	class VertexBuffer
 	{
 	public:
-		VertexBuffer() : size(0), indexed(false), frontFace(FrontFace::COUNTER_CLOCKWISE) {}
+		VertexBuffer(Window* window) : window(window), size(0), indexed(false), frontFace(FrontFace::COUNTER_CLOCKWISE) {}
 		virtual ~VertexBuffer() = 0;
 
 		virtual void Bind(CommandBuffer* commandBuffer) const = 0;
@@ -34,13 +31,13 @@ namespace Prehistoric
 		VertexBuffer(VertexBuffer&&) = delete;
 		VertexBuffer& operator=(VertexBuffer) = delete;
 	protected:
+		Window* window;
+
 		uint32_t size;
 		bool indexed;
 
 		FrontFace frontFace;
 	};
-
-	HANDLE_OF(VertexBuffer);
 };
 
 #endif

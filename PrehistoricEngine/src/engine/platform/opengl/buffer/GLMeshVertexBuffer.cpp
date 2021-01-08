@@ -3,8 +3,8 @@
 
 namespace Prehistoric
 {
-	GLMeshVertexBuffer::GLMeshVertexBuffer(const Mesh& mesh)
-		: MeshVertexBuffer(mesh)
+	GLMeshVertexBuffer::GLMeshVertexBuffer(Window* window, const Mesh& mesh)
+		: MeshVertexBuffer(window, mesh)
 	{
 		size = static_cast<uint32_t>(mesh.getIndices().size());
 

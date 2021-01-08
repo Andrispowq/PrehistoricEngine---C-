@@ -1,10 +1,6 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
-#if !defined(HANDLE_OF)
-#define HANDLE_OF(type) typedef struct type##_handle_t { type* pointer = nullptr; size_t handle = -1; type* operator->() { return pointer;}; type* const operator->() const { return pointer;} } type##Handle
-#endif
-
 namespace Prehistoric
 {
 	//from vulkan.h
@@ -72,8 +68,6 @@ namespace Prehistoric
 
 		static int currID;
 	};
-
-	HANDLE_OF(Texture);
 };
 
 #endif

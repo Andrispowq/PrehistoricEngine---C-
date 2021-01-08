@@ -1,11 +1,11 @@
 #include "Includes.hpp"
 #include "TerrainQuadtree.h"
 
-#include "prehistoric/core/resources/ResourceStorage.h"
+#include "prehistoric/core/resources/AssembledAssetManager.h"
 
 namespace Prehistoric
 {
-	TerrainQuadtree::TerrainQuadtree(Window* window, Camera* camera, TerrainMaps* maps, ResourceStorage* resourceStorage)
+	TerrainQuadtree::TerrainQuadtree(Window* window, Camera* camera, TerrainMaps* maps, AssembledAssetManager* manager)
 		: window(window), camera(camera), maps(maps), factory{ 512 }
 	{
 		ShaderHandle shader;
@@ -17,25 +17,25 @@ namespace Prehistoric
 
 		if (FrameworkConfig::api == OpenGL)
 		{
-			vbo = new GLPatchVertexBuffer(generatePatch());
-			VertexBufferHandle vboHandle = resourceStorage->storeVertexBuffer(vbo);
+			vbo = new GLPatchVertexBuffer(window, generatePatch());
+			VertexBufferHandle vboHandle = manager->getAssetManager()->storeVertexBuffer(vbo);
 
-			shader = resourceStorage->loadShader("terrain").value();
-			wireframeShader = resourceStorage->loadShader("terrain_wireframe").value();
+			shader = manager->getAssetManager()->loadShader("terrain").value();
+			wireframeShader = manager->getAssetManager()->loadShader("terrain_wireframe").value();
 
-			pipeline = resourceStorage->storePipeline(new GLGraphicsPipeline(window, resourceStorage, shader, vboHandle));
-			wireframePipeline = resourceStorage->storePipeline(new GLGraphicsPipeline(window, resourceStorage, wireframeShader, vboHandle));
+			pipeline = manager->storePipeline(new GLGraphicsPipeline(window, manager->getAssetManager(), shader, vboHandle));
+			wireframePipeline = manager->storePipeline(new GLGraphicsPipeline(window, manager->getAssetManager(), wireframeShader, vboHandle));
 		}
 		else if (FrameworkConfig::api == Vulkan)
 		{
-			//vbo = new VKPatchVertexBuffer(generatePatch());
-			//VertexBufferHandle vboHandle = resourceStorage->storeVertexBuffer(vbo);
+			//vbo = new VKPatchVertexBuffer(window, generatePatch());
+			//VertexBufferHandle vboHandle = manager->getAssetManager()->storeVertexBuffer(vbo);
 			//
-			//shader = resourceStorage->loadShader("terrain").value();
-			//wireframeShader = resourceStorage->loadShader("terrain_wireframe").value();
+			//shader = manager->getAssetManager()->loadShader("terrain").value();
+			//wireframeShader = manager->getAssetManager()->loadShader("terrain_wireframe").value();
 			//
-			//pipeline = resourceStorage->storePipeline(new VKGraphicsPipeline(window, resourceStorage, shader, vboHandle));
-			//wireframePipeline = resourceStorage->storePipeline(new VKGraphicsPipeline(window, resourceStorage, wireframeShader, vboHandle));
+			//pipeline = manager->storePipeline(new VKGraphicsPipeline(window, manager->getAssetManager(), shader, vboHandle));
+			//wireframePipeline = manager->storePipeline(new VKGraphicsPipeline(window, manager->getAssetManager(), wireframeShader, vboHandle));
 		}
 
 		for (int i = 0; i < rootNodes; i++)
@@ -48,7 +48,7 @@ namespace Prehistoric
 				ss << ", ";
 				ss << j;
 
-				AddChild(ss.str(), new/*(factory)*/ TerrainNode(&factory, window, camera, resourceStorage, maps, pipeline, wireframePipeline,
+				AddChild(ss.str(), new/*(factory)*/ TerrainNode(&factory, window, camera, manager, maps, pipeline, wireframePipeline,
 					{ i / (float)rootNodes, j / (float)rootNodes }, 0, { float(i), float(j) }));
 			}
 		}

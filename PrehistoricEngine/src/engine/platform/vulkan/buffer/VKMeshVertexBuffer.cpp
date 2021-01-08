@@ -5,8 +5,8 @@
 
 namespace Prehistoric
 {
-	VKMeshVertexBuffer::VKMeshVertexBuffer(const Mesh& mesh, Window* window)
-		: MeshVertexBuffer(mesh), vertexBuffer(nullptr), indexBuffer(nullptr)
+	VKMeshVertexBuffer::VKMeshVertexBuffer(Window* window, const Mesh& mesh)
+		: MeshVertexBuffer(window, mesh), vertexBuffer(nullptr), indexBuffer(nullptr)
 	{
 		this->physicalDevice = reinterpret_cast<VKPhysicalDevice*>(window->getContext()->getPhysicalDevice());
 		this->device = reinterpret_cast<VKDevice*>(window->getContext()->getDevice());

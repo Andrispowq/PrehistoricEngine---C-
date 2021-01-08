@@ -11,7 +11,7 @@ namespace Prehistoric
 	class GLGraphicsPipeline : public GLPipeline, public GraphicsPipeline
 	{
 	public:
-		GLGraphicsPipeline(Window* window, ResourceStorage* resourceStorage, ShaderHandle shader, VertexBufferHandle vbo);
+		GLGraphicsPipeline(Window* window, AssetManager* manager, ShaderHandle shader, VertexBufferHandle vbo);
 		virtual ~GLGraphicsPipeline() {}
 
 		virtual void BindPipeline(CommandBuffer* buffer) const override;

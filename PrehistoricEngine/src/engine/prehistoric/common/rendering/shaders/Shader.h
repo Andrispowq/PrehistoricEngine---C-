@@ -7,10 +7,6 @@
 #include "prehistoric/core/util/math/Math.h"
 #include "prehistoric/common/rendering/command/CommandBuffer.h"
 
-#if !defined(HANDLE_OF)
-#define HANDLE_OF(type) typedef struct type##_handle_t { type* pointer = nullptr; size_t handle = -1; type* operator->() { return pointer;}; type* const operator->() const { return pointer;} } type##Handle
-#endif
-
 namespace Prehistoric
 {
 	enum ShaderType
@@ -115,8 +111,6 @@ namespace Prehistoric
 	protected:
 		mutable uint32_t counter;
 	};
-
-	HANDLE_OF(Shader);
 };
 
 #endif

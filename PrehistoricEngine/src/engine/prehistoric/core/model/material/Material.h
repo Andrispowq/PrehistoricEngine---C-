@@ -5,18 +5,14 @@
 #include "prehistoric/core/util/math/Math.h"
 #include "prehistoric/core/resources/loaders/TextureLoader.h"
 
-#if !defined(HANDLE_OF)
-#define HANDLE_OF(type) typedef struct type##_handle_t { type* pointer = nullptr; size_t handle = -1; type* operator->() { return pointer;}; type* const operator->() const { return pointer;} } type##Handle
-#endif
+#include "prehistoric/core/resources/AssetManager.h"
 
 namespace Prehistoric
 {
-	class ResourceStorage;
-
 	class Material
 	{
 	public:
-		Material(ResourceStorage* resourceStorage);
+		Material(AssetManager* manager);
 		~Material();
 
 		void addTexture(const std::string& key, TextureHandle texture);
@@ -38,7 +34,7 @@ namespace Prehistoric
 		Texture* getDefault() const;
 		bool exists(const std::string& key) const { return textures.find(key) != textures.end(); }
 	private:
-		ResourceStorage* resourceStorage;
+		AssetManager* manager;
 
 		std::unordered_map<std::string, TextureHandle> textures;
 		std::unordered_map<std::string, Vector4f> vector4s;
@@ -47,8 +43,6 @@ namespace Prehistoric
 		std::unordered_map<std::string, float> floats;
 		std::unordered_map<std::string, int> ints;
 	};
-
-	HANDLE_OF(Material);
 };
 
 #endif

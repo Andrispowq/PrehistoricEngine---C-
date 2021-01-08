@@ -3,12 +3,14 @@
 
 namespace Prehistoric
 {
-	void WorldLoader::LoadWorld(const std::string& worldFile, GameObject* root, Window* window, ResourceStorage* resourceStorage)
+	void WorldLoader::LoadWorld(const std::string& worldFile, GameObject* root, Window* window, AssembledAssetManager* manager)
 	{
 		std::ifstream file;
 		file.open(worldFile.c_str());
 
 		std::string line;
+
+		AssetManager* man = manager->getAssetManager();
 
 		if (file.is_open())
 		{
@@ -39,7 +41,7 @@ namespace Prehistoric
 				{
 					if (nameTokens[1] == "load")
 					{
-						VertexBufferHandle vbo = resourceStorage->loadVertexBuffer(std::nullopt, directoryModels + tokens[2]).value();
+						VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, directoryModels + tokens[2]).value();
 
 						if (tokens.size() > 3)
 						{
@@ -69,7 +71,7 @@ namespace Prehistoric
 				{
 					if (nameTokens[1] == "load")
 					{
-						textures.insert(std::make_pair(tokens[1], resourceStorage->loadTexture(directoryTextures + tokens[2]).value()));
+						textures.insert(std::make_pair(tokens[1], man->loadTexture(directoryTextures + tokens[2], Anisotropic).value()));
 					}
 				}
 
@@ -78,7 +80,7 @@ namespace Prehistoric
 				{
 					if (nameTokens[1] == "add")
 					{
-						MaterialHandle material = resourceStorage->storeMaterial(new Material(resourceStorage));
+						MaterialHandle material = manager->storeMaterial(new Material(man));
 						materials.insert(std::make_pair(tokens[1], material));
 					}
 					else
@@ -99,7 +101,7 @@ namespace Prehistoric
 
 							if (index == textures.end())
 							{
-								PR_LOG_ERROR("Texture (name: %s) does not exist, or haven't been created in the world file!\n", tokens[1].c_str());
+								PR_LOG_ERROR("Texture (name: %s) does not exist, or hasn't been created in the world file!\n", tokens[1].c_str());
 								continue;
 							}
 
@@ -240,7 +242,7 @@ namespace Prehistoric
 							}
 							else
 							{
-								shader = resourceStorage->loadShader(compTokens[1]).value();
+								shader = man->loadShader(compTokens[1]).value();
 								shaders.insert(std::make_pair(compTokens[1], shader));
 							}
 
@@ -255,20 +257,20 @@ namespace Prehistoric
 
 								if (FrameworkConfig::api == OpenGL)
 								{
-									_pipeline = new GLGraphicsPipeline(window, resourceStorage, shader, vbo);
+									_pipeline = new GLGraphicsPipeline(window, man, shader, vbo);
 									reinterpret_cast<GLGraphicsPipeline*>(_pipeline)->setBackfaceCulling(true);
 								}
 								else if (FrameworkConfig::api == Vulkan)
 								{
-									_pipeline = new VKGraphicsPipeline(window, resourceStorage, shader, vbo);
+									_pipeline = new VKGraphicsPipeline(window, man, shader, vbo);
 									reinterpret_cast<VKGraphicsPipeline*>(_pipeline)->setBackfaceCulling(true);
 								}
 
-								pipeline = resourceStorage->storePipeline(_pipeline);
+								pipeline = manager->storePipeline(_pipeline);
 								pipelines.emplace(std::make_pair(compTokens[0] + "," + compTokens[1], pipeline));
 							}
 
-							RendererComponent* renderer = new RendererComponent(pipeline, material, window, resourceStorage);
+							RendererComponent* renderer = new RendererComponent(window, manager, pipeline, material);
 
 							obj->AddComponent(tokens[1], renderer);
 						}
@@ -323,7 +325,7 @@ namespace Prehistoric
 									}
 									else
 									{
-										shader = resourceStorage->loadShader(compTokens[1]).value();
+										shader = man->loadShader(compTokens[1]).value();
 										shaders.insert(std::make_pair(compTokens[1], shader));
 									}
 
@@ -338,20 +340,20 @@ namespace Prehistoric
 
 										if (FrameworkConfig::api == OpenGL)
 										{
-											_pipeline = new GLGraphicsPipeline(window, resourceStorage, shader, vbo);
+											_pipeline = new GLGraphicsPipeline(window, man, shader, vbo);
 											reinterpret_cast<GLGraphicsPipeline*>(_pipeline)->setBackfaceCulling(true);
 										}
 										else if (FrameworkConfig::api == Vulkan)
 										{
-											_pipeline = new VKGraphicsPipeline(window, resourceStorage, shader, vbo);
+											_pipeline = new VKGraphicsPipeline(window, man, shader, vbo);
 											reinterpret_cast<VKGraphicsPipeline*>(_pipeline)->setBackfaceCulling(true);
 										}
 
-										pipeline = resourceStorage->storePipeline(_pipeline);
-										pipelines.insert(std::make_pair(compTokens[0] + "," + compTokens[1], pipeline));
+										pipeline = manager->storePipeline(_pipeline);
+										pipelines.emplace(std::make_pair(compTokens[0] + "," + compTokens[1], pipeline));
 									}
 
-									RendererComponent* renderer = new RendererComponent(pipeline, material, window, resourceStorage);
+									RendererComponent* renderer = new RendererComponent(window, manager, pipeline, material);
 
 									obj->AddComponent(tokens[1], renderer);
 

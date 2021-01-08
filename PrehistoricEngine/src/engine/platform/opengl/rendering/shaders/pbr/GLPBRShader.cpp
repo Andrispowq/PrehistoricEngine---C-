@@ -18,15 +18,15 @@ namespace Prehistoric
 		AddUniform("cameraPosition");
 		AddUniform("highDetailRange");
 
-		albedoMap = glGetUniformLocation(program, "material.albedoMap");
-		normalMap = glGetUniformLocation(program, "material.normalMap");
-		mrotMap = glGetUniformLocation(program, "material.mrotMap");
-		emissionMap = glGetUniformLocation(program, "material.emissionMap");
+		albedoMap = glGetUniformLocation(program, (std::string("material.") + ALBEDO_MAP).c_str());
+		normalMap = glGetUniformLocation(program, (std::string("material.") + NORMAL_MAP).c_str());
+		mrotMap = glGetUniformLocation(program, (std::string("material.") + MROT_MAP).c_str());
+		emissionMap = glGetUniformLocation(program, (std::string("material.") + EMISSION_MAP).c_str());
 
-		colour = glGetUniformLocation(program, "material.colour");
-		usesNormalMap = glGetUniformLocation(program, "material.usesNormalMap");
-		mrot = glGetUniformLocation(program, "material.mrot");
-		emission = glGetUniformLocation(program, "material.emission");
+		colour = glGetUniformLocation(program, (std::string("material.") + COLOUR).c_str());
+		usesNormalMap = glGetUniformLocation(program, (std::string("material.") + USES_NORMAL_MAP).c_str());
+		mrot = glGetUniformLocation(program, (std::string("material.") + MROT).c_str());
+		emission = glGetUniformLocation(program, (std::string("material.") + EMISSION).c_str());
 
 		AddUniform("highDetailRange");
 	}
@@ -45,18 +45,18 @@ namespace Prehistoric
 
 		Material* material = static_cast<RendererComponent*>(object->GetComponent(RENDERER_COMPONENT))->getMaterial();
 
-		material->getTexture("albedoMap")->Bind(0);
+		material->getTexture(ALBEDO_MAP)->Bind(0);
 		SetUniformi(albedoMap, 0);
-		material->getTexture("normalMap")->Bind(1);
+		material->getTexture(NORMAL_MAP)->Bind(1);
 		SetUniformi(normalMap, 1);
-		material->getTexture("mrotMap")->Bind(2);
+		material->getTexture(MROT_MAP)->Bind(2);
 		SetUniformi(mrotMap, 2);
-		material->getTexture("emissionMap")->Bind(3);
+		material->getTexture(EMISSION_MAP)->Bind(3);
 		SetUniformi(emissionMap, 3);
 
-		SetUniform(colour, material->getVector3f("colour"));
-		SetUniformi(usesNormalMap, material->exists("normalMap"));
-		SetUniform(mrot, material->getVector4f("mrot"));
-		SetUniform(emission, material->getVector3f("emission"));
+		SetUniform(colour, material->getVector3f(COLOUR));
+		SetUniformi(usesNormalMap, material->exists(NORMAL_MAP));
+		SetUniform(mrot, material->getVector4f(MROT));
+		SetUniform(emission, material->getVector3f(EMISSION));
 	}
 };

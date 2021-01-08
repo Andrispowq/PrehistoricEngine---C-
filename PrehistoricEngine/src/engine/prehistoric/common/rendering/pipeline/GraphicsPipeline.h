@@ -3,14 +3,14 @@
 
 #include "Pipeline.h"
 
-#include "prehistoric/core/resources/ResourceStorage.h"
+#include "prehistoric/core/resources/AssembledAssetManager.h"
 
 namespace Prehistoric
 {
 	class GraphicsPipeline
 	{
 	public:
-		GraphicsPipeline(ResourceStorage* resourceStorage, VertexBufferHandle handle);
+		GraphicsPipeline(AssetManager* manager, VertexBufferHandle handle);
 		GraphicsPipeline() : backfaceCulling(false) {}
 
 		virtual ~GraphicsPipeline();
@@ -20,7 +20,7 @@ namespace Prehistoric
 		bool isBackfaceCulling() const { return backfaceCulling; }
 		void setBackfaceCulling(bool backfaceCulling) { this->backfaceCulling = backfaceCulling; }
 	protected:
-		ResourceStorage* resourceStorage;
+		AssetManager* manager;
 
 		VertexBufferHandle vbo;
 		bool backfaceCulling;

@@ -1,12 +1,10 @@
 #include "Includes.hpp"
 #include "GLComputePipeline.h"
 
-#include "prehistoric/core/resources/ResourceStorage.h"
-
 namespace Prehistoric
 {
-	GLComputePipeline::GLComputePipeline(Window* window, ResourceStorage* resourceStorage, ShaderHandle shader)
-		: GLPipeline(window, resourceStorage, shader), ComputePipeline()
+	GLComputePipeline::GLComputePipeline(Window* window, AssetManager* manager, ShaderHandle shader)
+		: GLPipeline(window, manager, shader), ComputePipeline()
 	{
 	}
 

@@ -15,13 +15,11 @@ namespace Prehistoric
 
 		AddUniform("cameraPosition");
 
-		albedoMap = glGetUniformLocation(program, "material.albedoMap");
-		metallicMap = glGetUniformLocation(program, "material.metallicMap");
-		roughnessMap = glGetUniformLocation(program, "material.roughnessMap");
+		albedoMap = glGetUniformLocation(program, (std::string("material.") + ALBEDO_MAP).c_str());
+		mrotMap = glGetUniformLocation(program, (std::string("material.") + MROT_MAP).c_str());
 
-		colour = glGetUniformLocation(program, "material.colour");
-		metallic = glGetUniformLocation(program, "material.metallic");
-		roughness = glGetUniformLocation(program, "material.roughness");
+		colour = glGetUniformLocation(program, (std::string("material.") + COLOUR).c_str());
+		mrot = glGetUniformLocation(program, (std::string("material.") + MROT).c_str());
 	}
 
 	void GLBasicShader::UpdateShaderUniforms(Camera* camera, const std::vector<Light*>& lights, uint32_t instance_index) const
@@ -35,17 +33,14 @@ namespace Prehistoric
 	{
 		SetUniform(m_transform, object->getWorldTransform().getTransformationMatrix());
 
-		Material* material = dynamic_cast<RendererComponent*>(object->GetComponent("RendererComponent"))->getMaterial();
+		Material* material = object->GetComponent<RendererComponent>()->getMaterial();
 
-		material->getTexture("albedoMap")->Bind(0);
+		material->getTexture(ALBEDO_MAP)->Bind(0);
 		SetUniformi(albedoMap, 0);
-		material->getTexture("metallicMap")->Bind(1);
-		SetUniformi(metallicMap, 2);
-		material->getTexture("roughnessMap")->Bind(2);
-		SetUniformi(roughnessMap, 2);
+		material->getTexture(MROT_MAP)->Bind(1);
+		SetUniformi(mrotMap, 1);
 
-		SetUniform(colour, material->getVector3f("colour"));
-		SetUniformf(metallic, material->getFloat("metallic"));
-		SetUniformf(roughness, material->getFloat("roughness"));
+		SetUniform(colour, material->getVector3f(COLOUR));
+		SetUniform(mrot, material->getVector4f(MROT));
 	}
 };

@@ -35,7 +35,7 @@ namespace Prehistoric
 
 		if (FrameworkConfig::api == OpenGL)
 		{
-			camera = std::make_unique<Camera>(5.0f, 50.0f, 0.8f, 80.0f, Vector3f(0, 5, -2));//Vector3f(-178, 102, -47));
+			camera = std::make_unique<Camera>(5.0f, 50.0f, 0.8f, 80.0f, Vector3f(-178, 102, -47));//Vector3f(0, 5, -2));;
 			camera->RotateY(-80);
 			camera->RotateX(30);
 		}
@@ -59,19 +59,22 @@ namespace Prehistoric
 		delete camera.release();
 	}
 
-	void RenderingEngine::Init(ResourceStorage* resourceStorage)
+	void RenderingEngine::Init(AssembledAssetManager* manager)
 	{
 		if (FrameworkConfig::api == OpenGL)
 		{
-			renderer = std::make_unique<GLRenderer>(window.get(), camera.get(), resourceStorage);
+			renderer = std::make_unique<GLRenderer>(window.get(), camera.get(), manager);
 		}
 		else if (FrameworkConfig::api == Vulkan)
 		{
-			renderer = std::make_unique<VKRenderer>(window.get(), camera.get(), resourceStorage);
+			renderer = std::make_unique<VKRenderer>(window.get(), camera.get(), manager);
 		}
 
-		glEnable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LEQUAL);
+		if (FrameworkConfig::api == OpenGL)
+		{
+			glEnable(GL_DEPTH_TEST);
+			glDepthFunc(GL_LEQUAL);
+		}
 	}
 
 	void RenderingEngine::OnEvent(Event& event)

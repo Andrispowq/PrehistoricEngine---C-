@@ -5,7 +5,7 @@ layout (line_strip, max_vertices = 4) out;
 
 struct Material
 {
-	sampler2D displacementMap;
+	sampler2D mrotMap;
 	
 	float heightScale;
 	float horizontalScale;
@@ -71,8 +71,8 @@ void main()
 			float scale = 0;
 			for(int j = 0; j < 3; j++)
 			{
-				scale += texture(materials[j].displacementMap, mapCoord_GS[i]
-							* materials[j].horizontalScale).r 
+				scale += texture(materials[j].mrotMap, mapCoord_GS[i]
+							* materials[j].horizontalScale).a
 							* materials[j].heightScale
 							* blendValueArray[j];
 			}

@@ -3,17 +3,17 @@
 
 namespace Prehistoric
 {
-	GraphicsPipeline::GraphicsPipeline(ResourceStorage* resourceStorage, VertexBufferHandle vbo)
+	GraphicsPipeline::GraphicsPipeline(AssetManager* manager, VertexBufferHandle vbo)
 	{
-		this->resourceStorage = resourceStorage;
+		this->manager = manager;
 		this->backfaceCulling = true;
 
 		this->vbo = vbo;
-		resourceStorage->addReference<VertexBuffer>(vbo.handle);
+		manager->addReference<VertexBuffer>(vbo.handle);
 	}
 
 	GraphicsPipeline::~GraphicsPipeline()
 	{
-		resourceStorage->removeReference<VertexBuffer>(vbo.handle);
+		manager->removeReference<VertexBuffer>(vbo.handle);
 	}
 };
