@@ -80,6 +80,27 @@ namespace Prehistoric
 		audioEngine->OnEvent(event);
 	}
 
+	void CoreEngine::SetScene(Scene* scene)
+	{
+		this->sceneRoot = scene->getSceneRoot();
+		this->scene = scene;
+
+		bool found = false;
+		for (auto child : root->getChildren())
+		{
+			if (child.second == (Node*)sceneRoot)
+			{
+				child.second->setEnabled(true);
+				found = true;
+			}
+		}
+
+		if (!found)
+		{
+			root->AddChild(scene->getName(), sceneRoot);
+		}
+	}
+
 	void CoreEngine::AddGameObject(const std::string& name, GameObject* gameobject)
 	{
 		root->AddChild(name, gameobject);

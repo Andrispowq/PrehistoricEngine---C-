@@ -6,7 +6,7 @@
 class PrehistoricScene : public Prehistoric::Scene
 {
 public:
-	PrehistoricScene(Prehistoric::GameObject* root, Prehistoric::Window* window, Prehistoric::Camera* camera, 
+	PrehistoricScene(const std::string& name, Prehistoric::GameObject* root, Prehistoric::Window* window, Prehistoric::Camera* camera, 
 		Prehistoric::AssembledAssetManager* manager, const std::string& worldFile);
 	virtual ~PrehistoricScene();
 };

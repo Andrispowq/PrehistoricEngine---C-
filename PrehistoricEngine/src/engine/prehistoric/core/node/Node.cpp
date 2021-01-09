@@ -7,6 +7,9 @@ namespace Prehistoric
 {
     void Node::PreUpdate(CoreEngine* engine)
     {
+        if (!enabled)
+            return;
+
         for (auto& child : children)
         {
             child.second->PreUpdate(engine);
@@ -15,6 +18,9 @@ namespace Prehistoric
 
     void Node::PreRender(Renderer* renderer)
     {
+        if (!enabled)
+            return;
+
         for (auto& child : children)
         {
             child.second->PreRender(renderer);

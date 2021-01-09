@@ -33,6 +33,9 @@ namespace Prehistoric
         inline void SetRotation(const Vector3f& d) { worldTransform.setRotation(d); }
         inline void SetScale(const Vector3f& d) { worldTransform.setScaling(d); }
 
+        inline bool isEnabled() const { return enabled; }
+        inline void setEnabled(bool enabled) { this->enabled = enabled; }
+
         std::unordered_map<std::string, Node*> getChildren() const;
 
         Node(const Node&) = default;
@@ -41,6 +44,7 @@ namespace Prehistoric
         Node* parent;
 
         Transform worldTransform;
+        bool enabled;
     };
 };
 

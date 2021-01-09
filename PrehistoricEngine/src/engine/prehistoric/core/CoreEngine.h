@@ -38,7 +38,7 @@ namespace Prehistoric
 		/*
 			Replaces the current scene with the loaded one. Does not delete the old one, and does no management whatsoever -> this is the client's job
 		*/
-		void setScene(Scene* scene) { this->scene = scene; }
+		void SetScene(Scene* scene);
 
 		inline RenderingEngine* getRenderingEngine() const { return renderingEngine.get(); }
 		inline AudioEngine* getAudioEngine() const { return audioEngine.get(); }
@@ -70,6 +70,7 @@ namespace Prehistoric
 		std::unique_ptr<AudioEngine> audioEngine;
 
 		//Our currently loaded scene, can be changed at any time
+		GameObject* sceneRoot;
 		Scene* scene;
 
 		//Frametime, set once per update

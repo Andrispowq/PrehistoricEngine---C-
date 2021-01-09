@@ -15,9 +15,9 @@ static void sun_move_function(Prehistoric::GameObject* object, float frameTime)
 	object->SetPosition({ x, y, 0 });
 }
 
-PrehistoricScene::PrehistoricScene(Prehistoric::GameObject* root, Prehistoric::Window* window, Prehistoric::Camera* camera, 
+PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObject* root, Prehistoric::Window* window, Prehistoric::Camera* camera,
 	Prehistoric::AssembledAssetManager* manager, const std::string& worldFile)
-	: Scene(root, window, camera, manager)
+	: Scene(name, root, window, camera, manager)
 {
 	using namespace Prehistoric;
 
@@ -94,9 +94,6 @@ PrehistoricScene::PrehistoricScene(Prehistoric::GameObject* root, Prehistoric::W
 		slider2->SetPosition({ 0.5f, 0.25f, 0 });
 		slider2->SetScale({ 0.125f, 0.05f, 1 });
 		root->AddChild("slider2", slider2);
-
-		EnvironmentMapRenderer::instance = new EnvironmentMapRenderer(window, manager);
-		EnvironmentMapRenderer::instance->GenerateEnvironmentMap();
 
 		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/sphere.obj").value();
 		vbo->setFrontFace(FrontFace::CLOCKWISE);
