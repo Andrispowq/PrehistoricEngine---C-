@@ -143,13 +143,9 @@ project "Prehistoric"
         defines
         {
             "PR_FAST_MATH"
+            -- "PR_FAST_MATH",
+            -- "PR_LOAD_DLL"
         }
-        
-        -- defines
-        -- {
-        --     "PR_FAST_MATH",
-        --     "PR_LOAD_DLL"
-        -- }
     
     filter "configurations:Debug"
         defines "PR_DEBUG"

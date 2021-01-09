@@ -8,7 +8,13 @@
 #define PREHISTORIC_INCLUDE
 
 PrehistoricApp::PrehistoricApp()
+	: scene{nullptr}
 {
+	scene = std::make_unique<PrehistoricScene>(engine.getRootObject(), engine.getRenderingEngine()->getWindow(),
+		engine.getRenderingEngine()->getCamera(), engine.getAssetManager(), "res/world/testLevel.wrld");
+
+	engine.setScene(scene.get());
+
 	//Example creation of an object, without bringing the prehistoric namespace in
 #if defined(PREHISTORIC_INCLUDE)
 	using namespace Prehistoric;

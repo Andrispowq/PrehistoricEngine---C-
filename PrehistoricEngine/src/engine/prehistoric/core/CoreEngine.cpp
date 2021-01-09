@@ -4,7 +4,7 @@
 namespace Prehistoric
 {
 	CoreEngine::CoreEngine(const std::string& configPath, const std::string& worldFile)
-		: root(nullptr), scene(nullptr), renderingEngine(nullptr), audioEngine(nullptr), manager(nullptr)
+		: root(nullptr), renderingEngine(nullptr), audioEngine(nullptr), manager(nullptr)
 	{
 		running = false;
 
@@ -12,14 +12,12 @@ namespace Prehistoric
 
 		LoadConfigurationFiles(configPath);
 		LoadEngines();
-		LoadScene(worldFile);
 	}
 
 	CoreEngine::~CoreEngine()
 	{
 		//The order is VERY important here, hence the deletion by hand
 		Input::DeleteInstance();
-		delete scene.release();
 		delete root.release();
 
 		delete audioEngine.release();
@@ -56,11 +54,6 @@ namespace Prehistoric
 		//Manager and the renderers in the rendering engine
 		manager = std::make_unique<AssembledAssetManager>(renderingEngine->getWindow());
 		renderingEngine->Init(manager.get());
-	}
-
-	void CoreEngine::LoadScene(const std::string& worldFile)
-	{
-		scene = std::make_unique<Scene>(root.get(), renderingEngine->getWindow(), manager.get(), renderingEngine->getCamera(), worldFile);
 	}
 
 	void CoreEngine::Update(float frameTime)

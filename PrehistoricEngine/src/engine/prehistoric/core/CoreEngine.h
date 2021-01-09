@@ -30,15 +30,20 @@ namespace Prehistoric
 
 		void LoadConfigurationFiles(const std::string& path);
 		void LoadEngines();
-		void LoadScene(const std::string& worldFile);
 
 		void AddGameObject(const std::string& name, GameObject* gameobject);
 
 		void OnEvent(Event& event);
 
+		/*
+			Replaces the current scene with the loaded one. Does not delete the old one, and does no management whatsoever -> this is the client's job
+		*/
+		void setScene(Scene* scene) { this->scene = scene; }
+
 		inline RenderingEngine* getRenderingEngine() const { return renderingEngine.get(); }
 		inline AudioEngine* getAudioEngine() const { return audioEngine.get(); }
 
+		inline GameObject* getRootObject() const { return root.get(); }
 		inline AssembledAssetManager* getAssetManager() const { return manager.get(); }
 
 		inline float getFrameTime() const { return (float)frameTime; }
@@ -56,7 +61,6 @@ namespace Prehistoric
 	private:
 		//Root object
 		std::unique_ptr<GameObject> root;
-		std::unique_ptr<Scene> scene;
 
 		//The asset manager
 		std::unique_ptr<AssembledAssetManager> manager;
@@ -64,6 +68,9 @@ namespace Prehistoric
 		//Engines
 		std::unique_ptr<RenderingEngine> renderingEngine;
 		std::unique_ptr<AudioEngine> audioEngine;
+
+		//Our currently loaded scene, can be changed at any time
+		Scene* scene;
 
 		//Frametime, set once per update
 		bool running;

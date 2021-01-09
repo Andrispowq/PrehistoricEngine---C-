@@ -136,9 +136,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\PrehistoricApp.h" />
+    <ClInclude Include="src\scene\PrehistoricScene.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\PrehistoricApp.cpp" />
+    <ClCompile Include="src\scene\PrehistoricScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PrehistoricEngine\PrehistoricEngine.vcxproj">
