@@ -41,6 +41,9 @@ textures.load metal_DIF metalFloor/metalFloor_DIF.png
 textures.load metal_NRM metalFloor/metalFloor_NRM.png
 textures.load metal_MROT metalFloor/metalFloor_MROT.png
 
+# This means that the textures are loaded asynchronously, on separate threads, and this command launches the execution
+textures.dispatch
+
 # CREATING MATERIALS FROM TEXTURES AND OTHER DATA
 # add will create a new Material
 # Material components: texture, vec4, vec3, vec2, float, int

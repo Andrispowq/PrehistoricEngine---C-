@@ -43,6 +43,7 @@ namespace Prehistoric
 
 		std::string heightmapLocation;
 		std::vector<MaterialHandle> materials;
+		std::vector<std::pair<size_t, std::string>> textureLocations;
 	};
 };
 

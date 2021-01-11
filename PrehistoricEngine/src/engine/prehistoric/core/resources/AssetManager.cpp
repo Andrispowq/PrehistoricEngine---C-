@@ -36,7 +36,17 @@ namespace Prehistoric
 	std::optional<TextureHandle> AssetManager::loadTexture(const std::string& location, SamplerFilter filter, TextureWrapMode wrapMode, BatchSettings settings)
 	{
 		if (settings == BatchSettings::QueuedLoad)
+		{
+			/*
+				We don't know when the commands will be dispatched, so we can't use a stack variable here
+			*/
+			TextureLoaderExtra* extra = new TextureLoaderExtra;
+			extra->filter = filter;
+			extra->wrapMode = wrapMode;
+
+			textureLoader->LoadResource(false, location, extra);
 			return std::nullopt;
+		}
 
 		auto index = ID_map.find(location);
 		if (index != ID_map.end())
@@ -67,9 +77,6 @@ namespace Prehistoric
 
 	std::optional<VertexBufferHandle> AssetManager::loadVertexBuffer(std::optional<Mesh> mesh, const std::string& name, BatchSettings settings)
 	{
-		if (settings == BatchSettings::QueuedLoad)
-			return std::nullopt;
-
 		auto index = ID_map.find(name);
 		if (index != ID_map.end())
 		{
@@ -100,9 +107,6 @@ namespace Prehistoric
 
 	std::optional<ShaderHandle> AssetManager::loadShader(const std::string& location, BatchSettings settings)
 	{
-		if (settings == BatchSettings::QueuedLoad)
-			return std::nullopt;
-
 		auto index = ID_map.find(location);
 		if (index != ID_map.end())
 		{

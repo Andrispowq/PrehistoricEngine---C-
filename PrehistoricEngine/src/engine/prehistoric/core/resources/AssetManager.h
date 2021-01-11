@@ -27,7 +27,7 @@ namespace Prehistoric
 
 	enum class BatchSettings
 	{
-		Load, QueuedLoad, Dispatch
+		Load, QueuedLoad
 	};
 
 	enum class Shaders
@@ -61,13 +61,12 @@ namespace Prehistoric
 
 			enum class BatchSettings
 			{
-				Load, QueuedLoad, Dispatch
+				Load, QueuedLoad
 			};
 
 			Load -> the resource must be loaded instantly, blocking the current thread (Synchronised)
 			QueuedLoad -> the resource is added to the load queue, and will be dispatched soon (Asynchronous)
-			Dispatch -> every queued load operation for that type of resource must be dispatched immidietly (but it could've been started), blocking the current thread, until it's finished (Asynchronous)
-
+			
 			The return type is an optional THandle struct, which will contain the loaded resource when using the Load option, will contain
 			the resource that was queued for loading last when using the Dispatch mode, or will be a nullopt, when using the QueuedLoad mode
 
@@ -217,6 +216,10 @@ namespace Prehistoric
 
 			return ret;
 		}
+
+		TextureLoader* getTextureLoader() const { return textureLoader; }
+		VertexBufferLoader* getVertexBufferLoader() const { return vertexBufferLoader; }
+		ShaderLoader* getShaderLoader() const { return shaderLoader; }
 
 	private:
 		Window* window;

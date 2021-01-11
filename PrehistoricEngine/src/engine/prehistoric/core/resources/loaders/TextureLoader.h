@@ -9,6 +9,8 @@
 
 #include "prehistoric/core/resources/Loader.h"
 
+#include <thread>
+
 namespace Prehistoric
 {
 	union ImagePtr
@@ -33,12 +35,13 @@ namespace Prehistoric
 	class TextureLoader : public Loader
 	{
 	public:
-		TextureLoader(Window* window) : Loader(window) {}
+		TextureLoader(Window* window);
 
 		virtual void* LoadResourceInternal(const std::string& path, Extra* extra) override;
+		virtual void LoadResources() override;
 
 		static Texture* LoadTexture(Window* window, const std::string& path, SamplerFilter filter = Anisotropic, TextureWrapMode wrapMode = Repeat);
-		static ImageData LoadTextureData(Window* window, const std::string& path);
+		static ImageData LoadTextureData(const std::string& path);
 	};
 };
 

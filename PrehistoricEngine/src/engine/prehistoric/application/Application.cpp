@@ -3,6 +3,8 @@
 
 #include "prehistoric/core/events/ApplicationEvent.h"
 
+#include <stb_image.h>
+
 namespace Prehistoric
 {
 	Application::Application()

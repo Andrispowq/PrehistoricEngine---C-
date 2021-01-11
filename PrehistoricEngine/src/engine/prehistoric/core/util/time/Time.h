@@ -6,13 +6,18 @@
 namespace Prehistoric
 {
 	typedef std::chrono::high_resolution_clock Clock;
-	typedef std::chrono::steady_clock::time_point ClockTime;
-	static const ClockTime start = Clock::now();
+	typedef std::chrono::high_resolution_clock::time_point ClockTime;
+	static ClockTime start = Clock::now();
 
 	namespace Time
 	{
-		double getTime();
-		long long getTimeNanoseconds();
+		ClockTime getTime();
+
+		double getTimeFromStart();
+		long long getTimeFromStartNanoseconds();
+
+		double getDifference(ClockTime start, ClockTime end);
+		long long getDifferenceNanoseconds(ClockTime start, ClockTime end);
 	};
 };
 

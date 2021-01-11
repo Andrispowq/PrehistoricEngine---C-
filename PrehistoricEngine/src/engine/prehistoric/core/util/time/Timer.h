@@ -12,7 +12,7 @@ namespace Prehistoric
 		Timer(const std::string& funcName = "unknown", std::ofstream* file = nullptr);
 		virtual ~Timer();
 	private:
-		double startTime;
+		ClockTime startTime;
 		std::string funcName;
 		std::ofstream* file;
 	};

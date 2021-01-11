@@ -128,14 +128,14 @@ namespace Prehistoric
 		uint32_t frames = 0;
 		double frameCounter = 0;
 
-		long long lastTime = Time::getTimeNanoseconds();
+		long long lastTime = Time::getTimeFromStartNanoseconds();
 		double unprocessedTime = 0;
 
 		while (running)
 		{
 			bool render = false;
 
-			long long startTime = Time::getTimeNanoseconds();
+			long long startTime = Time::getTimeFromStartNanoseconds();
 			long long passedTime = startTime - lastTime;
 			lastTime = startTime;
 

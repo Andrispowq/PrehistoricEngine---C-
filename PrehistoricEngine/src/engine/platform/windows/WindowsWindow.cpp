@@ -124,7 +124,7 @@ namespace Prehistoric
 		glfwSetWindowUserPointer(window, (void*)this);
 		glfwSetMonitorUserPointer(glfwGetPrimaryMonitor(), (void*)this);
 
-		ImageData data = TextureLoader::LoadTextureData(this, "res/textures/logo.png");
+		ImageData data = TextureLoader::LoadTextureData("res/textures/logo.png");
 
 		GLFWimage image;
 		image.width = data.width;

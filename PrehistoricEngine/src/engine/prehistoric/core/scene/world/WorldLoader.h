@@ -38,6 +38,7 @@ namespace Prehistoric
 
 		//Rendering stuff
 		std::unordered_map<std::string, TextureHandle> textures;
+		std::vector<std::string> textureNames;
 		std::unordered_map<std::string, MaterialHandle> materials;
 
 		std::unordered_map<std::string, VertexBufferHandle> models;

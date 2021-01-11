@@ -13,7 +13,8 @@ namespace Prehistoric
 
 	Timer::~Timer()
 	{
-		auto diff = (Time::getTime() - startTime) * 1000;
+		auto now = Time::getTime();
+		auto diff = Time::getDifference(startTime, now) * 1000.0;
 		
 		if (file == nullptr)
 		{

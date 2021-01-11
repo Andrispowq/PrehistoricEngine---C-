@@ -10,8 +10,8 @@
 //We will ignore messages and warnings in release builds, though errors and runtime errors are useful to have there too
 #if defined(PR_DEBUG)
 	//Use this macro at the end of a function with its name to profile it
-	#define PR_TIME(x)                 ::Prehistoric::Timer t(nullptr, x, false)
-	#define PR_PROFILE(x)              ::Prehistoric::Timer t(x, ::Prehistoric::Log::file)
+	#define PR_TIME(x)                 ::Prehistoric::Timer t(x, nullptr)
+	#define PR_PROFILE(x)              ::Prehistoric::Timer t(x, ::Prehistoric::Log::getFile())
 	
 	#define PR_LOG_MESSAGE(...)        ::Prehistoric::Log::log(__LINE__, __FILE__, WHITE, __VA_ARGS__)
 	#define PR_LOG_WARNING(...)        ::Prehistoric::Log::log(__LINE__, __FILE__, YELLOW, __VA_ARGS__)
@@ -36,7 +36,10 @@ namespace Prehistoric
 	class Log
 	{
 	public:
-		static std::ofstream* file;
+		static std::ofstream* getFile()
+		{ 
+			return file; 
+		}
 
 		static void Init();
 		static void Shutdown();
@@ -77,6 +80,8 @@ namespace Prehistoric
 
 			DEBUG_BREAK();
 		}
+	private:
+		static std::ofstream* file;
 	};
 };
 

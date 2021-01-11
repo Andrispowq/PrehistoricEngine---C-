@@ -4,7 +4,7 @@
 static void sun_move_function(Prehistoric::GameObject* object, float frameTime)
 {
 	constexpr float range = 32000.0f;
-	constexpr float anglesPerSecond = 0.0f;//0.5f;
+	constexpr float anglesPerSecond = 0.5f;
 
 	static float angle = 170.0f;
 

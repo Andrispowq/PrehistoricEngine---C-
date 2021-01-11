@@ -42,6 +42,9 @@ namespace Prehistoric
 		std::ifstream file(terrainConfigFile);
 		std::string line;
 
+		size_t textureCount = 0;
+		AssetManager* man = manager->getAssetManager();
+
 		if (file.is_open())
 		{
 			while (file.good())
@@ -63,7 +66,7 @@ namespace Prehistoric
 				{
 					if (nameTokens[1] == "add")
 					{
-						materials.push_back(manager->storeMaterial(new Material(manager->getAssetManager())));
+						materials.push_back(manager->storeMaterial(new Material(man)));
 					}
 					else
 					{
@@ -77,7 +80,9 @@ namespace Prehistoric
 							else
 								filter = Trilinear;
 
-							material->addTexture(tokens[1], manager->getAssetManager()->loadTexture(tokens[2], filter, Repeat).value());
+							textureLocations.emplace_back(materials.size() - 1, tokens[1]);
+							textureCount++;
+							man->loadTexture(tokens[2], filter, Repeat, BatchSettings::QueuedLoad);
 						}
 						else if (nameTokens[2] == "vec4")
 						{
@@ -105,5 +110,23 @@ namespace Prehistoric
 				}
 			}
 		}
+
+		man->getTextureLoader()->ForceLoadQueue();
+
+		size_t count;
+		Texture** pointers = (Texture**)man->getTextureLoader()->GetLoadedPointers(count);
+
+		if (count != textureCount)
+		{
+			PR_LOG_ERROR("The loaded texture count isn't equal to the requested texture count!\n");
+		}
+
+		for (int i = 0; i < textureCount; i++)
+		{
+			auto entry = textureLocations[i];
+			materials[entry.first]->addTexture(entry.second, man->storeTexture(pointers[i]));
+		}
+
+		man->getTextureLoader()->FlushPointers();
 	}
 };

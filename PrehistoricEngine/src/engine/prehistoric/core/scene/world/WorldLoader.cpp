@@ -9,6 +9,7 @@ namespace Prehistoric
 		file.open(worldFile.c_str());
 
 		std::string line;
+		size_t texIndex = 0;
 
 		AssetManager* man = manager->getAssetManager();
 
@@ -71,7 +72,28 @@ namespace Prehistoric
 				{
 					if (nameTokens[1] == "load")
 					{
-						textures.insert(std::make_pair(tokens[1], man->loadTexture(directoryTextures + tokens[2], Anisotropic).value()));
+						texIndex++;
+						textureNames.push_back(tokens[1]);
+						man->loadTexture(directoryTextures + tokens[2], Anisotropic, Repeat, BatchSettings::QueuedLoad);
+					}
+					else if (nameTokens[1] == "dispatch")
+					{
+						man->getTextureLoader()->ForceLoadQueue();
+
+						size_t count;
+						Texture** pointers = (Texture**) man->getTextureLoader()->GetLoadedPointers(count);
+
+						if (count != texIndex)
+						{
+							PR_LOG_ERROR("The loaded texture count isn't equal to the requested texture count!\n");
+						}
+
+						for (int i = 0; i < texIndex; i++)
+						{
+							textures.insert(std::make_pair(textureNames[i], man->storeTexture(pointers[i])));
+						}
+
+						man->getTextureLoader()->FlushPointers();
 					}
 				}
 

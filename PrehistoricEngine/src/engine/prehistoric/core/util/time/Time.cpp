@@ -1,25 +1,33 @@
 #include "Includes.hpp"
 #include "Time.h"
 
-
 namespace Prehistoric
 {
 	namespace Time
 	{
-		double Time::getTime()
+		ClockTime Time::getTime()
 		{
-			using std::chrono::seconds;
-			using std::chrono::duration_cast;
-
-			return std::chrono::duration_cast<std::chrono::nanoseconds>(Clock::now() - start).count() / pow(10, 9);
+			return Clock::now();
 		}
 
-		long long Time::getTimeNanoseconds()
+		double getTimeFromStart()
 		{
-			using std::chrono::nanoseconds;
-			using std::chrono::duration_cast;
+			return getDifference(start, getTime());
+		}
 
-			return std::chrono::duration_cast<std::chrono::nanoseconds>(Clock::now() - start).count();
+		long long getTimeFromStartNanoseconds()
+		{
+			return getDifferenceNanoseconds(start, getTime());
+		}
+
+		double getDifference(ClockTime start, ClockTime end)
+		{
+			return std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() / pow(10, 9);
+		}
+
+		long long getDifferenceNanoseconds(ClockTime start, ClockTime end)
+		{
+			return std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 		}
 	};
 };
