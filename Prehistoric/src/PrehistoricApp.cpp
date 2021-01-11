@@ -16,8 +16,15 @@ PrehistoricApp::PrehistoricApp()
 	//Load in the environment map
 	if (FrameworkConfig::api == OpenGL)
 	{
-		EnvironmentMapRenderer::instance = new EnvironmentMapRenderer(engine.getRenderingEngine()->getWindow(), engine.getAssetManager());
-		EnvironmentMapRenderer::instance->GenerateEnvironmentMap();
+		{
+			PR_PROFILE("Environment map generation - BRDF Look-up Table");
+			EnvironmentMapRenderer::instance = new EnvironmentMapRenderer(engine.getRenderingEngine()->getWindow(), engine.getAssetManager());
+		}
+
+		{
+			PR_PROFILE("Environment map generation - Cubemap, Irradiance, Prefilter map");
+			EnvironmentMapRenderer::instance->GenerateEnvironmentMap();
+		}
 	}
 
 	//AssembledAssetManager -> stores the primitives of rendering (Pipelines, Materials) in one place

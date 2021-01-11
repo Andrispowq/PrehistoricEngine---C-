@@ -13,7 +13,7 @@ namespace Prehistoric
     class Node
     {
     public:
-        Node() : parent(nullptr) {}
+        Node() : parent(nullptr), enabled(true) {}
         virtual ~Node() {}
 
         virtual void PreUpdate(CoreEngine* engine);

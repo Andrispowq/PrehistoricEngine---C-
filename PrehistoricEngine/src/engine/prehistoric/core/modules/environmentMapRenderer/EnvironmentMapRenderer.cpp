@@ -55,10 +55,17 @@ namespace Prehistoric
 		//Create the original map, and the framebuffer
 		equirectangularMap = man->loadTexture(EnvironmentMapConfig::environmentMapLocation, Bilinear, ClampToEdge).value();
 
+		uint32_t size = EnvironmentMapConfig::environmentMapResolution;
+		environmentMap = man->storeTexture(GLTexture::Storage3D(size, size, 0, R8G8B8_LINEAR, Trilinear, ClampToEdge, false));
+		size = EnvironmentMapConfig::irradianceMapResolution;
+		irradianceMap = man->storeTexture(GLTexture::Storage3D(size, size, 0, R8G8B8_LINEAR, Bilinear, ClampToEdge, false));
+		size = EnvironmentMapConfig::prefilterMapResolution;
+		prefilterMap = man->storeTexture(GLTexture::Storage3D(size, size, 0, R8G8B8_LINEAR, Trilinear, ClampToEdge, true));
+
 		framebuffer = new GLFramebuffer(window);
 
 		//Render the brdf map, which is constant between differnet maps
-		uint32_t size = EnvironmentMapConfig::environmentMapResolution;
+		size = 512;
 		brdfMap = man->storeTexture(GLTexture::Storage2D(size, size, 1, R16G16_LINEAR, Bilinear, ClampToEdge));
 
 		framebuffer->Bind();
@@ -90,8 +97,6 @@ namespace Prehistoric
 		framebuffer->addDepthAttachment(size, size);
 		window->getSwapchain()->SetWindowSize(size, size);
 
-		environmentMap = man->storeTexture(GLTexture::Storage3D(size, size, 0, R8G8B8_LINEAR, Trilinear, ClampToEdge, false));
-
 		environmentMapPipeline->BindPipeline(nullptr);
 		for (int i = 0; i < 6; ++i)
 		{
@@ -111,8 +116,6 @@ namespace Prehistoric
 		framebuffer->addDepthAttachment(size, size);
 		window->getSwapchain()->SetWindowSize(size, size);
 
-		irradianceMap = man->storeTexture(GLTexture::Storage3D(size, size, 0, R8G8B8_LINEAR, Bilinear, ClampToEdge, false));
-
 		irradiancePipeline->BindPipeline(nullptr);
 		for (int i = 0; i < 6; ++i)
 		{
@@ -128,8 +131,6 @@ namespace Prehistoric
 
 		//Rendering the pre-filter enviroment map
 		size = EnvironmentMapConfig::prefilterMapResolution;
-
-		prefilterMap = man->storeTexture(GLTexture::Storage3D(size, size, 0, R8G8B8_LINEAR, Trilinear, ClampToEdge, true));
 
 		prefilterPipeline->BindPipeline(nullptr);
 		for (int level = 0; level < (int)EnvironmentMapConfig::prefilterLevels; ++level)
