@@ -66,7 +66,7 @@ namespace Prehistoric
 
 	void GLTexture::UploadHDRTextureData(float* data)
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_RGB, GL_FLOAT, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGB, GL_FLOAT, data);
 	}
 
 	void GLTexture::SamplerProperties(SamplerFilter filter, TextureWrapMode wrapMode, bool generate_mipmaps)

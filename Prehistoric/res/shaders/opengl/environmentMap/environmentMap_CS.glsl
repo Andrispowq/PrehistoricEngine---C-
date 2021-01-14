@@ -3,8 +3,9 @@
 layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 
 layout(binding = 0, rgba32f) uniform writeonly imageCube environmentMap;
+layout(binding = 1, rgba32f) uniform readonly image2D equirectangularMap;
 
-uniform sampler2D equirectangularMap;
+uniform vec2 equirectangularMapResolution;
 uniform float resolution;
 
 const vec2 invAtan = vec2(0.1591, 0.3183);
@@ -53,9 +54,9 @@ void main()
 	}
 	
     vec2 uv = SampleSphericalMap(normalize(sampleDir));
-    vec3 colour = texture(equirectangularMap, uv).rgb;
+	uv *= equirectangularMapResolution;
 
-	//colour = clamp(colour, vec3(0.0), vec3(10000.0));
+    vec3 colour = imageLoad(equirectangularMap, ivec2(uv)).rgb;
 	
     imageStore(environmentMap, ivec3(gl_GlobalInvocationID), vec4(colour, 1.0));
 }

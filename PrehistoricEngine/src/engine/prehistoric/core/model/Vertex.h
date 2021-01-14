@@ -4,26 +4,29 @@
 #include "Includes.hpp"
 #include "prehistoric/core/util/math/Math.h"
 
+#include <unordered_map>
+
 namespace Prehistoric
 {
 	class Vertex
 	{
 	public:
-		Vertex(const Vector3f& position, const Vector2f& texture, const Vector3f& normal, const Vector3f& tangent) : position(position), texture(texture), normal(normal), tangent(tangent), textureIndex(-1), normalIndex(-1) {}
-		Vertex(const Vector3f& position, const Vector2f& texture, const Vector3f& normal) : position(position), texture(texture), normal(normal), textureIndex(-1), normalIndex(-1) {}
-		Vertex(const Vector3f& position, const Vector2f& texture) : position(position), texture(texture), normal(Vector3f(0)), textureIndex(-1), normalIndex(-1) {}
-		Vertex(const Vector3f& position) : position(position), texture(Vector2f(0)), normal(Vector3f(0)), textureIndex(-1), normalIndex(-1) {}
-		Vertex() : position(Vector3f(0)), texture(Vector2f(0)), normal(Vector3f(0)), textureIndex(-1), normalIndex(-1) {}
-
-		Vertex(uint16_t index, Vector3f position) : index(index), position(position), textureIndex(-1), normalIndex(-1) {}
+		Vertex(const Vector3f& position, const Vector2f& texture, const Vector3f& normal, const Vector3f& tangent) : position(position), texture(texture), normal(normal), tangent(tangent) {}
+		Vertex(const Vector3f& position, const Vector2f& texture, const Vector3f& normal) : position(position), texture(texture), normal(normal) {}
+		Vertex(const Vector3f& position, const Vector2f& texture) : position(position), texture(texture), normal(Vector3f(0)) {}
+		Vertex(const Vector3f& position) : position(position), texture(Vector2f(0)), normal(Vector3f(0)) {}
+		Vertex() : position(Vector3f(0)), texture(Vector2f(0)), normal(Vector3f(0)) {}
 
 		~Vertex() {}
+
+		bool operator==(const Vertex& other) const 
+		{
+			return position == other.position && texture == other.texture && normal == other.normal;
+		}
 
 		constexpr static size_t getNumberOfFloats() { return 11; }
 		constexpr static size_t getSize() { return getNumberOfFloats() * sizeof(float); }
 
-		inline bool isSet() const { return textureIndex != -1 && normalIndex != -1; }
-		inline bool hasSameTextureAndNormal(int textureIndex, int normalIndex) const { return this->textureIndex == textureIndex && this->normalIndex == normalIndex; }
 		inline bool hasTangent() const { return tangent == 0; }
 
 		inline Vector3f getPosition() const { return position; }
@@ -31,22 +34,14 @@ namespace Prehistoric
 		inline Vector3f getNormal() const { return normal; }
 		inline Vector3f getTangent() const { return tangent; }
 
-		inline uint16_t getIndex() const { return index; }
-		inline int getTextureIndex() const { return textureIndex; }
-		inline int getNormalIndex() const { return normalIndex; }
-
-		inline size_t getDuplicateVertexIndex() const { return duplicate_vert; }
+		inline size_t getID() const { return Id; }
 
 		inline void setPosition(const Vector3f& position) { this->position = position; }
 		inline void setTexture(const Vector2f& texture) { this->texture = texture; }
 		inline void setNormal(const Vector3f& normal) { this->normal = normal; }
 		inline void addTangent(const Vector3f& tangent) { this->tang_sum += tangent; }
 
-		inline void setIndex(uint16_t index) { this->index = index; }
-		inline void setTextureIndex(int textureIndex) { this->textureIndex = textureIndex; }
-		inline void setNormalIndex(int normalIndex) { this->normalIndex = normalIndex; }
-
-		inline void setDuplicateVertexIndex(size_t duplicate_vert) { this->duplicate_vert = duplicate_vert; }
+		inline void setID(size_t id) { this->Id = id; }
 
 		inline void averageTangents() { tangent = tang_sum.normalise(); }
 
@@ -57,12 +52,7 @@ namespace Prehistoric
 		Vector3f tangent = 0; //Some default value, might not be used
 
 		Vector3f tang_sum = 0;
-
-		size_t duplicate_vert = -1;
-
-		uint16_t index = -1;
-		int textureIndex = -1;
-		int normalIndex = -1;
+		size_t Id;
 	};
 };
 

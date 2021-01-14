@@ -15,7 +15,7 @@ namespace Prehistoric
 		GLEnvironmentMapShader();
 		virtual ~GLEnvironmentMapShader() {}
 
-		void UpdateUniforms(Texture* texture) const;
+		void UpdateUniforms(Vector2f resolution) const;
 	};
 };
 

@@ -16,6 +16,42 @@ const float sampleDelta = 0.025 / 4;
 const float totalSamples = (TWO_PI / sampleDelta) * (HALF_PI / sampleDelta);
 const float invTotalSamples = 1.0 / totalSamples;
 
+ivec3 texCoordToCube(vec3 texCoord, vec2 cubemapSize)
+{
+	vec3 abst = abs(texCoord);
+	texCoord /= max(max(abst.x, abst.y), abst.z);
+
+	float cubeFace;
+	vec2 uvCoord;
+	if (abst.x > abst.y && abst.x > abst.z)
+	{
+		// x major
+		float negx = step(texCoord.x, 0.0);
+		uvCoord = mix(vec2(-texCoord.z, -texCoord.y), vec2(texCoord.z, -texCoord.y), negx);
+		cubeFace = negx;
+	}
+	else if (abst.y > abst.z)
+	{
+		// y major
+		float negy = step(texCoord.y, 0.0);
+		uvCoord = mix(vec2(texCoord.xz), vec2(texCoord.x, -texCoord.z), negy);
+		cubeFace = 2.0 + negy;
+	}
+	else
+	{
+		// z major
+		float negz = step(texCoord.z, 0.0);
+		uvCoord = mix(vec2(texCoord.x, -texCoord.y), vec2(-texCoord.x, -texCoord.y), negz);
+		cubeFace = 4.0 + negz;
+	}
+
+	uvCoord = (uvCoord + 1.0) * 0.5;
+	uvCoord = uvCoord * cubemapSize;
+	uvCoord = clamp(uvCoord, vec2(0.0), cubemapSize - vec2(1.0));
+
+	return ivec3(ivec2(uvCoord), int(cubeFace));
+}
+
 void main()
 {
 	ivec2 x = ivec2(gl_GlobalInvocationID.xy);
@@ -69,7 +105,7 @@ void main()
 
 			vec3 sphereCoord = vec3(sinTheta * cosPhi, sinTheta * sinPhi, cosTheta);
 			vec3 sampleVec = sphereCoord.x * right + sphereCoord.y * up + sphereCoord.z * N;
-			
+
 			vec3 colour = texture(environmentMap, sampleVec).rgb;
 			irradiance += colour * cosTheta * sinTheta;
 	 	}

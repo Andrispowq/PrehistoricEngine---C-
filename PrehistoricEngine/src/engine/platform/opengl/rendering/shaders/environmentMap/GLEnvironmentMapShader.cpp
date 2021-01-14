@@ -11,15 +11,13 @@ namespace Prehistoric
 
 		CompileShader();
 
-		AddUniform("equirectangularMap");
+		AddUniform("equirectangularMapResolution");
 		AddUniform("resolution");
 	}
 
-	void GLEnvironmentMapShader::UpdateUniforms(Texture* texture) const
+	void GLEnvironmentMapShader::UpdateUniforms(Vector2f resolution) const
 	{
-		texture->Bind();
-		SetUniformi("equirectangularMap", 0);
-
+		SetUniform("equirectangularMapResolution", resolution);
 		SetUniformf("resolution", (float)EnvironmentMapConfig::environmentMapResolution);
 	}
 };

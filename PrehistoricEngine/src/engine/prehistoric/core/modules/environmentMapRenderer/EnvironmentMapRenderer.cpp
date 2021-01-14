@@ -46,6 +46,7 @@ namespace Prehistoric
 		environmentMap = man->storeTexture(GLTexture::Storage3D(size, size, 1, R8G8B8A8_LINEAR, Trilinear, ClampToEdge, true));
 		static_cast<GLComputePipeline*>(environmentMapPipeline.pointer)->setInvocationSize({ size / 16, size / 16, 6 });
 		static_cast<GLComputePipeline*>(environmentMapPipeline.pointer)->addTextureBinding(0, environmentMap.pointer, WRITE_ONLY);
+		static_cast<GLComputePipeline*>(environmentMapPipeline.pointer)->addTextureBinding(1, equirectangularMap.pointer, READ_ONLY);
 
 		size = EnvironmentMapConfig::irradianceMapResolution;
 		irradianceMap = man->storeTexture(GLTexture::Storage3D(size, size, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false));
@@ -76,7 +77,7 @@ namespace Prehistoric
 
 		// Rendering the cube map
 		environmentMapPipeline->BindPipeline(nullptr);
-		static_cast<GLEnvironmentMapShader*>(environmentMapShader.pointer)->UpdateUniforms(equirectangularMap.pointer);
+		static_cast<GLEnvironmentMapShader*>(environmentMapShader.pointer)->UpdateUniforms(Vector2f((float)equirectangularMap->getWidth(), (float)equirectangularMap->getHeight()));
 		environmentMapPipeline->RenderPipeline();
 		environmentMapPipeline->UnbindPipeline();
 

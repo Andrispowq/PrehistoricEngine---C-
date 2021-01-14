@@ -22,6 +22,7 @@ IncludeDir["GLAD"] = "%{wks.location}/PrehistoricEngine/vendor/GLAD/include"
 IncludeDir["Vulkan"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/Vulkan"
 IncludeDir["AL"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/AL"
 IncludeDir["STB"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/stb"
+IncludeDir["tinyobj"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/tinyobjloader"
 
 include "PrehistoricEngine/vendor/GLFW"
 include "PrehistoricEngine/vendor/GLAD"
@@ -59,6 +60,7 @@ project "PrehistoricEngine"
         "%{IncludeDir.Vulkan}",
         "%{IncludeDir.AL}",
         "%{IncludeDir.STB}",
+        "%{IncludeDir.tinyobj}",
         "%{prj.location}/src/engine"
     }
 
@@ -122,6 +124,7 @@ project "Prehistoric"
         "%{IncludeDir.Vulkan}",
         "%{IncludeDir.AL}",
         "%{IncludeDir.STB}",
+        "%{IncludeDir.tinyobj}",
         "%{prj.location}/src",
         "PrehistoricEngine/src/engine"
     }

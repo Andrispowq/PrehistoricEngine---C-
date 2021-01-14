@@ -1,4 +1,4 @@
-[10:52:39]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(), path: res/textures/logo.png: 0.5027ms
-[10:52:39]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(), path: res/textures/default.png: 0.8735ms
-[10:52:40]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(), path: res/textures/terrain/heightmaps/hm0.bmp: 5.9206ms
-[10:52:40]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(), path: res/textures/environmentMaps/Theatre-Center_2k.hdr: 95.642ms
+[14:35:56]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(), path: res/textures/logo.png: 0.3776ms
+[14:35:56]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(), path: res/textures/default.png: 0.6376ms
+[14:35:56]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(), path: res/textures/terrain/heightmaps/hm0.bmp: 5.6214ms
+[14:35:56]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(), path: res/textures/environmentMaps/cape_hill_2k.hdr: 92.7963ms
