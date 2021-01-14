@@ -24,6 +24,7 @@ namespace Prehistoric
 
 			std::vector<Vertex> vertices;
 			std::vector<uint16_t> indices;
+			std::vector<Shape> mesh_shapes;
 
 			std::unordered_map<size_t, uint32_t> uniqueVertexIDs{};
 			std::unordered_map<size_t, Vertex> uniqueVertices{};
@@ -34,7 +35,6 @@ namespace Prehistoric
 				for (const auto& index : shape.mesh.indices) 
 				{
 					Vertex vertex{};
-					vertex.setID(id);
 
 					vertex.setPosition({
 						attrib.vertices[3 * index.vertex_index + 0],
@@ -75,9 +75,17 @@ namespace Prehistoric
 					indices.push_back(uniqueVertexIDs[id]);
 					id++;
 				}
+
+				std::vector<index> mesh_indices;
+				for (auto& elem : shape.mesh.indices)
+				{
+					mesh_indices.push_back({ elem.vertex_index, elem.texcoord_index, elem.normal_index });
+				}
+
+				mesh_shapes.push_back(Shape(shape.name, mesh_indices, shape.mesh.material_ids));
 			}
 
-			for (int i = 0; i < indices.size() / 3; i++)
+			for (size_t i = 0; i < indices.size() / 3; i++)
 			{
 				uint16_t i0 = indices[i * 3 + 0];
 				uint16_t i1 = indices[i * 3 + 1];

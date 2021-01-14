@@ -34,14 +34,10 @@ namespace Prehistoric
 		inline Vector3f getNormal() const { return normal; }
 		inline Vector3f getTangent() const { return tangent; }
 
-		inline size_t getID() const { return Id; }
-
 		inline void setPosition(const Vector3f& position) { this->position = position; }
 		inline void setTexture(const Vector2f& texture) { this->texture = texture; }
 		inline void setNormal(const Vector3f& normal) { this->normal = normal; }
 		inline void addTangent(const Vector3f& tangent) { this->tang_sum += tangent; }
-
-		inline void setID(size_t id) { this->Id = id; }
 
 		inline void averageTangents() { tangent = tang_sum.normalise(); }
 
@@ -52,7 +48,6 @@ namespace Prehistoric
 		Vector3f tangent = 0; //Some default value, might not be used
 
 		Vector3f tang_sum = 0;
-		size_t Id;
 	};
 };
 

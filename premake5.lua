@@ -19,17 +19,22 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 IncludeDir = {}
 IncludeDir["GLFW"] = "%{wks.location}/PrehistoricEngine/vendor/GLFW/include"
 IncludeDir["GLAD"] = "%{wks.location}/PrehistoricEngine/vendor/GLAD/include"
+IncludeDir["ImGUI"] = "%{wks.location}/PrehistoricEngine/vendor/ImGUI"
 IncludeDir["Vulkan"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/Vulkan"
 IncludeDir["AL"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/AL"
 IncludeDir["STB"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/stb"
 IncludeDir["tinyobj"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/tinyobjloader"
 
-include "PrehistoricEngine/vendor/GLFW"
-include "PrehistoricEngine/vendor/GLAD"
+
+group "Dependencies"
+    include "PrehistoricEngine/vendor/GLFW"
+    include "PrehistoricEngine/vendor/GLAD"
+    include "PrehistoricEngine/vendor/ImGUI"
+group ""
 
 project "PrehistoricEngine"
     location "PrehistoricEngine"
-    kind "StaticLib" -- "SharedLib"
+    kind "StaticLib"
     language "C++"
     cppdialect "C++17"
     staticruntime "off"
@@ -57,6 +62,7 @@ project "PrehistoricEngine"
     {
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.GLAD}",
+        "%{IncludeDir.ImGUI}",
         "%{IncludeDir.Vulkan}",
         "%{IncludeDir.AL}",
         "%{IncludeDir.STB}",
@@ -70,7 +76,8 @@ project "PrehistoricEngine"
         "%{wks.location}/PrehistoricEngine/Dependencies/lib/AL/OpenAL32.lib",
         "opengl32.lib",
         "GLFW",
-        "GLAD"
+        "GLAD",
+        "ImGUI"
     }
     
     filter "kind:SharedLib"
@@ -121,6 +128,7 @@ project "Prehistoric"
     {
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.GLAD}",
+        "%{IncludeDir.ImGUI}",
         "%{IncludeDir.Vulkan}",
         "%{IncludeDir.AL}",
         "%{IncludeDir.STB}",
@@ -146,8 +154,6 @@ project "Prehistoric"
         defines
         {
             "PR_FAST_MATH"
-            -- "PR_FAST_MATH",
-            -- "PR_LOAD_DLL"
         }
     
     filter "configurations:Debug"

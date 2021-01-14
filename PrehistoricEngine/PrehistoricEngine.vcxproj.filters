@@ -175,6 +175,9 @@
     <Filter Include="prehistoric\core">
       <UniqueIdentifier>{C923706F-B51C-8FC1-DE4E-7446CAA66ECD}</UniqueIdentifier>
     </Filter>
+    <Filter Include="prehistoric\core\ImGUI">
+      <UniqueIdentifier>{7387405D-5F81-69AF-48EE-FFBF3487CF1B}</UniqueIdentifier>
+    </Filter>
     <Filter Include="prehistoric\core\config">
       <UniqueIdentifier>{CE763142-3AAE-79D9-43B8-DDFCAF6EA0D2}</UniqueIdentifier>
     </Filter>
@@ -590,6 +593,9 @@
     <ClInclude Include="src\engine\prehistoric\core\model\obj\OBJLoader.h">
       <Filter>prehistoric\core\model\obj</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\model\obj\Shape.h">
+      <Filter>prehistoric\core\model\obj</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\modules\atmosphere\Atmosphere.h">
       <Filter>prehistoric\core\modules\atmosphere</Filter>
     </ClInclude>
@@ -958,6 +964,9 @@
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\CoreEngine.cpp">
       <Filter>prehistoric\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\ImGUI\ImGUIBuild.cpp">
+      <Filter>prehistoric\core\ImGUI</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\config\AtmosphereConfig.cpp">
       <Filter>prehistoric\core\config</Filter>

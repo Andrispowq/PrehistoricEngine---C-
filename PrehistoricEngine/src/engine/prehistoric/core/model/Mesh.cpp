@@ -3,18 +3,6 @@
 
 namespace Prehistoric
 {
-	Mesh::Mesh(const Mesh& mesh)
-	{
-		this->vertices = mesh.vertices;
-		this->indices = mesh.indices;
-	}
-
-	Mesh::~Mesh()
-	{
-		vertices.clear();
-		indices.clear();
-	}
-
 	std::vector<float> Mesh::GetVertexData() const
 	{
 		constexpr size_t numFloats = Vertex::getNumberOfFloats();
