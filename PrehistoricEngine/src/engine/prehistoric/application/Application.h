@@ -1,10 +1,12 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
-#include "prehistoric/core/CoreEngine.h"
 #include "prehistoric/core/events/Event.h"
 
 #include "prehistoric/core/layers/LayerStack.h"
+
+#include "prehistoric/core/CoreEngine.h"
+#include "prehistoric/core/ImGUI/ImGUILayer.h"
 
 namespace Prehistoric
 {
@@ -22,7 +24,8 @@ namespace Prehistoric
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* layer);
 
-		//ImGuiLayer* GetImGuiLayer() { return m_ImGuiLayer; }
+		CoreEngine* getEngineLayer() { return engineLayer; }
+		ImGuiLayer* getImGuiLayer() { return imGUILayer; }
 
 		static Application& Get() { return *instance; }
 	protected:
@@ -31,6 +34,7 @@ namespace Prehistoric
 		double frameTime;
 
 		CoreEngine* engineLayer;
+		ImGuiLayer* imGUILayer;
 
 		static Application* instance;
 	};

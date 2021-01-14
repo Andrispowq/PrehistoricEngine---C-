@@ -233,6 +233,7 @@
     <ClInclude Include="src\engine\prehistoric\common\util\InitDevice.h" />
     <ClInclude Include="src\engine\prehistoric\common\util\RenderUtils.h" />
     <ClInclude Include="src\engine\prehistoric\core\CoreEngine.h" />
+    <ClInclude Include="src\engine\prehistoric\core\ImGUI\ImGUILayer.h" />
     <ClInclude Include="src\engine\prehistoric\core\config\AtmosphereConfig.h" />
     <ClInclude Include="src\engine\prehistoric\core\config\EngineConfig.h" />
     <ClInclude Include="src\engine\prehistoric\core\config\EnvironmentMapConfig.h" />
@@ -382,6 +383,7 @@
     <ClCompile Include="src\engine\prehistoric\common\util\InitDevice.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\CoreEngine.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\ImGUI\ImGUIBuild.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\ImGUI\ImGUILayer.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\config\AtmosphereConfig.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\config\EngineConfig.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\config\EnvironmentMapConfig.cpp" />

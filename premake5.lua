@@ -25,7 +25,6 @@ IncludeDir["AL"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/AL"
 IncludeDir["STB"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/stb"
 IncludeDir["tinyobj"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/tinyobjloader"
 
-
 group "Dependencies"
     include "PrehistoricEngine/vendor/GLFW"
     include "PrehistoricEngine/vendor/GLAD"
@@ -107,8 +106,8 @@ project "PrehistoricEngine"
         runtime "Release"
         optimize "on"
 
-project "Prehistoric"
-    location "Prehistoric"
+project "PrehistoricEditor"
+    location "PrehistoricEditor"
     kind "ConsoleApp"
     language "C++"
     cppdialect "C++17"
@@ -171,3 +170,66 @@ project "Prehistoric"
         runtime "Release"
         optimize "on"
     
+        project "Prehistoric"
+        location "Prehistoric"
+        kind "ConsoleApp"
+        language "C++"
+        cppdialect "C++17"
+        staticruntime "off"
+        
+        targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+        objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+    
+        files
+        {
+            "%{prj.name}/src/**.h",
+            "%{prj.name}/src/**.hpp",
+            "%{prj.name}/src/**.cpp"
+        }
+    
+        includedirs
+        {
+            "%{IncludeDir.GLFW}",
+            "%{IncludeDir.GLAD}",
+            "%{IncludeDir.ImGUI}",
+            "%{IncludeDir.Vulkan}",
+            "%{IncludeDir.AL}",
+            "%{IncludeDir.STB}",
+            "%{IncludeDir.tinyobj}",
+            "%{prj.location}/src",
+            "PrehistoricEngine/src/engine"
+        }
+    
+        defines
+        {
+            "_CRT_SECURE_NO_WARNINGS",
+            "GLFW_INCLUDE_NONE"
+        }
+    
+        links
+        {
+            "PrehistoricEngine"
+        }
+    
+        filter "system:windows"
+            systemversion "latest"
+    
+            defines
+            {
+                "PR_FAST_MATH"
+            }
+        
+        filter "configurations:Debug"
+            defines "PR_DEBUG"
+            runtime "Debug"
+            symbols "on"
+        
+        filter "configurations:Release"
+            defines "PR_RELEASE"
+            runtime "Release"
+            optimize "on"
+        
+        filter "configurations:Distribution"
+            defines "PR_DIST"
+            runtime "Release"
+            optimize "on"

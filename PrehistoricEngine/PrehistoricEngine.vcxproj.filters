@@ -533,6 +533,9 @@
     <ClInclude Include="src\engine\prehistoric\core\CoreEngine.h">
       <Filter>prehistoric\core</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\ImGUI\ImGUILayer.h">
+      <Filter>prehistoric\core\ImGUI</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\config\AtmosphereConfig.h">
       <Filter>prehistoric\core\config</Filter>
     </ClInclude>
@@ -966,6 +969,9 @@
       <Filter>prehistoric\core</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\ImGUI\ImGUIBuild.cpp">
+      <Filter>prehistoric\core\ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\ImGUI\ImGUILayer.cpp">
       <Filter>prehistoric\core\ImGUI</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\config\AtmosphereConfig.cpp">

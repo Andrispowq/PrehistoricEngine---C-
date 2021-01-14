@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GLFW", "PrehistoricEngine\v
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImGUI", "PrehistoricEngine\vendor\ImGUI\ImGUI.vcxproj", "{80FB640D-EC0F-8DBE-B591-301E216589EF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PrehistoricEditor", "PrehistoricEditor\PrehistoricEditor.vcxproj", "{18B39835-84C9-96CB-CD40-22ED39966753}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PrehistoricEngine", "PrehistoricEngine\PrehistoricEngine.vcxproj", "{67604C36-D376-4ACC-1CEE-D5ED88431B54}"
 EndProject
 Global
@@ -44,6 +46,12 @@ Global
 		{80FB640D-EC0F-8DBE-B591-301E216589EF}.Distribution|x64.Build.0 = Distribution|x64
 		{80FB640D-EC0F-8DBE-B591-301E216589EF}.Release|x64.ActiveCfg = Release|x64
 		{80FB640D-EC0F-8DBE-B591-301E216589EF}.Release|x64.Build.0 = Release|x64
+		{18B39835-84C9-96CB-CD40-22ED39966753}.Debug|x64.ActiveCfg = Debug|x64
+		{18B39835-84C9-96CB-CD40-22ED39966753}.Debug|x64.Build.0 = Debug|x64
+		{18B39835-84C9-96CB-CD40-22ED39966753}.Distribution|x64.ActiveCfg = Distribution|x64
+		{18B39835-84C9-96CB-CD40-22ED39966753}.Distribution|x64.Build.0 = Distribution|x64
+		{18B39835-84C9-96CB-CD40-22ED39966753}.Release|x64.ActiveCfg = Release|x64
+		{18B39835-84C9-96CB-CD40-22ED39966753}.Release|x64.Build.0 = Release|x64
 		{67604C36-D376-4ACC-1CEE-D5ED88431B54}.Debug|x64.ActiveCfg = Debug|x64
 		{67604C36-D376-4ACC-1CEE-D5ED88431B54}.Debug|x64.Build.0 = Debug|x64
 		{67604C36-D376-4ACC-1CEE-D5ED88431B54}.Distribution|x64.ActiveCfg = Distribution|x64

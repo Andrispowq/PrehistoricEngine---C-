@@ -20,11 +20,18 @@ namespace Prehistoric
 		engineLayer->getRenderingEngine()->getWindow()->setEventCallback(std::bind(&Application::OnEvent, this, std::placeholders::_1));
 		PushLayer(engineLayer);
 
+		imGUILayer = new ImGuiLayer();
+		PushOverlay(imGUILayer);
+		imGUILayer->SetDarkThemeColors();
+
 		frameTime = 1.0 / FrameworkConfig::windowMaxFPS;
 	}
 
 	Application::~Application()
 	{
+		//Making sure that the ImGUI layer is deleted before the core engine, therefore deleting the GLFWwindow which is needed by ImGUI
+		layerStack.PopOverlay(imGUILayer);
+		delete imGUILayer;
 	}
 
 	void Application::Run()
@@ -93,10 +100,12 @@ namespace Prehistoric
 
 			if (render && !InputInstance.IsPauseRendering())
 			{
+				imGUILayer->Begin();
 				for (auto it = layerStack.rbegin(); it != layerStack.rend(); ++it)
 				{
 					(*it)->Render();
 				}
+				imGUILayer->End();
 
 				frames++;
 			}
