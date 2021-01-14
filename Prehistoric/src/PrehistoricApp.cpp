@@ -8,17 +8,17 @@ PrehistoricApp::PrehistoricApp()
 	using namespace Prehistoric;
 
 	GameObject* sceneRoot = new GameObject();
-	scene = std::make_unique<PrehistoricScene>("scene0", sceneRoot, engine.getRenderingEngine()->getWindow(),
-		engine.getRenderingEngine()->getCamera(), engine.getAssetManager(), "res/world/testLevel.wrld");
+	scene = std::make_unique<PrehistoricScene>("scene0", sceneRoot, engineLayer->getRenderingEngine()->getWindow(),
+		engineLayer->getRenderingEngine()->getCamera(), engineLayer->getAssetManager(), "res/world/testLevel.wrld");
 
-	engine.SetScene(scene.get());
+	engineLayer->SetScene(scene.get());
 
 	//Load in the environment map
 	if (FrameworkConfig::api == OpenGL)
 	{
 		{
 			PR_PROFILE("Environment map generation - BRDF Look-up Table");
-			EnvironmentMapRenderer::instance = new EnvironmentMapRenderer(engine.getRenderingEngine()->getWindow(), engine.getAssetManager());
+			EnvironmentMapRenderer::instance = new EnvironmentMapRenderer(engineLayer->getRenderingEngine()->getWindow(), engineLayer->getAssetManager());
 		}
 
 		{
@@ -30,9 +30,9 @@ PrehistoricApp::PrehistoricApp()
 	//AssembledAssetManager -> stores the primitives of rendering (Pipelines, Materials) in one place
 	//AssetManager -> store the assembling blocks of the primitives (Textures, VertexBuffers, Shaders) in one place
 	//Window -> used in a lot of primitives' creation, so it's worth having it around
-	AssembledAssetManager* manager = engine.getAssetManager();
+	AssembledAssetManager* manager = engineLayer->getAssetManager();
 	AssetManager* man = manager->getAssetManager();
-	Window* window = engine.getRenderingEngine()->getWindow();
+	Window* window = engineLayer->getRenderingEngine()->getWindow();
 
 	GameObject* slider3 = new GUISlider(window, manager, 0.0f, 4.0f, Vector3f(0.4f), &EnvironmentMapRenderer::instance->lodRenderedMap, sizeof(float), true);
 	static_cast<GUISlider*>(slider3)->setProgress(0.0);

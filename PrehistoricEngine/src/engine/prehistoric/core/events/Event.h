@@ -47,7 +47,7 @@ namespace Prehistoric
 		{
 			return getCategoryFlags() & category;
 		}
-	private:
+	public:
 		bool handled = false;
 	};
 

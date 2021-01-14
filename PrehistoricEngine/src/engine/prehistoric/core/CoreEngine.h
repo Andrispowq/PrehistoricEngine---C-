@@ -1,6 +1,8 @@
 #ifndef CORE_ENGINE_H
 #define CORE_ENGINE_H
 
+#include "prehistoric/core/layers/Layer.h"
+
 #include "prehistoric/core/engines/RenderingEngine.h"
 #include "prehistoric/core/engines/AudioEngine.h"
 
@@ -20,20 +22,24 @@ namespace Prehistoric
 {
 	constexpr static double NANOSECOND = 1000000000;
 
-	class CoreEngine
+	class CoreEngine : public Layer
 	{
 	public:
 		CoreEngine(const std::string& configPath = "res/config", const std::string& worldFile = "res/world/testLevel.wrld");
 		~CoreEngine();
 
-		void Start();
+		virtual void OnEnable() override {}
+		virtual void OnDisable() override {}
+
+		virtual void OnEvent(Event& event) override;
+
+		virtual void Update(float delta);
+		virtual void Render();
 
 		void LoadConfigurationFiles(const std::string& path);
 		void LoadEngines();
 
 		void AddGameObject(const std::string& name, GameObject* gameobject);
-
-		void OnEvent(Event& event);
 
 		/*
 			Replaces the current scene with the loaded one. Does not delete the old one, and does no management whatsoever -> this is the client's job
@@ -52,12 +58,7 @@ namespace Prehistoric
 		CoreEngine operator=(const CoreEngine& engine) = delete;
 		CoreEngine(const CoreEngine&& engine) = delete;
 		CoreEngine operator=(const CoreEngine&& engine) = delete;
-	private:
-		void Run();
-		void Stop();
 
-		void Update(float frameTime);
-		void Render();
 	private:
 		//Root object
 		std::unique_ptr<GameObject> root;

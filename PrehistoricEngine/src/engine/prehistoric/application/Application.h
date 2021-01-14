@@ -4,6 +4,8 @@
 #include "prehistoric/core/CoreEngine.h"
 #include "prehistoric/core/events/Event.h"
 
+#include "prehistoric/core/layers/LayerStack.h"
+
 namespace Prehistoric
 {
 	class PR_API Application
@@ -13,8 +15,24 @@ namespace Prehistoric
 		virtual ~Application();
 
 		void Run();
+		void Stop();
+
+		void OnEvent(Event& e);
+
+		void PushLayer(Layer* layer);
+		void PushOverlay(Layer* layer);
+
+		//ImGuiLayer* GetImGuiLayer() { return m_ImGuiLayer; }
+
+		static Application& Get() { return *instance; }
 	protected:
-		CoreEngine engine;
+		LayerStack layerStack;
+		bool running = false;
+		double frameTime;
+
+		CoreEngine* engineLayer;
+
+		static Application* instance;
 	};
 
 	//To be defined in client
