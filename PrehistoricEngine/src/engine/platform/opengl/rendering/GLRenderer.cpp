@@ -32,7 +32,7 @@ namespace Prehistoric
 
 		alphaCoverage = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
 		outputImage = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
-		//fxaaTexture = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
+		fxaaTexture = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
 
 		deferredFBO->Bind();
 		deferredFBO->addDepthAttachment(width, height, true);
@@ -65,8 +65,8 @@ namespace Prehistoric
 		static_cast<GLComputePipeline*>(deferredPipeline)->setInvocationSize({ width / 16, height / 16, 1 });
 		static_cast<GLComputePipeline*>(deferredPipeline)->addTextureBinding(0, outputImage, WRITE_ONLY);
 
-		//static_cast<GLComputePipeline*>(fxaaPipeline)->setInvocationSize({ width / 16, height / 16, 1 });
-		//static_cast<GLComputePipeline*>(fxaaPipeline)->addTextureBinding(0, fxaaTexture, WRITE_ONLY);
+		static_cast<GLComputePipeline*>(fxaaPipeline)->setInvocationSize({ width / 16, height / 16, 1 });
+		static_cast<GLComputePipeline*>(fxaaPipeline)->addTextureBinding(0, fxaaTexture, WRITE_ONLY);
 	}
 
 	GLRenderer::~GLRenderer()
@@ -78,10 +78,10 @@ namespace Prehistoric
 		
 		delete alphaCoverage;
 		delete outputImage;
-		//delete fxaaTexture;
+		delete fxaaTexture;
 
 		delete deferredPipeline;
-		//delete fxaaPipeline;
+		delete fxaaPipeline;
 		delete renderPipeline;
 	}
 
@@ -104,7 +104,7 @@ namespace Prehistoric
 
 			delete alphaCoverage;
 			delete outputImage;
-			//delete fxaaTexture;
+			delete fxaaTexture;
 
 			positionMetalic = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false, true);
 			albedoRoughness = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false, true);
@@ -121,10 +121,10 @@ namespace Prehistoric
 			static_cast<GLComputePipeline*>(deferredPipeline)->setInvocationSize({ width / 16, height / 16, 1 });
 			static_cast<GLComputePipeline*>(deferredPipeline)->addTextureBinding(0, outputImage, WRITE_ONLY);
 
-			//static_cast<GLComputePipeline*>(fxaaPipeline)->removeTextureBinding(0);
-			//fxaaTexture = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
-			//static_cast<GLComputePipeline*>(fxaaPipeline)->setInvocationSize({ width / 16, height / 16, 1 });
-			//static_cast<GLComputePipeline*>(fxaaPipeline)->addTextureBinding(0, fxaaTexture, WRITE_ONLY);
+			static_cast<GLComputePipeline*>(fxaaPipeline)->removeTextureBinding(0);
+			fxaaTexture = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
+			static_cast<GLComputePipeline*>(fxaaPipeline)->setInvocationSize({ width / 16, height / 16, 1 });
+			static_cast<GLComputePipeline*>(fxaaPipeline)->addTextureBinding(0, fxaaTexture, WRITE_ONLY);
 
 			deferredFBO->Bind();
 			deferredFBO->addDepthAttachment(width, height, true);
@@ -171,7 +171,9 @@ namespace Prehistoric
 		{
 			PR_PROFILE("Cubemap pass");
 			if (FrameworkConfig::api == OpenGL)
+			{
 				EnvironmentMapRenderer::instance->RenderCube(camera);
+			}
 		}
 
 		{
@@ -229,15 +231,18 @@ namespace Prehistoric
 			deferredPipeline->UnbindPipeline();
 		}
 
-		//fxaaPipeline->BindPipeline(nullptr);
-		//static_cast<GLFXAAShader*>(fxaaPipeline->getShader())->UpdateUniforms(this, camera, lights);
-		//fxaaPipeline->RenderPipeline();
-		//fxaaPipeline->UnbindPipeline();
+		{
+			PR_PROFILE("FXAA pass");
+			//fxaaPipeline->BindPipeline(nullptr);
+			//static_cast<GLFXAAShader*>(fxaaPipeline->getShader())->UpdateUniforms(this, camera, lights);
+			//fxaaPipeline->RenderPipeline();
+			//fxaaPipeline->UnbindPipeline();
+		}
 
 		{
 			PR_PROFILE("Show pass");
 			renderPipeline->BindPipeline(nullptr);
-			static_cast<GLGUIShader*>(renderPipeline->getShader())->UpdateCustomUniforms(outputImage);//fxaaTexture);
+			static_cast<GLGUIShader*>(renderPipeline->getShader())->UpdateCustomUniforms(outputImage, Vector3f(-1));
 			renderPipeline->RenderPipeline();
 			renderPipeline->UnbindPipeline();
 		}

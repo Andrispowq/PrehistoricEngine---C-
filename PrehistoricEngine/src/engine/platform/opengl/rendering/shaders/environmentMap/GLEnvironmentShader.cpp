@@ -14,14 +14,16 @@ namespace Prehistoric
 		AddUniform("m_projection");
 
 		AddUniform("environmentMap");
+		AddUniform("lod");
 	}
 
-	void GLEnvironmentShader::UpdateUniforms(const Matrix4f& projection, const Matrix4f& view, Texture* texture) const
+	void GLEnvironmentShader::UpdateUniforms(const Matrix4f& projection, const Matrix4f& view, Texture* texture, float lod) const
 	{
 		SetUniform("m_view", view);
 		SetUniform("m_projection", projection);
 
 		texture->Bind(0);
 		SetUniformi("environmentMap", 0);
+		SetUniformf("lod", lod);
 	}
 };

@@ -34,6 +34,12 @@ PrehistoricApp::PrehistoricApp()
 	AssetManager* man = manager->getAssetManager();
 	Window* window = engine.getRenderingEngine()->getWindow();
 
+	GameObject* slider3 = new GUISlider(window, manager, 0.0f, 4.0f, Vector3f(0.4f), &EnvironmentMapRenderer::instance->lodRenderedMap, sizeof(float), true);
+	static_cast<GUISlider*>(slider3)->setProgress(0.0);
+	slider3->SetPosition({ 0.5f, -0.5f, 0 });
+	slider3->SetScale({ 0.125f, 0.125f, 1 });
+	sceneRoot->AddChild("slider3", slider3);
+
 	VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/sphere.obj").value();
 	vbo->setFrontFace(FrontFace::CLOCKWISE);
 	ShaderHandle shader = man->loadShader("pbr").value();
@@ -47,11 +53,28 @@ PrehistoricApp::PrehistoricApp()
 	material->addVector3f(COLOUR, { 0.64f, 0.53f, 0.23f });
 	material->addVector4f(MROT, { 1.0f, 0.3f, 1.0f, 0.0f });
 
+	MaterialHandle material2 = manager->storeMaterial(new Material(man));
+	material->addVector3f(COLOUR, { 0.64f, 0.64f, 0.64f });
+	material->addVector4f(MROT, { 1.0f, 0.3f, 1.0f, 0.0f });
+
 	GameObject* obj = new GameObject;
 	obj->SetPosition({ 0, 200, 0 });
 	obj->SetScale({ 10, 10, 10 });
 	obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, material));
-	engine.AddGameObject("someobj", obj);
+	sceneRoot->AddChild("someobj", obj);
+
+	GameObject* obj2 = new GameObject;
+	obj2->SetPosition({ -50, 10, 0 });
+	obj2->SetScale({ 1, 1, 1 });
+	obj2->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, material));
+
+	obj2->setUpdateFunction([](GameObject* obj, float delta)
+	{
+		Vector3f moveDir = { 1.0f, 0.0f, 0.0f };
+		obj->Move(moveDir * delta);
+	});
+
+	sceneRoot->AddChild("someobj2", obj2);
 }
 
 PrehistoricApp::~PrehistoricApp()

@@ -15,7 +15,7 @@ namespace Prehistoric
 		GLPrefilterShader();
 		virtual ~GLPrefilterShader() {}
 
-		void UpdateUniforms(const Matrix4f& projection, const Matrix4f& view, Texture* texture, float roughness) const;
+		void UpdateUniforms(Texture* texture, float roughness, float resolution) const;
 	};
 };
 

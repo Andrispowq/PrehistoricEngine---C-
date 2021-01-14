@@ -1,5 +1,7 @@
 #include "PrehistoricScene.h"
 
+#include "prehistoric/core/config/EnvironmentMapConfig.h"
+
 //We go around in a circle, from -range to range on the y and z axes
 static void sun_move_function(Prehistoric::GameObject* object, float frameTime)
 {
@@ -77,20 +79,16 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 
 		Terrain* terrain = new Terrain(window, camera, manager, "res/config/terrain_0.cfg");
 		terrain->UpdateQuadtree();
+		//terrain->setEnabled(false);
 
-		root->AddChild("Terrain", terrain);
+		root->AddChild("terrain0", terrain);
 
-		GameObject* slider = new GUISlider(window, manager, 0.0f, 2.0f, terrain->getMaps()->getHeightmap(), &EngineConfig::rendererExposure, sizeof(float), true);
+		GameObject* slider = new GUISlider(window, manager, 0.0f, 2.0f, Vector3f(0.5f), &EngineConfig::rendererExposure, sizeof(float), true);
 		slider->SetPosition({ 0.5f, 0.5f, 0 });
 		slider->SetScale({ 0.125f, 0.05f, 1 });
 		root->AddChild("slider", slider);
 
-		GameObject* slider3 = new GUISlider(window, manager, 0.0f, 2.0f, terrain->getMaps()->getHeightmap(), &EngineConfig::rendererExposure, sizeof(float), true);
-		slider3->SetPosition({ 0.5f, -0.5f, 0 });
-		slider3->SetScale({ 0.125f, 0.125f, 1 });
-		root->AddChild("slider3", slider3);
-
-		GameObject* slider2 = new GUISlider(window, manager, 1.0f, 3.4f, terrain->getMaps()->getHeightmap(), &EngineConfig::rendererGamma, sizeof(float), true);
+		GameObject* slider2 = new GUISlider(window, manager, 1.0f, 3.4f, Vector3f(0.4f), &EngineConfig::rendererGamma, sizeof(float), true);
 		slider2->SetPosition({ 0.5f, 0.25f, 0 });
 		slider2->SetScale({ 0.125f, 0.05f, 1 });
 		root->AddChild("slider2", slider2);

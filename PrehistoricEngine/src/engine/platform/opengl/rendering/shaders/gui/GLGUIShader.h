@@ -13,7 +13,7 @@ namespace Prehistoric
 		GLGUIShader();
 		virtual ~GLGUIShader() {}
 
-		void UpdateCustomUniforms(Texture* texture) const;
+		void UpdateCustomUniforms(Texture* texture, Vector3f colour) const;
 		virtual void UpdateObjectUniforms(GameObject* object, uint32_t instance_index = 0) const override;
 	};
 };

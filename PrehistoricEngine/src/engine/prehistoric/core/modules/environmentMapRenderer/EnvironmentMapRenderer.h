@@ -31,11 +31,13 @@ namespace Prehistoric
 		Texture* getPrefilterMap() const { return prefilterMap.pointer; }
 		Texture* getBRDFMap() const { return brdfMap.pointer; }
 
+	public:
+		float lodRenderedMap = 0.0;
+
 	private:
 		Window* window;
 		AssembledAssetManager* manager;
 
-		Framebuffer* framebuffer;
 		VertexBufferHandle cubeBuffer;
 
 		TextureHandle equirectangularMap;
@@ -55,9 +57,6 @@ namespace Prehistoric
 		PipelineHandle prefilterPipeline;
 		PipelineHandle brdfIntegratePipeline;
 		PipelineHandle backgroundPipeline;
-
-		Matrix4f viewMatrices[6];
-		Matrix4f projectionMatrix;
 	};
 };
 

@@ -72,7 +72,7 @@ namespace Prehistoric
 		inline Vector2f normalise() const { return *this / length(); }
 		inline float dot(const Vector2f& v) const { return x * v.x + y * v.y; }
 
-		inline Vector2f abs() const;
+		Vector2f abs() const;
 
 		Vector2f lerp(const Vector2f& b, const float& t, const bool& invert) const;
 		Vector2f lerp(const Vector2f& b, const Vector2f& t, const bool& invert) const;
@@ -146,7 +146,7 @@ namespace Prehistoric
 		inline Vector3f normalise() const { return *this / length(); }
 		inline float dot(const Vector3f& v) const { return x * v.x + y * v.y + z * v.z; }
 
-		inline Vector3f abs() const;
+		Vector3f abs() const;
 
 		Vector3f cross(const Vector3f& normal) const;
 		Vector3f reflect(const Vector3f& normal) const;
@@ -243,7 +243,7 @@ namespace Prehistoric
 		inline Vector4f normalise() const { return *this / length(); }
 		inline float dot(const Vector4f& v) const { return x * v.x + y * v.y + z * v.z + w * v.w; }
 
-		inline Vector4f abs() const;
+		Vector4f abs() const;
 
 		Vector4f lerp(const Vector4f& b, const float& t) const;
 		Vector4f lerp(const Vector4f& b, const Vector4f& t) const;
@@ -342,7 +342,7 @@ namespace Prehistoric
 		inline Quaternionf normalise() const { return *this / length(); }
 		inline float dot(const Quaternionf& v) const { return x * v.x + y * v.y + z * v.z + w * v.w; }
 
-		inline Quaternionf abs() const;
+		Quaternionf abs() const;
 
 		Quaternionf lerp(const Quaternionf& b, const float& t) const;
 		Quaternionf lerp(const Quaternionf& b, const Quaternionf& t) const;
@@ -494,7 +494,7 @@ namespace Prehistoric
 		inline Vector2<T> normalise() const { return *this / length(); }
 		inline T dot(const Vector2<T>& v) const { return x * v.x + y * v.y; }
 
-		inline Vector2<T> abs() const;
+		Vector2<T> abs() const;
 
 		Vector2<T> lerp(const Vector2<T>& b, const T& t, const bool& invert) const;
 		Vector2<T> lerp(const Vector2<T>& b, const Vector2<T>& t, const bool& invert) const;
@@ -580,7 +580,7 @@ namespace Prehistoric
 		inline Vector3<T> normalise() const { return *this / length(); }
 		inline T dot(const Vector3<T>& v) const { return x * v.x + y * v.y + z * v.z; }
 
-		inline Vector3<T> abs() const;
+		Vector3<T> abs() const;
 
 		Vector3<T> cross(const Vector3<T>& normal) const;
 		Vector3<T> reflect(const Vector3<T>& normal) const;
@@ -707,7 +707,7 @@ namespace Prehistoric
 		inline Vector4<T> normalise() const { return *this / length(); }
 		inline T dot(const Vector4<T>& v) const { return x * v.x + y * v.y + z * v.z + w * v.w; }
 
-		inline Vector4<T> abs() const;
+		Vector4<T> abs() const;
 
 		Vector4<T> lerp(const Vector4<T>& b, const T& t) const;
 		Vector4<T> lerp(const Vector4<T>& b, const Vector4<T>& t) const;
@@ -812,7 +812,7 @@ namespace Prehistoric
 		inline Quaternion<T> normalise() const { return *this / length(); }
 		inline T dot(const Quaternion<T>& v) const { return x * v.x + y * v.y + z * v.z + w * v.w; }
 
-		inline Quaternion<T> abs() const;
+		Quaternion<T> abs() const;
 
 		Quaternion<T> lerp(const Quaternion<T>& b, const T& t) const;
 		Quaternion<T> lerp(const Quaternion<T>& b, const Quaternion<T>& t) const;

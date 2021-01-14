@@ -1,27 +1,25 @@
 #include "Includes.hpp"
 #include "GLEnvironmentMapShader.h"
 
+#include "prehistoric/core/config/EnvironmentMapConfig.h"
+
 namespace Prehistoric
 {
 	GLEnvironmentMapShader::GLEnvironmentMapShader()
 	{
-		AddShader(ResourceLoader::LoadShaderGL("opengl/environmentMap/environmentMap_VS.glsl"), VERTEX_SHADER);
-		AddShader(ResourceLoader::LoadShaderGL("opengl/environmentMap/environmentMap_FS.glsl"), FRAGMENT_SHADER);
+		AddShader(ResourceLoader::LoadShaderGL("opengl/environmentMap/environmentMap_CS.glsl"), COMPUTE_SHADER);
 
 		CompileShader();
 
-		AddUniform("m_view");
-		AddUniform("m_projection");
-
 		AddUniform("equirectangularMap");
+		AddUniform("resolution");
 	}
 
-	void GLEnvironmentMapShader::UpdateUniforms(const Matrix4f& projection, const Matrix4f& view, Texture* texture) const
+	void GLEnvironmentMapShader::UpdateUniforms(Texture* texture) const
 	{
-		SetUniform("m_view", view);
-		SetUniform("m_projection", projection);
-
-		texture->Bind(0);
+		texture->Bind();
 		SetUniformi("equirectangularMap", 0);
+
+		SetUniformf("resolution", (float)EnvironmentMapConfig::environmentMapResolution);
 	}
 };

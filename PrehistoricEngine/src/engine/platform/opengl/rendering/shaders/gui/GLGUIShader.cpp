@@ -15,36 +15,34 @@ namespace Prehistoric
 
 		AddUniform("m_transform");
 
+		AddUniform("colour");
 		AddUniform("image");
-		AddUniform("progress");
 	}
 
-	void GLGUIShader::UpdateCustomUniforms(Texture* texture) const
+	void GLGUIShader::UpdateCustomUniforms(Texture* texture, Vector3f colour) const
 	{
 		SetUniform("m_transform", Matrix4f::Identity());
 
+		SetUniform("colour", colour);
 		texture->Bind();
 		SetUniformi("image", 0);
-
-		SetUniformf("progress", 1.0f);
 	}
 
 	void GLGUIShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const
 	{
-		SetUniform("m_transform", object->getWorldTransform().getTransformationMatrix());
-
 		GUIElement* gui = reinterpret_cast<GUIElement*>(object);
-
-		gui->getTexture()->Bind();
-		SetUniformi("image", 0);
 
 		if (gui->getType() == GUIType::Slider)
 		{
-			SetUniformf("progress", reinterpret_cast<GUISlider*>(object)->getProgress());
+			GUISlider* gui_slider = reinterpret_cast<GUISlider*>(gui);
+
+			SetUniform("m_transform", gui_slider->getSliderTransform());
+			SetUniform("colour", gui_slider->getSliderColour());
 		}
 		else
 		{
-			SetUniformf("progress", 1.0f);
+			SetUniform("m_transform", object->getWorldTransform().getTransformationMatrix());
+			SetUniform("colour", gui->getColour());
 		}
 	}
 };

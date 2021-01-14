@@ -1,36 +1,23 @@
 #include "Includes.hpp"
 #include "GUIElement.h"
 
-#include "prehistoric/core/util/ModelFabricator.h"
-
 #include "platform/opengl/rendering/shaders/gui/GLGUIShader.h"
-#include "platform/vulkan/rendering/shaders/basic/VKBasicShader.h"
-
-#include "prehistoric/core/CoreEngine.h"
-
-#include "prehistoric/core/resources/AssembledAssetManager.h"
+//#include "platform/vulkan/rendering/shaders/basic/VKGUIShader.h"
 
 namespace Prehistoric
 {
 	VertexBufferHandle GUIElement::vbo = { nullptr, -1 };
 	PipelineHandle GUIElement::pipeline = { nullptr, -1 };
 
-	GUIElement::GUIElement(Window* window, AssembledAssetManager* manager, Texture* texture, void* data, size_t dataSize, bool visible)
-		: type(GUIType::Element)
+	GUIElement::GUIElement(Window* window, AssembledAssetManager* manager, Vector3f colour, void* data, size_t dataSize, bool visible)
+		: window(window), manager(manager), colour(colour), data(data), dataSize(dataSize), visible(visible), type(GUIType::Element)
 	{
-		this->texture = texture;
-		this->data = data;
-		this->dataSize = dataSize;
-		this->visible = visible;
-
-		this->window = window;
-
 		if (vbo.handle == -1)
 		{
 			ShaderHandle shader;
 
-			vbo = manager->getAssetManager()->loadVertexBuffer(std::nullopt, "res/models/quad.obj").value();
-			vbo->setFrontFace(FrontFace::CLOCKWISE);
+			vbo = manager->getAssetManager()->storeVertexBuffer(ModelFabricator::CreateQuad(window));
+			vbo->setFrontFace(FrontFace::DOUBLE_SIDED);
 
 			if (FrameworkConfig::api == OpenGL)
 			{
@@ -62,18 +49,24 @@ namespace Prehistoric
 		GameObject::PreRender(renderer);
 	}
 
-	bool GUIElement::inside(Vector2f cursor)
+	bool GUIElement::inside(Vector2f cursor, Vector2f _start, Vector2f _end)
 	{
-		cursor.y = window->getHeight() - cursor.y;
-		cursor /= { (float)window->getWidth(), (float)window->getHeight() };
-		cursor *= 2;
-		cursor -= 1;
-
 		Vector2f pos = worldTransform.getPosition().xy();
 		Vector2f scale = worldTransform.getScaling().xy();
 
 		Vector2f start = pos - scale;
 		Vector2f end = pos + scale;
+
+		if (_start != -1 && _end != -1)
+		{
+			start = _start;
+			end = _end;
+		}
+
+		cursor.y = window->getHeight() - cursor.y;
+		cursor /= { (float)window->getWidth(), (float)window->getHeight() };
+		cursor *= 2;
+		cursor -= 1;
 
 		if (start <= cursor && end >= cursor)
 		{

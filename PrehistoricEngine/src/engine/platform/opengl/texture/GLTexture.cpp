@@ -169,14 +169,15 @@ namespace Prehistoric
 		return texture;
 	}
 
-	Texture* GLTexture::Storage3D(uint32_t width, uint32_t height, uint32_t level, ImageFormat format, SamplerFilter filter, TextureWrapMode wrapMode, bool generate_mipmaps)
+	Texture* GLTexture::Storage3D(uint32_t width, uint32_t height, uint32_t levels, ImageFormat format, SamplerFilter filter, TextureWrapMode wrapMode, bool generate_mipmaps)
 	{
 		Texture* texture = new GLTexture(width, height, format, TEXTURE_CUBE_MAP);
 		texture->Bind();
 
+ 		//glTexStorage2D(GL_TEXTURE_CUBE_MAP, levels, getInternalFormat(format), width, height);
 		for (uint32_t i = 0; i < 6; ++i)
 		{
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, level, getInternalFormat(format), width, height, 0, getFormat(format), GL_FLOAT, nullptr);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, getInternalFormat(format), width, height, 0, getFormat(format), GL_FLOAT, nullptr);
 		}
 
 		texture->SamplerProperties(filter, wrapMode, generate_mipmaps);
@@ -243,6 +244,30 @@ namespace Prehistoric
 			return GL_RGB;
 		if (format == R8G8B8A8_SRGB || format == R8G8B8A8_LINEAR)
 			return GL_RGBA;
+
+		PR_LOG_ERROR("Unsupported texture format: %u\n", format);
+
+		return -1;
+	}
+
+	GLenum GLTexture::getFormatForComputeShader(ImageFormat format)
+	{
+		if (format == R8_SRGB || format == R8_LINEAR)
+			return GL_R8;
+		if (format == R16_SFLOAT || format == R16_LINEAR)
+			return GL_R16;
+		if (format == R32_SFLOAT || format == R32_LINEAR)
+			return GL_R32F;
+		if (format == R8G8_SRGB || format == R8G8_LINEAR)
+			return GL_RG16;
+		if (format == R16G16_SFLOAT || format == R16G16_LINEAR)
+			return GL_RG32F;
+		if (format == R8G8B8_16_SRGB || format == R8G8B8_16_LINEAR)
+			return GL_RGBA16F;
+		if (format == R8G8B8_SRGB || format == R8G8B8_LINEAR)
+			return GL_RGBA32F;
+		if (format == R8G8B8A8_SRGB || format == R8G8B8A8_LINEAR)
+			return GL_RGBA32F;
 
 		PR_LOG_ERROR("Unsupported texture format: %u\n", format);
 

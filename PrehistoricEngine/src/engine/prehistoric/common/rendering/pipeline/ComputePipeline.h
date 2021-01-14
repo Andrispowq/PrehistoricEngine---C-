@@ -23,11 +23,11 @@ namespace Prehistoric
 
 		virtual ~ComputePipeline() {}
 
-		std::unordered_map<uint32_t, std::pair<Texture*, AccessMask>>& getTextureBindingTable() { return textureBindingTable; }
+		std::unordered_map<uint32_t, std::pair<std::pair<Texture*, size_t>, AccessMask>>& getTextureBindingTable() { return textureBindingTable; }
 		std::unordered_map<uint32_t, std::pair<ShaderStorageBuffer*, AccessMask>>& getSSBOBindingTable() { return ssboBindingTable; }
 		Vector3u getInvocationSize() const { return invocationSize; }
 
-		void addTextureBinding(uint32_t binding, Texture* texture, AccessMask accessMask) { textureBindingTable.insert(std::make_pair(binding, std::make_pair(texture, accessMask))); }
+		void addTextureBinding(uint32_t binding, Texture* texture, AccessMask accessMask, size_t mipLevel = 0) { textureBindingTable.insert(std::make_pair(binding, std::make_pair(std::make_pair(texture, mipLevel), accessMask))); }
 		void addSSBOBinding(uint32_t binding, ShaderStorageBuffer* ssbo, AccessMask accessMask) { ssboBindingTable.insert(std::make_pair(binding, std::make_pair(ssbo, accessMask))); }
 		void setInvocationSize(const Vector3u& size) { this->invocationSize = size; }
 
@@ -36,7 +36,7 @@ namespace Prehistoric
 	protected:
 		Vector3u invocationSize;
 
-		std::unordered_map<uint32_t, std::pair<Texture*, AccessMask>> textureBindingTable;
+		std::unordered_map<uint32_t, std::pair<std::pair<Texture*, size_t>, AccessMask>> textureBindingTable;
 		std::unordered_map<uint32_t, std::pair<ShaderStorageBuffer*, AccessMask>> ssboBindingTable;
 	};
 };

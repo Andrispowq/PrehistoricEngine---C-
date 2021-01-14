@@ -1,27 +1,25 @@
 #include "Includes.hpp"
 #include "GLIrradianceShader.h"
 
+#include "prehistoric/core/config/EnvironmentMapConfig.h"
+
 namespace Prehistoric
 {
 	GLIrradianceShader::GLIrradianceShader()
 	{
-		AddShader(ResourceLoader::LoadShaderGL("opengl/environmentMap/irradiance_VS.glsl"), VERTEX_SHADER);
-		AddShader(ResourceLoader::LoadShaderGL("opengl/environmentMap/irradiance_FS.glsl"), FRAGMENT_SHADER);
+		AddShader(ResourceLoader::LoadShaderGL("opengl/environmentMap/irradiance_CS.glsl"), COMPUTE_SHADER);
 
 		CompileShader();
 
-		AddUniform("m_view");
-		AddUniform("m_projection");
-
+		AddUniform("resolution");
 		AddUniform("environmentMap");
 	}
 
-	void GLIrradianceShader::UpdateUniforms(const Matrix4f& projection, const Matrix4f& view, Texture* texture) const
+	void GLIrradianceShader::UpdateUniforms(Texture* texture) const
 	{
-		SetUniform("m_view", view);
-		SetUniform("m_projection", projection);
-
 		texture->Bind(0);
 		SetUniformi("environmentMap", 0);
+
+		SetUniformf("resolution", (float)EnvironmentMapConfig::irradianceMapResolution);
 	}
 };
