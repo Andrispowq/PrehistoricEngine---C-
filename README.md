@@ -42,4 +42,4 @@ The engine uses Premake 5.0 as it's build system. To learn more about using it, 
 
 ## Using the engine
 
-If you don't want to compile the engine yourself, you should download the installer of one of the engine's releases. For more information, please click [here](INSTALLING.md).
+If you don't want to compile the engine yourself, you should download the installer of one of the engine's releases. Please note that even the latest release could be more then 10+ commits behind the engine's current development state, so for the latest features, I recommend building the engine instead. For more information, please click [here](INSTALLING.md).
