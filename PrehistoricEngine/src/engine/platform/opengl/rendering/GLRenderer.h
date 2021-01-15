@@ -20,8 +20,9 @@ namespace Prehistoric
 
 		virtual void Render() override;
 
+		virtual Texture* getOutputTexture() const override { return outputImage; }
+
 		Texture* getAlphaCoverage() const { return alphaCoverage; }
-		Texture* getOutputTexture() const { return outputImage; }
 		Texture* getFXAATexture() const { return fxaaTexture; }
 
 		Texture* getPositionMetallic() const { return positionMetalic; }

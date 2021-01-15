@@ -70,6 +70,22 @@ namespace Prehistoric
 		renderingEngine->Render();
 	}
 
+	void CoreEngine::BeginRendering()
+	{
+		renderingEngine->getWindow()->ClearScreen();
+
+		renderingEngine->getRenderer()->PrepareRendering();
+	}
+
+	void CoreEngine::EndRendering()
+	{
+		renderingEngine->getRenderer()->EndRendering();
+
+		RenderingEngine::getStats().drawcalls = 0;
+		RenderingEngine::getStats().vertexCount = 0;
+		RenderingEngine::getStats().indexCount = 0;
+	}
+
 	void CoreEngine::OnEvent(Event& event)
 	{
 		renderingEngine->OnEvent(event);

@@ -10,6 +10,8 @@
 
 namespace Prehistoric
 {
+	Statistics RenderingEngine::statistics;
+
 	RenderingEngine::RenderingEngine()
 		: window(nullptr), camera(nullptr), renderer(nullptr)
 	{
@@ -104,10 +106,6 @@ namespace Prehistoric
 
 	void RenderingEngine::Render()
 	{
-		window->ClearScreen();
-
-		renderer->PrepareRendering();
 		renderer->Render();
-		renderer->EndRendering();
 	}
 };

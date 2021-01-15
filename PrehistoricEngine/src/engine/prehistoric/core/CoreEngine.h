@@ -36,6 +36,9 @@ namespace Prehistoric
 		virtual void Update(float delta);
 		virtual void Render();
 
+		void BeginRendering();
+		void EndRendering();
+
 		void LoadConfigurationFiles(const std::string& path);
 		void LoadEngines();
 

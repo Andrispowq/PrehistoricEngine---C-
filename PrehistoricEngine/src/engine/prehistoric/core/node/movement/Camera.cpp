@@ -1,6 +1,8 @@
 #include "Includes.hpp"
 #include "Camera.h"
 
+#include "imgui.h"
+
 namespace Prehistoric
 {
 	static const Vector3f yAxis(0, 1, 0);
@@ -219,6 +221,7 @@ namespace Prehistoric
 			}
 
 			InputInstance.setCursorPositionOnScreen(window, InputInstance.getLockedCursorPosition());
+			ImGui::SetMouseCursor(ImGuiMouseCursor_None);
 		}
 
 		if (position != previousPosition)

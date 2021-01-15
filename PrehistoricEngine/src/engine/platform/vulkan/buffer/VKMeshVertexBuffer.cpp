@@ -3,6 +3,8 @@
 #include "VKMeshVertexBuffer.h"
 #include "platform/vulkan/rendering/pipeline/VKGraphicsPipeline.h"
 
+#include "prehistoric/core/engines/RenderingEngine.h"
+
 namespace Prehistoric
 {
 	VKMeshVertexBuffer::VKMeshVertexBuffer(Window* window, const Mesh& mesh)
@@ -60,6 +62,10 @@ namespace Prehistoric
 
 	void VKMeshVertexBuffer::Draw(CommandBuffer* commandBuffer) const
 	{
+		RenderingEngine::getStats().drawcalls += 1;
+		RenderingEngine::getStats().vertexCount += vertices;
+		RenderingEngine::getStats().indexCount += indices;
+
 		vkCmdDrawIndexed(((VKCommandBuffer*)commandBuffer)->getCommandBuffer(), size, 1, 0, 0, 0);
 	}
 

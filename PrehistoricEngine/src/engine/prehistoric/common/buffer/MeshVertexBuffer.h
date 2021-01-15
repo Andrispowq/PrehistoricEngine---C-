@@ -11,15 +11,18 @@ namespace Prehistoric
 	class MeshVertexBuffer : public VertexBuffer
 	{
 	public:
-		MeshVertexBuffer(Window* window, const Mesh& mesh) : VertexBuffer(window), mesh(mesh) {}
+		MeshVertexBuffer(Window* window, const Mesh& mesh);
 
 		virtual ~MeshVertexBuffer() override = 0;
 
 		virtual void Bind(CommandBuffer* commandBuffer) const override = 0;
 		virtual void Draw(CommandBuffer* commandBuffer) const = 0;
 		virtual void Unbind() const override = 0;
-	private:
+	protected:
 		Mesh mesh;
+
+		size_t vertices;
+		size_t indices;
 	};
 };
 

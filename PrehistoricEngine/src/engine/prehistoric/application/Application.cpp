@@ -100,12 +100,20 @@ namespace Prehistoric
 
 			if (render && !InputInstance.IsPauseRendering())
 			{
-				imGUILayer->Begin();
+				engineLayer->BeginRendering();
 				for (auto it = layerStack.rbegin(); it != layerStack.rend(); ++it)
 				{
 					(*it)->Render();
 				}
+
+				imGUILayer->Begin();
+				for (auto it = layerStack.rbegin(); it != layerStack.rend(); ++it)
+				{
+					(*it)->ImGUIRender();
+				}
 				imGUILayer->End();
+
+				engineLayer->EndRendering();
 
 				frames++;
 			}

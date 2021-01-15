@@ -23,8 +23,8 @@ EditorApp::EditorApp()
 		}
 	}
 
-	//editor = new EditorLayer();
-	//PushLayer(editor);
+	editor = new EditorLayer();
+	PushLayer(editor);
 }
 
 EditorApp::~EditorApp()

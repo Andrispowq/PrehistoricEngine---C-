@@ -24,6 +24,8 @@ namespace Prehistoric
 
 		virtual CommandBuffer* getDrawCommandBuffer() const { return nullptr; }
 
+		virtual Texture* getOutputTexture() const { return nullptr; }
+
 		void AddModel(RenderableComponent* renderable);
 		void AddLight(Light* light);
 

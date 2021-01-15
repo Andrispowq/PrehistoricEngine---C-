@@ -11,6 +11,13 @@
 
 namespace Prehistoric
 {
+	struct Statistics
+	{
+		size_t drawcalls;
+		size_t vertexCount;
+		size_t indexCount;
+	};
+
 	class RenderingEngine : public Engine
 	{
 	public:
@@ -29,6 +36,8 @@ namespace Prehistoric
 
 		inline Renderer* getRenderer() const { return renderer.get(); }
 
+		static Statistics& getStats() { return statistics; }
+
 		RenderingEngine(const RenderingEngine& engine) = delete;
 		RenderingEngine operator=(const RenderingEngine& engine) = delete;
 	private:
@@ -36,6 +45,8 @@ namespace Prehistoric
 		std::unique_ptr<Camera> camera;
 
 		std::unique_ptr<Renderer> renderer;
+
+		static Statistics statistics;
 	};
 };
 

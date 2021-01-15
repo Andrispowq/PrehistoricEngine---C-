@@ -20,7 +20,7 @@ void EditorLayer::Update(float delta)
 {
 }
 
-void EditorLayer::Render()
+void EditorLayer::ImGUIRender()
 {
 	static bool dockspaceOpen = true;
 	static bool opt_fullscreen_persistant = true;
@@ -94,6 +94,28 @@ void EditorLayer::Render()
 
 		ImGui::EndMenuBar();
 	}
+
+	ImGui::Begin("Stats");
+
+	auto stats = Prehistoric::RenderingEngine::getStats();
+	ImGui::Text("RenderingEngine statistics:");
+	ImGui::Text("Draw Calls: %d", stats.drawcalls);
+	ImGui::Text("Vertices: %d", stats.vertexCount);
+	ImGui::Text("Indices: %d", stats.indexCount);
+
+	ImGui::End();
+
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+	ImGui::Begin("Viewport");
+
+	ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+	Prehistoric::Vector2f viewportSize = { viewportPanelSize.x, viewportPanelSize.y };
+
+	Prehistoric::Texture* texture = Prehistoric::Application::Get().getEngineLayer()->getRenderingEngine()->getRenderer()->getOutputTexture();
+	ImGui::Image(reinterpret_cast<void*>(dynamic_cast<Prehistoric::GLTexture*>(texture)->getTextureID()), ImVec2{ viewportSize.x, viewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+	ImGui::End();
+	ImGui::PopStyleVar();
 
 	ImGui::End();
 }

@@ -1,6 +1,8 @@
 #include "Includes.hpp"
 #include "GLPatchVertexBuffer.h"
 
+#include "prehistoric/core/engines/RenderingEngine.h"
+
 namespace Prehistoric
 {
 	GLPatchVertexBuffer::GLPatchVertexBuffer(Window* window, const std::vector<Vector2f>& vertices)
@@ -47,6 +49,10 @@ namespace Prehistoric
 
 	void GLPatchVertexBuffer::Draw(CommandBuffer* commandBuffer) const
 	{
+		RenderingEngine::getStats().drawcalls += 1;
+		RenderingEngine::getStats().vertexCount += vertexCount;
+		RenderingEngine::getStats().indexCount += 32;
+
 		glDrawArrays(GL_PATCHES, 0, size);
 	}
 

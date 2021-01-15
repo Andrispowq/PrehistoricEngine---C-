@@ -21,6 +21,7 @@ namespace Prehistoric
 		virtual void OnEvent(Event& event) {}
 
 		virtual void Update(float delta) {}
+		virtual void ImGUIRender() {}
 		virtual void Render() {}
 
 		const std::string& getName() const { return debugName; }

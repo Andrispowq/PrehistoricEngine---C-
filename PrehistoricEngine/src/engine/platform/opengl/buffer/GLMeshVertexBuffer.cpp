@@ -1,6 +1,8 @@
 #include "Includes.hpp"
 #include "GLMeshVertexBuffer.h"
 
+#include "prehistoric/core/engines/RenderingEngine.h"
+
 namespace Prehistoric
 {
 	GLMeshVertexBuffer::GLMeshVertexBuffer(Window* window, const Mesh& mesh)
@@ -59,6 +61,10 @@ namespace Prehistoric
 
 	void GLMeshVertexBuffer::Draw(CommandBuffer* commandBuffer) const
 	{
+		RenderingEngine::getStats().drawcalls += 1;
+		RenderingEngine::getStats().vertexCount += vertices;
+		RenderingEngine::getStats().indexCount += indices;
+
 		glDrawElements(GL_TRIANGLES, size, GL_UNSIGNED_SHORT, (void*)0);
 	}
 
