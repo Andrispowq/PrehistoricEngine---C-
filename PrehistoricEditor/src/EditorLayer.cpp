@@ -4,8 +4,12 @@
 
 #include "imgui.h"
 
+#include "prehistoric/common/util/PlatformUtils.h"
+
 EditorLayer::EditorLayer()
+	: scenePanel{nullptr}
 {
+	scenePanel = std::make_unique<SceneHierarchyPanel>(Prehistoric::Application::Get().getEngineLayer()->getRootObject());
 }
 
 void EditorLayer::OnAttach()
@@ -95,6 +99,8 @@ void EditorLayer::ImGUIRender()
 		ImGui::EndMenuBar();
 	}
 
+	scenePanel->ImGuiRender();
+
 	ImGui::Begin("Stats");
 
 	auto stats = Prehistoric::RenderingEngine::getStats();
@@ -106,13 +112,42 @@ void EditorLayer::ImGUIRender()
 	ImGui::End();
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+	ImGui::Begin("Environment map configurations");
+
+	if (ImGui::Button("Load environment map"))
+	{
+		std::optional<std::string> path = Prehistoric::FileDialogues::Get()->OpenFile("Environment Map (*.hdr)\0*.hdr\0");
+		if (path)
+		{
+			Prehistoric::EnvironmentMapConfig::environmentMapLocation = *path;
+			Prehistoric::EnvironmentMapRenderer::instance->GenerateEnvironmentMap();
+		}
+	}
+
+	if (ImGui::Button("Regenerate environment map"))
+	{
+		Prehistoric::EnvironmentMapRenderer::instance->GenerateEnvironmentMap();
+	}
+
+	float max = (float)Prehistoric::EnvironmentMapConfig::prefilterLevels;
+	ImGui::SliderFloat("Environment map LOD", (float*)&Prehistoric::EnvironmentMapRenderer::instance->lodRenderedMap, 0.0, max - 1.0, "Environment map LOD");
+
+	ImGui::InputInt("Environment map resolution", (int*)&Prehistoric::EnvironmentMapConfig::environmentMapResolution);
+	ImGui::InputInt("Irradiance map resolution", (int*)&Prehistoric::EnvironmentMapConfig::irradianceMapResolution);
+	ImGui::InputInt("Prefilter map resolution", (int*)&Prehistoric::EnvironmentMapConfig::prefilterMapResolution);
+	ImGui::InputInt("Prefilter map mip levels", (int*)&Prehistoric::EnvironmentMapConfig::prefilterLevels);
+
+	ImGui::End();
+	ImGui::PopStyleVar();
+
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 	ImGui::Begin("Viewport");
 
 	ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 	Prehistoric::Vector2f viewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 
 	Prehistoric::Texture* texture = Prehistoric::Application::Get().getEngineLayer()->getRenderingEngine()->getRenderer()->getOutputTexture();
-	ImGui::Image(reinterpret_cast<void*>(dynamic_cast<Prehistoric::GLTexture*>(texture)->getTextureID()), ImVec2{ viewportSize.x, viewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+	ImGui::Image((void*)(dynamic_cast<Prehistoric::GLTexture*>(texture)->getTextureID()), ImVec2{ viewportSize.x, viewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 	ImGui::End();
 	ImGui::PopStyleVar();

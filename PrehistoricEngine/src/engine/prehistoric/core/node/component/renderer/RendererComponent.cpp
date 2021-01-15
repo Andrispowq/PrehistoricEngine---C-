@@ -30,12 +30,14 @@ namespace Prehistoric
 
 	RendererComponent::~RendererComponent()
 	{
-		manager->removeReference<Material>(material.handle);
+		if(material.pointer != nullptr)
+			manager->removeReference<Material>(material.handle);
 	}
 
 	void RendererComponent::PreRender(Renderer* renderer)
 	{
-		renderer->AddModel(this);
+		if(pipeline.pointer != nullptr)
+			renderer->AddModel(this);
 	}
 
 	void RendererComponent::Render(Renderer* renderer) const

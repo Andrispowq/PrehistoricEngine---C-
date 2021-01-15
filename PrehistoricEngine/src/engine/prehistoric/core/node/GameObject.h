@@ -23,13 +23,23 @@ namespace Prehistoric
 		GameObject* AddComponent(const std::string& name, Component* component);
 		Component* GetComponent(const std::string& name) const;
 
+		std::vector<GameObject*> getAllChildren() const;
+
+		inline std::string getName() const { return name; }
+		inline std::string& getName() { return name; }
+		inline void setName(const std::string& name) { this->name = name; }
+
 		template<typename T> 
 		T* GetComponent() const;
+
+		template<typename T>
+		void RemoveComponent();
 
 		GameObject(const GameObject&) = default;
 	protected:
 		std::unordered_map<std::string, std::unique_ptr<Component>> components;
 		UpdateFunction updateFunction;
+		std::string name;
 	};
 
 	template<typename T>
@@ -44,6 +54,25 @@ namespace Prehistoric
 		}
 		
 		return nullptr;
+	}
+
+	template<typename T>
+	inline void GameObject::RemoveComponent()
+	{
+		std::vector<std::string> keys;
+
+		for (auto& component : components)
+		{
+			if (component.second->getComponentType() == T::getStaticComponentType())
+			{
+				keys.push_back(component.first);
+			}
+		}
+
+		for (auto& elem : keys)
+		{
+			components.erase(elem);
+		}
 	}
 };
 

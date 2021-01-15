@@ -23,6 +23,7 @@ namespace Prehistoric
 		void BatchRender(uint32_t instance_index = 0) const override;
 
 		Material* getMaterial() const { return material.pointer; }
+		MaterialHandle getMaterialHandle() const { return material; }
 
 		static ComponentType getStaticComponentType() { return ComponentType::RendererComponent; }
 

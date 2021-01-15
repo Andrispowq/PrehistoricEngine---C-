@@ -184,9 +184,6 @@ namespace Prehistoric
 
 		Vector4f(const float* v)
 		{
-			if (&(v[3]) == nullptr)
-				PR_LOG_ERROR("You try to create a Vector4f object from an array of float with less then 4 members. floathe array's memory address: %i\n", v);
-
 			this->x = v[0];
 			this->y = v[1];
 			this->z = v[2];
@@ -273,9 +270,6 @@ namespace Prehistoric
 
 		Quaternionf(const float* v)
 		{
-			if (&(v[3]) == nullptr)
-				PR_LOG_ERROR("You try to create a Quaternionf object from an array of float with less then 4 members. floathe array's memory address: %i\n", v);
-
 			this->x = v[0];
 			this->y = v[1];
 			this->z = v[2];
@@ -640,9 +634,6 @@ namespace Prehistoric
 
 		Vector4<T>(const T* v)
 		{
-			if (&(v[3]) == nullptr)
-				PR_LOG_ERROR("You try to create a Vector4<T> object from an array of T with less then 4 members. The array's memory address: %i\n", v);
-
 			this->x = v[0];
 			this->y = v[1];
 			this->z = v[2];
@@ -735,9 +726,6 @@ namespace Prehistoric
 
 		Quaternion<T>(const T* v)
 		{
-			if (&(v[3]) == nullptr)
-				PR_LOG_ERROR("You try to create a Quaternion<T> object from an array of T with less then 4 members. The array's memory address: %i\n", v);
-
 			this->x = v[0];
 			this->y = v[1];
 			this->z = v[2];

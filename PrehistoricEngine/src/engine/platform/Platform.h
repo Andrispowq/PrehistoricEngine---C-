@@ -8,6 +8,7 @@
 #if defined(_WIN32)
 	#if defined(_WIN64)
 		#include <Windows.h>
+
 		#define PR_WINDOWS_64
 	#else
 		#error "Only 64 bit Windows is supported!"

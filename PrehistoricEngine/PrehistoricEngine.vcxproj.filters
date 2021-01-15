@@ -716,6 +716,8 @@
     <ClInclude Include="src\engine\prehistoric\core\util\time\Timer.h">
       <Filter>prehistoric\core\util\time</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\util\PlatformUtils.h" />
+    <ClInclude Include="src\engine\platform\windows\WindowsPlatformUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -1115,5 +1117,6 @@
     <ClCompile Include="src\engine\prehistoric\core\util\time\Timer.cpp">
       <Filter>prehistoric\core\util\time</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\common\util\PlatformUtils.cpp" />
   </ItemGroup>
 </Project>

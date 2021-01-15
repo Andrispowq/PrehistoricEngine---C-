@@ -39,4 +39,22 @@ namespace Prehistoric
 	{
 		return components.at(name).get();
 	}
+
+	std::vector<GameObject*> GameObject::getAllChildren() const
+	{
+		std::vector<GameObject*> _children;
+
+		for (auto& child : children)
+		{
+			auto child_children = dynamic_cast<GameObject*>(child.second.get())->getAllChildren();
+			for (auto c : child_children)
+			{
+				_children.push_back(c);
+			}
+
+			_children.push_back(dynamic_cast<GameObject*>(child.second.get()));
+		}
+
+		return _children;
+	}
 };

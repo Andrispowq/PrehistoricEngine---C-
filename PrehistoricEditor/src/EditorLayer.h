@@ -4,6 +4,8 @@
 #include "prehistoric/core/layers/Layer.h"
 #include "prehistoric/core/events/Event.h"
 
+#include "panels/SceneHierarchyPanel.h"
+
 class EditorLayer : public Prehistoric::Layer
 {
 public:
@@ -19,6 +21,7 @@ public:
 	virtual void OnEvent(Prehistoric::Event& e) override;
 
 private:
+	std::unique_ptr<SceneHierarchyPanel> scenePanel;
 };
 
 #endif

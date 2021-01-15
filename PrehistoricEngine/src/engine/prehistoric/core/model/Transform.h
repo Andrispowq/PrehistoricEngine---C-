@@ -22,6 +22,10 @@ namespace Prehistoric
 		inline Vector3f getRotation() const { return rotation; }
 		inline Vector3f getScaling() const { return scaling; }
 
+		inline Vector3f& getPosition() { return position; }
+		inline Vector3f& getRotation() { return rotation; }
+		inline Vector3f& getScaling() { return scaling; }
+
 		inline const Matrix4f& getTransformationMatrix() const { return transformationMatrix; }
 		Matrix4f getModelViewProjectionMatrix(const Camera& camera) const;
 

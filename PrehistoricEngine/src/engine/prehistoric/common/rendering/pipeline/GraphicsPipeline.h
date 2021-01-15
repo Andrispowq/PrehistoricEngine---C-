@@ -16,6 +16,7 @@ namespace Prehistoric
 		virtual ~GraphicsPipeline();
 
 		VertexBuffer* getVertexBuffer() const { return vbo.pointer; }
+		VertexBufferHandle getVertexBufferHandle() const { return vbo; }
 
 		bool isBackfaceCulling() const { return backfaceCulling; }
 		void setBackfaceCulling(bool backfaceCulling) { this->backfaceCulling = backfaceCulling; }

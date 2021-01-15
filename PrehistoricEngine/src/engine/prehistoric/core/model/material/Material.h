@@ -33,6 +33,13 @@ namespace Prehistoric
 
 		Texture* getDefault() const;
 		bool exists(const std::string& key) const { return textures.find(key) != textures.end(); }
+
+		std::unordered_map<std::string, TextureHandle>& getTextures() { return textures; }
+		std::unordered_map<std::string, Vector4f>& getVector4fs() { return vector4s; }
+		std::unordered_map<std::string, Vector3f>& getVector3fs() { return vector3s; }
+		std::unordered_map<std::string, Vector2f>& getVector2fs() { return vector2s; }
+		std::unordered_map<std::string, float>& getFloats() { return floats; }
+		std::unordered_map<std::string, int>& getInts() { return ints; }
 	private:
 		AssetManager* manager;
 

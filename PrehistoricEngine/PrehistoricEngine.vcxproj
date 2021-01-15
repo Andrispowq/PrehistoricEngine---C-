@@ -145,6 +145,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\Includes.hpp" />
+    <ClInclude Include="src\engine\platform\windows\WindowsPlatformUtils.h" />
     <ClInclude Include="src\engine\Prehistoric.h" />
     <ClInclude Include="src\engine\platform\Platform.h" />
     <ClInclude Include="src\engine\platform\opengl\buffer\GLMeshVertexBuffer.h" />
@@ -231,6 +232,7 @@
     <ClInclude Include="src\engine\prehistoric\common\texture\Texture.h" />
     <ClInclude Include="src\engine\prehistoric\common\util\DeviceProperties.h" />
     <ClInclude Include="src\engine\prehistoric\common\util\InitDevice.h" />
+    <ClInclude Include="src\engine\prehistoric\common\util\PlatformUtils.h" />
     <ClInclude Include="src\engine\prehistoric\common\util\RenderUtils.h" />
     <ClInclude Include="src\engine\prehistoric\core\CoreEngine.h" />
     <ClInclude Include="src\engine\prehistoric\core\ImGUI\ImGUILayer.h" />
@@ -381,6 +383,7 @@
     <ClCompile Include="src\engine\prehistoric\common\texture\Texture.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\util\DeviceProperties.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\util\InitDevice.cpp" />
+    <ClCompile Include="src\engine\prehistoric\common\util\PlatformUtils.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\CoreEngine.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\ImGUI\ImGUIBuild.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\ImGUI\ImGUILayer.cpp" />

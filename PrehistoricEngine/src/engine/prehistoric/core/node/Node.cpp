@@ -2,6 +2,7 @@
 #include "Node.h"
 
 #include "prehistoric/core/CoreEngine.h"
+#include "GameObject.h"
 
 namespace Prehistoric
 {
@@ -30,8 +31,27 @@ namespace Prehistoric
     Node* Node::AddChild(const std::string& key, Node* child)
     {
         child->parent = this;
+
+        GameObject* obj;
+        if (obj = dynamic_cast<GameObject*>(child))
+        {
+            obj->setName(key);
+        }
+
         children.insert(std::make_pair(key, child));
         return this;
+    }
+
+    void Node::deleteChild(Node* node)
+    {
+        for (auto& entry : children)
+        {
+            if (entry.second.get() == node)
+            {
+                children.erase(entry.first);
+                return;
+            }
+        }
     }
 
     std::unordered_map<std::string, Node*> Node::getChildren() const
