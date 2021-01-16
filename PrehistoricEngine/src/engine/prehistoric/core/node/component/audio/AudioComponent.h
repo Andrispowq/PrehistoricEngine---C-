@@ -11,8 +11,8 @@ namespace Prehistoric
 	class AudioComponent : public Component
 	{
 	public:
-		AudioComponent(size_t audioBuffer, bool is3D = true, bool isStereo = false, bool isLoop = false);
-		AudioComponent(const std::string& audio, bool is3D = true, bool isStereo = false, bool isLoop = false);
+		AudioComponent(size_t audioBuffer, float startOffset = 0.0f, bool is3D = true, bool isStereo = false, bool isLoop = false);
+		AudioComponent(const std::string& audio, float startOffset = 0.0f, bool is3D = true, bool isStereo = false, bool isLoop = false);
 		~AudioComponent();
 
 		virtual void PreUpdate(CoreEngine* engine);
@@ -23,6 +23,8 @@ namespace Prehistoric
 
 		uint32_t getSourceID() const { return sourceID; }
 		size_t getBufferIndex() const { return bufferIndex; }
+
+		float getStartOffset() const { return startOffset; }
 
 		bool is3D() const { return is_3D; }
 		bool isStereo() const { return is_Stereo; }
@@ -40,6 +42,8 @@ namespace Prehistoric
 		uint32_t sourceID;
 		uint32_t bufferID;
 		size_t bufferIndex;
+
+		float startOffset;
 
 		bool is_3D;
 		bool is_Stereo;

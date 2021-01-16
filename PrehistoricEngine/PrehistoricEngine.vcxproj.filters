@@ -455,6 +455,9 @@
     <ClInclude Include="src\engine\platform\windows\WindowsInput.h">
       <Filter>platform\windows</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\platform\windows\WindowsPlatformUtils.h">
+      <Filter>platform\windows</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\platform\windows\WindowsWindow.h">
       <Filter>platform\windows</Filter>
     </ClInclude>
@@ -525,6 +528,9 @@
       <Filter>prehistoric\common\util</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\prehistoric\common\util\InitDevice.h">
+      <Filter>prehistoric\common\util</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\util\PlatformUtils.h">
       <Filter>prehistoric\common\util</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\prehistoric\common\util\RenderUtils.h">
@@ -716,8 +722,6 @@
     <ClInclude Include="src\engine\prehistoric\core\util\time\Timer.h">
       <Filter>prehistoric\core\util\time</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\common\util\PlatformUtils.h" />
-    <ClInclude Include="src\engine\platform\windows\WindowsPlatformUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -967,6 +971,9 @@
     <ClCompile Include="src\engine\prehistoric\common\util\InitDevice.cpp">
       <Filter>prehistoric\common\util</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\common\util\PlatformUtils.cpp">
+      <Filter>prehistoric\common\util</Filter>
+    </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\CoreEngine.cpp">
       <Filter>prehistoric\core</Filter>
     </ClCompile>
@@ -1117,6 +1124,5 @@
     <ClCompile Include="src\engine\prehistoric\core\util\time\Timer.cpp">
       <Filter>prehistoric\core\util\time</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\common\util\PlatformUtils.cpp" />
   </ItemGroup>
 </Project>

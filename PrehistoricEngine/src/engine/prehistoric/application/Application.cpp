@@ -18,6 +18,10 @@ namespace Prehistoric
 
 		engineLayer = new CoreEngine();
 		engineLayer->getRenderingEngine()->getWindow()->setEventCallback(std::bind(&Application::OnEvent, this, std::placeholders::_1));
+
+		//Input initialisation
+		InputInstance.Init(engineLayer->getRenderingEngine()->getWindow());
+
 		PushLayer(engineLayer);
 
 		imGUILayer = new ImGuiLayer();

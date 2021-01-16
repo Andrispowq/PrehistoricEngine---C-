@@ -9,6 +9,24 @@ EditorApp::EditorApp()
 {
 	using namespace Prehistoric;
 
+	//AssembledAssetManager -> stores the primitives of rendering (Pipelines, Materials) in one place
+	//AssetManager -> store the assembling blocks of the primitives (Textures, VertexBuffers, Shaders) in one place
+	//Window -> used in a lot of primitives' creation, so it's worth having it around
+	AssembledAssetManager* manager = engineLayer->getAssetManager();
+	AssetManager* man = manager->getAssetManager();
+	Window* window = engineLayer->getRenderingEngine()->getWindow();
+	GameObject* root = engineLayer->getRootObject();
+
+	AudioComponent* startupSound;
+	GameObject* start = new GameObject;
+	start->AddComponent("startup", startupSound = new AudioComponent("res/sounds/_SolidGround.wav", 57.0f));
+	startupSound->PreUpdate(engineLayer);
+
+	engineLayer->getAudioEngine()->Update(0.0);
+
+	WorldLoader loader;
+	loader.LoadWorld("res/world/testLevel.wrld", root, window, manager);
+
 	//Load in the environment map
 	if (FrameworkConfig::api == OpenGL)
 	{
@@ -22,17 +40,6 @@ EditorApp::EditorApp()
 			EnvironmentMapRenderer::instance->GenerateEnvironmentMap();
 		}
 	}
-
-	editor = new EditorLayer();
-	PushLayer(editor);
-
-	//AssembledAssetManager -> stores the primitives of rendering (Pipelines, Materials) in one place
-	//AssetManager -> store the assembling blocks of the primitives (Textures, VertexBuffers, Shaders) in one place
-	//Window -> used in a lot of primitives' creation, so it's worth having it around
-	AssembledAssetManager* manager = engineLayer->getAssetManager();
-	AssetManager* man = manager->getAssetManager();
-	Window* window = engineLayer->getRenderingEngine()->getWindow();
-	GameObject* root = engineLayer->getRootObject();
 
 	VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/sphere.obj").value();
 	vbo->setFrontFace(FrontFace::CLOCKWISE);
@@ -87,6 +94,9 @@ EditorApp::EditorApp()
 			root->AddChild(std::string("obj" + std::to_string(x) + std::to_string(y)), obj);
 		}
 	}
+
+	editor = new EditorLayer();
+	PushLayer(editor);
 }
 
 EditorApp::~EditorApp()

@@ -5,9 +5,10 @@
 
 namespace Prehistoric
 {
-    AudioComponent::AudioComponent(size_t audioBuffer, bool is3D, bool isStereo, bool isLoop)
+    AudioComponent::AudioComponent(size_t audioBuffer, float startOffset, bool is3D, bool isStereo, bool isLoop)
     {
         type = ComponentType::AudioComponent;
+        this->startOffset = startOffset;
 
         alGenSources(1, &sourceID);
 
@@ -20,9 +21,10 @@ namespace Prehistoric
         setBufferIndex(audioBuffer);
     }
 
-    AudioComponent::AudioComponent(const std::string& audio, bool is3D, bool isStereo, bool isLoop)
+    AudioComponent::AudioComponent(const std::string& audio, float startOffset, bool is3D, bool isStereo, bool isLoop)
     {
         type = ComponentType::AudioComponent;
+        this->startOffset = startOffset;
 
         alGenSources(1, &sourceID);
 
@@ -42,8 +44,11 @@ namespace Prehistoric
 
     void AudioComponent::PreUpdate(CoreEngine* engine)
     {
-        Vector3f pos = parent->getWorldTransform().getPosition();
-        alSource3f(sourceID, AL_POSITION, pos.x, pos.y, pos.z);
+        if (is3D())
+        {
+            Vector3f pos = parent->getWorldTransform().getPosition();
+            alSource3f(sourceID, AL_POSITION, pos.x, pos.y, pos.z);
+        }
 
         engine->getAudioEngine()->addAudioComponent(this);
     }

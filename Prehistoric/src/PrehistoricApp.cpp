@@ -7,6 +7,13 @@ PrehistoricApp::PrehistoricApp()
 {
 	using namespace Prehistoric;
 
+	GameObject* audio = new GameObject();
+	audio->AddComponent(AUDIO_COMPONENT, new AudioComponent("res/sounds/_SolidGround.wav", 57.0f));
+	audio->GetComponent<AudioComponent>()->PreUpdate(engineLayer);
+	engineLayer->getRootObject()->AddChild("audio", audio);
+
+	engineLayer->getAudioEngine()->Update(0.0f);
+	
 	GameObject* sceneRoot = new GameObject();
 	scene = std::make_unique<PrehistoricScene>("scene0", sceneRoot, engineLayer->getRenderingEngine()->getWindow(),
 		engineLayer->getRenderingEngine()->getCamera(), engineLayer->getAssetManager(), "res/world/testLevel.wrld");

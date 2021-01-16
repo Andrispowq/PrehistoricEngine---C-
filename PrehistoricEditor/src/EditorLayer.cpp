@@ -130,7 +130,7 @@ void EditorLayer::ImGUIRender()
 	}
 
 	float max = (float)Prehistoric::EnvironmentMapConfig::prefilterLevels;
-	ImGui::SliderFloat("Environment map LOD", (float*)&Prehistoric::EnvironmentMapRenderer::instance->lodRenderedMap, 0.0, max - 1.0, "Environment map LOD");
+	ImGui::SliderFloat("Environment map LOD", &Prehistoric::EnvironmentMapRenderer::instance->lodRenderedMap, 0.0f, max - 1.0f, "Environment map LOD");
 
 	ImGui::InputInt("Environment map resolution", (int*)&Prehistoric::EnvironmentMapConfig::environmentMapResolution);
 	ImGui::InputInt("Irradiance map resolution", (int*)&Prehistoric::EnvironmentMapConfig::irradianceMapResolution);

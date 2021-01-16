@@ -45,9 +45,6 @@ namespace Prehistoric
 		renderingEngine = std::make_unique<RenderingEngine>();
 		audioEngine = std::make_unique<AudioEngine>();
 
-		//Input initialisation
-		InputInstance.Init(renderingEngine->getWindow());
-
 		//Manager and the renderers in the rendering engine
 		manager = std::make_unique<AssembledAssetManager>(renderingEngine->getWindow());
 		renderingEngine->Init(manager.get());

@@ -117,10 +117,6 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 			}
 		}
 	}
-
-	//GameObject* audio = new GameObject();
-	//audio->AddComponent(AUDIO_COMPONENT, new AudioComponent("res/sounds/bounce.wav"));
-	//root->AddChild("audio", audio);
 }
 
 PrehistoricScene::~PrehistoricScene()
