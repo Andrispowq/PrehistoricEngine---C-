@@ -24,7 +24,6 @@ IncludeDir["Vulkan"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/V
 IncludeDir["AL"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/AL"
 IncludeDir["STB"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/stb"
 IncludeDir["tinyobj"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/tinyobjloader"
-IncludeDir["AudioFile"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/AudioFile"
 
 group "Dependencies"
     include "PrehistoricEngine/vendor/GLFW"
@@ -67,7 +66,6 @@ project "PrehistoricEngine"
         "%{IncludeDir.AL}",
         "%{IncludeDir.STB}",
         "%{IncludeDir.tinyobj}",
-        "%{IncludeDir.AudioFile}",
         "%{prj.location}/src/engine"
     }
 
@@ -199,7 +197,6 @@ project "PrehistoricEditor"
             "%{IncludeDir.AL}",
             "%{IncludeDir.STB}",
             "%{IncludeDir.tinyobj}",
-            "%{IncludeDir.AudioFile}",
             "%{prj.location}/src",
             "PrehistoricEngine/src/engine"
         }
