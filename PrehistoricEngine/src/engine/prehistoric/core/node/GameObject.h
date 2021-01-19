@@ -33,6 +33,9 @@ namespace Prehistoric
 		T* GetComponent() const;
 
 		template<typename T>
+		bool HasComponent() const;
+
+		template<typename T>
 		void RemoveComponent();
 
 		GameObject(const GameObject&) = default;
@@ -54,6 +57,20 @@ namespace Prehistoric
 		}
 		
 		return nullptr;
+	}
+
+	template<typename T>
+	inline bool GameObject::HasComponent() const
+	{
+		for (auto& component : components)
+		{
+			if (component.second->getComponentType() == T::getStaticComponentType())
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	template<typename T>

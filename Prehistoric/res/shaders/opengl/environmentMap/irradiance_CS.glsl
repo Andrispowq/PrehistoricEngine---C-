@@ -12,8 +12,9 @@ const float PI = 3.1415926535897932384626433832795;
 const float TWO_PI = PI * 2.0;
 const float HALF_PI = PI * 0.5;
 
-const float sampleDelta = 0.025 / 4;
-const float totalSamples = (TWO_PI / sampleDelta) * (HALF_PI / sampleDelta);
+const float samplePhi = 0.025;
+const float sampleTheta = 0.025;
+const float totalSamples = (TWO_PI / samplePhi) * (HALF_PI / sampleTheta);
 const float invTotalSamples = 1.0 / totalSamples;
 
 ivec3 texCoordToCube(vec3 texCoord, vec2 cubemapSize)
@@ -84,21 +85,20 @@ void main()
 		sampleDir = vec3(-texCoord.x, texCoord.y, 1.0);
 		break;
 	}
-
 	vec3 N = normalize(vec3(sampleDir.xy, -sampleDir.z));
 	
 	vec3 irradiance = vec3(0.0);
-	
+	 
 	vec3 up = vec3(0.0, 1.0, 0.0);
-	vec3 right = normalize(cross(up, N));
+	vec3 right = cross(up, N);
 	up = cross(N, right);
 
-	for(float phi = 0.0; phi < TWO_PI; phi += sampleDelta)
+	for(float phi = 0.0; phi < TWO_PI; phi += samplePhi)
 	{
 		float sinPhi = sin(phi);
 		float cosPhi = cos(phi);
 
-		for(float theta = 0.0; theta < HALF_PI; theta += sampleDelta)
+		for(float theta = 0.0; theta < HALF_PI; theta += sampleTheta)
 		{
 			float sinTheta = sin(theta);
 			float cosTheta = cos(theta);
@@ -111,6 +111,6 @@ void main()
 	 	}
 	}
 
-	irradiance = PI * irradiance * invTotalSamples;	
+	irradiance = PI * irradiance * invTotalSamples;
     imageStore(irradianceMap, ivec3(gl_GlobalInvocationID), vec4(irradiance, 1.0));
 }

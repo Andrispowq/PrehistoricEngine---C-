@@ -26,6 +26,11 @@ namespace Prehistoric
 		glGenTextures(1, &id);
 	}
 
+	GLTexture::GLTexture(uint32_t id, uint32_t width, uint32_t height, ImageFormat format, ImageType type)
+		: id(id), Texture(width, height, format, type)
+	{
+	}
+
 	GLTexture::GLTexture()
 	{
 		glGenTextures(1, &id);
@@ -174,12 +179,11 @@ namespace Prehistoric
 		Texture* texture = new GLTexture(width, height, format, TEXTURE_CUBE_MAP);
 		texture->Bind();
 
- 		//glTexStorage2D(GL_TEXTURE_CUBE_MAP, levels, getInternalFormat(format), width, height);
 		for (uint32_t i = 0; i < 6; ++i)
 		{
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, getInternalFormat(format), width, height, 0, getFormat(format), GL_FLOAT, nullptr);
 		}
-
+		
 		texture->SamplerProperties(filter, wrapMode, generate_mipmaps);
 		texture->Unbind();
 		return texture;

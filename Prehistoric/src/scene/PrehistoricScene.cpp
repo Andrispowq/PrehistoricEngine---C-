@@ -106,13 +106,13 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 		{
 			for (float y = -(count / 2.0f); y <= (count / 2.0f); y++)
 			{
-				MaterialHandle material = manager->storeMaterial(new Material(man));
-				material->addVector3f(COLOUR, { 1 });
-				material->addVector4f(MROT, { (y + count / 2.0f) / (count + 1.0f), x == -(count / 2.0f) ? 0.05f : (x + count / 2.0f) / (count + 1.0f), 1.0f, 0.0f });
+				MaterialHandle material2 = manager->storeMaterial(new Material(man));
+				material2->addVector3f(COLOUR, { 1 });
+				material2->addVector4f(MROT, { (y + count / 2.0f) / count, x == -(count / 2.0f) ? 0.05f : (x + count / 2.0f) / count, 1.0f, 0.0f });
 
 				GameObject* obj = new GameObject;
 				obj->SetPosition({ x * space, y * space, -50 });
-				obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, material));
+				obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, material2));
 				root->AddChild(std::string("obj" + std::to_string(x) + std::to_string(y)), obj);
 			}
 		}

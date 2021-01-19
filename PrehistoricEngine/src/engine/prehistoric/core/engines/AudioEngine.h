@@ -3,8 +3,8 @@
 
 #include "Engine.h"
 
-#include <al.h>
-#include <alc.h>
+#include <AL/al.h>
+#include <AL/alc.h>
 
 #include "prehistoric/core/node/component/audio/AudioComponent.h"
 

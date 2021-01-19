@@ -21,7 +21,7 @@ namespace Prehistoric
 		static EnvironmentMapRenderer* instance;
 
 		EnvironmentMapRenderer(Window* window, AssembledAssetManager* manager);
-		virtual ~EnvironmentMapRenderer() {}
+		virtual ~EnvironmentMapRenderer();
 
 		void GenerateEnvironmentMap();
 		void RenderCube(Camera* camera);

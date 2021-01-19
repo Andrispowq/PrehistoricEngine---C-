@@ -3,6 +3,8 @@
 
 #include "prehistoric/core/CoreEngine.h"
 
+#include <AL/alext.h>
+
 namespace Prehistoric
 {
     AudioComponent::AudioComponent(size_t audioBuffer, float startOffset, bool is3D, bool isStereo, bool isLoop)
@@ -44,12 +46,6 @@ namespace Prehistoric
 
     void AudioComponent::PreUpdate(CoreEngine* engine)
     {
-        if (is3D())
-        {
-            Vector3f pos = parent->getWorldTransform().getPosition();
-            alSource3f(sourceID, AL_POSITION, pos.x, pos.y, pos.z);
-        }
-
         engine->getAudioEngine()->addAudioComponent(this);
     }
 
@@ -89,5 +85,6 @@ namespace Prehistoric
     void AudioComponent::setLoop(bool is_Loop)
     {
         this->is_Loop = is_Loop;
+        alSourcei(sourceID, AL_LOOPING, is_Loop ? AL_TRUE : AL_FALSE);
     }
 };

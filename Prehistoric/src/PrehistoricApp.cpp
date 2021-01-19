@@ -10,6 +10,7 @@ PrehistoricApp::PrehistoricApp()
 	GameObject* audio = new GameObject();
 	audio->AddComponent(AUDIO_COMPONENT, new AudioComponent("res/sounds/_SolidGround.wav", 57.0f));
 	audio->GetComponent<AudioComponent>()->PreUpdate(engineLayer);
+
 	engineLayer->getRootObject()->AddChild("audio", audio);
 
 	engineLayer->getAudioEngine()->Update(0.0f);
@@ -74,12 +75,6 @@ PrehistoricApp::PrehistoricApp()
 	obj2->SetPosition({ -50, 10, 0 });
 	obj2->SetScale({ 1, 1, 1 });
 	obj2->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, material));
-
-	obj2->setUpdateFunction([](GameObject* obj, float delta)
-	{
-		Vector3f moveDir = { 1.0f, 0.0f, 0.0f };
-		obj->Move(moveDir * delta);
-	});
 
 	sceneRoot->AddChild("someobj2", obj2);
 }

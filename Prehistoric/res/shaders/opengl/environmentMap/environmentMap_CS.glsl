@@ -57,6 +57,5 @@ void main()
 	uv *= equirectangularMapResolution;
 
     vec3 colour = imageLoad(equirectangularMap, ivec2(uv)).rgb;
-	
     imageStore(environmentMap, ivec3(gl_GlobalInvocationID), vec4(colour, 1.0));
 }

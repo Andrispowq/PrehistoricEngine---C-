@@ -15,9 +15,9 @@ namespace Prehistoric
 		AddUniform("resolution");
 	}
 
-	void GLEnvironmentMapShader::UpdateUniforms(Vector2f resolution) const
+	void GLEnvironmentMapShader::UpdateUniforms(Vector2f equirectMapRes) const
 	{
-		SetUniform("equirectangularMapResolution", resolution);
+		SetUniform("equirectangularMapResolution", equirectMapRes);
 		SetUniformf("resolution", (float)EnvironmentMapConfig::environmentMapResolution);
 	}
 };

@@ -11,6 +11,7 @@ namespace Prehistoric
 	{
 	public:
 		GLTexture(uint32_t width, uint32_t height, ImageFormat format = R8G8B8A8_LINEAR, ImageType type = TEXTURE_2D, bool multisample = false);
+		GLTexture(uint32_t id, uint32_t width, uint32_t height, ImageFormat format = R8G8B8A8_LINEAR, ImageType type = TEXTURE_2D);
 		GLTexture();
 
 		virtual ~GLTexture() override;

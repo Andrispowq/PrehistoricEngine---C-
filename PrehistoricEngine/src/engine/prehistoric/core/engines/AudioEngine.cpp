@@ -1,6 +1,8 @@
 #include "Includes.hpp"
 #include "AudioEngine.h"
 
+#include <AL/alext.h>
+
 //#include "AudioFile.h"
 
 namespace Prehistoric
@@ -26,6 +28,16 @@ namespace Prehistoric
         {
             PR_LOG_ERROR("Cannot make the OpenAL context current!\n");
         }
+
+        float pos[] = { 0, 0, 0 };
+        float vel[] = { 0, 0, 0 };
+        float ori[] = { 0.0,0.0,-1.0, 0.0,1.0,0.0 };
+
+        alListenerfv(AL_POSITION, pos);
+        alListenerfv(AL_VELOCITY, vel);
+        alListenerfv(AL_ORIENTATION, ori);
+
+        alDistanceModel(AL_INVERSE_DISTANCE_CLAMPED);
     }
 
     AudioEngine::~AudioEngine()
@@ -67,6 +79,14 @@ namespace Prehistoric
                continue;
 
            alSourcef(id, AL_SEC_OFFSET, comp->getStartOffset());
+           alSourcei(id, AL_SOURCE_SPATIALIZE_SOFT, comp->isSpatial() ? AL_TRUE : AL_FALSE);
+
+           if (comp->is3D())
+           {
+               Vector3f pos = comp->getParent()->getWorldTransform().getPosition();
+               alSource3f(id, AL_POSITION, pos.x, pos.y, pos.z);               
+           }
+
            alSourcePlay(id);
        }
 

@@ -4,3 +4,6 @@
 [submodule "PrehistoricEngine/vendor/ImGUI"]
 	path = PrehistoricEngine/vendor/ImGUI
 	url = https://github.com/Andrispowq/imgui
+[submodule "PrehistoricEngine/vendor/OpenAL"]
+	path = PrehistoricEngine/vendor/OpenAL
+	url = https://github.com/Andrispowq/openal-soft

@@ -77,7 +77,7 @@
       <PrecompiledHeaderFile>Includes.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_FAST_MATH;PR_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>vendor\GLFW\include;vendor\GLAD\include;vendor\ImGUI;Dependencies\include\Vulkan;Dependencies\include\AL;Dependencies\include\stb;Dependencies\include\tinyobjloader;Dependencies\include\AudioFile;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor\GLFW\include;vendor\GLAD\include;vendor\ImGUI;vendor\OpenAL-Soft\include;Dependencies\include\Vulkan;Dependencies\include\stb;Dependencies\include\tinyobjloader;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
@@ -99,7 +99,7 @@
       <PrecompiledHeaderFile>Includes.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_FAST_MATH;PR_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>vendor\GLFW\include;vendor\GLAD\include;vendor\ImGUI;Dependencies\include\Vulkan;Dependencies\include\AL;Dependencies\include\stb;Dependencies\include\tinyobjloader;Dependencies\include\AudioFile;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor\GLFW\include;vendor\GLAD\include;vendor\ImGUI;vendor\OpenAL-Soft\include;Dependencies\include\Vulkan;Dependencies\include\stb;Dependencies\include\tinyobjloader;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -124,7 +124,7 @@
       <PrecompiledHeaderFile>Includes.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_FAST_MATH;PR_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>vendor\GLFW\include;vendor\GLAD\include;vendor\ImGUI;Dependencies\include\Vulkan;Dependencies\include\AL;Dependencies\include\stb;Dependencies\include\tinyobjloader;Dependencies\include\AudioFile;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor\GLFW\include;vendor\GLAD\include;vendor\ImGUI;vendor\OpenAL-Soft\include;Dependencies\include\Vulkan;Dependencies\include\stb;Dependencies\include\tinyobjloader;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -444,6 +444,9 @@
     </ProjectReference>
     <ProjectReference Include="vendor\ImGUI\ImGUI.vcxproj">
       <Project>{80FB640D-EC0F-8DBE-B591-301E216589EF}</Project>
+    </ProjectReference>
+    <ProjectReference Include="vendor\OpenAL-Soft\OpenAL.vcxproj">
+      <Project>{C4854AC8-B027-759E-99E2-88F28523FCEE}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

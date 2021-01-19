@@ -20,8 +20,8 @@ IncludeDir = {}
 IncludeDir["GLFW"] = "%{wks.location}/PrehistoricEngine/vendor/GLFW/include"
 IncludeDir["GLAD"] = "%{wks.location}/PrehistoricEngine/vendor/GLAD/include"
 IncludeDir["ImGUI"] = "%{wks.location}/PrehistoricEngine/vendor/ImGUI"
+IncludeDir["OpenAL"] = "%{wks.location}/PrehistoricEngine/vendor/OpenAL-Soft/include"
 IncludeDir["Vulkan"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/Vulkan"
-IncludeDir["AL"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/AL"
 IncludeDir["STB"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/stb"
 IncludeDir["tinyobj"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/tinyobjloader"
 
@@ -29,6 +29,7 @@ group "Dependencies"
     include "PrehistoricEngine/vendor/GLFW"
     include "PrehistoricEngine/vendor/GLAD"
     include "PrehistoricEngine/vendor/ImGUI"
+    include "PrehistoricEngine/vendor/OpenAL-Soft"
 group ""
 
 project "PrehistoricEngine"
@@ -62,8 +63,8 @@ project "PrehistoricEngine"
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.GLAD}",
         "%{IncludeDir.ImGUI}",
+        "%{IncludeDir.OpenAL}",
         "%{IncludeDir.Vulkan}",
-        "%{IncludeDir.AL}",
         "%{IncludeDir.STB}",
         "%{IncludeDir.tinyobj}",
         "%{prj.location}/src/engine"
@@ -76,7 +77,8 @@ project "PrehistoricEngine"
         "opengl32.lib",
         "GLFW",
         "GLAD",
-        "ImGUI"
+        "ImGUI",
+        "OpenAL"
     }
     
     filter "kind:SharedLib"
@@ -128,8 +130,8 @@ project "PrehistoricEditor"
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.GLAD}",
         "%{IncludeDir.ImGUI}",
+        "%{IncludeDir.OpenAL}",
         "%{IncludeDir.Vulkan}",
-        "%{IncludeDir.AL}",
         "%{IncludeDir.STB}",
         "%{IncludeDir.tinyobj}",
         "%{IncludeDir.AudioFile}",
@@ -193,8 +195,8 @@ project "PrehistoricEditor"
             "%{IncludeDir.GLFW}",
             "%{IncludeDir.GLAD}",
             "%{IncludeDir.ImGUI}",
+            "%{IncludeDir.OpenAL}",
             "%{IncludeDir.Vulkan}",
-            "%{IncludeDir.AL}",
             "%{IncludeDir.STB}",
             "%{IncludeDir.tinyobj}",
             "%{prj.location}/src",

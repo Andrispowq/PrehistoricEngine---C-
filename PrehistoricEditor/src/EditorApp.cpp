@@ -19,7 +19,8 @@ EditorApp::EditorApp()
 
 	AudioComponent* startupSound;
 	GameObject* start = new GameObject;
-	start->AddComponent("startup", startupSound = new AudioComponent("res/sounds/_SolidGround.wav", 57.0f));
+	start->AddComponent("startup", startupSound = new AudioComponent("res/sounds/_FlipReset.wav", 54.0f, true, false, true));
+	startupSound->setSpatial(true);
 	startupSound->PreUpdate(engineLayer);
 
 	engineLayer->getAudioEngine()->Update(0.0);
@@ -72,6 +73,7 @@ EditorApp::EditorApp()
 	obj2->setUpdateFunction([](GameObject* obj, float delta)
 	{
 		Vector3f moveDir = { 1.0f, 0.0f, 0.0f };
+		PR_LOG_MESSAGE("Deltatime: %f\n", delta);
 		obj->Move(moveDir * delta);
 	});
 
@@ -86,7 +88,7 @@ EditorApp::EditorApp()
 		{
 			MaterialHandle material2 = manager->storeMaterial(new Material(man));
 			material2->addVector3f(COLOUR, { 1 });
-			material2->addVector4f(MROT, { (y + count / 2.0f) / (count + 1.0f), x == -(count / 2.0f) ? 0.05f : (x + count / 2.0f) / (count + 1.0f), 1.0f, 0.0f });
+			material2->addVector4f(MROT, { (y + count / 2.0f) / count, x == -(count / 2.0f) ? 0.05f : (x + count / 2.0f) / count, 1.0f, 0.0f });
 
 			GameObject* obj = new GameObject;
 			obj->SetPosition({ x * space, y * space, -50 });

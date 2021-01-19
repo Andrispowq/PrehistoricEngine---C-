@@ -52,6 +52,8 @@ namespace Prehistoric
 
 	void CoreEngine::Update(float frameTime)
 	{
+		this->frameTime = frameTime;
+
 		root->PreUpdate(this);
 
 		InputInstance.Update();
