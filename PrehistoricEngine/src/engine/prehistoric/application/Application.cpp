@@ -29,6 +29,7 @@ namespace Prehistoric
 		imGUILayer->SetDarkThemeColors();
 
 		frameTime = 1.0 / FrameworkConfig::windowMaxFPS;
+		last_fps = FrameworkConfig::windowMaxFPS;
 	}
 
 	Application::~Application()
@@ -95,8 +96,9 @@ namespace Prehistoric
 
 				if (frameCounter >= NANOSECOND)
 				{
+					last_fps = frames;
 					PR_LOG(CYAN, "FPS: %i\n", frames);
-					PR_LOG(CYAN, "Delta time: %f ms\n", frameTime * 1000.0);
+					PR_LOG(CYAN, "Delta time: %f ms\n", frameTime * 1000.0f);
 					frames = 0;
 					frameCounter = 0;
 				}

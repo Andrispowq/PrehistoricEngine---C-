@@ -13,6 +13,7 @@ namespace Prehistoric
 
 		AddUniform("environmentMap");
 		AddUniform("resolution");
+		AddUniform("resolution_irradianceMap");
 	}
 
 	void GLIrradianceShader::UpdateUniforms(Texture* texture) const
@@ -20,6 +21,7 @@ namespace Prehistoric
 		texture->Bind();
 		SetUniformi("environmentMap", 0);
 
-		SetUniformf("resolution", (float)EnvironmentMapConfig::irradianceMapResolution);
+		SetUniformf("resolution", (float)EnvironmentMapConfig::environmentMapResolution);
+		SetUniformf("resolution_irradianceMap", (float)EnvironmentMapConfig::irradianceMapResolution);
 	}
 };

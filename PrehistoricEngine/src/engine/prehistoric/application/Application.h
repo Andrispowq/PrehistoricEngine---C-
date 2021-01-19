@@ -27,11 +27,15 @@ namespace Prehistoric
 		CoreEngine* getEngineLayer() { return engineLayer; }
 		ImGuiLayer* getImGuiLayer() { return imGUILayer; }
 
+		int getLastFPS() const { return last_fps; }
+		double getFrameTime() const { return frameTime * 1000; }
+
 		static Application& Get() { return *instance; }
 	protected:
 		LayerStack layerStack;
 		bool running = false;
 		double frameTime;
+		int last_fps;
 
 		CoreEngine* engineLayer;
 		ImGuiLayer* imGUILayer;

@@ -109,6 +109,9 @@ void EditorLayer::ImGUIRender()
 	ImGui::Text("Vertices: %d", stats.vertexCount);
 	ImGui::Text("Indices: %d", stats.indexCount);
 
+	ImGui::Text("Frames per second: %d", Prehistoric::Application::Get().getLastFPS());
+	ImGui::Text("Frame time: %f", Prehistoric::Application::Get().getFrameTime());
+
 	ImGui::End();
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
@@ -136,6 +139,9 @@ void EditorLayer::ImGUIRender()
 	ImGui::InputInt("Irradiance map resolution", (int*)&Prehistoric::EnvironmentMapConfig::irradianceMapResolution);
 	ImGui::InputInt("Prefilter map resolution", (int*)&Prehistoric::EnvironmentMapConfig::prefilterMapResolution);
 	ImGui::InputInt("Prefilter map mip levels", (int*)&Prehistoric::EnvironmentMapConfig::prefilterLevels);
+
+	ImGui::SliderFloat("Exposure", &Prehistoric::EngineConfig::rendererExposure, 0.5f, 4.0f, "Exposure");
+	ImGui::SliderFloat("Gamma", &Prehistoric::EngineConfig::rendererGamma, 1.0f, 5.0f, "Gamma");
 
 	ImGui::End();
 	ImGui::PopStyleVar();

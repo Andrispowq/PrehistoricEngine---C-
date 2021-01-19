@@ -131,7 +131,7 @@ void main()
     vec3 kD = 1.0 - kS;
     kD *= 1.0 - metallic;
 
-    vec3 irradiance = textureLod(prefilterMap, N, 3.5).rgb; //texture(irradianceMap, N).rgb;
+    vec3 irradiance = texture(irradianceMap, N).rgb;
     vec3 diffuse = irradiance * albedo;
 
     const float MAX_REFLECTION_LOD = 4.0;
