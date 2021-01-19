@@ -22,6 +22,7 @@ AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
+DisableDirPage=no
 ChangesAssociations=yes
 DisableProgramGroupPage=yes
 LicenseFile=F:\Prehistoric - C++\Visual Studio Projects\PrehistoricEngine\LICENSE
@@ -43,6 +44,7 @@ Source: "F:\Prehistoric - C++\Visual Studio Projects\PrehistoricEngine\bin\Distr
 Source: "F:\Prehistoric - C++\Visual Studio Projects\PrehistoricEngine\PrehistoricEngine\Dependencies\redist\*"; DestDir: "{app}\redist\"; Flags: ignoreversion
 Source: "F:\Prehistoric - C++\Visual Studio Projects\PrehistoricEngine\PrehistoricEngine\Dependencies\shared_libraries\Windows_x64\*"; DestDir: "{app}";
 Source: "F:\Prehistoric - C++\Visual Studio Projects\PrehistoricEngine\PrehistoricEditor\res\*"; DestDir: "{app}\res\"; Flags: ignoreversion recursesubdirs
+Source: "F:\Prehistoric - C++\Visual Studio Projects\PrehistoricEngine\PrehistoricEditor\imgui.ini"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Registry]
