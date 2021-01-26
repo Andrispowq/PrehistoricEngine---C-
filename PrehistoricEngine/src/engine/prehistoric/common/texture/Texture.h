@@ -25,6 +25,8 @@ namespace Prehistoric
 		ClampToEdge, ClampToBorder, Repeat, MirrorRepeat
 	};
 
+	struct ImageData;
+
 	class Texture
 	{
 	public:
@@ -36,11 +38,11 @@ namespace Prehistoric
 		virtual void Bind(uint32_t slot = 0) const = 0;
 		virtual void Unbind() const = 0;
 
-		virtual void UploadTextureData(unsigned char* data, ImageFormat format) = 0;
-		virtual void Generate() = 0;
+		virtual void UploadTextureData(ImageData data) = 0;
+		virtual void Generate() {};
 
 		virtual void SamplerProperties(SamplerFilter filter, TextureWrapMode wrapMode, bool generate_mipmaps = true) = 0;
-		virtual void GenerateMipmaps() = 0;
+		virtual void GenerateMipmaps() {};
 
 		inline uint32_t getWidth() const { return width; }
 		inline uint32_t getHeight() const { return height; }

@@ -14,7 +14,7 @@ namespace Prehistoric
 	class VKBuffer
 	{
 	public:
-		VKBuffer(VKPhysicalDevice* physicalDevice, VKDevice* device, size_t size, VkBufferUsageFlags buFlags, VkMemoryPropertyFlags mpFlags);
+		VKBuffer(VKDevice* device, size_t size, VkBufferUsageFlags buFlags, VkMemoryPropertyFlags mpFlags);
 		virtual ~VKBuffer();
 
 		void MapMemory(size_t offset = 0, size_t size = -1);
@@ -34,7 +34,6 @@ namespace Prehistoric
 		VKBuffer(VKBuffer&& other) noexcept;
 		VKBuffer& operator=(VKBuffer other);
 	private:
-		VKPhysicalDevice* physicalDevice;
 		VKDevice* device;
 
 		VkBuffer buffer;

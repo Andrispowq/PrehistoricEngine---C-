@@ -8,16 +8,16 @@ namespace Prehistoric
     VKSwapchain::VKSwapchain(Window* window)
         : Swapchain(window)
     {
-        this->physicalDevice = (VKPhysicalDevice*)window->getContext()->getPhysicalDevice();
-        this->device = (VKDevice*)window->getContext()->getDevice();
+        VKContext* cont = (VKContext*)window->getContext();
 
-        this->surface = ((VKContext*)window->getContext())->getSurface();
+        this->device = (VKDevice*)cont->getDevices();
+        this->surface = cont->getSurface();
 
-        SwapChainSupportDetails swapchainSupport = VKUtil::QuerySwapChainSupport(physicalDevice->getPhysicalDevice(), surface->getSurface());
+        SwapchainSupportDetails swapchainSupport = surface->QuerySwapChainSupport(device->getPhysicalDevice());
 
-        VkSurfaceFormatKHR surfaceFormat = VKUtil::ChooseSwapSurfaceFormat(swapchainSupport.formats);
-        VkPresentModeKHR presentMode = VKUtil::ChooseSwapPresentMode(swapchainSupport.presentModes);
-        VkExtent2D extent = VKUtil::ChooseSwapExtent(swapchainSupport.capabilities);
+        VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapchainSupport.formats);
+        VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapchainSupport.presentModes);
+        VkExtent2D extent = ChooseSwapExtent(swapchainSupport.capabilities);
 
         NumImages = swapchainSupport.capabilities.minImageCount + 1;
 
@@ -36,7 +36,7 @@ namespace Prehistoric
         createInfo.imageArrayLayers = 1;
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-        QueueFamilyIndices indices = VKUtil::FindQueueFamilies(physicalDevice->getPhysicalDevice(), surface->getSurface());
+        QueueFamilyIndices indices = device->getQueueFamilyIndices();
         uint32_t queueFamilyIndices[] = { indices.graphicsFamily, indices.presentFamily };
 
         if (indices.graphicsFamily != indices.presentFamily)
@@ -64,38 +64,38 @@ namespace Prehistoric
         }
 
         //Create images and image views
+        std::vector<VkImage> swapImages;
+
         vkGetSwapchainImagesKHR(device->getDevice(), swapchain, &NumImages, nullptr);
-        swapchainImages.resize(NumImages);
-        vkGetSwapchainImagesKHR(device->getDevice(), swapchain, &NumImages, swapchainImages.data());
+        swapImages.resize(NumImages);
+        vkGetSwapchainImagesKHR(device->getDevice(), swapchain, &NumImages, swapImages.data());
 
         swapchainImageFormat = surfaceFormat.format;
         swapchainExtent = extent;
 
-        swapchainImageViews.resize(NumImages);
+        swapchainImages.resize(NumImages);
         for (size_t i = 0; i < NumImages; i++)
         {
-            VKUtil::CreateImageView(device, swapchainImages[i], swapchainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1, swapchainImageViews[i]);
+            swapchainImages[i] = new VKImage(device, swapImages[i], 1, swapchainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
         }
 
         //Create multisampled image
-        VKUtil::CreateImage(physicalDevice->getPhysicalDevice(), device, swapchainExtent.width, swapchainExtent.height, 1, physicalDevice->getSampleCount(), swapchainImageFormat,
-            VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            colourImage, colourImageMemory);
-        VKUtil::CreateImageView(device, colourImage, swapchainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1, colourImageView);
+        multisampleColourImage = new VKImage(device, swapchainExtent.width, swapchainExtent.height, 1, swapchainImageFormat,
+            VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, device->getSampleCount(),
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
 
         //Create depth buffer
-        VkFormat depthFormat = VKUtil::FindSupportedFormat(
-            physicalDevice->getPhysicalDevice(),
+        VkFormat depthFormat = FindSupportedFormat(
             { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
             VK_IMAGE_TILING_OPTIMAL,
             VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
         );
 
-        VKUtil::CreateImage(physicalDevice->getPhysicalDevice(), device, swapchainExtent.width, swapchainExtent.height, 1, physicalDevice->getSampleCount(), depthFormat, VK_IMAGE_TILING_OPTIMAL,
-            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
-        VKUtil::CreateImageView(device, depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1, depthImageView);
+        depthImage = new VKImage(device, swapchainExtent.width, swapchainExtent.height, 1, depthFormat,
+            VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, device->getSampleCount(),
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
 
-        VKUtil::TransitionImageLayout(device, depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
+        VKUtil::TransitionImageLayout(device, depthImage->getImage(), depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
 
         //Create synchronisation primitives
         imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
@@ -124,17 +124,12 @@ namespace Prehistoric
             delete inFlightFences[i];
         }
 
-        vkDestroyImageView(dev, depthImageView, nullptr);
-        vkDestroyImage(dev, depthImage, nullptr);
-        vkFreeMemory(dev, depthImageMemory, nullptr);
+        delete depthImage;
+        delete multisampleColourImage;
 
-        vkDestroyImageView(dev, colourImageView, nullptr);
-        vkDestroyImage(dev, colourImage, nullptr);
-        vkFreeMemory(dev, colourImageMemory, nullptr);
-
-        for (auto imageView : swapchainImageViews)
+        for (auto image : swapchainImages)
         {
-            vkDestroyImageView(dev, imageView, nullptr);
+            vkDestroyImageView(dev, image->getImageView(), nullptr);
         }
 
         vkDestroySwapchainKHR(dev, swapchain, nullptr);
@@ -226,27 +221,23 @@ namespace Prehistoric
         vkDeviceWaitIdle(dev);
 
         //We destroy some objects that should be destroyed
-        vkDestroyImageView(dev, depthImageView, nullptr);
-        vkDestroyImage(dev, depthImage, nullptr);
-        vkFreeMemory(dev, depthImageMemory, nullptr);
+        delete depthImage;
+        delete multisampleColourImage;
 
-        vkDestroyImageView(dev, colourImageView, nullptr);
-        vkDestroyImage(dev, colourImage, nullptr);
-        vkFreeMemory(dev, colourImageMemory, nullptr);
-
-        for (size_t i = 0; i < NumImages; i++)
+        for (auto image : swapchainImages)
         {
-            vkDestroyImageView(device->getDevice(), swapchainImageViews[i], nullptr);
+            vkDestroyImageView(dev, image->getImageView(), nullptr);
         }
+        swapchainImages.clear();
 
         vkDestroySwapchainKHR(device->getDevice(), swapchain, nullptr);
 
         //Then we create new of them
-        SwapChainSupportDetails swapchainSupport = VKUtil::QuerySwapChainSupport(physicalDevice->getPhysicalDevice(), surface->getSurface());
+        SwapchainSupportDetails swapchainSupport = surface->QuerySwapChainSupport(device->getPhysicalDevice());
 
-        VkSurfaceFormatKHR surfaceFormat = VKUtil::ChooseSwapSurfaceFormat(swapchainSupport.formats);
-        VkPresentModeKHR presentMode = VKUtil::ChooseSwapPresentMode(swapchainSupport.presentModes);
-        VkExtent2D extent = VKUtil::ChooseSwapExtent(swapchainSupport.capabilities);
+        VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapchainSupport.formats);
+        VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapchainSupport.presentModes);
+        VkExtent2D extent = ChooseSwapExtent(swapchainSupport.capabilities);
 
         NumImages = swapchainSupport.capabilities.minImageCount + 1;
 
@@ -265,7 +256,7 @@ namespace Prehistoric
         createInfo.imageArrayLayers = 1;
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-        QueueFamilyIndices indices = VKUtil::FindQueueFamilies(physicalDevice->getPhysicalDevice(), surface->getSurface());
+        QueueFamilyIndices indices = device->getQueueFamilyIndices();
         uint32_t queueFamilyIndices[] = { indices.graphicsFamily, indices.presentFamily };
 
         if (indices.graphicsFamily != indices.presentFamily)
@@ -293,39 +284,101 @@ namespace Prehistoric
         }
 
         //Create images and image views
-        vkGetSwapchainImagesKHR(device->getDevice(), swapchain, &NumImages, nullptr);
+        std::vector<VkImage> swapImages;
 
-        swapchainImages.resize(NumImages);
-        vkGetSwapchainImagesKHR(device->getDevice(), swapchain, &NumImages, swapchainImages.data());
+        vkGetSwapchainImagesKHR(device->getDevice(), swapchain, &NumImages, nullptr);
+        swapImages.resize(NumImages);
+        vkGetSwapchainImagesKHR(device->getDevice(), swapchain, &NumImages, swapImages.data());
 
         swapchainImageFormat = surfaceFormat.format;
         swapchainExtent = extent;
 
-        swapchainImageViews.resize(NumImages);
-
+        swapchainImages.resize(NumImages);
         for (size_t i = 0; i < NumImages; i++)
         {
-            VKUtil::CreateImageView(device, swapchainImages[i], swapchainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1, swapchainImageViews[i]);
+            swapchainImages[i] = new VKImage(device, swapImages[i], 1, swapchainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
         }
 
         //Create multisampled image
-        VKUtil::CreateImage(physicalDevice->getPhysicalDevice(), device, swapchainExtent.width, swapchainExtent.height, 1, physicalDevice->getSampleCount(), swapchainImageFormat,
-            VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            colourImage, colourImageMemory);
-        VKUtil::CreateImageView(device, colourImage, swapchainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1, colourImageView);
+        multisampleColourImage = new VKImage(device, swapchainExtent.width, swapchainExtent.height, 1, swapchainImageFormat,
+            VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, device->getSampleCount(),
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
 
         //Create depth buffer
-        VkFormat depthFormat = VKUtil::FindSupportedFormat(
-            physicalDevice->getPhysicalDevice(),
+        VkFormat depthFormat = FindSupportedFormat(
             { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
             VK_IMAGE_TILING_OPTIMAL,
             VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
         );
 
-        VKUtil::CreateImage(physicalDevice->getPhysicalDevice(), device, swapchainExtent.width, swapchainExtent.height, 1, physicalDevice->getSampleCount(), depthFormat, VK_IMAGE_TILING_OPTIMAL,
-            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
-        VKUtil::CreateImageView(device, depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1, depthImageView);
+        depthImage = new VKImage(device, swapchainExtent.width, swapchainExtent.height, 1, depthFormat,
+            VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, device->getSampleCount(),
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
 
-        VKUtil::TransitionImageLayout(device, depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
+        VKUtil::TransitionImageLayout(device, depthImage->getImage(), depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
+    }
+    
+    VkSurfaceFormatKHR VKSwapchain::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
+    {
+        for (const auto& availableFormat : availableFormats)
+        {
+            if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+            {
+                return availableFormat;
+            }
+        }
+
+        return availableFormats[0];
+    }
+
+    VkPresentModeKHR VKSwapchain::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
+    {
+        for (const auto& availablePresentMode : availablePresentModes)
+        {
+            if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
+            {
+                return availablePresentMode;
+            }
+        }
+
+        return VK_PRESENT_MODE_FIFO_KHR;
+    }
+
+    VkExtent2D VKSwapchain::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
+    {
+        if (capabilities.currentExtent.width != UINT32_MAX)
+        {
+            return capabilities.currentExtent;
+        }
+        else
+        {
+            VkExtent2D actualExtent = { FrameworkConfig::windowWidth, FrameworkConfig::windowHeight };
+
+            actualExtent.width = max(capabilities.minImageExtent.width, min(capabilities.maxImageExtent.width, actualExtent.width));
+            actualExtent.height = max(capabilities.minImageExtent.height, min(capabilities.maxImageExtent.height, actualExtent.height));
+
+            return actualExtent;
+        }
+    }
+
+    VkFormat VKSwapchain::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
+    {
+        for (VkFormat format : candidates)
+        {
+            VkFormatProperties props;
+            vkGetPhysicalDeviceFormatProperties(device->getPhysicalDevice(), format, &props);
+
+            if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features)
+            {
+                return format;
+            }
+            else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features)
+            {
+                return format;
+            }
+        }
+
+        PR_LOG_RUNTIME_ERROR("Couldn't find suitable format!\n");
+        return VK_FORMAT_R8G8B8A8_SRGB;
     }
 };

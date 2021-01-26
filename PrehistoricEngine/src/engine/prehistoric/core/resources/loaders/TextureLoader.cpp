@@ -63,33 +63,17 @@ namespace Prehistoric
 		Texture* texture = nullptr;
 		ImageData data = LoadTextureData(path);
 
-		if (data.type == ImageData::ImageType::HDR)
+		if (FrameworkConfig::api == OpenGL)
 		{
 			texture = new GLTexture(data.width, data.height);
 			texture->Bind();
-			static_cast<GLTexture*>(texture)->UploadHDRTextureData(data.ptr.dataF);
+			texture->UploadTextureData(data);
 		}
-		else
+		else if (FrameworkConfig::api == Vulkan)
 		{
-			ImageFormat format;
-			if (data.channels == 3 && FrameworkConfig::api != Vulkan) //Vulkan can't decide if it supports 24 bit textures yet, so don't do this
-				format = R8G8B8_LINEAR;
-			else
-				format = R8G8B8A8_LINEAR;
-
-			if (FrameworkConfig::api == OpenGL)
-			{
-				texture = new GLTexture(data.width, data.height);
-				texture->Bind();
-				texture->UploadTextureData(data.ptr.dataUC, format);
-			}
-			else if (FrameworkConfig::api == Vulkan)
-			{
-				texture = new VKTexture((VKPhysicalDevice*)window->getContext()->getPhysicalDevice(), (VKDevice*)window->getContext()->getDevice(), data.width, data.height);
-				texture->Bind();
-				texture->UploadTextureData(data.ptr.dataUC, format);
-				texture->Generate();
-			}
+			texture = new VKTexture((VKDevice*)window->getContext()->getDevices(), data.width, data.height);
+			texture->Bind();
+			texture->UploadTextureData(data);
 		}
 
 		texture->SamplerProperties(ext->filter, ext->wrapMode);
@@ -152,33 +136,17 @@ namespace Prehistoric
 			TextureLoaderExtra* ext = dynamic_cast<TextureLoaderExtra*>(extra);
 			ImageData data_ = images[i];
 
-			if (data_.type == ImageData::ImageType::HDR)
+			if (FrameworkConfig::api == OpenGL)
 			{
 				texture = new GLTexture(data_.width, data_.height);
 				texture->Bind();
-				static_cast<GLTexture*>(texture)->UploadHDRTextureData(data_.ptr.dataF);
+				texture->UploadTextureData(data_);
 			}
-			else
+			else if (FrameworkConfig::api == Vulkan)
 			{
-				ImageFormat format;
-				if (data_.channels == 3 && (FrameworkConfig::api != Vulkan)) //Vulkan can't decide if it supports 24 bit textures yet, so don't do this
-					format = R8G8B8_LINEAR;
-				else
-					format = R8G8B8A8_LINEAR;
-
-				if (FrameworkConfig::api == OpenGL)
-				{
-					texture = new GLTexture(data_.width, data_.height);
-					texture->Bind();
-					texture->UploadTextureData(data_.ptr.dataUC, format);
-				}
-				else if (FrameworkConfig::api == Vulkan)
-				{
-					texture = new VKTexture((VKPhysicalDevice*)window->getContext()->getPhysicalDevice(), (VKDevice*)window->getContext()->getDevice(), data_.width, data_.height);
-					texture->Bind();
-					texture->UploadTextureData(data_.ptr.dataUC, format);
-					texture->Generate();
-				}
+				texture = new VKTexture((VKDevice*)window->getContext()->getDevices(), data_.width, data_.height);
+				texture->Bind();
+				texture->UploadTextureData(data_);
 			}
 
 			texture->SamplerProperties(ext->filter, ext->wrapMode);
@@ -201,33 +169,17 @@ namespace Prehistoric
 		Texture* texture = nullptr;
 		ImageData data = LoadTextureData(path);
 
-		if (data.type == ImageData::ImageType::HDR)
+		if (FrameworkConfig::api == OpenGL)
 		{
 			texture = new GLTexture(data.width, data.height);
 			texture->Bind();
-			static_cast<GLTexture*>(texture)->UploadHDRTextureData(data.ptr.dataF);
+			texture->UploadTextureData(data);
 		}
-		else
+		else if (FrameworkConfig::api == Vulkan)
 		{
-			ImageFormat format;
-			if (data.channels == 3 && (FrameworkConfig::api != Vulkan)) //Vulkan can't decide if it supports 24 bit textures yet, so don't do this
-				format = R8G8B8_LINEAR;
-			else
-				format = R8G8B8A8_LINEAR;
-
-			if (FrameworkConfig::api == OpenGL)
-			{
-				texture = new GLTexture(data.width, data.height);
-				texture->Bind();
-				texture->UploadTextureData(data.ptr.dataUC, format);
-			}
-			else if (FrameworkConfig::api == Vulkan)
-			{
-				texture = new VKTexture((VKPhysicalDevice*)window->getContext()->getPhysicalDevice(), (VKDevice*)window->getContext()->getDevice(), data.width, data.height);
-				texture->Bind();
-				texture->UploadTextureData(data.ptr.dataUC, format);
-				texture->Generate();
-			}
+			texture = new VKTexture((VKDevice*)window->getContext()->getDevices(), data.width, data.height);
+			texture->Bind();
+			texture->UploadTextureData(data);
 		}
 
 		texture->SamplerProperties(filter, wrapMode);

@@ -8,7 +8,8 @@ namespace Prehistoric
 	class VKQueue
 	{
 	public:
-		void SetupQueue(VkDevice device, uint32_t family);
+		VKQueue(VkDevice device, uint32_t family);
+		~VKQueue();
 
 		VkQueue getQueue() const { return queue; }
 	private:

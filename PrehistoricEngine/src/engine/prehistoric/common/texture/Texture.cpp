@@ -1,6 +1,8 @@
 #include "Includes.hpp"
 #include "Texture.h"
 
+#include "prehistoric/core/resources/loaders/TextureLoader.h"
+
 namespace Prehistoric
 {
 	int Texture::currID = 0;

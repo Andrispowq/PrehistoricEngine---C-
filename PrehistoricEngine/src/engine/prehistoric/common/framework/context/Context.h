@@ -14,8 +14,7 @@ namespace Prehistoric
 		virtual void* getNativePhysicalDevice() { return nullptr; };
 		virtual void* getNativeDevice() { return nullptr; };
 
-		virtual void* getPhysicalDevice() { return nullptr; };
-		virtual void* getDevice() { return nullptr; };
+		virtual void* getDevices() { return nullptr; };
 
 	protected:
 		Window* window;

@@ -3,17 +3,17 @@
 
 namespace Prehistoric
 {
-	VKCommandPool::VKCommandPool(VkPhysicalDevice physicalDevice, VkDevice device, VKSurface* surface)
-		: physicalDevice(physicalDevice), device(device), surface(surface)
+	VKCommandPool::VKCommandPool(VKDevice* device)
+		: device(device)
 	{
-		QueueFamilyIndices indices = VKUtil::FindQueueFamilies(physicalDevice, surface->getSurface());
+		QueueFamilyIndices indices = device->getQueueFamilyIndices();
 
 		VkCommandPoolCreateInfo poolInfo = {};
 		poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		poolInfo.queueFamilyIndex = indices.graphicsFamily;
 		poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // Optional
 
-		if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
+		if (vkCreateCommandPool(device->getDevice(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
 		{
 			PR_LOG_RUNTIME_ERROR("Failed to create command pool!\n");
 		}
@@ -23,7 +23,7 @@ namespace Prehistoric
 	{
 		buffers.clear();
 
-		vkDestroyCommandPool(device, commandPool, nullptr);
+		vkDestroyCommandPool(device->getDevice(), commandPool, nullptr);
 	}
 
 	void VKCommandPool::AddCommandBuffer(VKCommandBuffer& buffer)
@@ -33,7 +33,7 @@ namespace Prehistoric
 
 	void VKCommandPool::AddCommandBuffer()
 	{
-		buffers.push_back(std::make_unique<VKCommandBuffer>(this, device));
+		buffers.push_back(std::make_unique<VKCommandBuffer>(this, device->getDevice()));
 	}
 
 	void VKCommandPool::DeleteCommandBuffer(int index)
@@ -54,7 +54,7 @@ namespace Prehistoric
 			//would invoke their destructors, so we would delete them twice
 		}
 
-		vkFreeCommandBuffers(device, commandPool, (uint32_t)buffers.size(), buffs.data());
+		vkFreeCommandBuffers(device->getDevice(), commandPool, (uint32_t)buffers.size(), buffs.data());
 		buffers.clear();
 	}
 

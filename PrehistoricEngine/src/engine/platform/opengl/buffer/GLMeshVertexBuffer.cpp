@@ -21,10 +21,10 @@ namespace Prehistoric
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 		glBufferData(GL_ARRAY_BUFFER, mesh.getVertices().size() * Vertex::getSize(), vdata.data(), GL_STATIC_DRAW);
 
-		std::vector<uint16_t> idata = mesh.GetIndexData();
+		std::vector<uint32_t> idata = mesh.GetIndexData();
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh.getIndices().size() * sizeof(uint16_t), idata.data(), GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh.getIndices().size() * sizeof(uint32_t), idata.data(), GL_STATIC_DRAW);
 
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
@@ -65,7 +65,7 @@ namespace Prehistoric
 		RenderingEngine::getStats().vertexCount += vertices;
 		RenderingEngine::getStats().indexCount += indices;
 
-		glDrawElements(GL_TRIANGLES, size, GL_UNSIGNED_SHORT, (void*)0);
+		glDrawElements(GL_TRIANGLES, size, GL_UNSIGNED_INT, (void*)0);
 	}
 
 	void GLMeshVertexBuffer::Unbind() const

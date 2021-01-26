@@ -38,8 +38,7 @@ namespace Prehistoric
 		modules = new VkShaderModule[5];
 		shaderStages = new VkPipelineShaderStageCreateInfo[5];
 
-		this->physicalDevice = (VKPhysicalDevice*)context->getPhysicalDevice();
-		this->device = (VKDevice*)context->getDevice();
+		this->device = (VKDevice*)context->getDevices();
 		counter = 0;
 
 		if (length == 1) //Compute shader
@@ -78,7 +77,7 @@ namespace Prehistoric
 		}
 
 		this->swapchain = (VKSwapchain*)swapchain;
-		this->descriptorPool = new VKDescriptorPool(physicalDevice, device, this->swapchain);
+		this->descriptorPool = new VKDescriptorPool(device, this->swapchain);
 	}
 
 	VKShader::VKShader(Context* context, Swapchain* swapchain)
@@ -86,12 +85,11 @@ namespace Prehistoric
 		modules = new VkShaderModule[5];
 		shaderStages = new VkPipelineShaderStageCreateInfo[5];
 
-		this->physicalDevice = (VKPhysicalDevice*)context->getPhysicalDevice();
-		this->device = (VKDevice*)context->getDevice();
+		this->device = (VKDevice*)context->getDevices();
 		counter = 0;
 
 		this->swapchain = (VKSwapchain*)swapchain;
-		this->descriptorPool = new VKDescriptorPool(physicalDevice, device, this->swapchain);
+		this->descriptorPool = new VKDescriptorPool(device, this->swapchain);
 	}
 
 	VKShader::~VKShader()
@@ -261,8 +259,8 @@ namespace Prehistoric
 		{
 			VkDescriptorImageInfo imageInfo = {};
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			imageInfo.imageView = tex->getTextureImageView();
-			imageInfo.sampler = tex->getTextureSampler();
+			imageInfo.imageView = tex->getImage()->getImageView();
+			imageInfo.sampler = tex->getSampler();
 
 			sets[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			sets[i].dstSet = descriptorPool->getSet(location.first, instance_index)->getSets()[i];

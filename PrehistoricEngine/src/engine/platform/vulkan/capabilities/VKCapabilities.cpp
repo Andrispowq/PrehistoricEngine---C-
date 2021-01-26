@@ -1,22 +1,21 @@
 #include "Includes.hpp"
 #include "VKCapabilities.h"
-#include "platform/vulkan/framework/device/VKPhysicalDevice.h"
 
-#include <vulkan/vulkan_beta.h>
+#include "platform/vulkan/framework/device/VKDevice.h"
 
 namespace Prehistoric
 {
 	void VKCapabilities::QueryCapabilities(void* physicalDevice)
 	{
-		VKPhysicalDevice* physicalDev = reinterpret_cast<VKPhysicalDevice*>(physicalDevice);
+		VKDevice* device = reinterpret_cast<VKDevice*>(physicalDevice);
 
 		VkPhysicalDeviceProperties properties;
 		VkPhysicalDeviceFeatures deviceFeatures;
 		VkPhysicalDeviceMemoryProperties memoryProps;
 
-		vkGetPhysicalDeviceProperties(physicalDev->getPhysicalDevice(), &properties);
-		vkGetPhysicalDeviceFeatures(physicalDev->getPhysicalDevice(), &deviceFeatures);
-		vkGetPhysicalDeviceMemoryProperties(physicalDev->getPhysicalDevice(), &memoryProps);
+		vkGetPhysicalDeviceProperties(device->getPhysicalDevice(), &properties);
+		vkGetPhysicalDeviceFeatures(device->getPhysicalDevice(), &deviceFeatures);
+		vkGetPhysicalDeviceMemoryProperties(device->getPhysicalDevice(), &memoryProps);
 
 		//Getting extension features:
 	/*
@@ -28,7 +27,7 @@ namespace Prehistoric
 		props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
 		props.pNext = &rtProps;
 
-		vkGetPhysicalDeviceProperties2(physicalDev->getPhysicalDevice(), &props);
+		vkGetPhysicalDeviceProperties2(device->getPhysicalDevice(), &props);
 	*/
 
 		physicalDeviceCaps.name = properties.deviceName;
@@ -59,10 +58,10 @@ namespace Prehistoric
 		shaderCaps.computeShaderSupported = false;
 
 		uint32_t queueFamilyCount = 0;
-		vkGetPhysicalDeviceQueueFamilyProperties(physicalDev->getPhysicalDevice(), &queueFamilyCount, nullptr);
+		vkGetPhysicalDeviceQueueFamilyProperties(device->getPhysicalDevice(), &queueFamilyCount, nullptr);
 
 		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-		vkGetPhysicalDeviceQueueFamilyProperties(physicalDev->getPhysicalDevice(), &queueFamilyCount, queueFamilies.data());
+		vkGetPhysicalDeviceQueueFamilyProperties(device->getPhysicalDevice(), &queueFamilyCount, queueFamilies.data());
 
 		for (uint32_t i = 0; i < queueFamilyCount; i++)
 		{
@@ -78,10 +77,10 @@ namespace Prehistoric
 		shaderCaps.rayTracingSupported = false;
 
 		uint32_t extensionCount;
-		vkEnumerateDeviceExtensionProperties(physicalDev->getPhysicalDevice(), nullptr, &extensionCount, nullptr);
+		vkEnumerateDeviceExtensionProperties(device->getPhysicalDevice(), nullptr, &extensionCount, nullptr);
 
 		std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-		vkEnumerateDeviceExtensionProperties(physicalDev->getPhysicalDevice(), nullptr, &extensionCount, availableExtensions.data());
+		vkEnumerateDeviceExtensionProperties(device->getPhysicalDevice(), nullptr, &extensionCount, availableExtensions.data());
 
 		bool rtPipSupp = false;
 		bool accStrSupp = false;

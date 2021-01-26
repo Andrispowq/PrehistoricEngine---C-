@@ -103,7 +103,7 @@ namespace Prehistoric
 		multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 		multisampling.sampleShadingEnable = VK_TRUE;
 		//This means that if the sampleCount is 1, 0 or -1, we disable multisampling, in all other cases, we use the max available sample count for MSAA
-		multisampling.rasterizationSamples = /*samples < 2 ? VK_SAMPLE_COUNT_1_BIT :*/ physicalDevice->getSampleCount();
+		multisampling.rasterizationSamples = /*samples < 2 ? VK_SAMPLE_COUNT_1_BIT :*/ device->getSampleCount();
 		multisampling.minSampleShading = 0.2f; // Optional
 		multisampling.pSampleMask = nullptr; // Optional
 		multisampling.alphaToCoverageEnable = VK_FALSE; // Optional

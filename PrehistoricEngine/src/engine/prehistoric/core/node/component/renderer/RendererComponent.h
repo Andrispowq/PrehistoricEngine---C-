@@ -29,6 +29,9 @@ namespace Prehistoric
 
 	private:
 		MaterialHandle material;
+
+		size_t instanceID;
+		static size_t nextInstanceID;
 	};
 };
 

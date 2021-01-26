@@ -11,7 +11,7 @@ namespace Prehistoric
 	class VKCommandPool
 	{
 	public:
-		VKCommandPool(VkPhysicalDevice physicalDevice, VkDevice device, VKSurface* surface);
+		VKCommandPool(VKDevice* device);
 		virtual ~VKCommandPool();
 
 		void AddCommandBuffer(VKCommandBuffer& buffer);
@@ -31,9 +31,7 @@ namespace Prehistoric
 		VKCommandBuffer* getCommandBuffer(int index) const { return buffers[index].get(); }
 		std::vector<std::unique_ptr<VKCommandBuffer>>& getCommandBuffers() { return buffers; }
 	private:
-		VkPhysicalDevice physicalDevice;
-		VkDevice device;
-		VKSurface* surface;
+		VKDevice* device;
 
 		VkCommandPool commandPool;
 		std::vector<std::unique_ptr<VKCommandBuffer>> buffers;

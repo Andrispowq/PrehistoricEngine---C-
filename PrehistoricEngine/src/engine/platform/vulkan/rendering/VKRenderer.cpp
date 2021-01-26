@@ -16,21 +16,20 @@ namespace Prehistoric
 		VKContext* context = (VKContext*)window->getContext();
 		VKSwapchain* swapchain = (VKSwapchain*)window->getSwapchain();
 
-		VKPhysicalDevice* physicalDevice = (VKPhysicalDevice*)context->getPhysicalDevice();
-		VKDevice* device = (VKDevice*)context->getDevice();
+		VKDevice* device = (VKDevice*)context->getDevices();
 
-		renderpass = std::make_unique<VKRenderpass>(physicalDevice, device->getDevice(), swapchain->getSwapchainImageFormat());
+		renderpass = std::make_unique<VKRenderpass>(device, swapchain);
 
-		size_t NumImages = swapchain->getSwapchainImageViews().size();
+		size_t NumImages = swapchain->getSwapchainImages().size();
 		primaryFramebuffers.resize(NumImages);
 
 		for (size_t i = 0; i < NumImages; i++)
 		{
 			VkImageView attachments[] =
 			{
-				swapchain->getColourImageView(),
-				swapchain->getDepthImageView(),
-				swapchain->getSwapchainImageViews()[i]
+				swapchain->getColourImage()->getImageView(),
+				swapchain->getDepthImage()->getImageView(),
+				swapchain->getSwapchainImages()[i]->getImageView()
 			};
 
 			primaryFramebuffers[i] = std::make_unique<VKFramebuffer>(device->getDevice(), renderpass->getRenderPass(), swapchain->getSwapchainExtent().width,
@@ -38,7 +37,7 @@ namespace Prehistoric
 		}
 
 		//Create command pool
-		commandPool = std::make_unique<VKCommandPool>(physicalDevice->getPhysicalDevice(), device->getDevice(), context->getSurface());
+		commandPool = std::make_unique<VKCommandPool>(device);
 
 		for (size_t i = 0; i < NumImages; i++)
 		{
@@ -61,27 +60,26 @@ namespace Prehistoric
 			uint32_t width = window->getWidth();
 			uint32_t height = window->getHeight();
 
-			camera->SetProjection(camera->getFov(), (float)width, (float)height);
-			swapchain->SetWindowSize(width, height);
-
 			VKContext* context = (VKContext*)window->getContext();
 			VKSwapchain* swapchain = (VKSwapchain*)window->getSwapchain();
 
-			VKPhysicalDevice* physicalDevice = (VKPhysicalDevice*)context->getPhysicalDevice();
-			VKDevice* device = (VKDevice*)context->getDevice();
+			camera->SetProjection(camera->getFov(), (float)width, (float)height);
+			swapchain->SetWindowSize(width, height);
 
-			renderpass = std::make_unique<VKRenderpass>(physicalDevice, device->getDevice(), swapchain->getSwapchainImageFormat());
+			VKDevice* device = (VKDevice*)context->getDevices();
+
+			renderpass = std::make_unique<VKRenderpass>(device, swapchain);
 			swapchain->setRenderpass(renderpass.get());
 
-			size_t NumImages = swapchain->getSwapchainImageViews().size();
+			size_t NumImages = swapchain->getSwapchainImages().size();
 			primaryFramebuffers.resize(NumImages);
 			for (size_t i = 0; i < NumImages; i++)
 			{
 				VkImageView attachments[] =
 				{
-					swapchain->getColourImageView(),
-					swapchain->getDepthImageView(),
-					swapchain->getSwapchainImageViews()[i]
+					swapchain->getColourImage()->getImageView(),
+					swapchain->getDepthImage()->getImageView(),
+					swapchain->getSwapchainImages()[i]->getImageView()
 				};
 
 				primaryFramebuffers[i] = std::make_unique<VKFramebuffer>(device->getDevice(), renderpass->getRenderPass(), swapchain->getSwapchainExtent().width,

@@ -4,20 +4,21 @@
 namespace Prehistoric
 {
 	VKContext::VKContext(Window* window)
-		: Context(window), surface{ nullptr }
+		: Context(window), devices{ nullptr }, surface{ nullptr }
 	{
-		surface = std::make_unique<VKSurface>(window, instance.getInstance());
+		instance = std::make_unique<VKInstance>();
 
-		physicalDevice.PickPhysicalDevice(instance.getInstance(), surface->getSurface());
-		logicalDevice.CreateLogicalDevice(&physicalDevice, surface->getSurface(), instance.getValidationLayers());
+		surface = std::make_unique<VKSurface>(window, instance->getInstance());
+		devices = std::make_unique<VKDevice>(instance->getInstance(), surface.get(), instance->getValidationLayers());
 
-		VKUtil::Init(physicalDevice.getPhysicalDevice(), logicalDevice.getDevice());
+		VKUtil::Init(devices.get());
 	}
 
 	VKContext::~VKContext()
 	{
-		VKUtil::CleanUp(logicalDevice.getDevice());
+		VKUtil::CleanUp(devices.get());
 
-		logicalDevice.DestroyLogicalDevice();
+		delete devices.release();
+		delete surface.release();
 	}
 };

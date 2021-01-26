@@ -221,7 +221,11 @@ namespace Prehistoric
 			}
 
 			InputInstance.setCursorPositionOnScreen(window, InputInstance.getLockedCursorPosition());
-			ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+
+			if (FrameworkConfig::api == OpenGL)
+			{
+				ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+			}
 		}
 
 		if (position != previousPosition)

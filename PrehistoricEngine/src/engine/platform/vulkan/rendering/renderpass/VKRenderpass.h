@@ -9,10 +9,12 @@
 
 namespace Prehistoric
 {
+	class VKSwapchain;
+
 	class VKRenderpass
 	{
 	public:
-		VKRenderpass(VKPhysicalDevice* physicalDevice, VkDevice device, VkFormat colourImageFormat);
+		VKRenderpass(VKDevice* device, VKSwapchain* swapchain);
 		virtual ~VKRenderpass();
 
 		void BeginRenderpass(VKCommandBuffer* commandBuffer, VKFramebuffer* framebuffer, VkExtent2D swapchainExtent, Vector4f clearColour);
@@ -21,7 +23,9 @@ namespace Prehistoric
 		VkRenderPass getRenderPass() const { return renderpass; }
 	private:
 		VkRenderPass renderpass;
-		VkDevice device;
+
+		VKDevice* device;
+		VKSwapchain* swapchain;
 	};
 };
 

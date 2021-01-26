@@ -65,5 +65,5 @@ void main()
 
 	position_FS = toTangentSpace * worldPosition.xyz;
 	texture_FS = texture_VS;
-	normal_FS = N;
+	normal_FS = toTangentSpace * N;
 }

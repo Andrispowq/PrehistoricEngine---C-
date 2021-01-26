@@ -68,15 +68,14 @@ namespace Prehistoric
 
 	protected:
 		//Outside data
-		VKPhysicalDevice* physicalDevice;
 		VKDevice* device;
 		VKSwapchain* swapchain;
-
-		mutable CommandBuffer* commandBuffer; //The command buffer to use
 
 		//Module data
 		VkShaderModule* modules;
 		VkPipelineShaderStageCreateInfo* shaderStages;
+
+		mutable CommandBuffer* commandBuffer;
 
 		//Pipeline data
 		VkPipelineLayout pipelineLayout;

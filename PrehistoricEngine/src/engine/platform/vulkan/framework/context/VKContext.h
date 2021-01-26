@@ -6,7 +6,6 @@
 #include <vulkan/vulkan.h>
 
 #include "VKInstance.h"
-#include "platform/vulkan/framework/device/VKPhysicalDevice.h"
 #include "platform/vulkan/framework/device/VKDevice.h"
 #include "platform/vulkan/framework/surface/VKSurface.h"
 #include "platform/vulkan/framework/swapchain/VKSwapchain.h"
@@ -19,20 +18,17 @@ namespace Prehistoric
 		VKContext(Window* window);
 		virtual ~VKContext();
 
-		VKInstance getInstance() const { return instance; }
+		VKInstance* getInstance() const { return instance.get(); }
 
-		void* getNativePhysicalDevice() override { return &physicalDevice.getPhysicalDevice(); }
-		void* getNativeDevice() override { return &logicalDevice.getDevice(); }
+		void* getNativePhysicalDevice() override { return &devices->getPhysicalDevice(); }
+		void* getNativeDevice() override { return &devices->getDevice(); }
 
-		void* getPhysicalDevice() override { return &physicalDevice; }
-		void* getDevice() override { return &logicalDevice; }
+		void* getDevices() override { return devices.get(); }
 
 		VKSurface* getSurface() { return surface.get(); }
 	private:
-		VKInstance instance;
-
-		VKPhysicalDevice physicalDevice;
-		VKDevice logicalDevice;
+		std::unique_ptr<VKInstance> instance;
+		std::unique_ptr<VKDevice> devices;
 
 		std::unique_ptr<VKSurface> surface;
 	};

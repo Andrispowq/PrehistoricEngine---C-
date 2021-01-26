@@ -28,13 +28,14 @@ namespace Prehistoric
 		ImGuiLayer* getImGuiLayer() { return imGUILayer; }
 
 		int getLastFPS() const { return last_fps; }
-		double getFrameTime() const { return frameTime * 1000; }
+		double getFrameTime() const { return last_frameTime; }
 
 		static Application& Get() { return *instance; }
 	protected:
 		LayerStack layerStack;
 		bool running = false;
 		double frameTime;
+		double last_frameTime;
 		int last_fps;
 
 		CoreEngine* engineLayer;

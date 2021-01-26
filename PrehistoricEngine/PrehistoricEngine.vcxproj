@@ -145,6 +145,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\Includes.hpp" />
+    <ClInclude Include="src\engine\platform\vulkan\texture\VKImage.h" />
     <ClInclude Include="src\engine\Prehistoric.h" />
     <ClInclude Include="src\engine\platform\Platform.h" />
     <ClInclude Include="src\engine\platform\opengl\buffer\GLMeshVertexBuffer.h" />
@@ -185,7 +186,6 @@
     <ClInclude Include="src\engine\platform\vulkan\framework\context\VKDebugMessenger.h" />
     <ClInclude Include="src\engine\platform\vulkan\framework\context\VKInstance.h" />
     <ClInclude Include="src\engine\platform\vulkan\framework\device\VKDevice.h" />
-    <ClInclude Include="src\engine\platform\vulkan\framework\device\VKPhysicalDevice.h" />
     <ClInclude Include="src\engine\platform\vulkan\framework\queue\VKQueue.h" />
     <ClInclude Include="src\engine\platform\vulkan\framework\surface\VKSurface.h" />
     <ClInclude Include="src\engine\platform\vulkan\framework\swapchain\VKSwapchain.h" />
@@ -339,7 +339,6 @@
     <ClCompile Include="src\engine\platform\vulkan\framework\context\VKInstance.cpp" />
     <ClCompile Include="src\engine\platform\vulkan\framework\context\VkDebugMessenger.cpp" />
     <ClCompile Include="src\engine\platform\vulkan\framework\device\VKDevice.cpp" />
-    <ClCompile Include="src\engine\platform\vulkan\framework\device\VKPhysicalDevice.cpp" />
     <ClCompile Include="src\engine\platform\vulkan\framework\queue\VKQueue.cpp" />
     <ClCompile Include="src\engine\platform\vulkan\framework\surface\VKSurface.cpp" />
     <ClCompile Include="src\engine\platform\vulkan\framework\swapchain\VKSwapchain.cpp" />
@@ -358,6 +357,7 @@
     <ClCompile Include="src\engine\platform\vulkan\rendering\shaders\pbr\VKPBRShader.cpp" />
     <ClCompile Include="src\engine\platform\vulkan\rendering\synchronisation\VKFence.cpp" />
     <ClCompile Include="src\engine\platform\vulkan\rendering\synchronisation\VKSemaphore.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\texture\VKImage.cpp" />
     <ClCompile Include="src\engine\platform\vulkan\texture\VKTexture.cpp" />
     <ClCompile Include="src\engine\platform\vulkan\util\VKUtil.cpp" />
     <ClCompile Include="src\engine\platform\windows\WindowsInput.cpp" />

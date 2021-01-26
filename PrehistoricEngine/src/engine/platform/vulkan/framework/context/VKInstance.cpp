@@ -8,6 +8,7 @@
 namespace Prehistoric
 {
 	VKInstance::VKInstance()
+		: messenger{ nullptr }
 	{
 		//Check for validation layer support, but we only use it in debug mode
 #if defined(PR_ENABLE_DEBUGGING) && defined(PR_VK_ENABLE_VALIDATION_LAYERS)
@@ -72,7 +73,7 @@ namespace Prehistoric
 #if defined(PR_ENABLE_DEBUGGING) && defined(PR_VK_ENABLE_VALIDATION_LAYERS)
 		if (FrameworkConfig::apiVulkanUseValidationLayers)
 		{
-			messenger = new VKDebugMessenger(instance);
+			messenger = std::make_unique<VKDebugMessenger>(instance);
 		}
 #endif
 	}
@@ -82,7 +83,7 @@ namespace Prehistoric
 #if defined(PR_ENABLE_DEBUGGING) && defined(PR_VK_ENABLE_VALIDATION_LAYERS)
 		if (FrameworkConfig::apiVulkanUseValidationLayers)
 		{
-			delete messenger;
+			delete messenger.release();
 		}
 #endif
 

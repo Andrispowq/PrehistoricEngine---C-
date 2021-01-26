@@ -9,11 +9,11 @@ PrehistoricApp::PrehistoricApp()
 
 	GameObject* audio = new GameObject();
 	audio->AddComponent(AUDIO_COMPONENT, new AudioComponent("res/sounds/_SolidGround.wav", 57.0f));
-	audio->GetComponent<AudioComponent>()->PreUpdate(engineLayer);
+	//audio->GetComponent<AudioComponent>()->PreUpdate(engineLayer);
 
-	engineLayer->getRootObject()->AddChild("audio", audio);
+	//engineLayer->getRootObject()->AddChild("audio", audio);
 
-	engineLayer->getAudioEngine()->Update(0.0f);
+	//engineLayer->getAudioEngine()->Update(0.0f);
 	
 	GameObject* sceneRoot = new GameObject();
 	scene = std::make_unique<PrehistoricScene>("scene0", sceneRoot, engineLayer->getRenderingEngine()->getWindow(),
@@ -41,42 +41,45 @@ PrehistoricApp::PrehistoricApp()
 	AssembledAssetManager* manager = engineLayer->getAssetManager();
 	AssetManager* man = manager->getAssetManager();
 	Window* window = engineLayer->getRenderingEngine()->getWindow();
-
-	GameObject* slider3 = new GUISlider(window, manager, 0.0f, 4.0f, Vector3f(0.4f), &EnvironmentMapRenderer::instance->lodRenderedMap, sizeof(float), true);
-	static_cast<GUISlider*>(slider3)->setProgress(0.0);
-	slider3->SetPosition({ 0.5f, -0.5f, 0 });
-	slider3->SetScale({ 0.125f, 0.05f, 1 });
-	sceneRoot->AddChild("slider3", slider3);
-
-	VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/sphere.obj").value();
-	vbo->setFrontFace(FrontFace::CLOCKWISE);
-	ShaderHandle shader = man->loadShader("pbr").value();
-	PipelineHandle pipeline;
+	
 	if (FrameworkConfig::api == OpenGL)
-		pipeline = manager->storePipeline(new GLGraphicsPipeline(window, man, shader, vbo));
-	else
-		pipeline = manager->storePipeline(new VKGraphicsPipeline(window, man, shader, vbo));
+	{
+		GameObject* slider3 = new GUISlider(window, manager, 0.0f, 4.0f, Vector3f(0.4f), &EnvironmentMapRenderer::instance->lodRenderedMap, sizeof(float), true);
+		static_cast<GUISlider*>(slider3)->setProgress(0.0);
+		slider3->SetPosition({ 0.5f, -0.5f, 0 });
+		slider3->SetScale({ 0.125f, 0.05f, 1 });
+		sceneRoot->AddChild("slider3", slider3);
 
-	MaterialHandle material = manager->storeMaterial(new Material(man));
-	material->addVector3f(COLOUR, { 0.64f, 0.53f, 0.23f });
-	material->addVector4f(MROT, { 1.0f, 0.3f, 1.0f, 0.0f });
+		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/sphere.obj").value();
+		vbo->setFrontFace(FrontFace::CLOCKWISE);
+		ShaderHandle shader = man->loadShader("pbr").value();
+		PipelineHandle pipeline;
+		if (FrameworkConfig::api == OpenGL)
+			pipeline = manager->storePipeline(new GLGraphicsPipeline(window, man, shader, vbo));
+		else
+			pipeline = manager->storePipeline(new VKGraphicsPipeline(window, man, shader, vbo));
 
-	MaterialHandle material2 = manager->storeMaterial(new Material(man));
-	material->addVector3f(COLOUR, { 0.64f, 0.64f, 0.64f });
-	material->addVector4f(MROT, { 1.0f, 0.3f, 1.0f, 0.0f });
+		MaterialHandle material = manager->storeMaterial(new Material(man));
+		material->addVector3f(COLOUR, { 0.64f, 0.53f, 0.23f });
+		material->addVector4f(MROT, { 1.0f, 0.3f, 1.0f, 0.0f });
 
-	GameObject* obj = new GameObject;
-	obj->SetPosition({ 0, 200, 0 });
-	obj->SetScale({ 10, 10, 10 });
-	obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, material));
-	sceneRoot->AddChild("someobj", obj);
+		MaterialHandle material2 = manager->storeMaterial(new Material(man));
+		material->addVector3f(COLOUR, { 0.64f, 0.64f, 0.64f });
+		material->addVector4f(MROT, { 1.0f, 0.3f, 1.0f, 0.0f });
 
-	GameObject* obj2 = new GameObject;
-	obj2->SetPosition({ -50, 10, 0 });
-	obj2->SetScale({ 1, 1, 1 });
-	obj2->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, material));
+		GameObject* obj = new GameObject;
+		obj->SetPosition({ 0, 200, 0 });
+		obj->SetScale({ 10, 10, 10 });
+		obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, material));
+		sceneRoot->AddChild("someobj", obj);
 
-	sceneRoot->AddChild("someobj2", obj2);
+		GameObject* obj2 = new GameObject;
+		obj2->SetPosition({ -50, 10, 0 });
+		obj2->SetScale({ 1, 1, 1 });
+		obj2->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, material));
+
+		sceneRoot->AddChild("someobj2", obj2);
+	}
 }
 
 PrehistoricApp::~PrehistoricApp()

@@ -24,7 +24,6 @@ namespace Prehistoric
 
 		virtual void RecreatePipeline() {}
 	protected:
-		VKPhysicalDevice* physicalDevice;
 		VKDevice* device;
 		VKSurface* surface;
 

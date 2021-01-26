@@ -10,17 +10,30 @@
 
 namespace Prehistoric
 {
+	struct SwapchainSupportDetails
+	{
+		VkSurfaceCapabilitiesKHR capabilities;
+		std::vector<VkSurfaceFormatKHR> formats;
+		std::vector<VkPresentModeKHR> presentModes;
+
+		bool set = false;
+	};
+
 	class VKSurface
 	{
 	public:
 		VKSurface(Window* window, VkInstance instance);
 		virtual ~VKSurface();
 
-		VkSurfaceKHR getSurface() const { return surface; }
-	private:
-		VkInstance instance;
+		SwapchainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
 
+		VkSurfaceKHR getSurface() const { return surface; }
+
+	private:
 		VkSurfaceKHR surface;
+		SwapchainSupportDetails swapchainSupport;
+
+		VkInstance instance;
 	};
 };
 

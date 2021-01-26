@@ -28,7 +28,7 @@ namespace Prehistoric
 
 		window->setClearColour({ 0.23f, 0.78f, 0.88f, 1.0f });
 
-		Capabilities::getInstance()->QueryCapabilities(window->getContext()->getPhysicalDevice());
+		Capabilities::getInstance()->QueryCapabilities(window->getContext()->getDevices());
 		DeviceProperties properties;
 		properties.ListProperties(*Capabilities::getInstance());
 

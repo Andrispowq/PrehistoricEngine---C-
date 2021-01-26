@@ -1,14 +1,16 @@
 #include "Includes.hpp"
 #include "VKRenderpass.h"
 
+#include "platform/vulkan/framework/swapchain/VKSwapchain.h"
+
 namespace Prehistoric
 {
-	VKRenderpass::VKRenderpass(VKPhysicalDevice* physicalDevice, VkDevice device, VkFormat colourImageFormat)
+	VKRenderpass::VKRenderpass(VKDevice* device, VKSwapchain* swapchain)
 		: device(device)
 	{
 		VkAttachmentDescription colorAttachment = {};
-		colorAttachment.format = colourImageFormat;
-		colorAttachment.samples = physicalDevice->getSampleCount();
+		colorAttachment.format = swapchain->getColourImage()->getImageFormat();
+		colorAttachment.samples = device->getSampleCount();
 		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -21,10 +23,10 @@ namespace Prehistoric
 		colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 		VkAttachmentDescription depthAttachment = {};
-		depthAttachment.format = VKUtil::FindSupportedFormat(physicalDevice->getPhysicalDevice(),
+		depthAttachment.format = swapchain->FindSupportedFormat(
 			{ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL,
 			VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
-		depthAttachment.samples = physicalDevice->getSampleCount();
+		depthAttachment.samples = device->getSampleCount();
 		depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -37,7 +39,7 @@ namespace Prehistoric
 		depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 		VkAttachmentDescription colorAttachmentResolve = {};
-		colorAttachmentResolve.format = colourImageFormat;
+		colorAttachmentResolve.format = swapchain->getColourImage()->getImageFormat();
 		colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
 		colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -79,7 +81,7 @@ namespace Prehistoric
 		renderPassInfo.dependencyCount = 1;
 		renderPassInfo.pDependencies = &dependency;
 
-		if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderpass) != VK_SUCCESS)
+		if (vkCreateRenderPass(device->getDevice(), &renderPassInfo, nullptr, &renderpass) != VK_SUCCESS)
 		{
 			PR_LOG_RUNTIME_ERROR("Failed to create render pass!\n");
 		}
@@ -87,7 +89,7 @@ namespace Prehistoric
 
 	VKRenderpass::~VKRenderpass()
 	{
-		vkDestroyRenderPass(device, renderpass, nullptr);
+		vkDestroyRenderPass(device->getDevice(), renderpass, nullptr);
 	}
 
 	void VKRenderpass::BeginRenderpass(VKCommandBuffer* commandBuffer, VKFramebuffer* framebuffer, VkExtent2D swapchainExtent, Vector4f clearColour)

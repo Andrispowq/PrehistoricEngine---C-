@@ -14,6 +14,7 @@
 #include "platform/vulkan/rendering/synchronisation/VKSemaphore.h"
 #include "platform/vulkan/rendering/synchronisation/VKFence.h"
 #include "platform/vulkan/rendering/renderpass/VKRenderpass.h"
+#include "platform/vulkan/texture/VKImage.h"
 
 namespace Prehistoric
 {
@@ -36,20 +37,25 @@ namespace Prehistoric
 		bool GetNextImageIndex(); //If return false, we should recreate the command buffers, and the renderpass along with the framebuffers
 
 		VkSwapchainKHR getSwapchain() const { return swapchain; }
-		std::vector<VkImage> getSwapchainImages() const { return swapchainImages; }
-		std::vector<VkImageView> getSwapchainImageViews() const { return swapchainImageViews; }
+		std::vector<VKImage*> getSwapchainImages() const { return swapchainImages; }
 
-		VkImageView getColourImageView() { return colourImageView; }
-		VkImageView getDepthImageView() { return depthImageView; }
+		VKImage* getColourImage() { return multisampleColourImage; }
+		VKImage* getDepthImage() { return depthImage; }
 		VkFormat getSwapchainImageFormat() const { return swapchainImageFormat; }
 		VkExtent2D getSwapchainExtent() const { return swapchainExtent; }
 		VKRenderpass* getRenderpass() { return renderpass; }
 
 		void setSurface(VKSurface& surface) { this->surface = &surface; }
 		void setRenderpass(VKRenderpass* renderpass) { this->renderpass = renderpass; }
+
+	public:
+		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+		VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+
 	private:
 		//External
-		VKPhysicalDevice* physicalDevice;
 		VKDevice* device;
 		VKSurface* surface;
 
@@ -61,18 +67,9 @@ namespace Prehistoric
 		VkFormat swapchainImageFormat;
 		VkExtent2D swapchainExtent;
 
-		std::vector<VkImage> swapchainImages;
-		std::vector<VkImageView> swapchainImageViews;
-
-		//For multisampling
-		VkImage colourImage;
-		VkDeviceMemory colourImageMemory;
-		VkImageView colourImageView;
-
-		//Depth buffer
-		VkImage depthImage;
-		VkDeviceMemory depthImageMemory;
-		VkImageView depthImageView;
+		std::vector<VKImage*> swapchainImages;
+		VKImage* multisampleColourImage;
+		VKImage* depthImage;
 
 		//Synchronization
 		std::vector<VKSemaphore*> imageAvailableSemaphores;

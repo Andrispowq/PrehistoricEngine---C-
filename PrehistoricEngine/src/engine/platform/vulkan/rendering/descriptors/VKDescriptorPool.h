@@ -15,7 +15,7 @@ namespace Prehistoric
 	class VKDescriptorPool
 	{
 	public:
-		VKDescriptorPool(VKPhysicalDevice* physicalDevice, VKDevice* device, VKSwapchain* swapchain);
+		VKDescriptorPool(VKDevice* device, VKSwapchain* swapchain);
 		virtual ~VKDescriptorPool();
 
 		void addSet(VKDescriptorSet* set);
@@ -36,12 +36,11 @@ namespace Prehistoric
 
 		inline VkDescriptorPool& getDescriptorPool() { return pool; }
 
-		inline std::pair<uint32_t, uint32_t> getUniformLocation(const std::string& name) { return uniformLocations.find(name)->second; }
+		inline std::pair<uint32_t, uint32_t> getUniformLocation(const std::string& name) const { return uniformLocations.find(name)->second; }
 
 		VKDescriptorPool(const VKDescriptorPool&) = default;
 
 	private:
-		VKPhysicalDevice* physicalDevice;
 		VKDevice* device;
 		VKSwapchain* swapchain;
 

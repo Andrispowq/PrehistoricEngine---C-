@@ -19,10 +19,8 @@ namespace Prehistoric
 		virtual void Bind(uint32_t slot = 0) const override;
 		virtual void Unbind() const override;
 
-		virtual void UploadTextureData(unsigned char* data, ImageFormat format) override;
+		virtual void UploadTextureData(ImageData data) override;
 		virtual void Generate() override {}
-
-		void UploadHDRTextureData(float* data);
 
 		virtual void SamplerProperties(SamplerFilter filter, TextureWrapMode wrapMode, bool generate_mipmaps = true) override;
 		virtual void GenerateMipmaps() override;

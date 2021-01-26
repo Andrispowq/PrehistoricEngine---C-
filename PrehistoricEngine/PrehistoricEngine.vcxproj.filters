@@ -389,9 +389,6 @@
     <ClInclude Include="src\engine\platform\vulkan\framework\device\VKDevice.h">
       <Filter>platform\vulkan\framework\device</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\framework\device\VKPhysicalDevice.h">
-      <Filter>platform\vulkan\framework\device</Filter>
-    </ClInclude>
     <ClInclude Include="src\engine\platform\vulkan\framework\queue\VKQueue.h">
       <Filter>platform\vulkan\framework\queue</Filter>
     </ClInclude>
@@ -722,6 +719,7 @@
     <ClInclude Include="src\engine\prehistoric\core\util\time\Timer.h">
       <Filter>prehistoric\core\util\time</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\texture\VKImage.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -837,9 +835,6 @@
       <Filter>platform\vulkan\framework\context</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\vulkan\framework\device\VKDevice.cpp">
-      <Filter>platform\vulkan\framework\device</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\vulkan\framework\device\VKPhysicalDevice.cpp">
       <Filter>platform\vulkan\framework\device</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\vulkan\framework\queue\VKQueue.cpp">
@@ -1124,5 +1119,6 @@
     <ClCompile Include="src\engine\prehistoric\core\util\time\Timer.cpp">
       <Filter>prehistoric\core\util\time</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\platform\vulkan\texture\VKImage.cpp" />
   </ItemGroup>
 </Project>

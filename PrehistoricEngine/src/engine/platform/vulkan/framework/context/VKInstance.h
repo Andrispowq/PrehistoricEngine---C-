@@ -18,7 +18,7 @@ namespace Prehistoric
 		virtual ~VKInstance();
 
 		VkInstance getInstance() const { return instance; }
-		VKDebugMessenger& getDebugMessenger() { return *messenger; }
+		VKDebugMessenger* getDebugMessenger() const { return messenger.get(); }
 
 		std::vector<const char*> getValidationLayers() const { return validationLayers; }
 	private:
@@ -28,7 +28,7 @@ namespace Prehistoric
 		void ListExtensions() const;
 	private:
 		VkInstance instance;
-		VKDebugMessenger* messenger; //Owned pointer, but optional
+		std::unique_ptr<VKDebugMessenger> messenger; //Owned pointer, but optional
 
 		std::vector<const char*> validationLayers;
 	};

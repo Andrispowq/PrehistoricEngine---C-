@@ -15,8 +15,7 @@ namespace Prehistoric
 		VKContext* context = static_cast<VKContext*>(window->getContext());
 
 		this->surface = context->getSurface();
-		this->physicalDevice = (VKPhysicalDevice*)context->getPhysicalDevice();
-		this->device = (VKDevice*)context->getDevice();
+		this->device = (VKDevice*)context->getDevices();
 
 		this->window = window;
 		this->swapchain = swapchain;

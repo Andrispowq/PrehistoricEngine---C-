@@ -2,6 +2,7 @@
 #include "GLTexture.h"
 
 #include "prehistoric/core/config/FrameworkConfig.h"
+#include "prehistoric/core/resources/loaders/TextureLoader.h"
 
 namespace Prehistoric
 {
@@ -52,26 +53,21 @@ namespace Prehistoric
 		glBindTexture(getTexType(type, multisample), 0);
 	}
 
-	void GLTexture::UploadTextureData(unsigned char* data, ImageFormat format)
+	void GLTexture::UploadTextureData(ImageData data)
 	{
 		if (format == R8G8B8_SRGB || format == R8G8B8_LINEAR)
 		{
-			if ((((int32_t)width) & 3) != 0)
+			if ((((int32_t)data.width) & 3) != 0)
 			{
-				glPixelStorei(GL_UNPACK_ALIGNMENT, 2 - (((int32_t)width) & 1));
+				glPixelStorei(GL_UNPACK_ALIGNMENT, 2 - (((int32_t)data.width) & 1));
 			}
 
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, (void*)data);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, data.width, data.height, 0, GL_RGB, data.type == ImageData::ImageType::HDR ? GL_FLOAT : GL_UNSIGNED_BYTE, (void*)data.ptr.dataUC);
 		}
 		else
 		{
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void*)data);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, data.width, data.height, 0, GL_RGBA, data.type == ImageData::ImageType::HDR ? GL_FLOAT : GL_UNSIGNED_BYTE, (void*)data.ptr.dataUC);
 		}
-	}
-
-	void GLTexture::UploadHDRTextureData(float* data)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGB, GL_FLOAT, data);
 	}
 
 	void GLTexture::SamplerProperties(SamplerFilter filter, TextureWrapMode wrapMode, bool generate_mipmaps)

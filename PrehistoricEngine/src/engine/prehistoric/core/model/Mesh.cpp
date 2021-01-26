@@ -29,7 +29,7 @@ namespace Prehistoric
 		return data;
 	}
 
-	std::vector<uint16_t> Mesh::GetIndexData() const
+	std::vector<uint32_t> Mesh::GetIndexData() const
 	{
 		return indices;
 	}

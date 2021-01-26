@@ -3,10 +3,34 @@
 
 namespace Prehistoric
 {
-	VKBuffer::VKBuffer(VKPhysicalDevice* physicalDevice, VKDevice* device, size_t size, VkBufferUsageFlags buFlags, VkMemoryPropertyFlags mpFlags)
-		: physicalDevice(physicalDevice), device(device), size(size), buFlags(buFlags), mpFlags(mpFlags)
+	VKBuffer::VKBuffer(VKDevice* device, size_t size, VkBufferUsageFlags buFlags, VkMemoryPropertyFlags mpFlags)
+		: device(device), size(size), buFlags(buFlags), mpFlags(mpFlags)
 	{
-		VKUtil::CreateBuffer(physicalDevice->getPhysicalDevice(), device->getDevice(), size, buFlags, mpFlags, buffer, memory);
+		VkBufferCreateInfo bufferInfo = {};
+		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		bufferInfo.size = size;
+		bufferInfo.usage = buFlags;
+		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+		if (vkCreateBuffer(device->getDevice(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
+		{
+			PR_LOG_RUNTIME_ERROR("Failed to create buffer!\n");
+		}
+
+		VkMemoryRequirements memRequirements;
+		vkGetBufferMemoryRequirements(device->getDevice(), buffer, &memRequirements);
+
+		VkMemoryAllocateInfo allocInfo = {};
+		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		allocInfo.allocationSize = memRequirements.size;
+		allocInfo.memoryTypeIndex = VKUtil::FindMemoryType(device->getPhysicalDevice(), memRequirements.memoryTypeBits, mpFlags);
+
+		if (vkAllocateMemory(device->getDevice(), &allocInfo, nullptr, &memory) != VK_SUCCESS)
+		{
+			PR_LOG_RUNTIME_ERROR("Failed to allocate buffer memory!\n");
+		}
+
+		vkBindBufferMemory(device->getDevice(), buffer, memory, 0);
 	}
 
 	VKBuffer::~VKBuffer()
@@ -38,15 +62,39 @@ namespace Prehistoric
 	}
 
 	VKBuffer::VKBuffer(const VKBuffer& other)
-		: physicalDevice(other.physicalDevice), device(other.device), size(other.size), buFlags(other.buFlags), mpFlags(other.mpFlags)
+		: device(other.device), size(other.size), buFlags(other.buFlags), mpFlags(other.mpFlags)
 	{
-		VKUtil::CreateBuffer(physicalDevice->getPhysicalDevice(), device->getDevice(), size, buFlags, mpFlags, buffer, memory);
+		VkBufferCreateInfo bufferInfo = {};
+		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		bufferInfo.size = size;
+		bufferInfo.usage = buFlags;
+		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+		if (vkCreateBuffer(device->getDevice(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
+		{
+			PR_LOG_RUNTIME_ERROR("Failed to create buffer!\n");
+		}
+
+		VkMemoryRequirements memRequirements;
+		vkGetBufferMemoryRequirements(device->getDevice(), buffer, &memRequirements);
+
+		VkMemoryAllocateInfo allocInfo = {};
+		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		allocInfo.allocationSize = memRequirements.size;
+		allocInfo.memoryTypeIndex = VKUtil::FindMemoryType(device->getPhysicalDevice(), memRequirements.memoryTypeBits, mpFlags);
+
+		if (vkAllocateMemory(device->getDevice(), &allocInfo, nullptr, &memory) != VK_SUCCESS)
+		{
+			PR_LOG_RUNTIME_ERROR("Failed to allocate buffer memory!\n");
+		}
+
+		vkBindBufferMemory(device->getDevice(), buffer, memory, 0);
+
 		//VKUtil::CopyBuffer(device, other.buffer, buffer, size);
 	}
 
 	VKBuffer::VKBuffer(VKBuffer&& other) noexcept
 	{
-		this->physicalDevice = other.physicalDevice;
 		this->device = other.device;
 		this->size = other.size;
 		this->buFlags = other.buFlags;
@@ -60,13 +108,37 @@ namespace Prehistoric
 
 	VKBuffer& VKBuffer::operator=(VKBuffer other)
 	{
-		this->physicalDevice = other.physicalDevice;
 		this->device = other.device;
 		this->size = other.size;
 		this->buFlags = other.buFlags;
 		this->mpFlags = other.mpFlags;
 
-		VKUtil::CreateBuffer(physicalDevice->getPhysicalDevice(), device->getDevice(), size, buFlags, mpFlags, buffer, memory);
+		VkBufferCreateInfo bufferInfo = {};
+		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		bufferInfo.size = size;
+		bufferInfo.usage = buFlags;
+		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+		if (vkCreateBuffer(device->getDevice(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
+		{
+			PR_LOG_RUNTIME_ERROR("Failed to create buffer!\n");
+		}
+
+		VkMemoryRequirements memRequirements;
+		vkGetBufferMemoryRequirements(device->getDevice(), buffer, &memRequirements);
+
+		VkMemoryAllocateInfo allocInfo = {};
+		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		allocInfo.allocationSize = memRequirements.size;
+		allocInfo.memoryTypeIndex = VKUtil::FindMemoryType(device->getPhysicalDevice(), memRequirements.memoryTypeBits, mpFlags);
+
+		if (vkAllocateMemory(device->getDevice(), &allocInfo, nullptr, &memory) != VK_SUCCESS)
+		{
+			PR_LOG_RUNTIME_ERROR("Failed to allocate buffer memory!\n");
+		}
+
+		vkBindBufferMemory(device->getDevice(), buffer, memory, 0);
+
 		return *this;
 	}
 };

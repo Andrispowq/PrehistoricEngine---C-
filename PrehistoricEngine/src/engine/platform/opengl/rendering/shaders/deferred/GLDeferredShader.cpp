@@ -27,6 +27,7 @@ namespace Prehistoric
 		AddUniform("cameraPosition");
 		AddUniform("dimension");
 		AddUniform("samples");
+		AddUniform("max_reflection_lod");
 
 		AddUniform("gamma");
 		AddUniform("exposure");
@@ -71,6 +72,7 @@ namespace Prehistoric
 		Window* window = renderer->getWindow();
 		SetUniform("dimension", Vector2f((float)window->getWidth(), (float)window->getHeight()));
 		SetUniformi("samples", FrameworkConfig::windowNumSamples);
+		SetUniformf("max_reflection_lod", EnvironmentMapConfig::prefilterLevels - 1.0f);
 
 		SetUniformf("gamma", EngineConfig::rendererGamma);
 		SetUniformf("exposure", EngineConfig::rendererExposure);

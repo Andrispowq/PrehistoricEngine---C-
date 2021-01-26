@@ -23,10 +23,13 @@ namespace Prehistoric
 		InputInstance.Init(engineLayer->getRenderingEngine()->getWindow());
 
 		PushLayer(engineLayer);
-
-		imGUILayer = new ImGuiLayer();
-		PushOverlay(imGUILayer);
-		imGUILayer->SetDarkThemeColors();
+		
+		if (FrameworkConfig::api == OpenGL)
+		{
+			imGUILayer = new ImGuiLayer();
+			PushOverlay(imGUILayer);
+			imGUILayer->SetDarkThemeColors();
+		}
 
 		frameTime = 1.0 / FrameworkConfig::windowMaxFPS;
 		last_fps = FrameworkConfig::windowMaxFPS;
@@ -34,9 +37,12 @@ namespace Prehistoric
 
 	Application::~Application()
 	{
-		//Making sure that the ImGUI layer is deleted before the core engine, therefore deleting the GLFWwindow which is needed by ImGUI
-		layerStack.PopOverlay(imGUILayer);
-		delete imGUILayer;
+		if (FrameworkConfig::api == OpenGL)
+		{
+			//Making sure that the ImGUI layer is deleted before the core engine, therefore deleting the GLFWwindow which is needed by ImGUI
+			layerStack.PopOverlay(imGUILayer);
+			delete imGUILayer;
+		}
 	}
 
 	void Application::Run()
@@ -91,14 +97,15 @@ namespace Prehistoric
 
 				for (auto it = layerStack.rbegin(); it != layerStack.rend(); ++it)
 				{
-					(*it)->Update((float)frameTime);
+					(*it)->Update((float)/*passedTime / NANOSECOND*/frameTime);
 				}
 
 				if (frameCounter >= NANOSECOND)
 				{
 					last_fps = frames;
+					last_frameTime = /*passedTime / NANOSECOND*/frameTime * 1000.0f;
 					PR_LOG(CYAN, "FPS: %i\n", frames);
-					PR_LOG(CYAN, "Delta time: %f ms\n", frameTime * 1000.0f);
+					PR_LOG(CYAN, "Delta time: %f ms\n", last_frameTime);
 					frames = 0;
 					frameCounter = 0;
 				}
@@ -112,12 +119,15 @@ namespace Prehistoric
 					(*it)->Render();
 				}
 
-				imGUILayer->Begin();
-				for (auto it = layerStack.rbegin(); it != layerStack.rend(); ++it)
+				if (FrameworkConfig::api == OpenGL)
 				{
-					(*it)->ImGUIRender();
+					imGUILayer->Begin();
+					for (auto it = layerStack.rbegin(); it != layerStack.rend(); ++it)
+					{
+						(*it)->ImGUIRender();
+					}
+					imGUILayer->End();
 				}
-				imGUILayer->End();
 
 				engineLayer->EndRendering();
 

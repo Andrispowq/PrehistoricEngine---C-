@@ -10,8 +10,7 @@ namespace Prehistoric
 	VKMeshVertexBuffer::VKMeshVertexBuffer(Window* window, const Mesh& mesh)
 		: MeshVertexBuffer(window, mesh), vertexBuffer(nullptr), indexBuffer(nullptr)
 	{
-		this->physicalDevice = reinterpret_cast<VKPhysicalDevice*>(window->getContext()->getPhysicalDevice());
-		this->device = reinterpret_cast<VKDevice*>(window->getContext()->getDevice());
+		this->device = reinterpret_cast<VKDevice*>(window->getContext()->getDevices());
 
 		this->swapchain = (VKSwapchain*)window->getSwapchain();
 
@@ -19,19 +18,19 @@ namespace Prehistoric
 
 		//Building mesh data
 		VkDeviceSize vBufferSize = mesh.getVertices().size() * Vertex::getSize();
-		VkDeviceSize iBufferSize = mesh.getIndices().size() * sizeof(uint16_t);
+		VkDeviceSize iBufferSize = mesh.getIndices().size() * sizeof(uint32_t);
 
-		this->vertexBuffer = std::make_unique<VKBuffer>(physicalDevice, device, vBufferSize,
-			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		this->indexBuffer = std::make_unique<VKBuffer>(physicalDevice, device, iBufferSize,
-			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		this->vertexBuffer = std::make_unique<VKBuffer>(device, vBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		this->indexBuffer = std::make_unique<VKBuffer>(device, iBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
 		std::vector<float> vData = mesh.GetVertexData();
-		std::vector<uint16_t> iData = mesh.GetIndexData();
+		std::vector<uint32_t> iData = mesh.GetIndexData();
 
 		//Creation of the vertex buffer
-		std::unique_ptr<VKBuffer> stagingBuffer = std::make_unique<VKBuffer>(physicalDevice, device, vBufferSize,
-			VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		std::unique_ptr<VKBuffer> stagingBuffer = std::make_unique<VKBuffer>(device, vBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
 		stagingBuffer->MapMemory();
 		stagingBuffer->Store(vData.data());
@@ -40,8 +39,8 @@ namespace Prehistoric
 		vertexBuffer->Copy(stagingBuffer.get());
 
 		//Creation of index buffer
-		stagingBuffer = std::make_unique<VKBuffer>(physicalDevice, device, iBufferSize,
-			VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		stagingBuffer = std::make_unique<VKBuffer>(device, iBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
 		stagingBuffer->MapMemory();
 		stagingBuffer->Store(iData.data());
@@ -57,7 +56,7 @@ namespace Prehistoric
 		VkDeviceSize offsets[] = { 0 };
 
 		vkCmdBindVertexBuffers(buffer->getCommandBuffer(), 0, 1, &vertexBuffer->getBuffer(), offsets);
-		vkCmdBindIndexBuffer(buffer->getCommandBuffer(), indexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
+		vkCmdBindIndexBuffer(buffer->getCommandBuffer(), indexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32);
 	}
 
 	void VKMeshVertexBuffer::Draw(CommandBuffer* commandBuffer) const

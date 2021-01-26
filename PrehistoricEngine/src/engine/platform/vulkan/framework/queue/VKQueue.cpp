@@ -3,8 +3,12 @@
 
 namespace Prehistoric
 {
-	void VKQueue::SetupQueue(VkDevice device, uint32_t family)
+	VKQueue::VKQueue(VkDevice device, uint32_t family)
 	{
 		vkGetDeviceQueue(device, family, 0, &queue);
+	}
+
+	VKQueue::~VKQueue()
+	{
 	}
 };

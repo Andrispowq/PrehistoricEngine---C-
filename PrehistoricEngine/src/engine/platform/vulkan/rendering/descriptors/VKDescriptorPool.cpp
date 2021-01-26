@@ -3,8 +3,8 @@
 
 namespace Prehistoric
 {
-	VKDescriptorPool::VKDescriptorPool(VKPhysicalDevice* physicalDevice, VKDevice* device, VKSwapchain* swapchain)
-		: physicalDevice(physicalDevice), device(device), swapchain(swapchain)
+	VKDescriptorPool::VKDescriptorPool(VKDevice* device, VKSwapchain* swapchain)
+		: device(device), swapchain(swapchain)
 	{
 	}
 
@@ -292,7 +292,7 @@ namespace Prehistoric
 		}
 		else
 		{
-			VKBuffer* buffer = new VKBuffer(physicalDevice, device, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+			VKBuffer* buffer = new VKBuffer(device, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 			_binding->setBuffer(buffer);
 		}
 

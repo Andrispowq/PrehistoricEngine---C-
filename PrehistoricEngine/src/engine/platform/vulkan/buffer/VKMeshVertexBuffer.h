@@ -31,7 +31,6 @@ namespace Prehistoric
 		std::unique_ptr<VKBuffer> vertexBuffer;
 		std::unique_ptr<VKBuffer> indexBuffer;
 
-		VKPhysicalDevice* physicalDevice;
 		VKDevice* device;
 		VKSwapchain* swapchain;
 	};

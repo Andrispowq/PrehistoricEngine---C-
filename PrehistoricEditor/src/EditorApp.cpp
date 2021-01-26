@@ -73,7 +73,6 @@ EditorApp::EditorApp()
 	obj2->setUpdateFunction([](GameObject* obj, float delta)
 	{
 		Vector3f moveDir = { 1.0f, 0.0f, 0.0f };
-		PR_LOG_MESSAGE("Deltatime: %f\n", delta);
 		obj->Move(moveDir * delta);
 	});
 

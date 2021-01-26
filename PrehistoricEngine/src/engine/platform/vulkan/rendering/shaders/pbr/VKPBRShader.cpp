@@ -67,7 +67,7 @@ namespace Prehistoric
 		Material* material = ((RendererComponent*)object->GetComponent(RENDERER_COMPONENT))->getMaterial();
 
 		//Offset values are copied from shaders
-		SetUniform("m_transform", object->getWorldTransform().getTransformationMatrix(), instance_index);
+		SetUniform("m_transform", object->getWorldTransform().getTransformationMatrix(), 0, instance_index);
 
 		SetUniform("material", material->getVector4f(MROT), 0, instance_index);
 		SetUniform("material", material->getVector3f(COLOUR), 16, instance_index);
@@ -77,6 +77,7 @@ namespace Prehistoric
 		SetTexture(ALBEDO_MAP, material->getTexture(ALBEDO_MAP), instance_index);
 		SetTexture(NORMAL_MAP, material->getTexture(NORMAL_MAP), instance_index);
 		SetTexture(MROT_MAP, material->getTexture(MROT_MAP), instance_index);
+		SetTexture(EMISSION_MAP, material->getTexture(EMISSION_MAP), instance_index);
 
 		BindSets(commandBuffer, 1, 2, instance_index);
 	}

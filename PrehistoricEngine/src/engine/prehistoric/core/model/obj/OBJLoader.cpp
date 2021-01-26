@@ -23,7 +23,7 @@ namespace Prehistoric
 			}
 
 			std::vector<Vertex> vertices;
-			std::vector<uint16_t> indices;
+			std::vector<uint32_t> indices;
 			std::vector<Shape> mesh_shapes;
 
 			std::unordered_map<size_t, uint32_t> uniqueVertexIDs{};
@@ -87,9 +87,9 @@ namespace Prehistoric
 
 			for (size_t i = 0; i < indices.size() / 3; i++)
 			{
-				uint16_t i0 = indices[i * 3 + 0];
-				uint16_t i1 = indices[i * 3 + 1];
-				uint16_t i2 = indices[i * 3 + 2];
+				uint32_t i0 = indices[i * 3 + 0];
+				uint32_t i1 = indices[i * 3 + 1];
+				uint32_t i2 = indices[i * 3 + 2];
 
 				Vertex& v0 = vertices[i0];
 				Vertex& v1 = vertices[i1];

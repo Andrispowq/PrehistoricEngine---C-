@@ -36,6 +36,7 @@ uniform float gamma;
 uniform float exposure;
 
 uniform vec2 dimension;
+uniform float max_reflection_lod;
 
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 float GeometrySchlickGGX(float NdotV, float roughness);
@@ -134,8 +135,7 @@ void main()
     vec3 irradiance = texture(irradianceMap, N).rgb;
     vec3 diffuse = irradiance * albedo;
 
-    const float MAX_REFLECTION_LOD = 4.0;
-    float lod = roughness * MAX_REFLECTION_LOD;
+    float lod = roughness * max_reflection_lod;
     vec3 prefilteredColour = textureLod(prefilterMap, R, lod).rgb;
     vec2 envBRDF = texture(brdfLUT, vec2(max(dot(N, V), 0.01), roughness)).rg;
     vec3 specular = prefilteredColour * (F * envBRDF.x + envBRDF.y);
