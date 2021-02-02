@@ -76,6 +76,7 @@ namespace Prehistoric
 		VkPipelineShaderStageCreateInfo* shaderStages;
 
 		mutable CommandBuffer* commandBuffer;
+		mutable std::vector<bool> texUpdated;
 
 		//Pipeline data
 		VkPipelineLayout pipelineLayout;

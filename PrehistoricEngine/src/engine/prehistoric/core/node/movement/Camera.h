@@ -39,6 +39,7 @@ namespace Prehistoric
         inline const Matrix4f& getViewProjectionMatrix() const { return viewProjectionMatrix; }
 
         inline void setSpeedControl(InputData data) { this->speedControl = data; }
+        inline void setPosition(Vector3f pos) { this->position = pos; }
 
         bool isChanged() const { return cameraMoved || cameraRotated; }
     private:

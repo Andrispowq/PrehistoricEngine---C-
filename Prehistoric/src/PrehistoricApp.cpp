@@ -8,16 +8,31 @@ PrehistoricApp::PrehistoricApp()
 	using namespace Prehistoric;
 
 	GameObject* audio = new GameObject();
-	audio->AddComponent(AUDIO_COMPONENT, new AudioComponent("res/sounds/_SolidGround.wav", 57.0f));
-	//audio->GetComponent<AudioComponent>()->PreUpdate(engineLayer);
+	audio->AddComponent(AUDIO_COMPONENT, new AudioComponent("res/sounds/_Closer.wav", 75.0f));
+	audio->GetComponent<AudioComponent>()->PreUpdate(engineLayer);
 
-	//engineLayer->getRootObject()->AddChild("audio", audio);
+	engineLayer->getRootObject()->AddChild("audio", audio);
 
-	//engineLayer->getAudioEngine()->Update(0.0f);
+	engineLayer->getAudioEngine()->Update(0.0f);
 	
 	GameObject* sceneRoot = new GameObject();
 	scene = std::make_unique<PrehistoricScene>("scene0", sceneRoot, engineLayer->getRenderingEngine()->getWindow(),
 		engineLayer->getRenderingEngine()->getCamera(), engineLayer->getAssetManager(), "res/world/testLevel.wrld");
+
+	Camera* cam = engineLayer->getRenderingEngine()->getCamera();
+
+	if (FrameworkConfig::api == OpenGL)
+	{
+		cam->setPosition(Vector3f(-178, 102, -47));//Vector3f(0, 5, -2));;
+		cam->RotateY(-80);
+		cam->RotateX(30);
+	}
+	else
+	{
+		cam->setPosition(Vector3f(0, 5, -2));
+	}
+
+	cam->Update(engineLayer->getRenderingEngine()->getWindow(), 0.0f);
 
 	engineLayer->SetScene(scene.get());
 

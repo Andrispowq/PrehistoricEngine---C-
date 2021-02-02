@@ -63,6 +63,11 @@ namespace Prehistoric
 		Texture* texture = nullptr;
 		ImageData data = LoadTextureData(path);
 
+		if (data.type == ImageData::ImageType::HDR)
+		{
+			data.channels = 4; //We use compute shaders with HDR textures, and it currently only works with RGBA textures
+		}
+
 		if (FrameworkConfig::api == OpenGL)
 		{
 			texture = new GLTexture(data.width, data.height);
@@ -136,6 +141,11 @@ namespace Prehistoric
 			TextureLoaderExtra* ext = dynamic_cast<TextureLoaderExtra*>(extra);
 			ImageData data_ = images[i];
 
+			if (data_.type == ImageData::ImageType::HDR)
+			{
+				data_.channels = 4; //We use compute shaders with HDR textures, and it currently only works with RGBA textures
+			}
+
 			if (FrameworkConfig::api == OpenGL)
 			{
 				texture = new GLTexture(data_.width, data_.height);
@@ -168,6 +178,11 @@ namespace Prehistoric
 	{
 		Texture* texture = nullptr;
 		ImageData data = LoadTextureData(path);
+
+		if (data.type == ImageData::ImageType::HDR)
+		{
+			data.channels = 4; //We use compute shaders with HDR textures, and it currently only works with RGBA textures
+		}
 
 		if (FrameworkConfig::api == OpenGL)
 		{

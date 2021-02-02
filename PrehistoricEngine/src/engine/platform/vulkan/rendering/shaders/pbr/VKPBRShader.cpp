@@ -32,10 +32,25 @@ namespace Prehistoric
 		SetUniform("camera", camera->getProjectionMatrix(), 64, instance_index);
 		SetUniform("camera", camera->getPosition(), 128, instance_index);
 
-		SetUniformi("lightConditions", EngineConfig::rendererHighDetailRange, 0, instance_index);
+		struct LightCond
+		{
+			int highDetailRange, lights;
+			float gamma, exposure;
+		} lightCond;
+
+		lightCond.highDetailRange = EngineConfig::rendererHighDetailRange;
+		lightCond.lights = (uint32_t)lights.size() >= EngineConfig::lightsMaxNumber ? EngineConfig::lightsMaxNumber : (uint32_t)lights.size();
+		lightCond.gamma = EngineConfig::rendererGamma;
+		lightCond.exposure = EngineConfig::rendererExposure;
+
+		/*SetUniformi("lightConditions", EngineConfig::rendererHighDetailRange, 0, instance_index);
 		SetUniformi("lightConditions", (uint32_t)lights.size() >= EngineConfig::lightsMaxNumber ? EngineConfig::lightsMaxNumber : (uint32_t)lights.size(), 4, instance_index);
 		SetUniformf("lightConditions", EngineConfig::rendererGamma, 8, instance_index);
-		SetUniformf("lightConditions", EngineConfig::rendererExposure, 12, instance_index);
+		SetUniformf("lightConditions", EngineConfig::rendererExposure, 12, instance_index);*/
+		
+		SetUniform("lightConditions", &lightCond, sizeof(LightCond), 0, instance_index);
+
+		void* lightData = new char[Vector4f::size() * 3 * EngineConfig::lightsMaxNumber];
 
 		size_t baseOffset = EngineConfig::lightsMaxNumber * Vector4f::size();
 
@@ -46,18 +61,30 @@ namespace Prehistoric
 			if (i < lights.size())
 			{
 				Light* light = lights[i];
+				
+				*(Vector4f*)(uintptr_t(lightData) + (baseOffset * 0 + currentOffset)) = Vector4f(light->getParent()->getWorldTransform().getPosition(), 0);
+				*(Vector4f*)(uintptr_t(lightData) + (baseOffset * 1 + currentOffset)) = Vector4f(light->getColour(), 0);
+				*(Vector4f*)(uintptr_t(lightData) + (baseOffset * 2 + currentOffset)) = Vector4f(light->getIntensity(), 0);
 
-				SetUniform("lights", Vector4f(light->getParent()->getWorldTransform().getPosition(), 0), baseOffset * 0 + currentOffset, instance_index);
+				/*SetUniform("lights", Vector4f(light->getParent()->getWorldTransform().getPosition(), 0), baseOffset * 0 + currentOffset, instance_index);
 				SetUniform("lights", Vector4f(light->getColour(), 0), baseOffset * 1 + currentOffset, instance_index);
-				SetUniform("lights", Vector4f(light->getIntensity(), 0), baseOffset * 2 + currentOffset, instance_index);
+				SetUniform("lights", Vector4f(light->getIntensity(), 0), baseOffset * 2 + currentOffset, instance_index);*/
 			}
 			else
 			{
-				SetUniform("lights", Vector4f(), baseOffset * 0 + currentOffset, instance_index);
+				*(Vector4f*)(uintptr_t(lightData) + (baseOffset * 0 + currentOffset)) = Vector4f();
+				*(Vector4f*)(uintptr_t(lightData) + (baseOffset * 1 + currentOffset)) = Vector4f();
+				*(Vector4f*)(uintptr_t(lightData) + (baseOffset * 2 + currentOffset)) = Vector4f();
+
+				/*SetUniform("lights", Vector4f(), baseOffset * 0 + currentOffset, instance_index);
 				SetUniform("lights", Vector4f(), baseOffset * 1 + currentOffset, instance_index);
-				SetUniform("lights", Vector4f(), baseOffset * 2 + currentOffset, instance_index);
+				SetUniform("lights", Vector4f(), baseOffset * 2 + currentOffset, instance_index);*/
 			}
 		}
+
+		SetUniform("lights", lightData, Vector4f::size() * 3 * EngineConfig::lightsMaxNumber, 0, instance_index);
+
+		delete[] lightData;
 
 		BindSets(commandBuffer, 0, 1, instance_index);
 	}
@@ -69,15 +96,20 @@ namespace Prehistoric
 		//Offset values are copied from shaders
 		SetUniform("m_transform", object->getWorldTransform().getTransformationMatrix(), 0, instance_index);
 
-		SetUniform("material", material->getVector4f(MROT), 0, instance_index);
-		SetUniform("material", material->getVector3f(COLOUR), 16, instance_index);
-		SetUniform("material", material->getVector3f(EMISSION), 32, instance_index);
-		SetUniformi("material", material->exists(NORMAL_MAP), 48, instance_index);
+		if (!texUpdated[instance_index])
+		{
+			SetUniform("material", material->getVector4f(MROT), 0, instance_index);
+			SetUniform("material", material->getVector3f(COLOUR), 16, instance_index);
+			SetUniform("material", material->getVector3f(EMISSION), 32, instance_index);
+			SetUniformi("material", material->exists(NORMAL_MAP), 48, instance_index);
 
-		SetTexture(ALBEDO_MAP, material->getTexture(ALBEDO_MAP), instance_index);
-		SetTexture(NORMAL_MAP, material->getTexture(NORMAL_MAP), instance_index);
-		SetTexture(MROT_MAP, material->getTexture(MROT_MAP), instance_index);
-		SetTexture(EMISSION_MAP, material->getTexture(EMISSION_MAP), instance_index);
+			SetTexture(ALBEDO_MAP, material->getTexture(ALBEDO_MAP), instance_index);
+			SetTexture(NORMAL_MAP, material->getTexture(NORMAL_MAP), instance_index);
+			SetTexture(MROT_MAP, material->getTexture(MROT_MAP), instance_index);
+			SetTexture(EMISSION_MAP, material->getTexture(EMISSION_MAP), instance_index);
+
+			texUpdated[instance_index] = true;
+		}
 
 		BindSets(commandBuffer, 1, 2, instance_index);
 	}

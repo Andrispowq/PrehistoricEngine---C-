@@ -156,37 +156,14 @@ void main()
 	
 	vec3 ambient = (kD * diffuse + specular) * occlusion;*/
 	
-	vec3 ambient = vec3(0.03) * albedoColour;
+	vec3 ambient = vec3(0.04) * albedoColour;
 
 	vec3 colour = ambient + Lo + max(emission * emissionFactor, 0.0);
 	
 	colour = 1.0 - exp(-colour * exposure);
 	colour = pow(colour, vec3(1.0 / gamma));
 	
-	vec3 L = normalize(light_position[0] - position_FS);
-    vec3 H = normalize(V + L);
-    float dist_ = length(light_position[0] - position_FS);
-    float attenuation = 1 / pow(dist_, 2);
-    vec3 radiance = lights.colour[0].rgb * lights.intensity[0].rgb * attenuation; 
-    
-    // cook-torrance brdf
-    float NDF = DistributionGGX(N, H, roughness);
-    float G = GeometrySmith(N, V, L, roughness);
-    vec3 F = FresnelSchlick(max(dot(H, V), 0), F0);
-    
-    vec3 kS = F;
-    vec3 kD = vec3(1) - kS;
-    kD *= 1 - metallic;
-    
-    vec3 numerator = NDF * G * F;
-    float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
-    vec3 specular = numerator / max(denominator, 0.001);
-        
-    // add to outgoing radiance Lo
-    float NdotL = max(dot(N, L), 0.0);
-    Lo += (kD * albedoColour / PI + specular) * radiance * NdotL;
-	
-	outColour = vec4(vec3(NDF), 1);
+	outColour = vec4(colour, 1);
 }
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)
@@ -197,7 +174,7 @@ float DistributionGGX(vec3 N, vec3 H, float roughness)
     float NdotH2 = NdotH * NdotH;
 	
     float num = a2;
-    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    float denom = NdotH2 * (a2 - 1.0) + 1.0;
     denom = PI * denom * denom;
 	
     return num / denom;

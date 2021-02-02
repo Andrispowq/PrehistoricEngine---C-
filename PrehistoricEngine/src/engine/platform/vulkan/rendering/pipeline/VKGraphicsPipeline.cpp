@@ -18,8 +18,11 @@ namespace Prehistoric
 	{
 		VKPipeline::BindPipeline(buffer);
 
-		vkCmdBindPipeline(((VKCommandBuffer*)buffer)->getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
-		vbo->Bind(buffer);
+		if (buffer)
+		{
+			vkCmdBindPipeline(((VKCommandBuffer*)buffer)->getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+			vbo->Bind(buffer);
+		}
 	}
 
 	void VKGraphicsPipeline::RenderPipeline() const

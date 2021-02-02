@@ -55,18 +55,18 @@ namespace Prehistoric
 
 	void GLTexture::UploadTextureData(ImageData data)
 	{
-		if (format == R8G8B8_SRGB || format == R8G8B8_LINEAR)
+		if (data.channels == 3)
 		{
 			if ((((int32_t)data.width) & 3) != 0)
 			{
 				glPixelStorei(GL_UNPACK_ALIGNMENT, 2 - (((int32_t)data.width) & 1));
 			}
 
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, data.width, data.height, 0, GL_RGB, data.type == ImageData::ImageType::HDR ? GL_FLOAT : GL_UNSIGNED_BYTE, (void*)data.ptr.dataUC);
+			glTexImage2D(GL_TEXTURE_2D, 0, data.type == ImageData::ImageType::HDR ? GL_RGB32F : GL_RGB, data.width, data.height, 0, GL_RGB, data.type == ImageData::ImageType::HDR ? GL_FLOAT : GL_UNSIGNED_BYTE, (void*)data.ptr.dataUC);
 		}
 		else
 		{
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, data.width, data.height, 0, GL_RGBA, data.type == ImageData::ImageType::HDR ? GL_FLOAT : GL_UNSIGNED_BYTE, (void*)data.ptr.dataUC);
+			glTexImage2D(GL_TEXTURE_2D, 0, data.type == ImageData::ImageType::HDR ? GL_RGBA32F : GL_RGBA, data.width, data.height, 0, data.type == ImageData::ImageType::HDR ? GL_RGB : GL_RGBA, data.type == ImageData::ImageType::HDR ? GL_FLOAT : GL_UNSIGNED_BYTE, (void*)data.ptr.dataUC);
 		}
 	}
 

@@ -8,7 +8,12 @@ namespace Prehistoric
 {
 	void GLCapabilities::QueryCapabilities(void* physicalDevice)
 	{
-		physicalDeviceCaps.name = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+		std::string name;
+		name += reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+		name += " - ";
+		name += reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+
+		physicalDeviceCaps.name = name;
 		physicalDeviceCaps.discrete = true;
 
 		std::string version = reinterpret_cast<const char*>(glGetString(GL_VERSION));

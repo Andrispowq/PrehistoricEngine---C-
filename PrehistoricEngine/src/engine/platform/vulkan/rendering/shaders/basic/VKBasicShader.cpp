@@ -51,7 +51,8 @@ namespace Prehistoric
 			}
 		}
 
-		BindSets(commandBuffer, 0, 1, instance_index);
+		if (commandBuffer)
+			BindSets(commandBuffer, 0, 1, instance_index);
 	}
 
 	void VKBasicShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const
@@ -66,6 +67,7 @@ namespace Prehistoric
 		SetUniform("material", material->getVector3f(COLOUR), instance_index);
 		SetUniform("material", material->getVector4f(MROT), Vector4f::size(), instance_index);
 
-		BindSets(commandBuffer, 1, 1, instance_index);
+		if (commandBuffer)
+			BindSets(commandBuffer, 1, 1, instance_index);
 	}
 };

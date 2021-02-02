@@ -16,6 +16,10 @@ EditorApp::EditorApp()
 	AssetManager* man = manager->getAssetManager();
 	Window* window = engineLayer->getRenderingEngine()->getWindow();
 	GameObject* root = engineLayer->getRootObject();
+	Camera* cam = engineLayer->getRenderingEngine()->getCamera();
+
+	cam->setPosition(Vector3f(0, 5, -2));
+	cam->Update(engineLayer->getRenderingEngine()->getWindow(), 0.0f);
 
 	AudioComponent* startupSound;
 	GameObject* start = new GameObject;

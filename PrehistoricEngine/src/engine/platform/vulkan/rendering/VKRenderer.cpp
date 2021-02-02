@@ -106,18 +106,20 @@ namespace Prehistoric
 		}
 
 		uint32_t index = swapchain->getAquiredImageIndex();
+		VKCommandBuffer* buffer = commandPool->getCommandBuffer(index);
 
-		commandPool->getCommandBuffer(index)->BindBuffer();
-		renderpass->BeginRenderpass(commandPool->getCommandBuffer(index), primaryFramebuffers[index].get(), swapchain->getSwapchainExtent(), swapchain->getClearColour());
+		buffer->BindBuffer();
+		renderpass->BeginRenderpass(buffer, primaryFramebuffers[index].get(), swapchain->getSwapchainExtent(), swapchain->getClearColour());
 	}
 
 	void VKRenderer::EndRendering()
 	{
 		VKSwapchain* swapchain = (VKSwapchain*)window->getSwapchain();
 		uint32_t index = swapchain->getAquiredImageIndex();
+		VKCommandBuffer* buffer = commandPool->getCommandBuffer(index);
 
-		renderpass->EndRenderpass(commandPool->getCommandBuffer(index));
-		commandPool->getCommandBuffer(index)->UnbindBuffer();
+		renderpass->EndRenderpass(buffer);
+		buffer->UnbindBuffer();
 
 		window->Render(commandPool->getCommandBuffer(index));
 
@@ -130,7 +132,9 @@ namespace Prehistoric
 
 	void VKRenderer::Render()
 	{
-		CommandBuffer* buffer = (CommandBuffer*)commandPool->getCommandBuffer(window->getSwapchain()->getAquiredImageIndex());
+		VKSwapchain* swapchain = (VKSwapchain*)window->getSwapchain();
+		uint32_t index = swapchain->getAquiredImageIndex();
+		VKCommandBuffer* buffer = commandPool->getCommandBuffer(index);
 
 		for (auto pipeline : models_3d)
 		{
@@ -159,6 +163,7 @@ namespace Prehistoric
 
 			for (size_t i = 0; i < pipeline.second.size(); i++)
 			{
+				pl->getShader()->UpdateObjectUniforms(pipeline.second[i]->getParent());
 				pipeline.second[i]->BatchRender((uint32_t)i);
 			}
 
@@ -179,5 +184,71 @@ namespace Prehistoric
 
 			pl->UnbindPipeline();
 		}
+	}
+
+	void VKRenderer::BuildCommandBuffers()
+	{
+		VKSwapchain* swapchain = (VKSwapchain*)window->getSwapchain();
+
+		for (size_t i = 0; i < swapchain->getSwapchainImages().size(); i++)
+		{
+			VKCommandBuffer* buffer = commandPool->getCommandBuffer((int)i);
+
+			buffer->BindBuffer();
+			renderpass->BeginRenderpass(buffer, primaryFramebuffers[i].get(), swapchain->getSwapchainExtent(), swapchain->getClearColour());
+
+			for (auto pipeline : models_3d)
+			{
+				Pipeline* pl = pipeline.first;
+
+				pl->BindPipeline(buffer);
+				pl->getShader()->UpdateShaderUniforms(camera, lights);
+				pl->getShader()->UpdateSharedUniforms(pipeline.second[0]->getParent()); //Safe -> there is at least 1 element in the array
+
+				for (size_t i = 0; i < pipeline.second.size(); i++)
+				{
+					pipeline.second[i]->BatchRender((uint32_t)i);
+				}
+
+				pl->UnbindPipeline();
+			}
+
+			//TODO: enable alpha blending
+			for (auto pipeline : models_transparency)
+			{
+				Pipeline* pl = pipeline.first;
+
+				pl->BindPipeline(buffer);
+				pl->getShader()->UpdateShaderUniforms(camera, lights);
+				pl->getShader()->UpdateSharedUniforms(pipeline.second[0]->getParent()); //Safe -> there is at least 1 element in the array
+
+				for (size_t i = 0; i < pipeline.second.size(); i++)
+				{
+					pipeline.second[i]->BatchRender((uint32_t)i);
+				}
+
+				pl->UnbindPipeline();
+			}
+
+			//TODO: disable alpha blending and depth testing
+			for (auto pipeline : models_2d)
+			{
+				Pipeline* pl = pipeline.first;
+
+				pl->BindPipeline(buffer);
+
+				for (size_t i = 0; i < pipeline.second.size(); i++)
+				{
+					pipeline.second[i]->BatchRender((uint32_t)i);
+				}
+
+				pl->UnbindPipeline();
+			}
+
+			renderpass->EndRenderpass(buffer);
+			buffer->UnbindBuffer();
+		}
+
+		commandBuffersReady = true;
 	}
 };

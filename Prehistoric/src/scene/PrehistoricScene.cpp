@@ -74,11 +74,6 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 				root->AddChild(std::string("obj" + std::to_string(x) + std::to_string(y)), obj);
 			}
 		}
-
-		GameObject* light2 = new GameObject();
-		light2->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0, 0), Vector3f(10000.0f)));
-		light2->Move({ -10, 40, 0 });
-		root->AddChild("l", light2);
 	}
 	else
 	{

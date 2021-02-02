@@ -22,12 +22,16 @@ namespace Prehistoric
 
 		virtual void Render() override;
 
+		void BuildCommandBuffers();
+
 		virtual CommandBuffer* getDrawCommandBuffer() const { return (CommandBuffer*)commandPool->getCommandBuffer(window->getSwapchain()->getAquiredImageIndex()); }
 	private:
 		std::unique_ptr<VKCommandPool> commandPool;
 		std::unique_ptr<VKRenderpass> renderpass;
 
 		std::vector<std::unique_ptr<VKFramebuffer>> primaryFramebuffers;
+
+		bool commandBuffersReady = false;
 	};
 };
 
