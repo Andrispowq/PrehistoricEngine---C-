@@ -1,9 +1,9 @@
-[19:46:56]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(), path: res/textures/logo.png: 0.6528ms
-[19:46:56]: Time elapsed executing function Prehistoric::OBJLoader::LoadMesh(), path: res/models/quad.obj: 0.7838ms
-[19:47:1]: Time elapsed executing function Prehistoric::OBJLoader::LoadMesh(), path: res/models/sphere.obj: 4566.09ms
-[19:47:1]: Time elapsed executing function Prehistoric::OBJLoader::LoadMesh(), path: res/models/cube.obj: 3.6477ms
-[19:47:2]: Time elapsed executing function TextureLoader::LoadResources() for 6 jobs: 1119.38ms
-[19:47:2]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(), path: res/textures/default.png: 4.5534ms
-[19:47:2]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(), path: res/textures/oakFloor/oakFloor_DIF.png: 183.002ms
-[19:47:3]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(), path: res/textures/oakFloor/oakFloor_NRM.png: 203.928ms
-[19:47:3]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(), path: res/textures/oakFloor/oakFloor_MROT.png: 407.59ms
+[9:33:23]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(), path: res/textures/logo.png: 0.5675ms
+[9:33:23]: Time elapsed executing function Prehistoric::OBJLoader::LoadMesh(), path: res/models/quad.obj: 0.8293ms
+[9:33:28]: Time elapsed executing function Prehistoric::OBJLoader::LoadMesh(), path: res/models/sphere.obj: 4520.66ms
+[9:33:28]: Time elapsed executing function Prehistoric::OBJLoader::LoadMesh(), path: res/models/cube.obj: 3.085ms
+[9:33:29]: Time elapsed executing function TextureLoader::LoadResources() for 6 jobs: 1138.23ms
+[9:33:29]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(), path: res/textures/default.png: 4.573ms
+[9:33:29]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(), path: res/textures/oakFloor/oakFloor_DIF.png: 185.488ms
+[9:33:29]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(), path: res/textures/oakFloor/oakFloor_NRM.png: 205.182ms
+[9:33:30]: Time elapsed executing function Prehistoric::TextureLoader::LoadTextureData(), path: res/textures/oakFloor/oakFloor_MROT.png: 410.566ms

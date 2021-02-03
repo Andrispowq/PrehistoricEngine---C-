@@ -11,9 +11,11 @@ namespace Prehistoric
 	struct QueueFamilyIndices
 	{
 		uint32_t graphicsFamily;
+		uint32_t computeFamily;
 		uint32_t presentFamily;
 
 		bool hasGraphicsFamily;
+		bool hasComputeFamily;
 		bool hasPresentFamily;
 	};
 
@@ -30,6 +32,7 @@ namespace Prehistoric
 		VkDevice& getDevice() { return device; }
 
 		VKQueue& getGraphicsQueue() { return *graphicsQueue; }
+		VKQueue& getComputeQueue() { return *computeQueue; }
 		VKQueue& getPresentQueue() { return *presentQueue; }
 
 		std::vector<const char*> getDeviceExtensions() { return deviceExtensions; }
@@ -52,6 +55,7 @@ namespace Prehistoric
 		VKSurface* _surface;
 
 		std::unique_ptr<VKQueue> graphicsQueue;
+		std::unique_ptr<VKQueue> computeQueue;
 		std::unique_ptr<VKQueue> presentQueue;
 
 		std::vector<const char*> deviceExtensions;

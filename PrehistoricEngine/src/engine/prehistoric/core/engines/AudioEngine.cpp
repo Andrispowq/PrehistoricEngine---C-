@@ -308,11 +308,11 @@ namespace Prehistoric
     {
         if (channels == 1 && bitsPerSample == 8)
             return AL_FORMAT_MONO8;
-        else if (channels && bitsPerSample == 16)
+        else if (channels == 1 && bitsPerSample == 16)
             return AL_FORMAT_MONO16;
-        else if (channels && bitsPerSample == 8)
+        else if (channels == 2 && bitsPerSample == 8)
             return AL_FORMAT_STEREO8;
-        else if (channels && bitsPerSample == 16)
+        else if (channels == 2 && bitsPerSample == 16)
             return AL_FORMAT_STEREO16;
         else
             return -1;

@@ -131,6 +131,7 @@ namespace Prehistoric
 		}
 
 		graphicsQueue = std::make_unique<VKQueue>(device, indices.graphicsFamily);
+		computeQueue = std::make_unique<VKQueue>(device, indices.computeFamily);
 		presentQueue = std::make_unique<VKQueue>(device, indices.presentFamily);
 	}
 
@@ -233,6 +234,12 @@ namespace Prehistoric
 				indices.hasGraphicsFamily = true;
 			}
 
+			if (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT)
+			{
+				indices.computeFamily = i;
+				indices.hasComputeFamily = true;
+			}
+
 			VkBool32 presentSupport = false;
 			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, _surface->getSurface(), &presentSupport);
 
@@ -242,7 +249,7 @@ namespace Prehistoric
 				indices.hasPresentFamily = true;
 			}
 
-			if (indices.hasGraphicsFamily && indices.hasPresentFamily)
+			if (indices.hasGraphicsFamily && indices.hasPresentFamily && indices.hasComputeFamily)
 			{
 				break;
 			}
