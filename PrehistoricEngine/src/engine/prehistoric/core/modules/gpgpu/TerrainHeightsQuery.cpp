@@ -56,6 +56,7 @@ namespace Prehistoric
 	{
 		manager->removeReference<Pipeline>(pipeline.handle);
 		delete buffer;
+		delete[] heights;
 	}
 
 	void TerrainHeightsQuery::Query(Texture* heightmap)

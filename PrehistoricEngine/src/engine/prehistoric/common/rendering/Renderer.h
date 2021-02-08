@@ -44,8 +44,8 @@ namespace Prehistoric
 		Camera* camera;
 
 		//The rendering context
-		std::unordered_map<Pipeline*, std::vector<RenderableComponent*>> models_3d;
-		std::unordered_map<Pipeline*, std::vector<RenderableComponent*>> models_transparency;
+		std::unordered_map<Pipeline*, std::unordered_map<Material*, std::vector<RenderableComponent*>>> models_3d;
+		std::unordered_map<Pipeline*, std::unordered_map<Material*, std::vector<RenderableComponent*>>> models_transparency;
 		std::unordered_map<Pipeline*, std::vector<RenderableComponent*>> models_2d;
 
 		std::vector<Light*> lights;

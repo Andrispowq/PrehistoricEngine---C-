@@ -117,7 +117,7 @@ namespace Prehistoric
 			return handle;
 		}
 
-		Shader* vb = (Shader*)shaderLoader->LoadResource(true, location, nullptr).value();
+		Shader* vb = (Shader*) shaderLoader->LoadResource(true, location, nullptr).value();
 		size_t han = shader_ID++;
 
 		ShaderHandle handle;

@@ -19,6 +19,7 @@ namespace Prehistoric
 
 	Pipeline::~Pipeline()
 	{
-		manager->removeReference<Shader>(shader.handle);
+		if(shader.pointer != nullptr)
+			manager->removeReference<Shader>(shader.handle);
 	}
 };

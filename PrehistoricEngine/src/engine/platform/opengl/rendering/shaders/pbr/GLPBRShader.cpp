@@ -31,7 +31,7 @@ namespace Prehistoric
 		AddUniform("highDetailRange");
 	}
 
-	void GLPBRShader::UpdateShaderUniforms(Camera* camera, const std::vector<Light*>& lights, uint32_t instance_index) const
+	void GLPBRShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
 	{
 		SetUniform("m_view", camera->getViewMatrix());
 		SetUniform("m_projection", camera->getProjectionMatrix());
@@ -39,12 +39,8 @@ namespace Prehistoric
 		SetUniformi("highDetailRange", EngineConfig::rendererHighDetailRange);
 	}
 
-	void GLPBRShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const
+	void GLPBRShader::UpdateTextureUniforms(Material* material, uint32_t descriptor_index) const
 	{
-		SetUniform(m_transform, object->getWorldTransform().getTransformationMatrix());
-
-		Material* material = static_cast<RendererComponent*>(object->GetComponent(RENDERER_COMPONENT))->getMaterial();
-
 		material->getTexture(ALBEDO_MAP)->Bind(0);
 		SetUniformi(albedoMap, 0);
 		material->getTexture(NORMAL_MAP)->Bind(1);
@@ -53,6 +49,13 @@ namespace Prehistoric
 		SetUniformi(mrotMap, 2);
 		material->getTexture(EMISSION_MAP)->Bind(3);
 		SetUniformi(emissionMap, 3);
+	}
+
+	void GLPBRShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const
+	{
+		SetUniform(m_transform, object->getWorldTransform().getTransformationMatrix());
+
+		Material* material = static_cast<RendererComponent*>(object->GetComponent(RENDERER_COMPONENT))->getMaterial();
 
 		SetUniform(colour, material->getVector3f(COLOUR));
 		SetUniformi(usesNormalMap, material->exists(NORMAL_MAP));

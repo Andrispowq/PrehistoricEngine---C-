@@ -6,7 +6,7 @@
 namespace Prehistoric
 {
 	TerrainQuadtree::TerrainQuadtree(Window* window, Camera* camera, TerrainMaps* maps, AssembledAssetManager* manager)
-		: window(window), camera(camera), maps(maps), factory{ 512 }
+		: window(window), camera(camera), maps(maps), factory{ 1024 }
 	{
 		ShaderHandle shader;
 		PipelineHandle pipeline;
@@ -48,7 +48,7 @@ namespace Prehistoric
 				ss << ", ";
 				ss << j;
 
-				AddChild(ss.str(), new/*(factory)*/ TerrainNode(&factory, window, camera, manager, maps, pipeline, wireframePipeline,
+				AddChild(ss.str(), new(factory) TerrainNode(&factory, window, camera, manager, maps, pipeline, wireframePipeline,
 					{ i / (float)rootNodes, j / (float)rootNodes }, 0, { float(i), float(j) }));
 			}
 		}
@@ -61,7 +61,12 @@ namespace Prehistoric
 	{
 		//The children will be freed when the Factory is deleted at the end of this destructor but before the Node destructor
 		//so we don't want the automatic Node reclaimation to take place, so we clear the list
-		//children.clear();
+		for (auto& child : children)
+		{
+			child.second.release();
+		}
+
+		children.clear();
 	}
 
 	void TerrainQuadtree::UpdateQuadtree()

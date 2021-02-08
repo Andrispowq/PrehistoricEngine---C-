@@ -133,6 +133,8 @@ namespace Prehistoric
 
 		glfwSetWindowIcon(window, 1, &image);
 
+		delete[] data.ptr.dataUC;
+
 		glfwShowWindow(window);
 		SetVSync(FrameworkConfig::windowVSync); 
 

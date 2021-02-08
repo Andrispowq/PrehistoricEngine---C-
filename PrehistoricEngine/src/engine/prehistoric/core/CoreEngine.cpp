@@ -20,6 +20,11 @@ namespace Prehistoric
 		Input::DeleteInstance();
 		delete root.release();
 
+		if (EnvironmentMapRenderer::instance)
+		{
+			delete EnvironmentMapRenderer::instance;
+		}
+
 		delete audioEngine.release();
 		delete renderingEngine.release();
 		delete manager.release();

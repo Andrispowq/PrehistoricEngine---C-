@@ -7,12 +7,14 @@ PrehistoricApp::PrehistoricApp()
 {
 	using namespace Prehistoric;
 
-	GameObject* audio = new GameObject();
-	audio->AddComponent(AUDIO_COMPONENT, new AudioComponent("res/sounds/_Closer.wav", 75.0f));
-	audio->GetComponent<AudioComponent>()->PreUpdate(engineLayer);
+	GameObject* audioRoot = new GameObject();
+	engineLayer->getRootObject()->AddChild("audioRoot", audioRoot);
 
-	engineLayer->getRootObject()->AddChild("audio", audio);
-
+	GameObject* startupMusic = new GameObject();
+	startupMusic->AddComponent(AUDIO_COMPONENT, new AudioComponent("res/sounds/_Closer.wav", 75.0f));
+	startupMusic->GetComponent<AudioComponent>()->PreUpdate(engineLayer);
+	
+	audioRoot->AddChild("startupMusic", startupMusic);
 	engineLayer->getAudioEngine()->Update(0.0f);
 	
 	GameObject* sceneRoot = new GameObject();

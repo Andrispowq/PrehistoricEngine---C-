@@ -83,7 +83,7 @@ EditorApp::EditorApp()
 	root->AddChild("someobj2", obj2);
 
 	float space = 4.0f;
-	float count = 7.0f;
+	float count = 19.0f;
 
 	for (float x = -(count / 2.0f); x <= (count / 2.0f); x++)
 	{

@@ -3,9 +3,12 @@
 
 #include "imgui.h"
 #include "examples/imgui_impl_opengl3.h"
+#include "examples/imgui_impl_vulkan.h"
 #include "examples/imgui_impl_glfw.h"
 
 #include "prehistoric/application/Application.h"
+
+#include "platform/vulkan/framework/context/VKContext.h"
 
 namespace Prehistoric
 {
@@ -44,24 +47,36 @@ namespace Prehistoric
 		SetDarkThemeColors();
 
 		Application& app = Application::Get();
-		GLFWwindow* window = static_cast<GLFWwindow*>(app.getEngineLayer()->getRenderingEngine()->getWindow()->getWindowHandle());
+		Window* window = app.getEngineLayer()->getRenderingEngine()->getWindow();
+		GLFWwindow* glfw_window = static_cast<GLFWwindow*>(window->getWindowHandle());
 
 		// Setup Platform/Renderer bindings
-		ImGui_ImplGlfw_InitForOpenGL(window, true);
-		ImGui_ImplOpenGL3_Init("#version 410");
+		if (FrameworkConfig::api == OpenGL)
+		{
+			ImGui_ImplGlfw_InitForOpenGL(glfw_window, true);
+			ImGui_ImplOpenGL3_Init("#version 410");
+		}
 	}
 
 	void ImGuiLayer::OnDetach()
 	{
-		ImGui_ImplOpenGL3_Shutdown();
-		ImGui_ImplGlfw_Shutdown();
+		if (FrameworkConfig::api == OpenGL)
+		{
+			ImGui_ImplOpenGL3_Shutdown();
+			ImGui_ImplGlfw_Shutdown();
+		}
+
 		ImGui::DestroyContext();
 	}
 
 	void ImGuiLayer::Begin()
 	{
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
+		if (FrameworkConfig::api == OpenGL)
+		{
+			ImGui_ImplOpenGL3_NewFrame();
+			ImGui_ImplGlfw_NewFrame();
+		}
+
 		ImGui::NewFrame();
 	}
 
@@ -74,7 +89,11 @@ namespace Prehistoric
 
 		// Rendering
 		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+		if (FrameworkConfig::api == OpenGL)
+		{
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		}
 
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{

@@ -1,12 +1,12 @@
 #include "Includes.hpp"
 #include "RenderingEngine.h"
 
-#include "platform/windows/WindowsWindow.h"
-
 #include "platform/opengl/rendering/GLRenderer.h"
 #include "platform/vulkan/rendering/VKRenderer.h"
 
 #include "prehistoric/common/util/DeviceProperties.h"
+
+#include "platform/windows/WindowsWindow.h"
 
 namespace Prehistoric
 {
@@ -15,6 +15,7 @@ namespace Prehistoric
 	RenderingEngine::RenderingEngine()
 		: window(nullptr), camera(nullptr), renderer(nullptr)
 	{
+
 #if defined(PR_WINDOWS_64)
 		window = std::make_unique<WindowsWindow>();
 #elif
@@ -27,6 +28,7 @@ namespace Prehistoric
 		}
 
 		window->setClearColour({ 0.23f, 0.78f, 0.88f, 1.0f });
+
 
 		Capabilities::getInstance()->QueryCapabilities(window->getContext()->getDevices());
 		DeviceProperties properties;
@@ -46,8 +48,6 @@ namespace Prehistoric
 	{
 		//Order is important!
 		delete renderer.release();
-
-		delete window.release();
 		delete camera.release();
 	}
 
@@ -60,12 +60,6 @@ namespace Prehistoric
 		else if (FrameworkConfig::api == Vulkan)
 		{
 			renderer = std::make_unique<VKRenderer>(window.get(), camera.get(), manager);
-		}
-
-		if (FrameworkConfig::api == OpenGL)
-		{
-			glEnable(GL_DEPTH_TEST);
-			glDepthFunc(GL_LEQUAL);
 		}
 	}
 

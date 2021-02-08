@@ -6,6 +6,8 @@
 #include "prehistoric/core/util/Util.h"
 #include "prehistoric/core/util/math/Math.h"
 
+#include "prehistoric/common/texture/Texture.h"
+
 namespace Prehistoric
 {
 	class Material;
@@ -27,6 +29,12 @@ namespace Prehistoric
 
 		extern std::vector<int> lodRanges;
 		extern std::vector<int> lodMorphingAreas;
+
+		extern std::vector<Material*> terrainMaterials;
+
+		extern Texture* heightmap;
+		extern Texture* normalmap;
+		extern Texture* splatmap;
 	};
 };
 

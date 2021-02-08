@@ -14,6 +14,7 @@ namespace Prehistoric
 
 	GraphicsPipeline::~GraphicsPipeline()
 	{
-		manager->removeReference<VertexBuffer>(vbo.handle);
+		if(vbo.pointer != nullptr)
+			manager->removeReference<VertexBuffer>(vbo.handle);
 	}
 };

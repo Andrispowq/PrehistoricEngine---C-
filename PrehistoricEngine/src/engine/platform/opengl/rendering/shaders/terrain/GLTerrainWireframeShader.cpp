@@ -56,11 +56,14 @@ namespace Prehistoric
 		AddUniform("highDetailRange");
 	}
 
-	void GLTerrainWireframeShader::UpdateShaderUniforms(Camera* camera, const std::vector<Light*>& lights, uint32_t instance_index) const
+	void GLTerrainWireframeShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
 	{
 		SetUniform("viewProjection", camera->getViewProjectionMatrix());
 		SetUniform("cameraPosition", camera->getPosition());
 
+		SetUniformi("highDetailRange", EngineConfig::rendererHighDetailRange);
+
+		//Some other stuff that is terrain-related
 		SetUniformf("scaleY", TerrainConfig::scaleY);
 
 		SetUniformi("tessellationFactor", TerrainConfig::tessellationFactor);
@@ -73,27 +76,22 @@ namespace Prehistoric
 
 			SetUniformi(uName, TerrainConfig::lodMorphingAreas[i]);
 		}
-
-		SetUniformi("highDetailRange", EngineConfig::rendererHighDetailRange);
 	}
 
-	void GLTerrainWireframeShader::UpdateSharedUniforms(GameObject* object, uint32_t instance_index) const
+	void GLTerrainWireframeShader::UpdateTextureUniforms(Material* material, uint32_t descriptor_index) const
 	{
-		TerrainNode* node = (TerrainNode*)object;
-
-		node->getMaps()->getHeightmap()->Bind(0);
+		TerrainConfig::heightmap->Bind(0);
 		SetUniformi("heightmap", 0);
-		node->getMaps()->getSplatmap()->Bind(1);
+		TerrainConfig::splatmap->Bind(1);
 		SetUniformi("splatmap", 1);
 
-		uint32_t texUnit = 3;
+		uint32_t texUnit = 2;
 
 		for (unsigned int i = 0; i < 3; i++)
 		{
 			std::string uniformName = "materials[" + std::to_string(i) + "].";
 
-			TerrainMaps* maps = node->getMaps();
-			MaterialHandle material = maps->getMaterials()[i];
+			Material* material = TerrainConfig::terrainMaterials[i];
 
 			material->getTexture(MROT_MAP)->Bind(texUnit);
 			SetUniformi(uniformName + MROT_MAP, texUnit);
@@ -109,7 +107,7 @@ namespace Prehistoric
 		TerrainNode* node = (TerrainNode*)object;
 
 		SetUniform(location_localMatrix, node->getLocalTransform().getTransformationMatrix());
-		SetUniform(location_worldMatrix, object->getWorldTransform().getTransformationMatrix());
+		SetUniform(location_worldMatrix, node->getWorldTransform().getTransformationMatrix());
 
 		SetUniform(location_location, node->getLocation());
 		SetUniform(location_index, node->getIndex());

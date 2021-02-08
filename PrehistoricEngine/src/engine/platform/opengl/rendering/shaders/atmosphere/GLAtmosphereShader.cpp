@@ -16,7 +16,7 @@ namespace Prehistoric
 		AddUniform("m_projection");
 	}
 
-	void GLAtmosphereShader::UpdateShaderUniforms(Camera* camera, const std::vector<Light*>& lights, uint32_t instance_index) const
+	void GLAtmosphereShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
 	{
 		SetUniform("m_view", camera->getViewMatrix());
 		SetUniform("m_projection", camera->getProjectionMatrix());

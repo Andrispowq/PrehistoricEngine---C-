@@ -15,7 +15,7 @@
 
 namespace Prehistoric
 {
-	EnvironmentMapRenderer* EnvironmentMapRenderer::instance;
+	EnvironmentMapRenderer* EnvironmentMapRenderer::instance = nullptr;
 
 	EnvironmentMapRenderer::EnvironmentMapRenderer(Window* window, AssembledAssetManager* manager)
 		: window(window), manager(manager)
@@ -39,6 +39,12 @@ namespace Prehistoric
 		brdfIntegratePipeline = manager->storePipeline(new GLComputePipeline(window, man, brdfIntegrateShader));
 		backgroundPipeline = manager->storePipeline(new GLGraphicsPipeline(window, man, environmentShader, cubeBuffer));
 
+		manager->addReference<Pipeline>(environmentMapPipeline.handle);
+		manager->addReference<Pipeline>(irradiancePipeline.handle);
+		manager->addReference<Pipeline>(prefilterPipeline.handle);
+		manager->addReference<Pipeline>(brdfIntegratePipeline.handle);
+		manager->addReference<Pipeline>(backgroundPipeline.handle);
+
 		//Creating the BRDF map
 		uint32_t size = 512;
 		brdfMap = man->storeTexture(GLTexture::Storage2D(size, size, 1, R16G16_LINEAR, Bilinear, ClampToEdge));
@@ -58,6 +64,11 @@ namespace Prehistoric
 
 	EnvironmentMapRenderer::~EnvironmentMapRenderer()
 	{
+		manager->removeReference<Pipeline>(environmentMapPipeline.handle);
+		manager->removeReference<Pipeline>(irradiancePipeline.handle);
+		manager->removeReference<Pipeline>(prefilterPipeline.handle);
+		manager->removeReference<Pipeline>(brdfIntegratePipeline.handle);
+		manager->removeReference<Pipeline>(backgroundPipeline.handle);
 	}
 
 	void EnvironmentMapRenderer::GenerateEnvironmentMap()

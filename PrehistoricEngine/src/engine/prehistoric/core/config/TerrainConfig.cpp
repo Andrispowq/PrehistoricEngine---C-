@@ -18,6 +18,12 @@ namespace Prehistoric
 		std::vector<int> TerrainConfig::lodRanges;
 		std::vector<int> TerrainConfig::lodMorphingAreas;
 
+		std::vector<Material*> TerrainConfig::terrainMaterials;
+
+		Texture* TerrainConfig::heightmap;
+		Texture* TerrainConfig::normalmap;
+		Texture* TerrainConfig::splatmap;
+
 		void TerrainConfig::LoadConfig(const std::string& path)
 		{
 			std::ifstream file;

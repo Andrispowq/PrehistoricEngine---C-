@@ -46,7 +46,7 @@ namespace Prehistoric
 		TerrainNode(const TerrainNode&) = default;
 
 		//Overloaded new and delete comes here:
-		/*void* operator new(size_t size, Factory<TerrainNode>& factory)
+		void* operator new(size_t size, Factory<TerrainNode>& factory)
 		{
 			return factory.allocate();
 		}
@@ -72,7 +72,7 @@ namespace Prehistoric
 		{
 			((TerrainNode*)ptr)->~TerrainNode();
 			free(ptr);
-		}*/
+		}
 	private:
 		Factory<TerrainNode>* factory;
 		AssembledAssetManager* manager;

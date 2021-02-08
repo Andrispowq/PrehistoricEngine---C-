@@ -2,6 +2,7 @@
 #include "Renderer.h"
 
 #include "prehistoric/core/node/component/renderer/RenderableComponent.h"
+#include "prehistoric/core/node/component/renderer/RendererComponent.h"
 
 #include "prehistoric/core/node/component/light/Light.h"
 
@@ -14,7 +15,67 @@ namespace Prehistoric
 	{
 	}
 
-	void register_model(std::unordered_map<Pipeline*, std::vector<RenderableComponent*>>& map, RenderableComponent* renderable)
+	void register_model(std::unordered_map<Pipeline*, std::unordered_map<Material*, std::vector<RenderableComponent*>>>& map, RenderableComponent* renderable)
+	{
+		RendererComponent* comp = dynamic_cast<RendererComponent*>(renderable);
+		if (!comp)
+			return;
+
+		Pipeline* pipeline = renderable->getPipeline();
+		Material* material = comp->getMaterial();
+
+		auto index = map.find(pipeline);
+		if (index != map.end())
+		{
+			auto& list = index->second;
+			for (auto& elem : list)
+			{
+				Material* curr_mat = elem.first;
+
+				if (curr_mat != nullptr && material != nullptr &&
+					curr_mat != material)
+				{
+					for (auto& ptr : material->getTextures())
+					{
+						if (curr_mat->getTexture(ptr.first) != ptr.second.pointer)
+						{
+							break;
+						}
+					}
+
+					if (curr_mat->getTextures().size() != material->getTextures().size())
+					{
+						break;
+					}
+				}
+				else if(curr_mat == material)
+				{
+					auto& renderables = elem.second;
+					renderables.push_back(renderable);
+				}
+				else
+				{
+					break;
+				}
+
+				auto& renderables = elem.second;
+				renderables.push_back(renderable);
+				return;
+			}
+
+			std::vector<RenderableComponent*> renderers = { renderable };
+			index->second.emplace(material, renderers);
+		}
+		else
+		{
+			std::vector<RenderableComponent*> renderers = { renderable };
+			std::unordered_map<Material*, std::vector<RenderableComponent*>> matRend;
+			matRend.emplace(material, renderers);
+			map.emplace(pipeline, matRend);
+		}
+	}
+
+	void register_2d_model(std::unordered_map<Pipeline*, std::vector<RenderableComponent*>>& map, RenderableComponent* renderable)
 	{
 		Pipeline* pipeline = renderable->getPipeline();
 
@@ -41,7 +102,7 @@ namespace Prehistoric
 			register_model(models_transparency, renderable);
 			break;
 		case RenderPriority::_2D:
-			register_model(models_2d, renderable);
+			register_2d_model(models_2d, renderable);
 			break;
 		default:
 			break;

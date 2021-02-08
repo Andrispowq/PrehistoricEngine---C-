@@ -17,22 +17,21 @@ namespace Prehistoric
 		ShaderHandle shader;
 		PipelineHandle pipeline;
 
+		if (AtmosphereConfig::scatteringEnabled)
+		{
+			shader = man->loadShader("atmosphere_scattering").value();
+		}
+		else
+		{
+			shader = man->loadShader("atmosphere").value();
+		}
+
 		if (FrameworkConfig::api == OpenGL)
 		{
-			if (AtmosphereConfig::scatteringEnabled)
-				shader = man->loadShader("atmosphere_scattering").value();
-			else
-				shader = man->loadShader("atmosphere").value();
-
 			pipeline = manager->storePipeline(new GLGraphicsPipeline(window, man, shader, vbo));
 		}
 		else if (FrameworkConfig::api == Vulkan)
 		{
-			if (AtmosphereConfig::scatteringEnabled)
-				shader = man->loadShader("atmosphere_scattering").value();
-			else
-				shader = man->loadShader("atmosphere").value();
-
 			pipeline = manager->storePipeline(new VKGraphicsPipeline(window, man, shader, vbo));
 		}
 

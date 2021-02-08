@@ -37,33 +37,7 @@ namespace Prehistoric
 		AddUniform("isReflection");
 	}
 
-	void GLAtmosphereScatteringShader::UpdateUniforms(GameObject* atm, Matrix4f view, Matrix4f proj) const
-	{
-		SetUniform("m_transform", Matrix4f::Identity());
-		SetUniform("sunPosition", ((Atmosphere*)atm)->getSun()->getParent()->getWorldTransform().getPosition());
-		SetUniform("m_view", view);
-		SetUniform("m_projection", proj);
-
-		SetUniformf("sunRadius", AtmosphereConfig::sunRadius);
-		SetUniform("sunColour", AtmosphereConfig::sunColour);
-		SetUniformf("sunIntensity", AtmosphereConfig::sunIntensity);
-
-		SetUniformf("planetRadius", AtmosphereConfig::planetRadius);
-		SetUniformf("atmosphereRadius", AtmosphereConfig::atmosphereRadius);
-
-		SetUniform("rayleigh", AtmosphereConfig::rayleigh);
-		SetUniformf("rayleighHeightScale", AtmosphereConfig::rayleighHeightScale);
-		SetUniformf("mie", AtmosphereConfig::mie);
-		SetUniformf("mieHeightScale", AtmosphereConfig::mieHeightScale);
-		SetUniformf("mieDirection", AtmosphereConfig::mieDirection);
-
-		SetUniformf("horizontalVerticalShift", AtmosphereConfig::horizontalVerticalShift);
-		SetUniformi("width", FrameworkConfig::windowWidth);
-		SetUniformi("height", FrameworkConfig::windowHeight);
-		SetUniformi("isReflection", 0); //TODO: getting if it's a reflection or not from the RenderingEngine
-	}
-
-	void GLAtmosphereScatteringShader::UpdateShaderUniforms(Camera* camera, const std::vector<Light*>& lights, uint32_t instance_index) const
+	void GLAtmosphereScatteringShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
 	{
 		SetUniform("m_view", camera->getViewMatrix());
 		SetUniform("m_projection", camera->getProjectionMatrix());

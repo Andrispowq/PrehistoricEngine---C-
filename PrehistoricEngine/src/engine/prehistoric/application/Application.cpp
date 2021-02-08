@@ -3,8 +3,6 @@
 
 #include "prehistoric/core/events/ApplicationEvent.h"
 
-#include <stb_image.h>
-
 namespace Prehistoric
 {
 	Application* Application::instance = nullptr;
@@ -97,13 +95,15 @@ namespace Prehistoric
 
 				for (auto it = layerStack.rbegin(); it != layerStack.rend(); ++it)
 				{
-					(*it)->Update((float)/*passedTime / NANOSECOND*/frameTime);
+					float passed = (float)(passedTime / NANOSECOND);
+					passed = (float)min(passed, frameTime);
+					(*it)->Update(passed);
 				}
 
 				if (frameCounter >= NANOSECOND)
 				{
 					last_fps = frames;
-					last_frameTime = /*passedTime / NANOSECOND*/frameTime * 1000.0f;
+					last_frameTime = passedTime / NANOSECOND * 1000.0f;
 					PR_LOG(CYAN, "FPS: %i\n", frames);
 					PR_LOG(CYAN, "Delta time: %f ms\n", last_frameTime);
 					frames = 0;
