@@ -48,7 +48,12 @@ namespace Prehistoric
 		//Overloaded new and delete comes here:
 		void* operator new(size_t size, Factory<TerrainNode>& factory)
 		{
-			return factory.allocate();
+			void* ptr = factory.allocate();
+
+			if (!ptr)
+				throw std::bad_alloc();
+
+			return ptr;
 		}
 
 		void* operator new(size_t size)

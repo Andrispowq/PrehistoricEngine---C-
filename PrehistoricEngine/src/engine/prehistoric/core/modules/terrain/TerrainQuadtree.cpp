@@ -63,7 +63,7 @@ namespace Prehistoric
 		//so we don't want the automatic Node reclaimation to take place, so we clear the list
 		for (auto& child : children)
 		{
-			child.second.release();
+			TerrainNode::operator delete(child.second.release(), factory);
 		}
 
 		children.clear();

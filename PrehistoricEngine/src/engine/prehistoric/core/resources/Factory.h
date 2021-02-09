@@ -18,9 +18,10 @@ namespace Prehistoric
 			num_of_uint32_ts = ((max_allocations / 32) % 1) ? uint32_t(max_allocations / 32) + 1 : max_allocations / 32;
 
 			used_bits = new uint32_t[num_of_uint32_ts];
-			array = new T[max_allocations];
+			array = new char[max_allocations * sizeof(T)];
 
 			memset(used_bits, 0, num_of_uint32_ts * 4); //A uint32_t is always 4 bytes
+			memset(array, 0, max_allocations * sizeof(T)); //A uint32_t is always 4 bytes
 		}
 
 		Factory(const Factory&& factory)
@@ -48,15 +49,15 @@ namespace Prehistoric
 		{
 			size_t index = find_next_free_index();
 
-			if (index == max_allocations)
+			if (index >= max_allocations)
 				return nullptr;
 
 			//Mark the used block as free
 			size_t j = index % 32;
-			size_t i = size_t(index / 32);
-			used_bits[i] |= 0x1 << j;
+			size_t i = index / 32;
+			used_bits[i] |= (0x1 << j);
 
-			return &array[index];
+			return &((T*)array)[index];
 		}
 
 		//Deallocates a pointer
@@ -65,11 +66,14 @@ namespace Prehistoric
 			size_t index = index_of(ptr);
 
 			//We have to set the first_free variable to the newly freed block
-			first_free = index;
+			if (first_free > index)
+			{
+				first_free = index;
+			}
 
 			//Mark the used block as free
 			size_t j = index % 32;
-			size_t i = size_t(index / 32);
+			size_t i = index / 32;
 			used_bits[i] &= ~(0x1 << j);
 		}
 
@@ -104,25 +108,34 @@ namespace Prehistoric
 
 			//check the next bit
 			size_t j = (first_free + 1) % 32;
-			size_t i = size_t((first_free + 1) / 32);
+			size_t i = (first_free + 1) / 32;
 
-			if ((used_bits[i] >> j) & 0x1)
+			if (used_bits[i] & (0x1 << j))
 			{
+				for (; j < 32; j++)
+				{
+					if (!(used_bits[i] & (0x1 << j)))
+					{
+						first_free = i * 32 + j;
+						return ret;
+					}
+				}
+
 				//if the next bit isn't available, search till we find one
-				for (; i < num_of_uint32_ts; i++)
+				for (i = i + 1; i < num_of_uint32_ts; i++)
 				{
 					uint32_t& bitset = used_bits[i];
 
 					//Every bit is set -> no free space
-					if (bitset & 0xFFFFFFFF)
-						continue;
-
-					for (j = 0; j < 32; j++)
+					if (bitset != 0xFFFFFFFF)
 					{
-						if (!((bitset >> j) & 0x1))
+						for (j = 0; j < 32; j++)
 						{
-							first_free = i * 32 + j;
-							return ret;
+							if (!(bitset & (0x1 << j)))
+							{
+								first_free = i * 32 + j;
+								return ret;
+							}
 						}
 					}
 				}
@@ -133,7 +146,7 @@ namespace Prehistoric
 				return ret;
 			}
 
-			return max_allocations;
+			return first_free = max_allocations;
 		}
 
 		//Gets the index of an allocated pointer, and returns it's address
@@ -154,7 +167,7 @@ namespace Prehistoric
 		//Allocated on the heap as it can be a huge allocation and could blow up the stack
 		//1 -> used, 0 -> free
 		uint32_t* used_bits;
-		T* array;
+		char* array;
 	};
 };
 

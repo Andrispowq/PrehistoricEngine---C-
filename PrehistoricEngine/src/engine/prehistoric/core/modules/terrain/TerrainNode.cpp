@@ -36,7 +36,7 @@ namespace Prehistoric
 		//Ensure custom deletion for the children, as they are allocated differently from the rest of the Nodes
 		for (auto& child : children)
 		{
-			child.second.release();
+			TerrainNode::operator delete(child.second.release(), *factory);
 		}
 
 		children.clear();
