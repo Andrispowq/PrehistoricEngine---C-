@@ -8,35 +8,13 @@ namespace Prehistoric
 	TerrainQuadtree::TerrainQuadtree(Window* window, Camera* camera, TerrainMaps* maps, AssembledAssetManager* manager)
 		: window(window), camera(camera), maps(maps), factory{ 1024 }
 	{
-		ShaderHandle shader;
-		PipelineHandle pipeline;
-		ShaderHandle wireframeShader;
-		PipelineHandle wireframePipeline;
+		PatchVertexBuffer* vbo = new GLPatchVertexBuffer(window, generatePatch());
+		VertexBufferHandle vboHandle = manager->getAssetManager()->storeVertexBuffer(vbo);
 
-		PatchVertexBuffer* vbo = nullptr;
-
-		if (FrameworkConfig::api == OpenGL)
-		{
-			vbo = new GLPatchVertexBuffer(window, generatePatch());
-			VertexBufferHandle vboHandle = manager->getAssetManager()->storeVertexBuffer(vbo);
-
-			shader = manager->getAssetManager()->loadShader("terrain").value();
-			wireframeShader = manager->getAssetManager()->loadShader("terrain_wireframe").value();
-
-			pipeline = manager->storePipeline(new GLGraphicsPipeline(window, manager->getAssetManager(), shader, vboHandle));
-			wireframePipeline = manager->storePipeline(new GLGraphicsPipeline(window, manager->getAssetManager(), wireframeShader, vboHandle));
-		}
-		else if (FrameworkConfig::api == Vulkan)
-		{
-			//vbo = new VKPatchVertexBuffer(window, generatePatch());
-			//VertexBufferHandle vboHandle = manager->getAssetManager()->storeVertexBuffer(vbo);
-			//
-			//shader = manager->getAssetManager()->loadShader("terrain").value();
-			//wireframeShader = manager->getAssetManager()->loadShader("terrain_wireframe").value();
-			//
-			//pipeline = manager->storePipeline(new VKGraphicsPipeline(window, manager->getAssetManager(), shader, vboHandle));
-			//wireframePipeline = manager->storePipeline(new VKGraphicsPipeline(window, manager->getAssetManager(), wireframeShader, vboHandle));
-		}
+		ShaderHandle shader = manager->getAssetManager()->loadShader(ShaderName::Terrain).value();
+		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vboHandle);
+		ShaderHandle wireframeShader = manager->getAssetManager()->loadShader(ShaderName::TerrainWireframe).value();
+		PipelineHandle wireframePipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, wireframeShader, vboHandle);
 
 		for (int i = 0; i < rootNodes; i++)
 		{

@@ -42,7 +42,8 @@ namespace Prehistoric
 				{
 					if (nameTokens[1] == "load")
 					{
-						VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, directoryModels + tokens[2]).value();
+						Mesh mesh = OBJLoader::LoadMesh(directoryModels, tokens[2], "");
+						VertexBufferHandle vbo = man->loadVertexBuffer(mesh, tokens[1]).value();
 
 						if (tokens.size() > 3)
 						{
@@ -264,7 +265,17 @@ namespace Prehistoric
 							}
 							else
 							{
-								shader = man->loadShader(compTokens[1]).value();
+								ShaderName name;
+								if (compTokens[1] == "pbr")
+								{
+									name = ShaderName::PBR;
+								}
+								else if (compTokens[1] == "basic")
+								{
+									name = ShaderName::Basic;
+								}
+
+								shader = man->loadShader(name).value();
 								shaders.insert(std::make_pair(compTokens[1], shader));
 							}
 
@@ -275,20 +286,17 @@ namespace Prehistoric
 							}
 							else
 							{
-								Pipeline* _pipeline = nullptr;
-
+								pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
+								
 								if (FrameworkConfig::api == OpenGL)
 								{
-									_pipeline = new GLGraphicsPipeline(window, man, shader, vbo);
-									reinterpret_cast<GLGraphicsPipeline*>(_pipeline)->setBackfaceCulling(true);
+									reinterpret_cast<GLGraphicsPipeline*>(pipeline.pointer)->setBackfaceCulling(true);
 								}
 								else if (FrameworkConfig::api == Vulkan)
 								{
-									_pipeline = new VKGraphicsPipeline(window, man, shader, vbo);
-									reinterpret_cast<VKGraphicsPipeline*>(_pipeline)->setBackfaceCulling(true);
+									reinterpret_cast<VKGraphicsPipeline*>(pipeline.pointer)->setBackfaceCulling(true);
 								}
 
-								pipeline = manager->storePipeline(_pipeline);
 								pipelines.emplace(std::make_pair(compTokens[0] + "," + compTokens[1], pipeline));
 							}
 
@@ -347,7 +355,17 @@ namespace Prehistoric
 									}
 									else
 									{
-										shader = man->loadShader(compTokens[1]).value();
+										ShaderName name;
+										if (compTokens[1] == "pbr")
+										{
+											name = ShaderName::PBR;
+										}
+										else if (compTokens[1] == "basic")
+										{
+											name = ShaderName::Basic;
+										}
+
+										shader = man->loadShader(name).value();
 										shaders.insert(std::make_pair(compTokens[1], shader));
 									}
 
@@ -358,20 +376,17 @@ namespace Prehistoric
 									}
 									else
 									{
-										Pipeline* _pipeline = nullptr;
+										pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
 
 										if (FrameworkConfig::api == OpenGL)
 										{
-											_pipeline = new GLGraphicsPipeline(window, man, shader, vbo);
-											reinterpret_cast<GLGraphicsPipeline*>(_pipeline)->setBackfaceCulling(true);
+											reinterpret_cast<GLGraphicsPipeline*>(pipeline.pointer)->setBackfaceCulling(true);
 										}
 										else if (FrameworkConfig::api == Vulkan)
 										{
-											_pipeline = new VKGraphicsPipeline(window, man, shader, vbo);
-											reinterpret_cast<VKGraphicsPipeline*>(_pipeline)->setBackfaceCulling(true);
+											reinterpret_cast<VKGraphicsPipeline*>(pipeline.pointer)->setBackfaceCulling(true);
 										}
 
-										pipeline = manager->storePipeline(_pipeline);
 										pipelines.emplace(std::make_pair(compTokens[0] + "," + compTokens[1], pipeline));
 									}
 

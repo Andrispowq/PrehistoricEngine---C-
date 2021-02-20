@@ -37,10 +37,10 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 		quad->setFrontFace(FrontFace::COUNTER_CLOCKWISE);
 		sphere->setFrontFace(FrontFace::CLOCKWISE);
 
-		ShaderHandle shader = man->loadShader("pbr").value();
+		ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
 
-		PipelineHandle pipeline = manager->storePipeline(new VKGraphicsPipeline(window, man, shader, quad));
-		PipelineHandle pipeline2 = manager->storePipeline(new VKGraphicsPipeline(window, man, shader, sphere));
+		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, quad);
+		PipelineHandle pipeline2 = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, sphere);
 
 		MaterialHandle material = manager->storeMaterial(new Material(man));
 		material->addTexture(ALBEDO_MAP, man->loadTexture("res/textures/oakFloor/oakFloor_DIF.png", Anisotropic).value());
@@ -81,18 +81,19 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 
 		loader.LoadWorld(worldFile, root, window, manager);
 
-		/*GameObject* sun = new GameObject();
+		GameObject* sun = new GameObject();
 		sun->setUpdateFunction(sun_move_function);
 		sun->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0.95f, 0.87f), Vector3f(10000000000.0f)));
-		root->AddChild("sun", sun);*/
+		root->AddChild("sun", sun);
 
-		/*Atmosphere* atm = new Atmosphere(window, resourceStorage);
+		Atmosphere* atm = new Atmosphere(window, manager);
 		atm->setSun(sun->GetComponent<Light>());
-		root->AddChild("Atmosphere", atm);*/
+		root->AddChild("Atmosphere", atm);
+
+		EnvironmentMapRenderer::instance->atmosphere = atm;
 
 		Terrain* terrain = new Terrain(window, camera, manager, "res/config/terrain_0.cfg");
 		terrain->UpdateQuadtree();
-		//terrain->setEnabled(false);
 
 		root->AddChild("terrain0", terrain);
 
@@ -100,7 +101,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 		slider->SetPosition({ 0.5f, 0.5f, 0 });
 		slider->SetScale({ 0.125f, 0.05f, 1 });
 		root->AddChild("slider", slider);
-
+		
 		GameObject* slider2 = new GUISlider(window, manager, 1.0f, 3.4f, Vector3f(0.4f), &EngineConfig::rendererGamma, sizeof(float), true);
 		slider2->SetPosition({ 0.5f, 0.25f, 0 });
 		slider2->SetScale({ 0.125f, 0.05f, 1 });
@@ -108,9 +109,9 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 
 		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/sphere.obj").value();
 		vbo->setFrontFace(FrontFace::CLOCKWISE);
-		ShaderHandle shader = man->loadShader("pbr").value();
+		ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
 
-		PipelineHandle pipeline = manager->storePipeline(new GLGraphicsPipeline(window, man, shader, vbo));
+		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
 
 		float space = 4.0f;
 		float count = 7.0f;

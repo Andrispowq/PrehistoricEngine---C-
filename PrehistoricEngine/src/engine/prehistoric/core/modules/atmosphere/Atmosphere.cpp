@@ -12,28 +12,21 @@ namespace Prehistoric
 		SetScale(Vector3f(EngineConfig::rendererFarPlane / 2.f));
 		
 		AssetManager* man = manager->getAssetManager();
-		VertexBufferHandle vbo = man->loadVertexBuffer(OBJLoader::LoadMesh("res/models/dome/", "sphericalDome.obj", ""), "sphericalDome.obj").value();
+		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "atmosphere").value();
+		vbo->setFrontFace(FrontFace::DOUBLE_SIDED);
 
 		ShaderHandle shader;
-		PipelineHandle pipeline;
 
 		if (AtmosphereConfig::scatteringEnabled)
 		{
-			shader = man->loadShader("atmosphere_scattering").value();
+			shader = man->loadShader(ShaderName::AtmosphereScattering).value();
 		}
 		else
 		{
-			shader = man->loadShader("atmosphere").value();
+			shader = man->loadShader(ShaderName::Atmosphere).value();
 		}
 
-		if (FrameworkConfig::api == OpenGL)
-		{
-			pipeline = manager->storePipeline(new GLGraphicsPipeline(window, man, shader, vbo));
-		}
-		else if (FrameworkConfig::api == Vulkan)
-		{
-			pipeline = manager->storePipeline(new VKGraphicsPipeline(window, man, shader, vbo));
-		}
+		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
 
 		AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, manager->storeMaterial(nullptr)));
 	}

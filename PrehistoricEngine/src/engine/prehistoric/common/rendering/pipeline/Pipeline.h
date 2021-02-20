@@ -11,6 +11,21 @@
 
 namespace Prehistoric
 {
+	enum class APIHashFlags
+	{
+		GL = 0x0,
+		VK = 0x1,
+		DX11 = 0x2,
+		DX12 = 0x3
+	};
+
+	enum class PipelineTypeHashFlags
+	{
+		Graphics = 0x0,
+		Compute = 0x1,
+		RayTracing = 0x2
+	};
+
 	class Pipeline
 	{
 	public:
@@ -24,6 +39,10 @@ namespace Prehistoric
 		virtual void UnbindPipeline() const = 0;
 
 		virtual void RecreatePipeline() {};
+
+		virtual uint64_t GetHash();
+
+		static uint64_t GetHash(APIHashFlags apiFlags, PipelineTypeHashFlags typeFlags, size_t shaderHandle, size_t otherHandle);
 
 		Vector2f getViewportStart() const { return viewportStart; }
 		Vector2f getViewportSize() const { return viewportSize; }
@@ -40,6 +59,9 @@ namespace Prehistoric
 		void setScissorSize(const Vector2u& scissorSize) { this->scissorSize = scissorSize; }
 		void setSamples(int samples) { this->samples = samples; }
 
+	protected:
+		void SetHashInternal(APIHashFlags apiFlags, PipelineTypeHashFlags typeFlags, size_t shaderHandle, size_t otherHandle);
+
 	public:
 		Window* window;
 		AssetManager* manager;
@@ -52,6 +74,8 @@ namespace Prehistoric
 		Vector2u scissorSize;
 
 		int samples;
+
+		uint64_t hash = 0;
 
 	protected:
 		mutable CommandBuffer* buffer; //The current commandbuffer

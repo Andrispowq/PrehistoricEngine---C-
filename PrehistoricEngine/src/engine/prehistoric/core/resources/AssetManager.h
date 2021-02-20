@@ -87,7 +87,7 @@ namespace Prehistoric
 
 		std::optional<TextureHandle> loadTexture(const std::string& location, SamplerFilter filter = Bilinear, TextureWrapMode wrapMode = ClampToEdge, BatchSettings settings = BatchSettings::Load);
 		std::optional<VertexBufferHandle> loadVertexBuffer(std::optional<Mesh> mesh, const std::string& name, BatchSettings settings = BatchSettings::Load);
-		std::optional<ShaderHandle> loadShader(const std::string& location, BatchSettings settings = BatchSettings::Load);
+		std::optional<ShaderHandle> loadShader(ShaderName type, BatchSettings settings = BatchSettings::Load);
 
 		TextureHandle storeTexture(Texture* texture);
 		VertexBufferHandle storeVertexBuffer(VertexBuffer* vertexBuffer);
@@ -100,25 +100,49 @@ namespace Prehistoric
 		template<>
 		void addReference<Texture>(size_t handle)
 		{
-			textures.at(handle).second++;
+			auto& idx = textures.find(handle);
+			if (idx == textures.end())
+			{
+				PR_LOG_RUNTIME_ERROR("Could not find Texture handle %x\n", handle);
+			}
+
+			idx->second.second++;
 		}
 
 		template<>
 		void addReference<VertexBuffer>(size_t handle)
 		{
-			vertexBuffers.at(handle).second++;
+			auto& idx = vertexBuffers.find(handle);
+			if (idx == vertexBuffers.end())
+			{
+				PR_LOG_RUNTIME_ERROR("Could not find VertexBuffer handle %x\n", handle);
+			}
+
+			idx->second.second++;
 		}
 
 		template<>
 		void addReference<Shader>(size_t handle)
 		{
-			shaders.at(handle).second++;
+			auto& idx = shaders.find(handle);
+			if (idx == shaders.end())
+			{
+				PR_LOG_RUNTIME_ERROR("Could not find Shader handle %x\n", handle);
+			}
+
+			idx->second.second++;
 		}
 
 		template<>
 		void removeReference<Texture>(size_t handle)
 		{
-			uint32_t& refCount = textures.at(handle).second;
+			auto& idx = textures.find(handle);
+			if (idx == textures.end())
+			{
+				PR_LOG_RUNTIME_ERROR("Could not find Texture handle %x\n", handle);
+			}
+
+			uint32_t& refCount = idx->second.second;
 			refCount--;
 
 			if (refCount == 0)
@@ -139,7 +163,13 @@ namespace Prehistoric
 		template<>
 		void removeReference<VertexBuffer>(size_t handle)
 		{
-			uint32_t& refCount = vertexBuffers.at(handle).second;
+			auto& idx = vertexBuffers.find(handle);
+			if (idx == vertexBuffers.end())
+			{
+				PR_LOG_RUNTIME_ERROR("Could not find VertexBuffer handle %x\n", handle);
+			}
+
+			uint32_t& refCount = idx->second.second;
 			refCount--;
 
 			if (refCount == 0)
@@ -160,7 +190,13 @@ namespace Prehistoric
 		template<>
 		void removeReference<Shader>(size_t handle)
 		{
-			uint32_t& refCount = shaders.at(handle).second;
+			auto& idx = shaders.find(handle);
+			if (idx == shaders.end())
+			{
+				PR_LOG_RUNTIME_ERROR("Could not find Shader handle %x\n", handle);
+			}
+
+			uint32_t& refCount = idx->second.second;
 			refCount--;
 
 			if (refCount == 0)

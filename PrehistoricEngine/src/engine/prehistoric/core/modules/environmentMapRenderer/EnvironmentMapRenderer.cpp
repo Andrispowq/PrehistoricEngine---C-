@@ -33,11 +33,11 @@ namespace Prehistoric
 		brdfIntegrateShader = man->storeShader(new GLBRDFIntegrateShader());
 		environmentShader = man->storeShader(new GLEnvironmentShader());
 		
-		environmentMapPipeline = manager->storePipeline(new GLComputePipeline(window, man, environmentMapShader));
-		irradiancePipeline = manager->storePipeline(new GLComputePipeline(window, man, irradianceShader));
-		prefilterPipeline = manager->storePipeline(new GLComputePipeline(window, man, prefilterShader));
-		brdfIntegratePipeline = manager->storePipeline(new GLComputePipeline(window, man, brdfIntegrateShader));
-		backgroundPipeline = manager->storePipeline(new GLGraphicsPipeline(window, man, environmentShader, cubeBuffer));
+		environmentMapPipeline = manager->createPipeline(PipelineTypeHashFlags::Compute, environmentMapShader);
+		irradiancePipeline = manager->createPipeline(PipelineTypeHashFlags::Compute, irradianceShader);
+		prefilterPipeline = manager->createPipeline(PipelineTypeHashFlags::Compute, prefilterShader);
+		brdfIntegratePipeline = manager->createPipeline(PipelineTypeHashFlags::Compute, brdfIntegrateShader);
+		backgroundPipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, environmentShader, cubeBuffer);
 
 		manager->addReference<Pipeline>(environmentMapPipeline.handle);
 		manager->addReference<Pipeline>(irradiancePipeline.handle);

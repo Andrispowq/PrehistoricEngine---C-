@@ -24,7 +24,7 @@ namespace Prehistoric
 	{
 	public:
 		Atmosphere(Window* window, AssembledAssetManager* manager);
-		virtual ~Atmosphere();
+		virtual ~Atmosphere() {}
 
 		inline Light* getSun() const { return sun; }
 		inline void setSun(Light* sun) { this->sun = sun; }

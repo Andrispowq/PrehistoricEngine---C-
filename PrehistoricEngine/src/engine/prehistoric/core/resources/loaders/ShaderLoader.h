@@ -7,6 +7,23 @@
 
 namespace Prehistoric
 {
+	enum class ShaderName
+	{
+		PBR,
+		Basic, 
+		AtmosphereScattering,
+		Atmosphere,
+		TerrainWireframe,
+		Terrain,
+		Gui,
+		GPGPUNormal,
+		GPGPUSplat,
+		GPGPUHeightQuery,
+		Deferred,
+		AlphaCoverage,
+		FXAA
+	};
+
 	class ShaderLoader : public Loader
 	{
 	public:

@@ -42,16 +42,22 @@ namespace Prehistoric
 						attrib.vertices[3 * index.vertex_index + 2]
 					});
 
-					vertex.setTexture({
-						attrib.texcoords[2 * index.texcoord_index + 0],
-						attrib.texcoords[2 * index.texcoord_index + 1]
-					});
+					if (index.texcoord_index != -1)
+					{
+						vertex.setTexture({
+							attrib.texcoords[2 * index.texcoord_index + 0],
+							attrib.texcoords[2 * index.texcoord_index + 1]
+							});
+					}
 
-					vertex.setNormal({
-						attrib.normals[3 * index.normal_index + 0],
-						attrib.normals[3 * index.normal_index + 1],
-						attrib.normals[3 * index.normal_index + 2]
-					});
+					if (index.normal_index != -1)
+					{
+						vertex.setNormal({
+							attrib.normals[3 * index.normal_index + 0],
+							attrib.normals[3 * index.normal_index + 1],
+							attrib.normals[3 * index.normal_index + 2]
+							});
+					}
 
 					uint16_t count = 0;
 					for (const auto& v : uniqueVertexIDs)

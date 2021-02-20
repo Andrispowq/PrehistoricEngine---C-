@@ -10,13 +10,21 @@ PrehistoricApp::PrehistoricApp()
 	GameObject* audioRoot = new GameObject();
 	engineLayer->getRootObject()->AddChild("audioRoot", audioRoot);
 
-	GameObject* startupMusic = new GameObject();
-	startupMusic->AddComponent(AUDIO_COMPONENT, new AudioComponent("res/sounds/_Closer.wav", 75.0f));
-	startupMusic->GetComponent<AudioComponent>()->PreUpdate(engineLayer);
+	//GameObject* startupMusic = new GameObject();
+	//startupMusic->AddComponent(AUDIO_COMPONENT, new AudioComponent("res/sounds/_Closer.wav", 75.0f));
+	//startupMusic->GetComponent<AudioComponent>()->PreUpdate(engineLayer);
+	//
+	//audioRoot->AddChild("startupMusic", startupMusic);
+	//engineLayer->getAudioEngine()->Update(0.0f);
 	
-	audioRoot->AddChild("startupMusic", startupMusic);
-	engineLayer->getAudioEngine()->Update(0.0f);
-	
+	if (FrameworkConfig::api == OpenGL)
+	{
+		{
+			PR_PROFILE("Environment map generation - BRDF Look-up Table");
+			EnvironmentMapRenderer::instance = new EnvironmentMapRenderer(engineLayer->getRenderingEngine()->getWindow(), engineLayer->getAssetManager());
+		}
+	}
+
 	GameObject* sceneRoot = new GameObject();
 	scene = std::make_unique<PrehistoricScene>("scene0", sceneRoot, engineLayer->getRenderingEngine()->getWindow(),
 		engineLayer->getRenderingEngine()->getCamera(), engineLayer->getAssetManager(), "res/world/testLevel.wrld");
@@ -42,14 +50,11 @@ PrehistoricApp::PrehistoricApp()
 	if (FrameworkConfig::api == OpenGL)
 	{
 		{
-			PR_PROFILE("Environment map generation - BRDF Look-up Table");
-			EnvironmentMapRenderer::instance = new EnvironmentMapRenderer(engineLayer->getRenderingEngine()->getWindow(), engineLayer->getAssetManager());
-		}
-
-		{
 			PR_PROFILE("Environment map generation - Cubemap, Irradiance, Prefilter map");
 			EnvironmentMapRenderer::instance->GenerateEnvironmentMap();
 		}
+
+		EnvironmentMapRenderer::instance->enabled = true;
 	}
 
 	//AssembledAssetManager -> stores the primitives of rendering (Pipelines, Materials) in one place
@@ -69,12 +74,8 @@ PrehistoricApp::PrehistoricApp()
 
 		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/sphere.obj").value();
 		vbo->setFrontFace(FrontFace::CLOCKWISE);
-		ShaderHandle shader = man->loadShader("pbr").value();
-		PipelineHandle pipeline;
-		if (FrameworkConfig::api == OpenGL)
-			pipeline = manager->storePipeline(new GLGraphicsPipeline(window, man, shader, vbo));
-		else
-			pipeline = manager->storePipeline(new VKGraphicsPipeline(window, man, shader, vbo));
+		ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
+		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
 
 		MaterialHandle material = manager->storeMaterial(new Material(man));
 		material->addVector3f(COLOUR, { 0.64f, 0.53f, 0.23f });

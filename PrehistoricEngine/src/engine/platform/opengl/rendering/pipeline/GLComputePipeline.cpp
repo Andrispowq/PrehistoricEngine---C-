@@ -58,4 +58,13 @@ namespace Prehistoric
 			ssbo.second.first->Unbind();
 		}
 	}
+
+	uint64_t GLComputePipeline::GetHash()
+	{
+		if (hash)
+			return hash;
+
+		SetHashInternal(APIHashFlags::GL, PipelineTypeHashFlags::Graphics, shader.handle, 0);
+		return hash;
+	}
 };

@@ -13,6 +13,8 @@
 #include "platform/opengl/rendering/shaders/environmentMap/GLIrradianceShader.h"
 #include "platform/opengl/rendering/shaders/environmentMap/GLPrefilterShader.h"
 
+#include "prehistoric/core/modules/atmosphere/Atmosphere.h"
+
 namespace Prehistoric
 {
 	class EnvironmentMapRenderer
@@ -33,6 +35,9 @@ namespace Prehistoric
 
 	public:
 		float lodRenderedMap = 0.0;
+		bool enabled = true;
+
+		Atmosphere* atmosphere = nullptr;
 
 	private:
 		Window* window;

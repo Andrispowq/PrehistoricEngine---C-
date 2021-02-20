@@ -48,12 +48,8 @@ EditorApp::EditorApp()
 
 	VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/sphere.obj").value();
 	vbo->setFrontFace(FrontFace::CLOCKWISE);
-	ShaderHandle shader = man->loadShader("pbr").value();
-	PipelineHandle pipeline;
-	if (FrameworkConfig::api == OpenGL)
-		pipeline = manager->storePipeline(new GLGraphicsPipeline(window, man, shader, vbo));
-	else
-		pipeline = manager->storePipeline(new VKGraphicsPipeline(window, man, shader, vbo));
+	ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
+	PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
 
 	MaterialHandle material = manager->storeMaterial(new Material(man));
 	material->addVector3f(COLOUR, { 0.64f, 0.53f, 0.23f });

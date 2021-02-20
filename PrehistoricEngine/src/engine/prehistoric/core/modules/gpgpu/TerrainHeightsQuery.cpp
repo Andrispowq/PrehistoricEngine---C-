@@ -15,7 +15,7 @@ namespace Prehistoric
 		//TODO: Create the Vulkan equivalent of the GLComputePipeline
 		if (FrameworkConfig::api == OpenGL)
 		{
-			pipeline = manager->storePipeline(new GLComputePipeline(window, man, man->loadShader("gpgpu_terrain_heights").value()));
+			pipeline = manager->storePipeline(new GLComputePipeline(window, man, man->loadShader(ShaderName::GPGPUHeightQuery).value()));
 			manager->addReference<Pipeline>(pipeline.handle);
 		}
 		else if (FrameworkConfig::api == Vulkan)

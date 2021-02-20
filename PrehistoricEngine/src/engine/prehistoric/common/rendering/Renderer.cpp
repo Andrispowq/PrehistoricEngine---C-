@@ -23,55 +23,39 @@ namespace Prehistoric
 
 		Pipeline* pipeline = renderable->getPipeline();
 		Material* material = comp->getMaterial();
+		
+		uint64_t h0 = 0;
+		if (material != nullptr)
+			h0 = material->GetTextureHash();
 
 		auto index = map.find(pipeline);
-		if (index != map.end())
-		{
-			auto& list = index->second;
-			for (auto& elem : list)
-			{
-				Material* curr_mat = elem.first;
-
-				if (curr_mat != nullptr && material != nullptr &&
-					curr_mat != material)
-				{
-					for (auto& ptr : material->getTextures())
-					{
-						if (curr_mat->getTexture(ptr.first) != ptr.second.pointer)
-						{
-							break;
-						}
-					}
-
-					if (curr_mat->getTextures().size() != material->getTextures().size())
-					{
-						break;
-					}
-				}
-				else if(curr_mat == material)
-				{
-					auto& renderables = elem.second;
-					renderables.push_back(renderable);
-				}
-				else
-				{
-					break;
-				}
-
-				auto& renderables = elem.second;
-				renderables.push_back(renderable);
-				return;
-			}
-
-			std::vector<RenderableComponent*> renderers = { renderable };
-			index->second.emplace(material, renderers);
-		}
-		else
+		if (index == map.end())
 		{
 			std::vector<RenderableComponent*> renderers = { renderable };
 			std::unordered_map<Material*, std::vector<RenderableComponent*>> matRend;
 			matRend.emplace(material, renderers);
 			map.emplace(pipeline, matRend);
+		}
+		else
+		{
+			auto& list = index->second;
+			for (auto& mat : list)
+			{
+				Material* curr_mat = mat.first;
+				uint64_t h1 = 0;
+				if (curr_mat != nullptr)
+					h1 = curr_mat->GetTextureHash();
+
+				if (h0 == h1)
+				{
+					mat.second.push_back(renderable);
+					break;
+				}
+			}
+
+			std::vector<RenderableComponent*> renderers = { renderable };
+			auto& matRend = index->second;
+			matRend.emplace(material, renderers);
 		}
 	}
 

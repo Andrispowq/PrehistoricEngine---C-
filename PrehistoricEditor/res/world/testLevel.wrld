@@ -32,6 +32,7 @@ directories.textures res/textures/
 # MODELS/TEXTURE TO LOAD clockwise
 models.load quadModel quad.obj counter-clockwise
 models.load sphereModel sphere.obj clockwise
+models.load atmosphere sphere.obj double-sided
 models.load cubeModel cube.obj clockwise
 
 textures.load oak_DIF oakFloor/oakFloor_DIF.png

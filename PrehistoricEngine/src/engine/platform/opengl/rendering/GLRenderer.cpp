@@ -49,10 +49,10 @@ namespace Prehistoric
 		quadVBO = man->storeVertexBuffer(ModelFabricator::CreateQuad(window));
 		quadVBO->setFrontFace(FrontFace::DOUBLE_SIDED);
 
-		alphaCoverageShader = man->loadShader("alpha_coverage").value();
-		deferredShader = man->loadShader("deferred").value();
-		fxaaShader = man->loadShader("fxaa").value();
-		renderShader = man->loadShader("gui").value();
+		alphaCoverageShader = man->loadShader(ShaderName::AlphaCoverage).value();
+		deferredShader = man->loadShader(ShaderName::Deferred).value();
+		fxaaShader = man->loadShader(ShaderName::FXAA).value();
+		renderShader = man->loadShader(ShaderName::Gui).value();
 
 		alphaCoveragePipeline = new GLComputePipeline(window, man, alphaCoverageShader);
 		deferredPipeline = new GLComputePipeline(window, man, deferredShader);
@@ -170,7 +170,7 @@ namespace Prehistoric
 
 		{
 			PR_PROFILE("Cubemap pass");
-			if (FrameworkConfig::api == OpenGL && EnvironmentMapRenderer::instance)
+			if (FrameworkConfig::api == OpenGL && EnvironmentMapRenderer::instance && EnvironmentMapRenderer::instance->enabled)
 			{
 				EnvironmentMapRenderer::instance->RenderCube(camera);
 			}
