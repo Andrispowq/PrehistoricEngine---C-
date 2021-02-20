@@ -35,6 +35,8 @@ namespace Prehistoric
 		AddUniform("width");
 		AddUniform("height");
 		AddUniform("isReflection");
+
+		AddUniform("exposure");
 	}
 
 	void GLAtmosphereScatteringShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
@@ -59,6 +61,8 @@ namespace Prehistoric
 		SetUniformi("width", FrameworkConfig::windowWidth);
 		SetUniformi("height", FrameworkConfig::windowHeight);
 		SetUniformi("isReflection", 0); //TODO: getting if it's a reflection or not from the RenderingEngine
+
+		SetUniformf("exposure", EngineConfig::rendererExposure);
 	}
 
 	void GLAtmosphereScatteringShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const

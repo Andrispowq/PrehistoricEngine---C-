@@ -81,7 +81,14 @@ void main()
         imageStore(outColour, x, vec4(albedo, 1.0));
         return;
     }
-    else if (lit == 0.5)
+    else if (lit == 0.1)
+    {
+        albedo = 1.0 - exp(-albedo * exposure);
+
+        imageStore(outColour, x, vec4(albedo, 1.0));
+        return;
+    }
+    else if (lit == 0.2)
     {
         albedo = 1.0 - exp(-albedo * exposure);
         albedo = pow(albedo, vec3(1.0 / gamma));

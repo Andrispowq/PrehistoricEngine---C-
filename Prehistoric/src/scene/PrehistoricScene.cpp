@@ -8,7 +8,7 @@ static void sun_move_function(Prehistoric::GameObject* object, float frameTime)
 	constexpr float range = 32000.0f;
 	constexpr float anglesPerSecond = 0.5f;
 
-	static float angle = 170.0f;
+	static float angle = 190.0f;
 
 	float x = cos(ToRadians(angle)) * range;
 	float y = sin(ToRadians(angle)) * range;
@@ -94,6 +94,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 
 		Terrain* terrain = new Terrain(window, camera, manager, "res/config/terrain_0.cfg");
 		terrain->UpdateQuadtree();
+		terrain->setEnabled(false);
 
 		root->AddChild("terrain0", terrain);
 

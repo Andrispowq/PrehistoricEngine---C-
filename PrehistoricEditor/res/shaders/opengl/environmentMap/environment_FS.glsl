@@ -16,6 +16,6 @@ void main()
 
 	positionMetallic = vec4(vec3(0.0), 0.0);
 	albedoRoughness = vec4(envColour, 0.0);
-	normalLit = vec4(vec3(0.0), 0.5);
+	normalLit = vec4(vec3(0.0), 0.2);
 	emissionExtra = vec4(vec3(0.0), 0.0);
 }
