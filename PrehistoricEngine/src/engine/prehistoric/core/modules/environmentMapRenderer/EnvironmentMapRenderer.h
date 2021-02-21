@@ -44,6 +44,10 @@ namespace Prehistoric
 		AssembledAssetManager* manager;
 
 		VertexBufferHandle cubeBuffer;
+		Framebuffer* framebuffer;
+
+		Matrix4f viewMatrices[6];
+		Matrix4f projectionMatrix;
 
 		TextureHandle equirectangularMap;
 		TextureHandle environmentMap;

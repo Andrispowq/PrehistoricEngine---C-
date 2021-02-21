@@ -46,7 +46,7 @@ EditorApp::EditorApp()
 		}
 	}
 
-	VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/sphere.obj").value();
+	VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "sphereModel").value();
 	vbo->setFrontFace(FrontFace::CLOCKWISE);
 	ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
 	PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);

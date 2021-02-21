@@ -10,6 +10,7 @@ namespace Prehistoric
 
 		std::string line;
 		size_t texIndex = 0;
+		size_t meshIndex = 0;
 
 		AssetManager* man = manager->getAssetManager();
 
@@ -42,31 +43,29 @@ namespace Prehistoric
 				{
 					if (nameTokens[1] == "load")
 					{
-						Mesh mesh = OBJLoader::LoadMesh(directoryModels, tokens[2], "");
-						VertexBufferHandle vbo = man->loadVertexBuffer(mesh, tokens[1]).value();
+						meshIndex++;
+						meshNames.push_back(tokens[1]);
+						frontFaces.push_back(tokens[3] == "clockwise" ? FrontFace::CLOCKWISE :
+							(tokens[3] == "counter-clockwise" ? FrontFace::COUNTER_CLOCKWISE : FrontFace::DOUBLE_SIDED));
+						man->loadVertexBuffer(std::nullopt, directoryModels + tokens[2], BatchSettings::QueuedLoad);
+					}
+					else if (nameTokens[1] == "dispatch")
+					{
+						man->getVertexBufferLoader()->ForceLoadQueue();
 
-						if (tokens.size() > 3)
+						size_t count;
+						VertexBuffer** pointers = (VertexBuffer**)man->getVertexBufferLoader()->GetLoadedPointers(count);
+
+						if (count != meshIndex)
 						{
-							if (tokens[3] == "clockwise")
-							{
-								vbo->setFrontFace(FrontFace::CLOCKWISE);
-							}
-							else if (tokens[3] == "counter-clockwise")
-							{
-								vbo->setFrontFace(FrontFace::COUNTER_CLOCKWISE);
-							}
-							else
-							{
-								vbo->setFrontFace(FrontFace::DOUBLE_SIDED);
-							}
-						}
-						else
-						{
-							vbo->setFrontFace(FrontFace::DOUBLE_SIDED);
+							PR_LOG_ERROR("The loaded VertexBuffer count isn't equal to the requested VertexBuffer count!\n");
 						}
 
-						//We don't want to save .obj as the key
-						models.insert(std::make_pair(tokens[1], vbo));
+						for (int i = 0; i < meshIndex; i++)
+						{
+							models.insert(std::make_pair(meshNames[i], man->storeVertexBuffer(pointers[i], meshNames[i])));
+							pointers[i]->setFrontFace(frontFaces[i]);
+						}
 					}
 				}
 				if (nameTokens[0] == "textures")

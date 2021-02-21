@@ -148,6 +148,12 @@ namespace Prehistoric
 
 			window->setResized(false);
 		}
+
+		static uint16_t counter = 0;
+		counter++;
+		if(counter == 16)
+			EnvironmentMapRenderer::instance->GenerateEnvironmentMap();
+		counter %= 16;
 	}
 
 	void GLRenderer::EndRendering()
@@ -170,7 +176,8 @@ namespace Prehistoric
 
 		{
 			PR_PROFILE("Cubemap pass");
-			if (FrameworkConfig::api == OpenGL && EnvironmentMapRenderer::instance && EnvironmentMapRenderer::instance->enabled)
+			if (FrameworkConfig::api == OpenGL && EnvironmentMapRenderer::instance && EnvironmentMapRenderer::instance->enabled
+				&& EnvironmentMapRenderer::instance->atmosphere == nullptr)
 			{
 				EnvironmentMapRenderer::instance->RenderCube(camera);
 			}

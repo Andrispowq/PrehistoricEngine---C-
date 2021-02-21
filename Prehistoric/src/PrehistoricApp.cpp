@@ -16,14 +16,6 @@ PrehistoricApp::PrehistoricApp()
 	//
 	//audioRoot->AddChild("startupMusic", startupMusic);
 	//engineLayer->getAudioEngine()->Update(0.0f);
-	
-	if (FrameworkConfig::api == OpenGL)
-	{
-		{
-			PR_PROFILE("Environment map generation - BRDF Look-up Table");
-			EnvironmentMapRenderer::instance = new EnvironmentMapRenderer(engineLayer->getRenderingEngine()->getWindow(), engineLayer->getAssetManager());
-		}
-	}
 
 	GameObject* sceneRoot = new GameObject();
 	scene = std::make_unique<PrehistoricScene>("scene0", sceneRoot, engineLayer->getRenderingEngine()->getWindow(),
@@ -50,6 +42,13 @@ PrehistoricApp::PrehistoricApp()
 	if (FrameworkConfig::api == OpenGL)
 	{
 		{
+			PR_PROFILE("Environment map generation - BRDF Look-up Table");
+			EnvironmentMapRenderer::instance = new EnvironmentMapRenderer(engineLayer->getRenderingEngine()->getWindow(), engineLayer->getAssetManager());
+		}
+
+		EnvironmentMapRenderer::instance->atmosphere = (Atmosphere*)sceneRoot->getChild("atmosphere");
+
+		{
 			PR_PROFILE("Environment map generation - Cubemap, Irradiance, Prefilter map");
 			EnvironmentMapRenderer::instance->GenerateEnvironmentMap();
 		}
@@ -72,7 +71,7 @@ PrehistoricApp::PrehistoricApp()
 		slider3->SetScale({ 0.125f, 0.05f, 1 });
 		sceneRoot->AddChild("slider3", slider3);
 
-		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/sphere.obj").value();
+		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "sphereModel").value();
 		vbo->setFrontFace(FrontFace::CLOCKWISE);
 		ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
 		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);

@@ -90,7 +90,7 @@ namespace Prehistoric
 		std::optional<ShaderHandle> loadShader(ShaderName type, BatchSettings settings = BatchSettings::Load);
 
 		TextureHandle storeTexture(Texture* texture);
-		VertexBufferHandle storeVertexBuffer(VertexBuffer* vertexBuffer);
+		VertexBufferHandle storeVertexBuffer(VertexBuffer* vertexBuffer, const std::string& cacheName = "");
 		ShaderHandle storeShader(Shader* shader);
 
 		template<typename T> void addReference(size_t handle) {}

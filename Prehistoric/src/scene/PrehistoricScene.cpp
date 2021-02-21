@@ -84,13 +84,12 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 		GameObject* sun = new GameObject();
 		sun->setUpdateFunction(sun_move_function);
 		sun->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0.95f, 0.87f), Vector3f(10000000000.0f)));
+		sun_move_function(sun, 0.0f);
 		root->AddChild("sun", sun);
 
 		Atmosphere* atm = new Atmosphere(window, manager);
 		atm->setSun(sun->GetComponent<Light>());
-		root->AddChild("Atmosphere", atm);
-
-		EnvironmentMapRenderer::instance->atmosphere = atm;
+		root->AddChild("atmosphere", atm);
 
 		Terrain* terrain = new Terrain(window, camera, manager, "res/config/terrain_0.cfg");
 		terrain->UpdateQuadtree();
@@ -108,7 +107,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 		slider2->SetScale({ 0.125f, 0.05f, 1 });
 		root->AddChild("slider2", slider2);
 
-		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/sphere.obj").value();
+		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "sphereModel").value();
 		vbo->setFrontFace(FrontFace::CLOCKWISE);
 		ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
 

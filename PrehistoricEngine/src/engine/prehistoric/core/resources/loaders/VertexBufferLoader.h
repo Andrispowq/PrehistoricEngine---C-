@@ -13,6 +13,8 @@
 #include "prehistoric/core/model/obj/OBJLoader.h"
 #include "prehistoric/core/model/Mesh.h"
 
+#include <thread>
+
 namespace Prehistoric
 {
 	enum class Type
@@ -32,6 +34,9 @@ namespace Prehistoric
 		VertexBufferLoader(Window* window) : Loader(window) {}
 
 		virtual void* LoadResourceInternal(const std::string& path, Extra* extra) override;
+		virtual void LoadResources() override;
+
+		static Mesh LoadMesh(const std::string& path);
 	};
 };
 

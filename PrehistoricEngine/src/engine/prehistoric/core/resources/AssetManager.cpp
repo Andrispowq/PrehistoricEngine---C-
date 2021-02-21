@@ -77,6 +77,15 @@ namespace Prehistoric
 
 	std::optional<VertexBufferHandle> AssetManager::loadVertexBuffer(std::optional<Mesh> mesh, const std::string& name, BatchSettings settings)
 	{
+		if (settings == BatchSettings::QueuedLoad)
+		{
+			/*
+				We don't know when the commands will be dispatched, so we can't use a stack variable here
+			*/
+			vertexBufferLoader->LoadResource(false, name, nullptr);
+			return std::nullopt;
+		}
+
 		auto index = ID_map.find(name);
 		if (index != ID_map.end())
 		{
@@ -198,7 +207,7 @@ namespace Prehistoric
 		return handle;
 	}
 
-	VertexBufferHandle AssetManager::storeVertexBuffer(VertexBuffer* vertexBuffer)
+	VertexBufferHandle AssetManager::storeVertexBuffer(VertexBuffer* vertexBuffer, const std::string& cacheName)
 	{
 		for (auto& entry : vertexBuffers)
 		{
@@ -215,6 +224,11 @@ namespace Prehistoric
 		handle.handle = han;
 
 		vertexBuffers.insert(std::make_pair(handle.handle, std::make_pair(vertexBuffer, 0)));
+
+		if (!cacheName.empty())
+		{
+			ID_map.insert(std::make_pair(cacheName, handle.handle));
+		}
 
 		return handle;
 	}
