@@ -43,6 +43,8 @@ namespace Prehistoric
 		Window* window;
 		AssembledAssetManager* manager;
 
+		std::string mapCache;
+
 		VertexBufferHandle cubeBuffer;
 		Framebuffer* framebuffer;
 

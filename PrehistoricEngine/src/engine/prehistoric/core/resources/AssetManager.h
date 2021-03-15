@@ -89,7 +89,7 @@ namespace Prehistoric
 		std::optional<VertexBufferHandle> loadVertexBuffer(std::optional<Mesh> mesh, const std::string& name, BatchSettings settings = BatchSettings::Load);
 		std::optional<ShaderHandle> loadShader(ShaderName type, BatchSettings settings = BatchSettings::Load);
 
-		TextureHandle storeTexture(Texture* texture);
+		TextureHandle storeTexture(Texture* texture, const std::string& cacheName = "");
 		VertexBufferHandle storeVertexBuffer(VertexBuffer* vertexBuffer, const std::string& cacheName = "");
 		ShaderHandle storeShader(Shader* shader);
 

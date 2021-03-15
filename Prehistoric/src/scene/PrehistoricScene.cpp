@@ -6,9 +6,9 @@
 static void sun_move_function(Prehistoric::GameObject* object, float frameTime)
 {
 	constexpr float range = 32000.0f;
-	constexpr float anglesPerSecond = 0.5f;
+	constexpr float anglesPerSecond = 0.0f; // 0.5f
 
-	static float angle = 190.0f;
+	static float angle = 175.0f;
 
 	float x = cos(ToRadians(angle)) * range;
 	float y = sin(ToRadians(angle)) * range;
@@ -31,12 +31,8 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 
 		AssetManager* man = manager->getAssetManager();
 
-		VertexBufferHandle quad = man->loadVertexBuffer(std::nullopt, "res/models/quad.obj").value();
-		VertexBufferHandle sphere = man->loadVertexBuffer(std::nullopt, "res/models/sphere.obj").value();
-
-		quad->setFrontFace(FrontFace::COUNTER_CLOCKWISE);
-		sphere->setFrontFace(FrontFace::CLOCKWISE);
-
+		VertexBufferHandle quad = man->loadVertexBuffer(std::nullopt, "quadModel").value();
+		VertexBufferHandle sphere = man->loadVertexBuffer(std::nullopt, "sphereModel ").value();
 		ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
 
 		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, quad);
@@ -85,15 +81,15 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 		sun->setUpdateFunction(sun_move_function);
 		sun->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0.95f, 0.87f), Vector3f(10000000000.0f)));
 		sun_move_function(sun, 0.0f);
-		root->AddChild("sun", sun);
+		//root->AddChild("sun", sun);
 
 		Atmosphere* atm = new Atmosphere(window, manager);
 		atm->setSun(sun->GetComponent<Light>());
-		root->AddChild("atmosphere", atm);
+		//root->AddChild("atmosphere", atm);
 
 		Terrain* terrain = new Terrain(window, camera, manager, "res/config/terrain_0.cfg");
 		terrain->UpdateQuadtree();
-		terrain->setEnabled(false);
+		//terrain->setEnabled(false);
 
 		root->AddChild("terrain0", terrain);
 
@@ -108,9 +104,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 		root->AddChild("slider2", slider2);
 
 		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "sphereModel").value();
-		vbo->setFrontFace(FrontFace::CLOCKWISE);
 		ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
-
 		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
 
 		float space = 4.0f;

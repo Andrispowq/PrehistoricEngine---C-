@@ -1,6 +1,8 @@
 #include "Includes.hpp"
 #include "WorldLoader.h"
 
+#include "prehistoric/core/config/EnvironmentMapConfig.h"
+
 namespace Prehistoric
 {
 	void WorldLoader::LoadWorld(const std::string& worldFile, GameObject* root, Window* window, AssembledAssetManager* manager)
@@ -78,6 +80,10 @@ namespace Prehistoric
 					}
 					else if (nameTokens[1] == "dispatch")
 					{
+						//texIndex++;
+						//textureNames.push_back(EnvironmentMapConfig::environmentMapLocation);
+						//man->loadTexture(EnvironmentMapConfig::environmentMapLocation, Bilinear, ClampToEdge, BatchSettings::QueuedLoad);
+
 						man->getTextureLoader()->ForceLoadQueue();
 
 						size_t count;
@@ -90,7 +96,7 @@ namespace Prehistoric
 
 						for (int i = 0; i < texIndex; i++)
 						{
-							textures.insert(std::make_pair(textureNames[i], man->storeTexture(pointers[i])));
+							textures.insert(std::make_pair(textureNames[i], man->storeTexture(pointers[i], textureNames[i])));
 						}
 
 						man->getTextureLoader()->FlushPointers();

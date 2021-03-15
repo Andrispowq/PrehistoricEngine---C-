@@ -148,12 +148,6 @@ namespace Prehistoric
 
 			window->setResized(false);
 		}
-
-		static uint16_t counter = 0;
-		counter++;
-		if(counter == 16)
-			EnvironmentMapRenderer::instance->GenerateEnvironmentMap();
-		counter %= 16;
 	}
 
 	void GLRenderer::EndRendering()

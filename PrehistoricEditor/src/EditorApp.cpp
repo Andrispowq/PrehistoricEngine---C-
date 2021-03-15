@@ -5,6 +5,21 @@
 #include "prehistoric/core/config/FrameworkConfig.h"
 #include "prehistoric/core/modules/environmentMapRenderer/EnvironmentMapRenderer.h"
 
+//We go around in a circle, from -range to range on the y and z axes
+static void sun_move_function(Prehistoric::GameObject* object, float frameTime)
+{
+	constexpr float range = 32000.0f;
+	constexpr float anglesPerSecond = 0.5f;
+
+	static float angle = 190.0f;
+
+	float x = cos(ToRadians(angle)) * range;
+	float y = sin(ToRadians(angle)) * range;
+	angle -= (anglesPerSecond * frameTime);
+
+	object->SetPosition({ x, y, 0 });
+}
+
 EditorApp::EditorApp()
 {
 	using namespace Prehistoric;
@@ -32,6 +47,16 @@ EditorApp::EditorApp()
 	WorldLoader loader;
 	loader.LoadWorld("res/world/testLevel.wrld", root, window, manager);
 
+	GameObject* sun = new GameObject();
+	sun->setUpdateFunction(sun_move_function);
+	sun->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0.95f, 0.87f), Vector3f(10000000000.0f)));
+	sun_move_function(sun, 0.0f);
+	root->AddChild("sun", sun);
+
+	Atmosphere* atmosphere = new Atmosphere(window, manager);
+	atmosphere->setSun(sun->GetComponent<Light>());
+	//root->AddChild("atmosphere", atmosphere);
+
 	//Load in the environment map
 	if (FrameworkConfig::api == OpenGL)
 	{
@@ -40,14 +65,17 @@ EditorApp::EditorApp()
 			EnvironmentMapRenderer::instance = new EnvironmentMapRenderer(engineLayer->getRenderingEngine()->getWindow(), engineLayer->getAssetManager());
 		}
 
+		//EnvironmentMapRenderer::instance->atmosphere = atmosphere;
+
 		{
 			PR_PROFILE("Environment map generation - Cubemap, Irradiance, Prefilter map");
 			EnvironmentMapRenderer::instance->GenerateEnvironmentMap();
 		}
+
+		EnvironmentMapRenderer::instance->enabled = true;
 	}
 
 	VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "sphereModel").value();
-	vbo->setFrontFace(FrontFace::CLOCKWISE);
 	ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
 	PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
 
@@ -79,7 +107,7 @@ EditorApp::EditorApp()
 	root->AddChild("someobj2", obj2);
 
 	float space = 4.0f;
-	float count = 19.0f;
+	float count = 7.0f;
 
 	for (float x = -(count / 2.0f); x <= (count / 2.0f); x++)
 	{

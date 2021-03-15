@@ -186,7 +186,7 @@ namespace Prehistoric
 		return handle;
 	}
 
-	TextureHandle AssetManager::storeTexture(Texture* texture)
+	TextureHandle AssetManager::storeTexture(Texture* texture, const std::string& cacheName)
 	{
 		for (auto& entry : textures)
 		{
@@ -203,6 +203,11 @@ namespace Prehistoric
 		handle.handle = han;
 
 		textures.insert(std::make_pair(handle.handle, std::make_pair(texture, 0)));
+
+		if (!cacheName.empty())
+		{
+			ID_map.insert(std::make_pair(cacheName, handle.handle));
+		}
 
 		return handle;
 	}

@@ -46,7 +46,7 @@ PrehistoricApp::PrehistoricApp()
 			EnvironmentMapRenderer::instance = new EnvironmentMapRenderer(engineLayer->getRenderingEngine()->getWindow(), engineLayer->getAssetManager());
 		}
 
-		EnvironmentMapRenderer::instance->atmosphere = (Atmosphere*)sceneRoot->getChild("atmosphere");
+		//EnvironmentMapRenderer::instance->atmosphere = (Atmosphere*)sceneRoot->getChild("atmosphere");
 
 		{
 			PR_PROFILE("Environment map generation - Cubemap, Irradiance, Prefilter map");
@@ -72,7 +72,6 @@ PrehistoricApp::PrehistoricApp()
 		sceneRoot->AddChild("slider3", slider3);
 
 		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "sphereModel").value();
-		vbo->setFrontFace(FrontFace::CLOCKWISE);
 		ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
 		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
 

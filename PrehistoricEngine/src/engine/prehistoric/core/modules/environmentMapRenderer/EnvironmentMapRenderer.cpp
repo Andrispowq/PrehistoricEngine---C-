@@ -20,6 +20,8 @@ namespace Prehistoric
 	EnvironmentMapRenderer::EnvironmentMapRenderer(Window* window, AssembledAssetManager* manager)
 		: window(window), manager(manager)
 	{
+		mapCache = "";
+		
 		AssetManager* man = manager->getAssetManager();
 
 		//Create the cube mesh
@@ -82,6 +84,15 @@ namespace Prehistoric
 
 	EnvironmentMapRenderer::~EnvironmentMapRenderer()
 	{
+		AssetManager* man = manager->getAssetManager();
+
+		man->removeReference<Texture>(equirectangularMap.handle);
+		man->removeReference<Texture>(environmentMap.handle);
+		man->removeReference<Texture>(irradianceMap.handle);
+		man->removeReference<Texture>(prefilterMap.handle);
+
+		delete framebuffer;
+
 		manager->removeReference<Pipeline>(environmentMapPipeline.handle);
 		manager->removeReference<Pipeline>(irradiancePipeline.handle);
 		manager->removeReference<Pipeline>(prefilterPipeline.handle);
@@ -93,9 +104,8 @@ namespace Prehistoric
 	{
 		AssetManager* man = manager->getAssetManager();
 
-		if (equirectangularMap.pointer != nullptr)
+		if (environmentMap.pointer != nullptr)
 		{
-			man->removeReference<Texture>(equirectangularMap.handle);
 			man->removeReference<Texture>(environmentMap.handle);
 			man->removeReference<Texture>(irradianceMap.handle);
 			man->removeReference<Texture>(prefilterMap.handle);
@@ -107,13 +117,35 @@ namespace Prehistoric
 			static_cast<GLComputePipeline*>(prefilterPipeline.pointer)->removeTextureBinding(0);
 		}
 
+		if (atmosphere == nullptr)
 		{
 			{
 				PR_PROFILE("Creating the equirectangular map");
-				equirectangularMap = man->loadTexture(EnvironmentMapConfig::environmentMapLocation, Bilinear, ClampToEdge).value();
-			}
 
-			PR_PROFILE("Creating the textures");
+				if (mapCache.empty())
+				{
+					equirectangularMap = man->loadTexture(EnvironmentMapConfig::environmentMapLocation, Bilinear, ClampToEdge).value();
+				}
+				else
+				{
+					if (mapCache != EnvironmentMapConfig::environmentMapLocation)
+					{
+						if (equirectangularMap.pointer != nullptr)
+						{
+							man->removeReference<Texture>(equirectangularMap.handle);
+						}
+
+						equirectangularMap = man->loadTexture(EnvironmentMapConfig::environmentMapLocation, Bilinear, ClampToEdge).value();
+					}
+				}
+
+				man->addReference<Texture>(equirectangularMap.handle);
+
+				mapCache = EnvironmentMapConfig::environmentMapLocation;
+			}
+		}
+
+		{
 			uint32_t size = EnvironmentMapConfig::environmentMapResolution;
 
 			if (atmosphere != nullptr)
@@ -122,23 +154,27 @@ namespace Prehistoric
 			}
 			else
 			{
+
 				environmentMap = man->storeTexture(GLTexture::Storage3D(size, size, 1, R8G8B8A8_LINEAR, Trilinear, ClampToEdge, true));
 			}
 
-			manager->addReference<Texture>(environmentMap.handle);
-			static_cast<GLComputePipeline*>(environmentMapPipeline.pointer)->setInvocationSize({ size / 16, size / 16, 6 });
-			static_cast<GLComputePipeline*>(environmentMapPipeline.pointer)->addTextureBinding(0, environmentMap.pointer, WRITE_ONLY);
-			static_cast<GLComputePipeline*>(environmentMapPipeline.pointer)->addTextureBinding(1, equirectangularMap.pointer, READ_ONLY);
+			{
+				PR_PROFILE("Creating the textures");
+				man->addReference<Texture>(environmentMap.handle);
+				static_cast<GLComputePipeline*>(environmentMapPipeline.pointer)->setInvocationSize({ size / 16, size / 16, 6 });
+				static_cast<GLComputePipeline*>(environmentMapPipeline.pointer)->addTextureBinding(0, environmentMap.pointer, WRITE_ONLY);
+				static_cast<GLComputePipeline*>(environmentMapPipeline.pointer)->addTextureBinding(1, equirectangularMap.pointer, READ_ONLY);
 
-			size = EnvironmentMapConfig::irradianceMapResolution;
-			irradianceMap = man->storeTexture(GLTexture::Storage3D(size, size, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false));
-			manager->addReference<Texture>(irradianceMap.handle);
-			static_cast<GLComputePipeline*>(irradiancePipeline.pointer)->setInvocationSize({ size / 16, size / 16, 6 });
-			static_cast<GLComputePipeline*>(irradiancePipeline.pointer)->addTextureBinding(0, irradianceMap.pointer, WRITE_ONLY);
+				size = EnvironmentMapConfig::irradianceMapResolution;
+				irradianceMap = man->storeTexture(GLTexture::Storage3D(size, size, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false));
+				man->addReference<Texture>(irradianceMap.handle);
+				static_cast<GLComputePipeline*>(irradiancePipeline.pointer)->setInvocationSize({ size / 16, size / 16, 6 });
+				static_cast<GLComputePipeline*>(irradiancePipeline.pointer)->addTextureBinding(0, irradianceMap.pointer, WRITE_ONLY);
 
-			size = EnvironmentMapConfig::prefilterMapResolution;
-			prefilterMap = man->storeTexture(GLTexture::Storage3D(size, size, EnvironmentMapConfig::prefilterLevels, R8G8B8A8_LINEAR, Trilinear, ClampToEdge, true));
-			manager->addReference<Texture>(prefilterMap.handle);
+				size = EnvironmentMapConfig::prefilterMapResolution;
+				prefilterMap = man->storeTexture(GLTexture::Storage3D(size, size, EnvironmentMapConfig::prefilterLevels, R8G8B8A8_LINEAR, Trilinear, ClampToEdge, true));
+				man->addReference<Texture>(prefilterMap.handle);
+			}
 		}
 
 		// Rendering the cube map
