@@ -137,7 +137,6 @@ namespace Prehistoric
 			auto entry = textureLocations[i];
 			TextureHandle h = man->storeTexture(pointers[i]);
 			materials[entry.first]->addTexture(entry.second, h);
-			man->addReference<Texture>(h.handle);
 		}
 
 		man->getTextureLoader()->FlushPointers();
@@ -145,6 +144,7 @@ namespace Prehistoric
 		for (auto elem : materials)
 		{
 			TerrainConfig::terrainMaterials.push_back(elem.pointer);
+			manager->addReference<Material>(elem.handle);
 		}
 	}
 };

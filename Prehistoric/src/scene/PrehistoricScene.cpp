@@ -89,8 +89,6 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 
 		Terrain* terrain = new Terrain(window, camera, manager, "res/config/terrain_0.cfg");
 		terrain->UpdateQuadtree();
-		//terrain->setEnabled(false);
-
 		root->AddChild("terrain0", terrain);
 
 		GameObject* slider = new GUISlider(window, manager, 0.0f, 2.0f, Vector3f(0.5f), &EngineConfig::rendererExposure, sizeof(float), true);

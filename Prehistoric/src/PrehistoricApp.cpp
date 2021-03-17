@@ -10,12 +10,12 @@ PrehistoricApp::PrehistoricApp()
 	GameObject* audioRoot = new GameObject();
 	engineLayer->getRootObject()->AddChild("audioRoot", audioRoot);
 
-	//GameObject* startupMusic = new GameObject();
-	//startupMusic->AddComponent(AUDIO_COMPONENT, new AudioComponent("res/sounds/_Closer.wav", 75.0f));
-	//startupMusic->GetComponent<AudioComponent>()->PreUpdate(engineLayer);
-	//
-	//audioRoot->AddChild("startupMusic", startupMusic);
-	//engineLayer->getAudioEngine()->Update(0.0f);
+	GameObject* startupMusic = new GameObject();
+	startupMusic->AddComponent(AUDIO_COMPONENT, new AudioComponent("res/sounds/_Closer.wav", 75.0f));
+	startupMusic->GetComponent<AudioComponent>()->PreUpdate(engineLayer);
+	
+	audioRoot->AddChild("startupMusic", startupMusic);
+	engineLayer->getAudioEngine()->Update(0.0f);
 
 	GameObject* sceneRoot = new GameObject();
 	scene = std::make_unique<PrehistoricScene>("scene0", sceneRoot, engineLayer->getRenderingEngine()->getWindow(),
