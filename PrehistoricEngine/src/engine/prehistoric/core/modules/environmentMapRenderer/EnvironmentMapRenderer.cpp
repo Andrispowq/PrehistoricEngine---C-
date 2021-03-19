@@ -86,7 +86,9 @@ namespace Prehistoric
 	{
 		AssetManager* man = manager->getAssetManager();
 
-		man->removeReference<Texture>(equirectangularMap.handle);
+		if(equirectangularMap.pointer != nullptr)
+			man->removeReference<Texture>(equirectangularMap.handle);
+
 		man->removeReference<Texture>(environmentMap.handle);
 		man->removeReference<Texture>(irradianceMap.handle);
 		man->removeReference<Texture>(prefilterMap.handle);

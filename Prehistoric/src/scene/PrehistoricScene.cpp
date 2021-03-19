@@ -32,7 +32,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 		AssetManager* man = manager->getAssetManager();
 
 		VertexBufferHandle quad = man->loadVertexBuffer(std::nullopt, "quadModel").value();
-		VertexBufferHandle sphere = man->loadVertexBuffer(std::nullopt, "sphereModel ").value();
+		VertexBufferHandle sphere = man->loadVertexBuffer(std::nullopt, "sphereModel").value();
 		ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
 
 		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, quad);

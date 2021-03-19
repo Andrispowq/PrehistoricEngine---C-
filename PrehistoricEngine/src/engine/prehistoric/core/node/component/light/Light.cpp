@@ -6,13 +6,14 @@
 namespace Prehistoric
 {
 	Light::Light(const Vector3f& colour, const Vector3f& intensity)
-		: colour(colour), intensity(intensity)
+		: colour(colour), intensity(intensity), toBeRegistered(true)
 	{
 		type = ComponentType::LightComponent;
 	}
 
 	void Light::PreRender(Renderer* renderer)
 	{
-		renderer->AddLight(this);
+		if(toBeRegistered)
+			renderer->AddLight(this);
 	}
 };

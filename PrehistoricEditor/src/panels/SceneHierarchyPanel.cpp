@@ -251,16 +251,18 @@ void SceneHierarchyPanel::DrawComponents(Prehistoric::GameObject* object)
 	DrawComponent<Prehistoric::RendererComponent>("RendererComponent", object, [](Prehistoric::Component* comp)
 	{
 		Prehistoric::RendererComponent* component = (Prehistoric::RendererComponent*)comp;
+		Prehistoric::Material* mat = component->getMaterial();
 
-		if (component->getPipeline() == nullptr)
+		if (component->getPipeline() == nullptr || mat == nullptr)
+		{
 			return;
+		}
 
 		ImGui::Text("Pipeline Handle: %d", component->getPipelineHandle().handle);
 		ImGui::Text("Material Handle: %d", component->getMaterialHandle().handle);
 		ImGui::Text("Shader Handle: %d", component->getPipeline()->getShaderHandle().handle);
 		ImGui::Text("Textures:");
 
-		Prehistoric::Material* mat = component->getMaterial();
 		for (auto tex : mat->getTextures())
 		{
 			ImGui::Text("%s: (handle) %d", tex.first.c_str(), tex.second.handle);

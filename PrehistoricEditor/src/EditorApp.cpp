@@ -42,7 +42,7 @@ EditorApp::EditorApp()
 	startupSound->setSpatial(true);
 	startupSound->PreUpdate(engineLayer);
 
-	engineLayer->getAudioEngine()->Update(0.0);
+	engineLayer->getAudioEngine()->Update(0.0f);
 
 	WorldLoader loader;
 	loader.LoadWorld("res/world/testLevel.wrld", root, window, manager);
@@ -55,7 +55,7 @@ EditorApp::EditorApp()
 
 	Atmosphere* atmosphere = new Atmosphere(window, manager);
 	atmosphere->setSun(sun->GetComponent<Light>());
-	//root->AddChild("atmosphere", atmosphere);
+	root->AddChild("atmosphere", atmosphere);
 
 	//Load in the environment map
 	if (FrameworkConfig::api == OpenGL)
@@ -65,7 +65,7 @@ EditorApp::EditorApp()
 			EnvironmentMapRenderer::instance = new EnvironmentMapRenderer(engineLayer->getRenderingEngine()->getWindow(), engineLayer->getAssetManager());
 		}
 
-		//EnvironmentMapRenderer::instance->atmosphere = atmosphere;
+		EnvironmentMapRenderer::instance->atmosphere = atmosphere;
 
 		{
 			PR_PROFILE("Environment map generation - Cubemap, Irradiance, Prefilter map");
