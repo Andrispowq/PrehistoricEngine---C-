@@ -38,6 +38,7 @@ namespace Prehistoric
 		void setPauseRendering(bool pauseRendering) { Input::pauseRendering = pauseRendering; }
 
 		Vector2f getCursorPosition() const { return cursorPosition; }
+		Vector2f getCursorDeltaPosition() const { return cursorPosition - prevCursorPosition; }
 		void setCursorPosition(const Vector2f& cursorPosition) { Input::cursorPosition = cursorPosition; }
 
 		virtual void setCursorPositionOnScreen(Window* window, const Vector2f& cursorPosition) = 0;
@@ -81,6 +82,7 @@ namespace Prehistoric
 		std::vector<JoystickID> joysticks;
 
 		Vector2f cursorPosition;
+		Vector2f prevCursorPosition;
 		Vector2f lockedCursorPosition;
 		float scrollOffset;
 

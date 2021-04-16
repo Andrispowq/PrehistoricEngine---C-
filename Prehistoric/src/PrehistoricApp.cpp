@@ -2,6 +2,21 @@
 
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 
+//We go around in a circle, from -range to range on the y and z axes
+static void sun_move_function(Prehistoric::GameObject* object, float frameTime)
+{
+	constexpr float range = 32000.0f;
+	constexpr float anglesPerSecond = 0.5f;
+
+	static float angle = 190.0f;
+
+	float x = cos(ToRadians(angle)) * range;
+	float y = sin(ToRadians(angle)) * range;
+	angle -= (anglesPerSecond * frameTime);
+
+	object->SetPosition({ x, y, 0 });
+}
+
 PrehistoricApp::PrehistoricApp()
 	: scene{nullptr}
 {
@@ -38,6 +53,15 @@ PrehistoricApp::PrehistoricApp()
 
 	engineLayer->SetScene(scene.get());
 
+	//AssembledAssetManager -> stores the primitives of rendering (Pipelines, Materials) in one place
+	//AssetManager -> store the assembling blocks of the primitives (Textures, VertexBuffers, Shaders) in one place
+	//Window -> used in a lot of primitives' creation, so it's worth having it around
+	AssembledAssetManager* manager = engineLayer->getAssetManager();
+	AssetManager* man = manager->getAssetManager();
+	Window* window = engineLayer->getRenderingEngine()->getWindow();
+	Camera* camera = engineLayer->getRenderingEngine()->getCamera();
+	camera->setCameraType(CameraControlType::FPS);
+
 	//Load in the environment map
 	if (FrameworkConfig::api == OpenGL)
 	{
@@ -46,7 +70,7 @@ PrehistoricApp::PrehistoricApp()
 			EnvironmentMapRenderer::instance = new EnvironmentMapRenderer(engineLayer->getRenderingEngine()->getWindow(), engineLayer->getAssetManager());
 		}
 
-		//EnvironmentMapRenderer::instance->atmosphere = (Atmosphere*)sceneRoot->getChild("atmosphere");
+		EnvironmentMapRenderer::instance->atmosphere = nullptr;
 
 		{
 			PR_PROFILE("Environment map generation - Cubemap, Irradiance, Prefilter map");
@@ -55,13 +79,6 @@ PrehistoricApp::PrehistoricApp()
 
 		EnvironmentMapRenderer::instance->enabled = true;
 	}
-
-	//AssembledAssetManager -> stores the primitives of rendering (Pipelines, Materials) in one place
-	//AssetManager -> store the assembling blocks of the primitives (Textures, VertexBuffers, Shaders) in one place
-	//Window -> used in a lot of primitives' creation, so it's worth having it around
-	AssembledAssetManager* manager = engineLayer->getAssetManager();
-	AssetManager* man = manager->getAssetManager();
-	Window* window = engineLayer->getRenderingEngine()->getWindow();
 	
 	if (FrameworkConfig::api == OpenGL)
 	{

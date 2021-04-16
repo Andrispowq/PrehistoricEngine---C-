@@ -26,8 +26,10 @@ namespace Prehistoric
 
 		virtual Texture* getOutputTexture() const { return nullptr; }
 
-		void AddModel(RenderableComponent* renderable);
-		void AddLight(Light* light);
+		void RegisterModel(RenderableComponent* renderable);
+		void RegisterLight(Light* light);
+		void UnregisterModel(RenderableComponent* renderable);
+		void UnregisterLight(Light* light);
 
 		Window* getWindow() const { return window; }
 		Camera* getCamera() const { return camera; }

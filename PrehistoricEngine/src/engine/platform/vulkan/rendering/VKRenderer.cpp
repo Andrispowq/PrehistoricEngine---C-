@@ -123,7 +123,7 @@ namespace Prehistoric
 
 		window->Render(commandPool->getCommandBuffer(index));
 
-		//Clear the lists for the next iteration
+		//Clear the lists
 		models_3d.clear();
 		models_transparency.clear();
 		models_2d.clear();

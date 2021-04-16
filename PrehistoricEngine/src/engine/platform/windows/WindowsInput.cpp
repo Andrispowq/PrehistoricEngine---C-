@@ -262,6 +262,8 @@ namespace Prehistoric
 
 	bool WindowsInput::Update()
 	{
+		prevCursorPosition = cursorPosition;
+
 		scrollOffset = 0;
 
 		pushedKeys.clear();

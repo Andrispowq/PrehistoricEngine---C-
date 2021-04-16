@@ -40,8 +40,12 @@ namespace Prehistoric
 
 	void RendererComponent::PreRender(Renderer* renderer)
 	{
-		if(pipeline.pointer != nullptr)
-			renderer->AddModel(this);
+		if (pipeline.pointer == nullptr)
+		{
+			return;
+		}
+
+		renderer->RegisterModel(this);
 	}
 
 	void RendererComponent::Render(Renderer* renderer) const

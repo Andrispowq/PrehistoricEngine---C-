@@ -2,6 +2,7 @@
 #include "Light.h"
 
 #include "prehistoric/common/rendering/Renderer.h"
+#include "prehistoric/core/node/GameObject.h"
 
 namespace Prehistoric
 {
@@ -11,9 +12,17 @@ namespace Prehistoric
 		type = ComponentType::LightComponent;
 	}
 
+	Light::~Light()
+	{
+	}
+
 	void Light::PreRender(Renderer* renderer)
 	{
-		if(toBeRegistered)
-			renderer->AddLight(this);
+		bool shouldRegister = parent->isEnabled();
+
+		if (toBeRegistered)
+		{
+			renderer->RegisterLight(this);
+		}
 	}
 };

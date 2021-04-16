@@ -9,7 +9,7 @@ namespace Prehistoric
 	{
 	public:
 		Light(const Vector3f& colour = 0, const Vector3f& intensity = 1);
-		virtual ~Light() {}
+		virtual ~Light();
 
 		virtual void PreRender(Renderer* renderer) override;
 

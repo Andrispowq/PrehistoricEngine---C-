@@ -7,6 +7,12 @@
 
 namespace Prehistoric
 {
+    enum class CameraControlType
+    {
+        FPS = 0,
+        Editor = 1
+    };
+
     class Camera
     {
     public:
@@ -41,8 +47,15 @@ namespace Prehistoric
         inline void setSpeedControl(InputData data) { this->speedControl = data; }
         inline void setPosition(Vector3f pos) { this->position = pos; }
 
+        inline void setCameraType(CameraControlType operationMode) { this->operationMode = operationMode; SynchroniseCameras(); }
+
         bool isChanged() const { return cameraMoved || cameraRotated; }
     private:
+
+        void UpdateFPSCamera(Window* window, float delta);
+        void UpdateEditorCamera(Window* window, float delta);
+        void SynchroniseCameras(); //Makes it so that when you switch to FPS from Editor, you can continue from the same location and direction
+
         std::vector<CameraInput> inputs;
         InputData speedControl;
 
@@ -51,13 +64,16 @@ namespace Prehistoric
         Vector3f forward;
         Vector3f previousForward;
         Vector3f up;
+
         float movAmt;
         float rotAmt;
+
         Matrix4f viewMatrix;
         Matrix4f projectionMatrix;
         Matrix4f viewProjectionMatrix;
         Matrix4f previousViewMatrix;
         Matrix4f previousViewProjectionMatrix;
+
         bool cameraMoved;
         bool cameraRotated;
 
@@ -65,6 +81,7 @@ namespace Prehistoric
         float height;
         float fovY;
 
+        //For FPS camera
         float rotYstride;
         float rotYamt;
         float rotYcounter;
@@ -74,6 +91,13 @@ namespace Prehistoric
         float rotXcounter;
         bool rotXInitiated = false;
         float mouseSensitivity;
+
+        //For editor camera
+        float distanceFromCentre = 10.0f;
+        float angleAroundWorld = 180.0f;
+        float pitch = 10.0f, yaw = 0, roll = 0;
+
+        CameraControlType operationMode = CameraControlType::Editor;
 
         Vector4f* frustumPlanes;
         Vector3f* frustumCorners;
