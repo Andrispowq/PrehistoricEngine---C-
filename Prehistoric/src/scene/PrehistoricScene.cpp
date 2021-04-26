@@ -6,9 +6,9 @@
 static void sun_move_function(Prehistoric::GameObject* object, float frameTime)
 {
 	constexpr float range = 32000.0f;
-	constexpr float anglesPerSecond = 0.5f;
+	constexpr float anglesPerSecond = 0.0f; // 0.5f
 
-	static float angle = 170.0f;
+	static float angle = 175.0f;
 
 	float x = cos(ToRadians(angle)) * range;
 	float y = sin(ToRadians(angle)) * range;
@@ -31,33 +31,41 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 
 		AssetManager* man = manager->getAssetManager();
 
-		VertexBufferHandle quad = man->loadVertexBuffer(std::nullopt, "res/models/quad.obj").value();
-		VertexBufferHandle sphere = man->loadVertexBuffer(std::nullopt, "res/models/sphere.obj").value();
+		VertexBufferHandle quad = man->loadVertexBuffer(std::nullopt, "quadModel").value();
+		VertexBufferHandle sphere = man->loadVertexBuffer(std::nullopt, "sphereModel").value();
+		ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
 
-		quad->setFrontFace(FrontFace::COUNTER_CLOCKWISE);
-		sphere->setFrontFace(FrontFace::CLOCKWISE);
-
-		ShaderHandle shader = man->loadShader("pbr").value();
-
-		PipelineHandle pipeline = manager->storePipeline(new VKGraphicsPipeline(window, man, shader, quad));
-		PipelineHandle pipeline2 = manager->storePipeline(new VKGraphicsPipeline(window, man, shader, sphere));
+		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, quad);
+		PipelineHandle pipeline2 = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, sphere);
 
 		MaterialHandle material = manager->storeMaterial(new Material(man));
 		material->addTexture(ALBEDO_MAP, man->loadTexture("res/textures/oakFloor/oakFloor_DIF.png", Anisotropic).value());
 		material->addTexture(NORMAL_MAP, man->loadTexture("res/textures/oakFloor/oakFloor_NRM.png").value());
 		material->addTexture(MROT_MAP, man->loadTexture("res/textures/oakFloor/oakFloor_MROT.png").value());
 
+		MaterialHandle material2 = manager->storeMaterial(new Material(man));
+		material2->addVector4f(MROT, { 0.2f, 0.3f, 0, 0 });
+		material2->addVector3f(COLOUR, Vector3f(1));
+
 		material->addVector4f(MROT, { -1, -1, -1, 0 });
 
 		RendererComponent* renderer = new RendererComponent(window, manager, pipeline, material);
+		RendererComponent* renderer2 = new RendererComponent(window, manager, pipeline2, material2);
 
 		GameObject* obj = new GameObject();
 		obj->AddComponent(RENDERER_COMPONENT, renderer);
 		obj->Rotate({ -90, 0, 0 });
-		obj->Move({ 0, 0, 0 });
+		obj->Move({ 0, 0, 15 });
 		root->AddChild("OBJ", obj);
 
-		float space = 4.0f;
+		GameObject* obj2 = new GameObject();
+		obj2->AddComponent(RENDERER_COMPONENT, renderer2);
+		obj2->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0.67f, 0.734f), 1000.0f));
+		obj2->Rotate({ 0, 0, 0 });
+		obj2->Move({ 0, 30, -20 });
+		root->AddChild("OBJ2", obj2);
+
+		/*float space = 4.0f;
 		float count = 7.0f;
 
 		for (float x = -(count / 2.0f); x <= (count / 2.0f); x++)
@@ -73,7 +81,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 				obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline2, material2));
 				root->AddChild(std::string("obj" + std::to_string(x) + std::to_string(y)), obj);
 			}
-		}
+		}*/
 	}
 	else
 	{
@@ -81,36 +89,33 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 
 		loader.LoadWorld(worldFile, root, window, manager);
 
-		/*GameObject* sun = new GameObject();
+		GameObject* sun = new GameObject();
 		sun->setUpdateFunction(sun_move_function);
 		sun->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0.95f, 0.87f), Vector3f(10000000000.0f)));
-		root->AddChild("sun", sun);*/
+		sun_move_function(sun, 0.0f);
+		//root->AddChild("sun", sun);
 
-		/*Atmosphere* atm = new Atmosphere(window, resourceStorage);
+		Atmosphere* atm = new Atmosphere(window, manager);
 		atm->setSun(sun->GetComponent<Light>());
-		root->AddChild("Atmosphere", atm);*/
+		//root->AddChild("atmosphere", atm);
 
 		Terrain* terrain = new Terrain(window, camera, manager, "res/config/terrain_0.cfg");
 		terrain->UpdateQuadtree();
-		//terrain->setEnabled(false);
-
 		root->AddChild("terrain0", terrain);
 
 		GameObject* slider = new GUISlider(window, manager, 0.0f, 2.0f, Vector3f(0.5f), &EngineConfig::rendererExposure, sizeof(float), true);
 		slider->SetPosition({ 0.5f, 0.5f, 0 });
 		slider->SetScale({ 0.125f, 0.05f, 1 });
 		root->AddChild("slider", slider);
-
+		
 		GameObject* slider2 = new GUISlider(window, manager, 1.0f, 3.4f, Vector3f(0.4f), &EngineConfig::rendererGamma, sizeof(float), true);
 		slider2->SetPosition({ 0.5f, 0.25f, 0 });
 		slider2->SetScale({ 0.125f, 0.05f, 1 });
 		root->AddChild("slider2", slider2);
 
-		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/sphere.obj").value();
-		vbo->setFrontFace(FrontFace::CLOCKWISE);
-		ShaderHandle shader = man->loadShader("pbr").value();
-
-		PipelineHandle pipeline = manager->storePipeline(new GLGraphicsPipeline(window, man, shader, vbo));
+		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "sphereModel").value();
+		ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
+		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
 
 		float space = 4.0f;
 		float count = 7.0f;

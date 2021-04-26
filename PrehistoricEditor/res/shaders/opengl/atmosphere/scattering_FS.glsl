@@ -34,6 +34,9 @@ uniform float horizontalVerticalShift;
 uniform int width;
 uniform int height;
 uniform int isReflection;
+uniform int isCubemap;
+
+uniform float exposure;
 
 vec2 rsi(vec3 r0, vec3 rd, float sr)
 {
@@ -174,6 +177,8 @@ void main()
 	
 	float sunradius = length(normalize(ray_world) - normalize(sunPosition));
 
+    out_Colour = 1.0 - exp(-out_Colour * exposure);
+
 	// no sun rendering when scene reflection
 	if(sunradius < sunRadius && isReflection == 0)
 	{
@@ -183,10 +188,15 @@ void main()
 		
 		smoothRadius = smoothstep(0, 1, 0.18f / sunradius - 0.2f);
 		out_LightScattering = mix(vec3(0), sunColour, smoothRadius);
+
+        if (isCubemap != 0)
+        {
+            out_Colour += out_LightScattering * 1000;
+        }
 	}
 	
-    positionMetallic = vec4(out_Colour, 1.0);//vec3(worldPosition), 0.0);
+    positionMetallic = vec4(out_Colour, 0.0);
     albedoRoughness = vec4(out_Colour, 0.0);
     normalLit = vec4(vec3(0.0), 0.0);
-    emissionExtra = vec4(out_LightScattering, 1.0);
+    emissionExtra = vec4(out_LightScattering, 0.0);
 }

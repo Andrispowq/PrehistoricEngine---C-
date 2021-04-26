@@ -22,6 +22,9 @@ namespace Prehistoric
 		void addFloat(const std::string& key, float value);
 		void addInt(const std::string& key, int value);
 
+		uint64_t GetHash();
+		uint64_t GetTextureHash();
+
 		Texture* getTexture(const std::string& key) const;
 
 		Vector4f getVector4f(const std::string& key) const;
@@ -42,6 +45,8 @@ namespace Prehistoric
 		std::unordered_map<std::string, int>& getInts() { return ints; }
 	private:
 		AssetManager* manager;
+		uint64_t hash = 0;
+		uint64_t texHash = 0;
 
 		std::unordered_map<std::string, TextureHandle> textures;
 		std::unordered_map<std::string, Vector4f> vector4s;

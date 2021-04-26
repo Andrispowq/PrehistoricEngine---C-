@@ -50,6 +50,8 @@ namespace Prehistoric
 
 		PipelineHandle pipeline;
 		RenderPriority priority;
+
+		bool registered = false;
 	};
 };
 

@@ -287,7 +287,6 @@ namespace Prehistoric
 	void VKShader::RegisterInstance()
 	{
 		descriptorPool->registerInstance();
-		texUpdated.push_back(false);
 	}
 
 	VkShaderModule VKShader::CreateShaderModule(const std::vector<char>& code) const

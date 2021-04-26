@@ -16,8 +16,9 @@ namespace Prehistoric
 		GLAtmosphereScatteringShader();
 		virtual ~GLAtmosphereScatteringShader() {}
 
-		void UpdateUniforms(GameObject* atm, Matrix4f view, Matrix4f proj) const;
-		virtual void UpdateShaderUniforms(Camera* camera, const std::vector<Light*>& lights, uint32_t instance_index = 0) const override;
+		void UpdateUniforms(GameObject* atmosphere, Matrix4f view, Matrix4f projection) const;
+
+		virtual void UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const override;
 		virtual void UpdateObjectUniforms(GameObject* object, uint32_t instance_index = 0) const override;
 	};
 };

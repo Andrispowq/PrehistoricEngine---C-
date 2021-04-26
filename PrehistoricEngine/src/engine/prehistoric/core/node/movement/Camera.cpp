@@ -73,17 +73,60 @@ namespace Prehistoric
 		getLeft().print();
 	}
 
+	
+
 	void Camera::Update(Window* window, float delta)
 	{
 		this->previousPosition = position;
 		this->previousForward = forward;
+
 		cameraMoved = false;
 		cameraRotated = false;
 
+		//Move by input systems
+		if (operationMode == CameraControlType::FPS)
+		{
+			UpdateFPSCamera(window, delta);
+		}
+		else
+		{
+			UpdateEditorCamera(window, delta);
+		}
+
+		if (position != previousPosition)
+		{
+			cameraMoved = true;
+		}
+		if (forward != previousForward)
+		{
+			cameraRotated = true;
+		}
+	}
+
+	void Camera::Move(const Vector3f& dir, const float& amount)
+	{
+		this->position += dir * amount;
+	}
+
+	void Camera::RotateX(const float& angle)
+	{
+		Vector3f hAxis = yAxis.cross(forward).normalise();
+		this->forward = forward.rotate(hAxis, angle).normalise();
+		this->up = forward.cross(hAxis).normalise();
+	}
+
+	void Camera::RotateY(const float& angle)
+	{
+		Vector3f hAxis = yAxis.cross(forward).normalise();
+		this->forward = forward.rotate(yAxis, angle).normalise();
+		this->up = forward.cross(hAxis).normalise();
+	}
+
+	void Camera::UpdateFPSCamera(Window* window, float delta)
+	{
 		movAmt += CameraInput::GetKey(speedControl) * delta * 35.0f;
 		movAmt = std::fmax(0.02f, movAmt);
 
-		//Move by input systems
 		bool movedForward = false, movedBackward = false, movedRight = false, movedLeft = false,
 			rotUp = false, rotDown = false, rotRight = false, rotLeft = false;
 
@@ -228,37 +271,62 @@ namespace Prehistoric
 			}
 		}
 
-		if (position != previousPosition)
-		{
-			cameraMoved = true;
-		}
-		if (forward != previousForward)
-		{
-			cameraRotated = true;
-		}
-
 		this->previousViewMatrix = viewMatrix;
 		viewMatrix = Matrix4f::View(forward, up) * Matrix4f::Translation(position * -1);
 		viewProjectionMatrix = projectionMatrix * viewMatrix;
 	}
 
-	void Camera::Move(const Vector3f& dir, const float& amount)
+	void Camera::UpdateEditorCamera(Window* window, float delta)
 	{
-		this->position += dir * amount;
+		static Vector3f playerPos = { 0, 0, 0 };
+		static float playerRotY = 0.f;
+
+		float zoom = InputInstance.getScrollOffset() * mouseSensitivity;
+		distanceFromCentre -= zoom;
+
+		if (InputInstance.IsButtonHeld((InputCode)1))
+		{
+			float dy = InputInstance.getCursorDeltaPosition().y;
+			pitch -= dy * 0.1f;
+		}
+
+		if (InputInstance.IsButtonHeld((InputCode)0))
+		{
+			float dx = InputInstance.getCursorDeltaPosition().x;
+			angleAroundWorld -= dx * 0.3f;
+		}
+
+		float horizDist = distanceFromCentre * std::cos(ToRadians(pitch));
+		float vertDist = distanceFromCentre * std::sin(ToRadians(pitch));
+
+		float theta = playerRotY + angleAroundWorld;
+		float offX = horizDist * std::sin(ToRadians(theta));
+		float offZ = horizDist * std::cos(ToRadians(theta));
+		position.x = playerPos.x - offX;
+		position.z = playerPos.z - offZ;
+		position.y = playerPos.y + vertDist;
+
+		yaw = 180 - theta;
+
+		PR_LOG_MESSAGE("Pitch: %f, yaw: %f, roll: %f\n", pitch, yaw, roll);
+
+		Matrix4f view = Matrix4f::Identity();
+		Matrix4f rotX = Matrix4f::Rotation({ pitch, 0, 0 });
+		Matrix4f rotY = Matrix4f::Rotation({ 0, yaw, 0 });
+		Matrix4f rotZ = Matrix4f::Rotation({ 0, 0, roll });
+		Matrix4f translation = Matrix4f::Translation(position * -1);
+		view = view * translation;
+		view = view * rotY;
+		view = view * rotX;
+		view = view * rotZ;
+
+		this->previousViewMatrix = viewMatrix;
+		viewMatrix = view;
+		viewProjectionMatrix = projectionMatrix * viewMatrix;
 	}
 
-	void Camera::RotateX(const float& angle)
+	void Camera::SynchroniseCameras()
 	{
-		Vector3f hAxis = yAxis.cross(forward).normalise();
-		this->forward = forward.rotate(hAxis, angle).normalise();
-		this->up = forward.cross(hAxis).normalise();
-	}
-
-	void Camera::RotateY(const float& angle)
-	{
-		Vector3f hAxis = yAxis.cross(forward).normalise();
-		this->forward = forward.rotate(yAxis, angle).normalise();
-		this->up = forward.cross(hAxis).normalise();
 	}
 
 	void Camera::SetProjection(float fov, float width, float height)

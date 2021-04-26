@@ -22,11 +22,19 @@ namespace Prehistoric
 		mrot = glGetUniformLocation(program, (std::string("material.") + MROT).c_str());
 	}
 
-	void GLBasicShader::UpdateShaderUniforms(Camera* camera, const std::vector<Light*>& lights, uint32_t instance_index) const
+	void GLBasicShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
 	{
 		SetUniform("m_view", camera->getViewMatrix());
 		SetUniform("m_projection", camera->getProjectionMatrix());
 		SetUniform("cameraPosition", camera->getPosition());
+	}
+
+	void GLBasicShader::UpdateTextureUniforms(Material* material, uint32_t descriptor_index) const
+	{
+		material->getTexture(ALBEDO_MAP)->Bind(0);
+		SetUniformi(albedoMap, 0);
+		material->getTexture(MROT_MAP)->Bind(1);
+		SetUniformi(mrotMap, 1);
 	}
 
 	void GLBasicShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const
@@ -34,11 +42,6 @@ namespace Prehistoric
 		SetUniform(m_transform, object->getWorldTransform().getTransformationMatrix());
 
 		Material* material = object->GetComponent<RendererComponent>()->getMaterial();
-
-		material->getTexture(ALBEDO_MAP)->Bind(0);
-		SetUniformi(albedoMap, 0);
-		material->getTexture(MROT_MAP)->Bind(1);
-		SetUniformi(mrotMap, 1);
 
 		SetUniform(colour, material->getVector3f(COLOUR));
 		SetUniform(mrot, material->getVector4f(MROT));

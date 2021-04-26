@@ -82,7 +82,7 @@ namespace Prehistoric
 		Vector2f negate() const { return _mm_sub_ps(_mm_set_ss(0.0), reg); };
 		Vector2f negated() { return reg = _mm_sub_ps(_mm_set_ss(0.0), reg); };
 
-		void print() const { PR_LOG_MESSAGE("[ %f, %f ]\n", (float)x, (float)y); }
+		void print() const { printf("[ %f, %f ]\n", (float)x, (float)y); }
 
 		constexpr static uint64_t size() { return 2 * sizeof(float); }
 	public:
@@ -163,7 +163,7 @@ namespace Prehistoric
 
 		Vector2f xy() { return Vector2f(x, y); }
 
-		void print() const { PR_LOG_MESSAGE("[ %f, %f, %f ]\n", (float)x, (float)y, (float)z); }
+		void print() const { printf("[ %f, %f, %f ]\n", (float)x, (float)y, (float)z); }
 
 		constexpr static uint64_t size() { return 3 * sizeof(float); }
 	public:
@@ -248,7 +248,7 @@ namespace Prehistoric
 		Vector4f negate() const { return _mm_sub_ps(_mm_set_ss(0.0), reg); };
 		Vector4f negated() { return reg = _mm_sub_ps(_mm_set_ss(0.0), reg); };
 
-		void print() const { PR_LOG_MESSAGE("[ %f, %f, %f, %f ]\n", (float)x, (float)y, (float)z, (float)w); }
+		void print() const { printf("[ %f, %f, %f, %f ]\n", (float)x, (float)y, (float)z, (float)w); }
 
 		Vector3f xyz() const { return Vector3f(x, y, z); }
 
@@ -344,7 +344,7 @@ namespace Prehistoric
 		Quaternionf negate() const { return _mm_sub_ps(_mm_set_ss(0.0), reg); };
 		Quaternionf negated() { return reg = _mm_sub_ps(_mm_set_ss(0.0), reg); };
 
-		void print() const { PR_LOG_MESSAGE("[ %f, %f, %f, %f ]", (float)x, (float)y, (float)z, (float)w); }
+		void print() const { printf("[ %f, %f, %f, %f ]", (float)x, (float)y, (float)z, (float)w); }
 	public:
 		union
 		{
@@ -410,16 +410,16 @@ namespace Prehistoric
 
 		void print() const
 		{
-			PR_LOG_MESSAGE("Matrix: \n");
+			printf("Matrix: \n");
 
 			for (int i = 0; i < 4; i++)
 			{
 				for (int j = 0; j < 4; j++)
 				{
-					PR_LOG_MESSAGE("\t%f", m[j * 4 + i]);
+					printf("\t%f", m[j * 4 + i]);
 				}
 
-				PR_LOG_MESSAGE("\n");
+				printf("\n");
 			}
 		}
 	private:
@@ -504,7 +504,7 @@ namespace Prehistoric
 		Vector2<T>& xy() { return this(x, y); }
 		Vector2<T>& yx() { return this(y, x); }
 
-		void print() const { PR_LOG_MESSAGE("[ %f, %f ]\n", (T)x, (T)y); }
+		void print() const { printf("[ %f, %f ]\n", (T)x, (T)y); }
 
 		static size_t size() { return 2 * sizeof(float); }
 	public:
@@ -611,7 +611,7 @@ namespace Prehistoric
 
 		Vector2<T> xy() { return Vector2<T>(x, y); }
 
-		void print() const { PR_LOG_MESSAGE("[ %f, %f, %f ]\n", (T)x, (T)y, (T)z); }
+		void print() const { printf("[ %f, %f, %f ]\n", (T)x, (T)y, (T)z); }
 
 		static size_t size() { return 3 * sizeof(float); }
 	public:
@@ -706,7 +706,7 @@ namespace Prehistoric
 		Vector4<T> negate() const { return Vector4<T>(-x, -y, -z, -w); };
 		Vector4<T> negated() { this->x = -x; this->y = -y; this->z = -z; this->w = -w; return *this; };
 
-		void print() const { PR_LOG_MESSAGE("[ %f, %f, %f, %f ]\n", (T)x, (T)y, (T)z, (T)w); }
+		void print() const { printf("[ %f, %f, %f, %f ]\n", (T)x, (T)y, (T)z, (T)w); }
 
 		static size_t size() { return 4 * sizeof(float); }
 	public:
@@ -808,7 +808,7 @@ namespace Prehistoric
 		Quaternion<T> negate() const { return Quaternion<T>(-x, -y, -z, -w); };
 		Quaternion<T> negated() { this->x = -x; this->y = -y; this->z = -z; this->w = -w; return *this; };
 
-		void print() const { PR_LOG_MESSAGE("[ %f, %f, %f, %f ]", (T)x, (T)y, (T)z, (T)w); }
+		void print() const { printf("[ %f, %f, %f, %f ]", (T)x, (T)y, (T)z, (T)w); }
 	public:
 		union
 		{
@@ -897,16 +897,16 @@ namespace Prehistoric
 
 		void print() const
 		{
-			PR_LOG_MESSAGE("Matrix: \n");
+			printf("Matrix: \n");
 
 			for (int i = 0; i < 4; i++)
 			{
 				for (int j = 0; j < 4; j++)
 				{
-					PR_LOG_MESSAGE("\t%f", m[j * 4 + i]);
+					printf("\t%f", m[j * 4 + i]);
 				}
 
-				PR_LOG_MESSAGE("\n");
+				printf("\n");
 			}
 		}
 	private:

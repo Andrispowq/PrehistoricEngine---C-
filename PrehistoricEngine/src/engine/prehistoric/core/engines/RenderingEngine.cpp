@@ -1,12 +1,12 @@
 #include "Includes.hpp"
 #include "RenderingEngine.h"
 
-#include "platform/windows/WindowsWindow.h"
-
 #include "platform/opengl/rendering/GLRenderer.h"
 #include "platform/vulkan/rendering/VKRenderer.h"
 
 #include "prehistoric/common/util/DeviceProperties.h"
+
+#include "platform/windows/WindowsWindow.h"
 
 namespace Prehistoric
 {
@@ -15,6 +15,7 @@ namespace Prehistoric
 	RenderingEngine::RenderingEngine()
 		: window(nullptr), camera(nullptr), renderer(nullptr)
 	{
+
 #if defined(PR_WINDOWS_64)
 		window = std::make_unique<WindowsWindow>();
 #elif
@@ -27,6 +28,7 @@ namespace Prehistoric
 		}
 
 		window->setClearColour({ 0.23f, 0.78f, 0.88f, 1.0f });
+
 
 		Capabilities::getInstance()->QueryCapabilities(window->getContext()->getDevices());
 		DeviceProperties properties;
@@ -42,15 +44,6 @@ namespace Prehistoric
 		camera->setSpeedControl({ MOUSE_SCROLL, PR_KEY_UNKNOWN, PR_JOYSTICK_1 });
 	}
 
-	RenderingEngine::~RenderingEngine()
-	{
-		//Order is important!
-		delete renderer.release();
-
-		delete window.release();
-		delete camera.release();
-	}
-
 	void RenderingEngine::Init(AssembledAssetManager* manager)
 	{
 		if (FrameworkConfig::api == OpenGL)
@@ -61,12 +54,13 @@ namespace Prehistoric
 		{
 			renderer = std::make_unique<VKRenderer>(window.get(), camera.get(), manager);
 		}
+	}
 
-		if (FrameworkConfig::api == OpenGL)
-		{
-			glEnable(GL_DEPTH_TEST);
-			glDepthFunc(GL_LEQUAL);
-		}
+	void RenderingEngine::PreRelease()
+	{
+		//These depend on the Asset Manager, which needs to be deleted before the windows, so nasty hack ahead
+		delete renderer.release();
+		delete camera.release();
 	}
 
 	void RenderingEngine::OnEvent(Event& event)

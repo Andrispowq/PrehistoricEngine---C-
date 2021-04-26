@@ -33,21 +33,26 @@ namespace Prehistoric
 
 	RendererComponent::~RendererComponent()
 	{
-		if(material.pointer != nullptr)
+		//We can actually have null materials in here, hence the check against the handle not the pointer
+		if(material.handle != -1)
 			manager->removeReference<Material>(material.handle);
 	}
 
 	void RendererComponent::PreRender(Renderer* renderer)
 	{
-		if(pipeline.pointer != nullptr)
-			renderer->AddModel(this);
+		if (pipeline.pointer == nullptr)
+		{
+			return;
+		}
+
+		renderer->RegisterModel(this);
 	}
 
 	void RendererComponent::Render(Renderer* renderer) const
 	{
 		pipeline->BindPipeline(renderer->getDrawCommandBuffer());
-		pipeline->getShader()->UpdateShaderUniforms(renderer->getCamera(), renderer->getLights());
-		pipeline->getShader()->UpdateSharedUniforms(parent);
+		pipeline->getShader()->UpdateGlobalUniforms(renderer->getCamera(), renderer->getLights());
+		pipeline->getShader()->UpdateTextureUniforms(material.pointer, 0);
 		pipeline->getShader()->UpdateObjectUniforms(parent);
 
 		pipeline->RenderPipeline();

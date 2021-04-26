@@ -21,7 +21,7 @@ namespace Prehistoric
 
 			if (FrameworkConfig::api == OpenGL)
 			{
-				shader = manager->getAssetManager()->loadShader("gui").value();
+				shader = manager->getAssetManager()->loadShader(ShaderName::Gui).value();
 				pipeline = manager->storePipeline(new GLGraphicsPipeline(window, manager->getAssetManager(), shader, vbo));
 			}
 			else if (FrameworkConfig::api == Vulkan)

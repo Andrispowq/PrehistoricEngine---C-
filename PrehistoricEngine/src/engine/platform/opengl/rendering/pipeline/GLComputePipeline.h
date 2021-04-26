@@ -19,6 +19,8 @@ namespace Prehistoric
 		virtual void BindPipeline(CommandBuffer* buffer) const override;
 		virtual void RenderPipeline() const override;
 		virtual void UnbindPipeline() const override;
+
+		virtual uint64_t GetHash() override;
 	};
 };
 

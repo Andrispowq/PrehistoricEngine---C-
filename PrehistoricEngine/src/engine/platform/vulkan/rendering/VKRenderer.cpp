@@ -123,7 +123,7 @@ namespace Prehistoric
 
 		window->Render(commandPool->getCommandBuffer(index));
 
-		//Clear the lists for the next iteration
+		//Clear the lists
 		models_3d.clear();
 		models_transparency.clear();
 		models_2d.clear();
@@ -136,17 +136,25 @@ namespace Prehistoric
 		uint32_t index = swapchain->getAquiredImageIndex();
 		VKCommandBuffer* buffer = commandPool->getCommandBuffer(index);
 
+		uint32_t counter = 0;
 		for (auto pipeline : models_3d)
 		{
 			Pipeline* pl = pipeline.first;
 
 			pl->BindPipeline(buffer);
-			pl->getShader()->UpdateShaderUniforms(camera, lights);
-			pl->getShader()->UpdateSharedUniforms(pipeline.second[0]->getParent()); //Safe -> there is at least 1 element in the array
-
-			for (size_t i = 0; i < pipeline.second.size(); i++)
+			pl->getShader()->UpdateGlobalUniforms(camera, lights);
+			
+			for (auto material : pipeline.second)
 			{
-				pipeline.second[i]->BatchRender((uint32_t)i);
+				pl->getShader()->UpdateTextureUniforms(material.first, (uint32_t)counter);
+
+				uint32_t counter2 = 0;
+				for (size_t i = 0; i < material.second.size(); i++)
+				{
+					material.second[i]->BatchRender((uint32_t)(counter + counter2++));
+				}
+
+				counter++;
 			}
 
 			pl->UnbindPipeline();
@@ -158,13 +166,17 @@ namespace Prehistoric
 			Pipeline* pl = pipeline.first;
 
 			pl->BindPipeline(buffer);
-			pl->getShader()->UpdateShaderUniforms(camera, lights);
-			pl->getShader()->UpdateSharedUniforms(pipeline.second[0]->getParent()); //Safe -> there is at least 1 element in the array
+			pl->getShader()->UpdateGlobalUniforms(camera, lights);
 
-			for (size_t i = 0; i < pipeline.second.size(); i++)
+			uint32_t counter = 0;
+			for (auto material : pipeline.second)
 			{
-				pl->getShader()->UpdateObjectUniforms(pipeline.second[i]->getParent());
-				pipeline.second[i]->BatchRender((uint32_t)i);
+				pl->getShader()->UpdateTextureUniforms(material.first, counter++);
+
+				for (size_t i = 0; i < material.second.size(); i++)
+				{
+					material.second[i]->BatchRender((uint32_t)i);
+				}
 			}
 
 			pl->UnbindPipeline();
@@ -188,67 +200,5 @@ namespace Prehistoric
 
 	void VKRenderer::BuildCommandBuffers()
 	{
-		VKSwapchain* swapchain = (VKSwapchain*)window->getSwapchain();
-
-		for (size_t i = 0; i < swapchain->getSwapchainImages().size(); i++)
-		{
-			VKCommandBuffer* buffer = commandPool->getCommandBuffer((int)i);
-
-			buffer->BindBuffer();
-			renderpass->BeginRenderpass(buffer, primaryFramebuffers[i].get(), swapchain->getSwapchainExtent(), swapchain->getClearColour());
-
-			for (auto pipeline : models_3d)
-			{
-				Pipeline* pl = pipeline.first;
-
-				pl->BindPipeline(buffer);
-				pl->getShader()->UpdateShaderUniforms(camera, lights);
-				pl->getShader()->UpdateSharedUniforms(pipeline.second[0]->getParent()); //Safe -> there is at least 1 element in the array
-
-				for (size_t i = 0; i < pipeline.second.size(); i++)
-				{
-					pipeline.second[i]->BatchRender((uint32_t)i);
-				}
-
-				pl->UnbindPipeline();
-			}
-
-			//TODO: enable alpha blending
-			for (auto pipeline : models_transparency)
-			{
-				Pipeline* pl = pipeline.first;
-
-				pl->BindPipeline(buffer);
-				pl->getShader()->UpdateShaderUniforms(camera, lights);
-				pl->getShader()->UpdateSharedUniforms(pipeline.second[0]->getParent()); //Safe -> there is at least 1 element in the array
-
-				for (size_t i = 0; i < pipeline.second.size(); i++)
-				{
-					pipeline.second[i]->BatchRender((uint32_t)i);
-				}
-
-				pl->UnbindPipeline();
-			}
-
-			//TODO: disable alpha blending and depth testing
-			for (auto pipeline : models_2d)
-			{
-				Pipeline* pl = pipeline.first;
-
-				pl->BindPipeline(buffer);
-
-				for (size_t i = 0; i < pipeline.second.size(); i++)
-				{
-					pipeline.second[i]->BatchRender((uint32_t)i);
-				}
-
-				pl->UnbindPipeline();
-			}
-
-			renderpass->EndRenderpass(buffer);
-			buffer->UnbindBuffer();
-		}
-
-		commandBuffersReady = true;
 	}
 };

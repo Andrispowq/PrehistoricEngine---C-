@@ -30,10 +30,9 @@ namespace Prehistoric
 		bool AddShader(const std::vector<char>& code, ShaderType type) override;
 		bool CompileShader() const override;
 
-		virtual void UpdateConstantUniforms(Camera* camera, const std::vector<Light*>& lights) const {}
-		virtual void UpdateShaderUniforms(Camera* camera, const std::vector<Light*>& lights, uint32_t instance_index = 0) const override {};
-		virtual void UpdateSharedUniforms(GameObject* object, uint32_t instance_index = 0) const override {}
-		virtual void UpdateObjectUniforms(GameObject* object, uint32_t instance_index = 0) const override {};
+		virtual void UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const override {}
+		virtual void UpdateTextureUniforms(Material* material, uint32_t descriptor_index = 0) const override {}
+		virtual void UpdateObjectUniforms(GameObject* object, uint32_t instance_index = 0) const override {}
 
 		virtual void SetUniformi(const std::string& name, int value, size_t offset = 0, uint32_t instance_index = 0) const override { glUniform1i(getUniformLocation(name), value); }
 		virtual void SetUniformf(const std::string& name, float value, size_t offset = 0, uint32_t instance_index = 0) const override { glUniform1f(getUniformLocation(name), value); }

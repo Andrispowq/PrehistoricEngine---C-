@@ -38,6 +38,8 @@ namespace Prehistoric
 		double last_frameTime;
 		int last_fps;
 
+		std::unique_ptr<Window> window;
+
 		CoreEngine* engineLayer;
 		ImGuiLayer* imGUILayer;
 

@@ -77,6 +77,15 @@ namespace Prehistoric
 
 	std::optional<VertexBufferHandle> AssetManager::loadVertexBuffer(std::optional<Mesh> mesh, const std::string& name, BatchSettings settings)
 	{
+		if (settings == BatchSettings::QueuedLoad)
+		{
+			/*
+				We don't know when the commands will be dispatched, so we can't use a stack variable here
+			*/
+			vertexBufferLoader->LoadResource(false, name, nullptr);
+			return std::nullopt;
+		}
+
 		auto index = ID_map.find(name);
 		if (index != ID_map.end())
 		{
@@ -105,9 +114,56 @@ namespace Prehistoric
 		return handle;
 	}
 
-	std::optional<ShaderHandle> AssetManager::loadShader(const std::string& location, BatchSettings settings)
+	std::optional<ShaderHandle> AssetManager::loadShader(ShaderName type, BatchSettings settings)
 	{
-		auto index = ID_map.find(location);
+		std::string name;
+		switch (type)
+		{
+		case Prehistoric::ShaderName::PBR:
+			name = "pbr";
+			break;
+		case Prehistoric::ShaderName::Basic:
+			name = "basic";
+			break;
+		case Prehistoric::ShaderName::AtmosphereScattering:
+			name = "atmosphere_scattering";
+			break;
+		case Prehistoric::ShaderName::Atmosphere:
+			name = "atmosphere";
+			break;
+		case Prehistoric::ShaderName::TerrainWireframe:
+			name = "terrain_wireframe";
+			break;
+		case Prehistoric::ShaderName::Terrain:
+			name = "terrain";
+			break;
+		case Prehistoric::ShaderName::Gui:
+			name = "gui";
+			break;
+		case Prehistoric::ShaderName::GPGPUNormal:
+			name = "gpgpu_normal";
+			break;
+		case Prehistoric::ShaderName::GPGPUSplat:
+			name = "gpgpu_splat";
+			break;
+		case Prehistoric::ShaderName::GPGPUHeightQuery:
+			name = "gpgpu_terrain_heights";
+			break;
+		case Prehistoric::ShaderName::Deferred:
+			name = "deferred";
+			break;
+		case Prehistoric::ShaderName::AlphaCoverage:
+			name = "alpha_coverage";
+			break;
+		case Prehistoric::ShaderName::FXAA:
+			name = "fxaa";
+			break;
+		default:
+			name = "invalid";
+			break;
+		}
+
+		auto index = ID_map.find(name);
 		if (index != ID_map.end())
 		{
 			ShaderHandle handle;
@@ -117,7 +173,7 @@ namespace Prehistoric
 			return handle;
 		}
 
-		Shader* vb = (Shader*)shaderLoader->LoadResource(true, location, nullptr).value();
+		Shader* vb = (Shader*) shaderLoader->LoadResource(true, name, nullptr).value();
 		size_t han = shader_ID++;
 
 		ShaderHandle handle;
@@ -125,12 +181,12 @@ namespace Prehistoric
 		handle.handle = han;
 
 		shaders.insert(std::make_pair(handle.handle, std::make_pair(vb, 0)));
-		ID_map.insert(std::make_pair(location, handle.handle));
+		ID_map.insert(std::make_pair(name, handle.handle));
 
 		return handle;
 	}
 
-	TextureHandle AssetManager::storeTexture(Texture* texture)
+	TextureHandle AssetManager::storeTexture(Texture* texture, const std::string& cacheName)
 	{
 		for (auto& entry : textures)
 		{
@@ -148,10 +204,15 @@ namespace Prehistoric
 
 		textures.insert(std::make_pair(handle.handle, std::make_pair(texture, 0)));
 
+		if (!cacheName.empty())
+		{
+			ID_map.insert(std::make_pair(cacheName, handle.handle));
+		}
+
 		return handle;
 	}
 
-	VertexBufferHandle AssetManager::storeVertexBuffer(VertexBuffer* vertexBuffer)
+	VertexBufferHandle AssetManager::storeVertexBuffer(VertexBuffer* vertexBuffer, const std::string& cacheName)
 	{
 		for (auto& entry : vertexBuffers)
 		{
@@ -168,6 +229,11 @@ namespace Prehistoric
 		handle.handle = han;
 
 		vertexBuffers.insert(std::make_pair(handle.handle, std::make_pair(vertexBuffer, 0)));
+
+		if (!cacheName.empty())
+		{
+			ID_map.insert(std::make_pair(cacheName, handle.handle));
+		}
 
 		return handle;
 	}

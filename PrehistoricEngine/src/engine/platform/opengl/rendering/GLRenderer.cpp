@@ -47,12 +47,12 @@ namespace Prehistoric
 
 		AssetManager* man = manager->getAssetManager();
 		quadVBO = man->storeVertexBuffer(ModelFabricator::CreateQuad(window));
-		quadVBO.pointer->setFrontFace(FrontFace::DOUBLE_SIDED);
+		quadVBO->setFrontFace(FrontFace::DOUBLE_SIDED);
 
-		alphaCoverageShader = man->loadShader("alpha_coverage").value();
-		deferredShader = man->loadShader("deferred").value();
-		fxaaShader = man->loadShader("fxaa").value();
-		renderShader = man->loadShader("gui").value();
+		alphaCoverageShader = man->loadShader(ShaderName::AlphaCoverage).value();
+		deferredShader = man->loadShader(ShaderName::Deferred).value();
+		fxaaShader = man->loadShader(ShaderName::FXAA).value();
+		renderShader = man->loadShader(ShaderName::Gui).value();
 
 		alphaCoveragePipeline = new GLComputePipeline(window, man, alphaCoverageShader);
 		deferredPipeline = new GLComputePipeline(window, man, deferredShader);
@@ -154,7 +154,7 @@ namespace Prehistoric
 	{
 		window->Render(nullptr);
 
-		//Clear the lists for the next iteration
+		//Clear the lists
 		models_3d.clear();
 		models_transparency.clear();
 		models_2d.clear();
@@ -170,7 +170,8 @@ namespace Prehistoric
 
 		{
 			PR_PROFILE("Cubemap pass");
-			if (FrameworkConfig::api == OpenGL)
+			if (FrameworkConfig::api == OpenGL && EnvironmentMapRenderer::instance && EnvironmentMapRenderer::instance->enabled
+				&& EnvironmentMapRenderer::instance->atmosphere == nullptr)
 			{
 				EnvironmentMapRenderer::instance->RenderCube(camera);
 			}
@@ -183,12 +184,16 @@ namespace Prehistoric
 				Pipeline* pl = pipeline.first;
 
 				pl->BindPipeline(nullptr);
-				pl->getShader()->UpdateShaderUniforms(camera, lights);
-				pl->getShader()->UpdateSharedUniforms(pipeline.second[0]->getParent()); //Safe -> there is at least 1 element in the array
+				pl->getShader()->UpdateGlobalUniforms(camera, lights);
 
-				for (auto renderer : pipeline.second)
+				for (auto material : pipeline.second)
 				{
-					renderer->BatchRender();
+					pl->getShader()->UpdateTextureUniforms(material.first, 0);
+					
+					for (auto renderer : material.second)
+					{
+						renderer->BatchRender();
+					}
 				}
 
 				pl->UnbindPipeline();
@@ -200,12 +205,16 @@ namespace Prehistoric
 				Pipeline* pl = pipeline.first;
 
 				pl->BindPipeline(nullptr);
-				pl->getShader()->UpdateShaderUniforms(camera, lights);
-				pl->getShader()->UpdateSharedUniforms(pipeline.second[0]->getParent()); //Safe -> there is at least 1 element in the array
+				pl->getShader()->UpdateGlobalUniforms(camera, lights);
 
-				for (auto renderer : pipeline.second)
+				for (auto material : pipeline.second)
 				{
-					renderer->BatchRender();
+					pl->getShader()->UpdateTextureUniforms(material.first, 0);
+
+					for (auto renderer : material.second)
+					{
+						renderer->BatchRender();
+					}
 				}
 
 				pl->UnbindPipeline();

@@ -26,11 +26,22 @@ namespace Prehistoric
 		this->query = new TerrainHeightsQuery(window, manager, heightmap->getWidth());
 		query->Query(heightmap.pointer);
 		this->heights = query->getHeights();
+
+		TerrainConfig::heightmap = heightmap.pointer;
+		TerrainConfig::normalmap = normalmap.pointer;
+		TerrainConfig::splatmap = splatmap.pointer;
 	}
 
 	TerrainMaps::~TerrainMaps()
 	{
-		manager->getAssetManager()->removeReference<Texture>(heightmap.handle);
+		AssetManager* man = manager->getAssetManager();
+
+		man->removeReference<Texture>(heightmap.handle);
+
+		for (auto mat : materials)
+		{
+			manager->removeReference<Material>(mat.handle);
+		}
 
 		delete normalmapRendererComponent;
 		delete splatmapRendererComponent;
@@ -124,9 +135,16 @@ namespace Prehistoric
 		for (int i = 0; i < textureCount; i++)
 		{
 			auto entry = textureLocations[i];
-			materials[entry.first]->addTexture(entry.second, man->storeTexture(pointers[i]));
+			TextureHandle h = man->storeTexture(pointers[i]);
+			materials[entry.first]->addTexture(entry.second, h);
 		}
 
 		man->getTextureLoader()->FlushPointers();
+
+		for (auto elem : materials)
+		{
+			TerrainConfig::terrainMaterials.push_back(elem.pointer);
+			manager->addReference<Material>(elem.handle);
+		}
 	}
 };

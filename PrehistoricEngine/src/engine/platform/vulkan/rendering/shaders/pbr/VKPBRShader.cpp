@@ -25,12 +25,12 @@ namespace Prehistoric
 		descriptorPool->finalise(pipelineLayout);
 	}
 
-	void VKPBRShader::UpdateShaderUniforms(Camera* camera, const std::vector<Light*>& lights, uint32_t instance_index) const
+	void VKPBRShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
 	{
 		//Offset values are copied from shaders
-		SetUniform("camera", camera->getViewMatrix(), 0, instance_index);
-		SetUniform("camera", camera->getProjectionMatrix(), 64, instance_index);
-		SetUniform("camera", camera->getPosition(), 128, instance_index);
+		SetUniform("camera", camera->getViewMatrix(), 0);
+		SetUniform("camera", camera->getProjectionMatrix(), 64);
+		SetUniform("camera", camera->getPosition(), 128);
 
 		struct LightCond
 		{
@@ -48,7 +48,7 @@ namespace Prehistoric
 		SetUniformf("lightConditions", EngineConfig::rendererGamma, 8, instance_index);
 		SetUniformf("lightConditions", EngineConfig::rendererExposure, 12, instance_index);*/
 		
-		SetUniform("lightConditions", &lightCond, sizeof(LightCond), 0, instance_index);
+		SetUniform("lightConditions", &lightCond, sizeof(LightCond), 0);
 
 		void* lightData = new char[Vector4f::size() * 3 * EngineConfig::lightsMaxNumber];
 
@@ -82,11 +82,21 @@ namespace Prehistoric
 			}
 		}
 
-		SetUniform("lights", lightData, Vector4f::size() * 3 * EngineConfig::lightsMaxNumber, 0, instance_index);
+		SetUniform("lights", lightData, Vector4f::size() * 3 * EngineConfig::lightsMaxNumber, 0);
 
 		delete[] lightData;
 
-		BindSets(commandBuffer, 0, 1, instance_index);
+		BindSets(commandBuffer, 0, 1);
+	}
+
+	void VKPBRShader::UpdateTextureUniforms(Material* material, uint32_t descriptor_index) const
+	{
+		SetTexture(ALBEDO_MAP, material->getTexture(ALBEDO_MAP), descriptor_index);
+		SetTexture(NORMAL_MAP, material->getTexture(NORMAL_MAP), descriptor_index);
+		SetTexture(MROT_MAP, material->getTexture(MROT_MAP), descriptor_index);
+		SetTexture(EMISSION_MAP, material->getTexture(EMISSION_MAP), descriptor_index);
+
+		BindSets(commandBuffer, 1, 1, descriptor_index);
 	}
 
 	void VKPBRShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const
@@ -96,21 +106,11 @@ namespace Prehistoric
 		//Offset values are copied from shaders
 		SetUniform("m_transform", object->getWorldTransform().getTransformationMatrix(), 0, instance_index);
 
-		if (!texUpdated[instance_index])
-		{
-			SetUniform("material", material->getVector4f(MROT), 0, instance_index);
-			SetUniform("material", material->getVector3f(COLOUR), 16, instance_index);
-			SetUniform("material", material->getVector3f(EMISSION), 32, instance_index);
-			SetUniformi("material", material->exists(NORMAL_MAP), 48, instance_index);
+		SetUniform("material", material->getVector4f(MROT), 0, instance_index);
+		SetUniform("material", material->getVector3f(COLOUR), 16, instance_index);
+		SetUniform("material", material->getVector3f(EMISSION), 32, instance_index);
+		SetUniformi("material", material->exists(NORMAL_MAP), 48, instance_index);
 
-			SetTexture(ALBEDO_MAP, material->getTexture(ALBEDO_MAP), instance_index);
-			SetTexture(NORMAL_MAP, material->getTexture(NORMAL_MAP), instance_index);
-			SetTexture(MROT_MAP, material->getTexture(MROT_MAP), instance_index);
-			SetTexture(EMISSION_MAP, material->getTexture(EMISSION_MAP), instance_index);
-
-			texUpdated[instance_index] = true;
-		}
-
-		BindSets(commandBuffer, 1, 2, instance_index);
+		BindSets(commandBuffer, 2, 1, instance_index);
 	}
 };

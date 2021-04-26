@@ -57,4 +57,13 @@ namespace Prehistoric
 		vbo->Unbind();
 		GLPipeline::UnbindPipeline();
 	}
+
+	uint64_t GLGraphicsPipeline::GetHash()
+	{
+		if (hash)
+			return hash;
+
+		SetHashInternal(APIHashFlags::GL, PipelineTypeHashFlags::Graphics, shader.handle, vbo.handle);
+		return hash;
+	}
 };

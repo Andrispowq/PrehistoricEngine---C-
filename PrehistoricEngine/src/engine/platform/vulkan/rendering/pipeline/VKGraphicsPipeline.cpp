@@ -47,6 +47,15 @@ namespace Prehistoric
 		CreatePipeline();
 	}
 
+	uint64_t VKGraphicsPipeline::GetHash()
+	{
+		if (hash)
+			return hash;
+
+		SetHashInternal(APIHashFlags::GL, PipelineTypeHashFlags::Graphics, shader.handle, vbo.handle);
+		return hash;
+	}
+
 	void VKGraphicsPipeline::CreatePipeline()
 	{
 		this->renderpass = ((VKSwapchain*)window->getSwapchain())->getRenderpass();

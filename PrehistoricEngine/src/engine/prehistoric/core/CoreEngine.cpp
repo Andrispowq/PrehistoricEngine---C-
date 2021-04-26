@@ -17,13 +17,19 @@ namespace Prehistoric
 	CoreEngine::~CoreEngine()
 	{
 		//The order is VERY important here, hence the deletion by hand
-		Input::DeleteInstance();
 		delete root.release();
 
+		if (EnvironmentMapRenderer::instance)
+		{
+			delete EnvironmentMapRenderer::instance;
+		}
+
+		renderingEngine->PreRelease();
+		delete manager.release();
 		delete audioEngine.release();
 		delete renderingEngine.release();
-		delete manager.release();
 
+		Input::DeleteInstance();
 		Log::Shutdown();
 	}
 
@@ -65,14 +71,17 @@ namespace Prehistoric
 
 	void CoreEngine::Render()
 	{
-		root->PreRender(renderingEngine->getRenderer());
+		{
+			PR_PROFILE("PreRender(Renderer*)");
+			root->PreRender(renderingEngine->getRenderer());
+		}
+
 		renderingEngine->Render();
 	}
 
 	void CoreEngine::BeginRendering()
 	{
 		renderingEngine->getWindow()->ClearScreen();
-
 		renderingEngine->getRenderer()->PrepareRendering();
 	}
 

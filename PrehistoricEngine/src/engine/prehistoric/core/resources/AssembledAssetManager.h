@@ -19,6 +19,9 @@ namespace Prehistoric
 		AssembledAssetManager(Window* window);
 		~AssembledAssetManager() {}
 
+		PipelineHandle createPipeline(PipelineTypeHashFlags type, ShaderHandle shaderHandle, VertexBufferHandle vboHandle = { nullptr, (size_t)-1 });
+		MaterialHandle getMaterial(size_t hash);
+
 		PipelineHandle storePipeline(Pipeline* pipeline);
 		MaterialHandle storeMaterial(Material* material);
 
@@ -29,19 +32,37 @@ namespace Prehistoric
 		template<>
 		void addReference<Pipeline>(size_t handle)
 		{
-			pipelines.at(handle).second++;
+			auto& idx = pipelines.find(handle);
+			if (idx == pipelines.end())
+			{
+				PR_LOG_RUNTIME_ERROR("Could not find Pipeline handle %x\n", handle);
+			}
+
+			idx->second.second++;
 		}
 
 		template<>
 		void addReference<Material>(size_t handle)
 		{
-			materials.at(handle).second++;
+			auto& idx = materials.find(handle);
+			if (idx == materials.end())
+			{
+				PR_LOG_RUNTIME_ERROR("Could not find Material handle %x\n", handle);
+			}
+
+			idx->second.second++;
 		}
 		
 		template<>
 		void removeReference<Pipeline>(size_t handle)
 		{
-			uint32_t& refCount = pipelines.at(handle).second;
+			auto& idx = pipelines.find(handle);
+			if (idx == pipelines.end())
+			{
+				PR_LOG_RUNTIME_ERROR("Could not find Pipeline handle %x\n", handle);
+			}
+
+			uint32_t& refCount = idx->second.second;
 			refCount--;
 
 			if (refCount == 0)
@@ -53,7 +74,13 @@ namespace Prehistoric
 		template<>
 		void removeReference<Material>(size_t handle)
 		{
-			uint32_t& refCount = materials.at(handle).second;
+			auto& idx = materials.find(handle);
+			if (idx == materials.end())
+			{
+				PR_LOG_RUNTIME_ERROR("Could not find Material handle %x\n", handle);
+			}
+
+			uint32_t& refCount = idx->second.second;
 			refCount--;
 
 			if (refCount == 0)
@@ -98,6 +125,10 @@ namespace Prehistoric
 		//size_t: ID, pointer: data, uint32_t: refcount
 		std::unordered_map<size_t, std::pair<std::unique_ptr<Pipeline>, uint32_t>> pipelines;
 		std::unordered_map<size_t, std::pair<std::unique_ptr<Material>, uint32_t>> materials;
+
+		//You give it a hash and get back the corresponding ID
+		std::unordered_map<size_t, size_t> pipelineHashMap;
+		std::unordered_map<size_t, size_t> materialHashMap;
 
 		//The IDs that we assign the next asset we add
 		size_t pipeline_ID = 0;

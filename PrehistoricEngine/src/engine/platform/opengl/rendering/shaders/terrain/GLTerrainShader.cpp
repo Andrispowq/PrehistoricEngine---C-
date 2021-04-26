@@ -63,7 +63,7 @@ namespace Prehistoric
 		AddUniform("highDetailRange");
 	}
 
-	void GLTerrainShader::UpdateShaderUniforms(Camera* camera, const std::vector<Light*>& lights, uint32_t instance_index) const
+	void GLTerrainShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
 	{
 		SetUniform("viewProjection", camera->getViewProjectionMatrix());
 		SetUniform("cameraPosition", camera->getPosition());
@@ -85,15 +85,13 @@ namespace Prehistoric
 		}
 	}
 
-	void GLTerrainShader::UpdateSharedUniforms(GameObject* object, uint32_t instance_index) const
+	void GLTerrainShader::UpdateTextureUniforms(Material* material, uint32_t descriptor_index) const
 	{
-		TerrainNode* node = (TerrainNode*)object;
-
-		node->getMaps()->getHeightmap()->Bind(0);
+		TerrainConfig::heightmap->Bind(0);
 		SetUniformi("heightmap", 0);
-		node->getMaps()->getNormalmap()->Bind(1);
+		TerrainConfig::normalmap->Bind(1);
 		SetUniformi("normalmap", 1);
-		node->getMaps()->getSplatmap()->Bind(2);
+		TerrainConfig::splatmap->Bind(2);
 		SetUniformi("splatmap", 2);
 
 		uint32_t texUnit = 3;
@@ -102,8 +100,7 @@ namespace Prehistoric
 		{
 			std::string uniformName = "materials[" + std::to_string(i) + "].";
 
-			TerrainMaps* maps = node->getMaps();
-			MaterialHandle material = maps->getMaterials()[i];
+			Material* material = TerrainConfig::terrainMaterials[i];
 
 			material->getTexture(ALBEDO_MAP)->Bind(texUnit);
 			SetUniformi(uniformName + ALBEDO_MAP, texUnit);

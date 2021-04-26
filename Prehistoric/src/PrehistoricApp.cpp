@@ -2,19 +2,36 @@
 
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 
+//We go around in a circle, from -range to range on the y and z axes
+static void sun_move_function(Prehistoric::GameObject* object, float frameTime)
+{
+	constexpr float range = 32000.0f;
+	constexpr float anglesPerSecond = 0.5f;
+
+	static float angle = 190.0f;
+
+	float x = cos(ToRadians(angle)) * range;
+	float y = sin(ToRadians(angle)) * range;
+	angle -= (anglesPerSecond * frameTime);
+
+	object->SetPosition({ x, y, 0 });
+}
+
 PrehistoricApp::PrehistoricApp()
 	: scene{nullptr}
 {
 	using namespace Prehistoric;
 
-	GameObject* audio = new GameObject();
-	audio->AddComponent(AUDIO_COMPONENT, new AudioComponent("res/sounds/_Closer.wav", 75.0f));
-	audio->GetComponent<AudioComponent>()->PreUpdate(engineLayer);
+	GameObject* audioRoot = new GameObject();
+	engineLayer->getRootObject()->AddChild("audioRoot", audioRoot);
 
-	engineLayer->getRootObject()->AddChild("audio", audio);
-
-	engineLayer->getAudioEngine()->Update(0.0f);
+	//GameObject* startupMusic = new GameObject();
+	//startupMusic->AddComponent(AUDIO_COMPONENT, new AudioComponent("res/sounds/_Closer.wav", 75.0f));
+	//startupMusic->GetComponent<AudioComponent>()->PreUpdate(engineLayer);
 	
+	//audioRoot->AddChild("startupMusic", startupMusic);
+	engineLayer->getAudioEngine()->Update(0.0f);
+
 	GameObject* sceneRoot = new GameObject();
 	scene = std::make_unique<PrehistoricScene>("scene0", sceneRoot, engineLayer->getRenderingEngine()->getWindow(),
 		engineLayer->getRenderingEngine()->getCamera(), engineLayer->getAssetManager(), "res/world/testLevel.wrld");
@@ -36,6 +53,15 @@ PrehistoricApp::PrehistoricApp()
 
 	engineLayer->SetScene(scene.get());
 
+	//AssembledAssetManager -> stores the primitives of rendering (Pipelines, Materials) in one place
+	//AssetManager -> store the assembling blocks of the primitives (Textures, VertexBuffers, Shaders) in one place
+	//Window -> used in a lot of primitives' creation, so it's worth having it around
+	AssembledAssetManager* manager = engineLayer->getAssetManager();
+	AssetManager* man = manager->getAssetManager();
+	Window* window = engineLayer->getRenderingEngine()->getWindow();
+	Camera* camera = engineLayer->getRenderingEngine()->getCamera();
+	camera->setCameraType(CameraControlType::FPS);
+
 	//Load in the environment map
 	if (FrameworkConfig::api == OpenGL)
 	{
@@ -44,18 +70,15 @@ PrehistoricApp::PrehistoricApp()
 			EnvironmentMapRenderer::instance = new EnvironmentMapRenderer(engineLayer->getRenderingEngine()->getWindow(), engineLayer->getAssetManager());
 		}
 
+		EnvironmentMapRenderer::instance->atmosphere = nullptr;
+
 		{
 			PR_PROFILE("Environment map generation - Cubemap, Irradiance, Prefilter map");
 			EnvironmentMapRenderer::instance->GenerateEnvironmentMap();
 		}
-	}
 
-	//AssembledAssetManager -> stores the primitives of rendering (Pipelines, Materials) in one place
-	//AssetManager -> store the assembling blocks of the primitives (Textures, VertexBuffers, Shaders) in one place
-	//Window -> used in a lot of primitives' creation, so it's worth having it around
-	AssembledAssetManager* manager = engineLayer->getAssetManager();
-	AssetManager* man = manager->getAssetManager();
-	Window* window = engineLayer->getRenderingEngine()->getWindow();
+		EnvironmentMapRenderer::instance->enabled = true;
+	}
 	
 	if (FrameworkConfig::api == OpenGL)
 	{
@@ -65,14 +88,9 @@ PrehistoricApp::PrehistoricApp()
 		slider3->SetScale({ 0.125f, 0.05f, 1 });
 		sceneRoot->AddChild("slider3", slider3);
 
-		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/sphere.obj").value();
-		vbo->setFrontFace(FrontFace::CLOCKWISE);
-		ShaderHandle shader = man->loadShader("pbr").value();
-		PipelineHandle pipeline;
-		if (FrameworkConfig::api == OpenGL)
-			pipeline = manager->storePipeline(new GLGraphicsPipeline(window, man, shader, vbo));
-		else
-			pipeline = manager->storePipeline(new VKGraphicsPipeline(window, man, shader, vbo));
+		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "sphereModel").value();
+		ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
+		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
 
 		MaterialHandle material = manager->storeMaterial(new Material(man));
 		material->addVector3f(COLOUR, { 0.64f, 0.53f, 0.23f });

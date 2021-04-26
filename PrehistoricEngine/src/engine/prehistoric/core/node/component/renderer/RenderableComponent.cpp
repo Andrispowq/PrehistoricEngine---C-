@@ -31,6 +31,7 @@ namespace Prehistoric
 
 	RenderableComponent::~RenderableComponent()
 	{
-		manager->removeReference<Pipeline>(pipeline.handle);
+		if(pipeline.pointer != nullptr)
+			manager->removeReference<Pipeline>(pipeline.handle);
 	}
 };

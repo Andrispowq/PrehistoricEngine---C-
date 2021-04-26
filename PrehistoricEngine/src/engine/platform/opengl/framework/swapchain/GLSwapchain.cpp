@@ -8,17 +8,14 @@ namespace Prehistoric
 	GLSwapchain::GLSwapchain(Window* window)
 		: Swapchain(window)
 	{
-		//Enabling GL_TEXTURE_2D is deprecated, in debug mode, it will cause the program to break
-		//glEnable(GL_TEXTURE_2D);
-
 		glEnable(GL_DEPTH_TEST);
 		glFrontFace(GL_CCW);
 
 		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 		glEnable(GL_MULTISAMPLE);
 
-		//glEnable(GL_CULL_FACE);
-		//glCullFace(GL_BACK);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LEQUAL);
 	}
 
 	GLSwapchain::~GLSwapchain()

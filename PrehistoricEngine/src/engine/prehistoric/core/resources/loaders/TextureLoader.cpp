@@ -258,7 +258,6 @@ namespace Prehistoric
 			ret = { ImageData::ImageType::LDR, width, height, channels, data };
 		}
 
-		delete[] buffer;
 		return ret;
 	}
 };

@@ -1,7 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sandbox projects", "Sandbox projects", "{655DC84F-5157-F1A1-3AC4-87B2265D570E}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Prehistoric", "Prehistoric\Prehistoric.vcxproj", "{913444FC-FDE9-BCF1-86DE-B6C8F292B3F5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PrehistoricEditor", "PrehistoricEditor\PrehistoricEditor.vcxproj", "{18B39835-84C9-96CB-CD40-22ED39966753}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dependencies", "Dependencies", "{53E47842-3FC8-3998-A828-34EB942B241A}"
 EndProject
@@ -12,8 +16,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImGUI", "PrehistoricEngine\vendor\ImGUI\ImGUI.vcxproj", "{80FB640D-EC0F-8DBE-B591-301E216589EF}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenAL", "PrehistoricEngine\vendor\OpenAL-Soft\OpenAL.vcxproj", "{C4854AC8-B027-759E-99E2-88F28523FCEE}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PrehistoricEditor", "PrehistoricEditor\PrehistoricEditor.vcxproj", "{18B39835-84C9-96CB-CD40-22ED39966753}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PrehistoricEngine", "PrehistoricEngine\PrehistoricEngine.vcxproj", "{67604C36-D376-4ACC-1CEE-D5ED88431B54}"
 EndProject
@@ -30,6 +32,12 @@ Global
 		{913444FC-FDE9-BCF1-86DE-B6C8F292B3F5}.Distribution|x64.Build.0 = Distribution|x64
 		{913444FC-FDE9-BCF1-86DE-B6C8F292B3F5}.Release|x64.ActiveCfg = Release|x64
 		{913444FC-FDE9-BCF1-86DE-B6C8F292B3F5}.Release|x64.Build.0 = Release|x64
+		{18B39835-84C9-96CB-CD40-22ED39966753}.Debug|x64.ActiveCfg = Debug|x64
+		{18B39835-84C9-96CB-CD40-22ED39966753}.Debug|x64.Build.0 = Debug|x64
+		{18B39835-84C9-96CB-CD40-22ED39966753}.Distribution|x64.ActiveCfg = Distribution|x64
+		{18B39835-84C9-96CB-CD40-22ED39966753}.Distribution|x64.Build.0 = Distribution|x64
+		{18B39835-84C9-96CB-CD40-22ED39966753}.Release|x64.ActiveCfg = Release|x64
+		{18B39835-84C9-96CB-CD40-22ED39966753}.Release|x64.Build.0 = Release|x64
 		{5D4A857C-4981-860D-F26D-6C10DE83020F}.Debug|x64.ActiveCfg = Debug|x64
 		{5D4A857C-4981-860D-F26D-6C10DE83020F}.Debug|x64.Build.0 = Debug|x64
 		{5D4A857C-4981-860D-F26D-6C10DE83020F}.Distribution|x64.ActiveCfg = Distribution|x64
@@ -54,12 +62,6 @@ Global
 		{C4854AC8-B027-759E-99E2-88F28523FCEE}.Distribution|x64.Build.0 = Distribution|x64
 		{C4854AC8-B027-759E-99E2-88F28523FCEE}.Release|x64.ActiveCfg = Release|x64
 		{C4854AC8-B027-759E-99E2-88F28523FCEE}.Release|x64.Build.0 = Release|x64
-		{18B39835-84C9-96CB-CD40-22ED39966753}.Debug|x64.ActiveCfg = Debug|x64
-		{18B39835-84C9-96CB-CD40-22ED39966753}.Debug|x64.Build.0 = Debug|x64
-		{18B39835-84C9-96CB-CD40-22ED39966753}.Distribution|x64.ActiveCfg = Distribution|x64
-		{18B39835-84C9-96CB-CD40-22ED39966753}.Distribution|x64.Build.0 = Distribution|x64
-		{18B39835-84C9-96CB-CD40-22ED39966753}.Release|x64.ActiveCfg = Release|x64
-		{18B39835-84C9-96CB-CD40-22ED39966753}.Release|x64.Build.0 = Release|x64
 		{67604C36-D376-4ACC-1CEE-D5ED88431B54}.Debug|x64.ActiveCfg = Debug|x64
 		{67604C36-D376-4ACC-1CEE-D5ED88431B54}.Debug|x64.Build.0 = Debug|x64
 		{67604C36-D376-4ACC-1CEE-D5ED88431B54}.Distribution|x64.ActiveCfg = Distribution|x64
@@ -71,6 +73,8 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{913444FC-FDE9-BCF1-86DE-B6C8F292B3F5} = {655DC84F-5157-F1A1-3AC4-87B2265D570E}
+		{18B39835-84C9-96CB-CD40-22ED39966753} = {655DC84F-5157-F1A1-3AC4-87B2265D570E}
 		{5D4A857C-4981-860D-F26D-6C10DE83020F} = {53E47842-3FC8-3998-A828-34EB942B241A}
 		{154B857C-0182-860D-AA6E-6C109684020F} = {53E47842-3FC8-3998-A828-34EB942B241A}
 		{80FB640D-EC0F-8DBE-B591-301E216589EF} = {53E47842-3FC8-3998-A828-34EB942B241A}

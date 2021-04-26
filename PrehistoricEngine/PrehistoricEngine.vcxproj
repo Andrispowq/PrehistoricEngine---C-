@@ -145,7 +145,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\Includes.hpp" />
-    <ClInclude Include="src\engine\platform\vulkan\texture\VKImage.h" />
     <ClInclude Include="src\engine\Prehistoric.h" />
     <ClInclude Include="src\engine\platform\Platform.h" />
     <ClInclude Include="src\engine\platform\opengl\buffer\GLMeshVertexBuffer.h" />
@@ -199,11 +198,12 @@
     <ClInclude Include="src\engine\platform\vulkan\rendering\pipeline\VKGraphicsPipeline.h" />
     <ClInclude Include="src\engine\platform\vulkan\rendering\pipeline\VKPipeline.h" />
     <ClInclude Include="src\engine\platform\vulkan\rendering\renderpass\VKRenderpass.h" />
-    <ClInclude Include="src\engine\platform\vulkan\rendering\shaders\VKShader.h" />
+    <ClInclude Include="src\engine\platform\vulkan\rendering\shaders\VkShader.h" />
     <ClInclude Include="src\engine\platform\vulkan\rendering\shaders\basic\VKBasicShader.h" />
     <ClInclude Include="src\engine\platform\vulkan\rendering\shaders\pbr\VKPBRShader.h" />
     <ClInclude Include="src\engine\platform\vulkan\rendering\synchronisation\VKFence.h" />
     <ClInclude Include="src\engine\platform\vulkan\rendering\synchronisation\VKSemaphore.h" />
+    <ClInclude Include="src\engine\platform\vulkan\texture\VKImage.h" />
     <ClInclude Include="src\engine\platform\vulkan\texture\VKTexture.h" />
     <ClInclude Include="src\engine\platform\vulkan\util\VKUtil.h" />
     <ClInclude Include="src\engine\platform\windows\WindowsInput.h" />
@@ -352,7 +352,7 @@
     <ClCompile Include="src\engine\platform\vulkan\rendering\pipeline\VKGraphicsPipeline.cpp" />
     <ClCompile Include="src\engine\platform\vulkan\rendering\pipeline\VKPipeline.cpp" />
     <ClCompile Include="src\engine\platform\vulkan\rendering\renderpass\VKRenderpass.cpp" />
-    <ClCompile Include="src\engine\platform\vulkan\rendering\shaders\VKShader.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\rendering\shaders\VkShader.cpp" />
     <ClCompile Include="src\engine\platform\vulkan\rendering\shaders\basic\VKBasicShader.cpp" />
     <ClCompile Include="src\engine\platform\vulkan\rendering\shaders\pbr\VKPBRShader.cpp" />
     <ClCompile Include="src\engine\platform\vulkan\rendering\synchronisation\VKFence.cpp" />

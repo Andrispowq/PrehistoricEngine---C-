@@ -35,14 +35,18 @@ namespace Prehistoric
 		AddUniform("width");
 		AddUniform("height");
 		AddUniform("isReflection");
+		AddUniform("isCubemap");
+
+		AddUniform("exposure");
 	}
 
-	void GLAtmosphereScatteringShader::UpdateUniforms(GameObject* atm, Matrix4f view, Matrix4f proj) const
+	void GLAtmosphereScatteringShader::UpdateUniforms(GameObject* atmosphere, Matrix4f view, Matrix4f projection) const
 	{
 		SetUniform("m_transform", Matrix4f::Identity());
-		SetUniform("sunPosition", ((Atmosphere*)atm)->getSun()->getParent()->getWorldTransform().getPosition());
+		SetUniform("sunPosition", ((Atmosphere*)atmosphere)->getSun()->getParent()->getWorldTransform().getPosition());
+
 		SetUniform("m_view", view);
-		SetUniform("m_projection", proj);
+		SetUniform("m_projection", projection);
 
 		SetUniformf("sunRadius", AtmosphereConfig::sunRadius);
 		SetUniform("sunColour", AtmosphereConfig::sunColour);
@@ -61,9 +65,12 @@ namespace Prehistoric
 		SetUniformi("width", FrameworkConfig::windowWidth);
 		SetUniformi("height", FrameworkConfig::windowHeight);
 		SetUniformi("isReflection", 0); //TODO: getting if it's a reflection or not from the RenderingEngine
+		SetUniformi("isCubemap", 1);
+
+		SetUniformf("exposure", EngineConfig::rendererExposure);
 	}
 
-	void GLAtmosphereScatteringShader::UpdateShaderUniforms(Camera* camera, const std::vector<Light*>& lights, uint32_t instance_index) const
+	void GLAtmosphereScatteringShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
 	{
 		SetUniform("m_view", camera->getViewMatrix());
 		SetUniform("m_projection", camera->getProjectionMatrix());
@@ -85,6 +92,9 @@ namespace Prehistoric
 		SetUniformi("width", FrameworkConfig::windowWidth);
 		SetUniformi("height", FrameworkConfig::windowHeight);
 		SetUniformi("isReflection", 0); //TODO: getting if it's a reflection or not from the RenderingEngine
+		SetUniformi("isCubemap", 0);
+
+		SetUniformf("exposure", EngineConfig::rendererExposure);
 	}
 
 	void GLAtmosphereScatteringShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const

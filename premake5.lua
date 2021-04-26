@@ -107,6 +107,8 @@ project "PrehistoricEngine"
         defines "PR_DIST"
         runtime "Release"
         optimize "on"
+        
+group "Sandbox projects"
 
 project "PrehistoricEditor"
     location "PrehistoricEditor"
@@ -236,3 +238,5 @@ project "PrehistoricEditor"
             defines "PR_DIST"
             runtime "Release"
             optimize "on"
+
+group ""

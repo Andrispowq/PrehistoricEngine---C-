@@ -34,10 +34,10 @@ namespace Prehistoric
 	TerrainNode::~TerrainNode()
 	{
 		//Ensure custom deletion for the children, as they are allocated differently from the rest of the Nodes
-		/*for (auto& child : children)
+		for (auto& child : children)
 		{
 			TerrainNode::operator delete(child.second.release(), *factory);
-		}*/
+		}
 
 		children.clear();
 	}
@@ -110,7 +110,7 @@ namespace Prehistoric
 					ss << ", lod: ";
 					ss << lod;
 
-					AddChild(ss.str(), new/*(*factory)*/ TerrainNode(factory, window, camera, manager, maps, rendererComponent->getPipelineHandle(), wireframeRendererComponent->getPipelineHandle(),
+					AddChild(ss.str(), new(*factory) TerrainNode(factory, window, camera, manager, maps, rendererComponent->getPipelineHandle(), wireframeRendererComponent->getPipelineHandle(),
 						location + Vector2f(float(i), float(j)) * (gap / 2.f), lod, { float(i), float(j) }));
 				}
 			}
@@ -126,11 +126,10 @@ namespace Prehistoric
 
 		if (children.size() != 0)
 		{
-			/*for (auto& child : children)
+			for (auto& child : children)
 			{
-				//delete child.second;
-				TerrainNode::operator delete(child.second, *factory);
-			}*/
+				TerrainNode::operator delete(child.second.release(), *factory);
+			}
 
 			children.clear();
 		}

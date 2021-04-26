@@ -51,6 +51,61 @@ namespace Prehistoric
 		ints.emplace(std::make_pair(key, value));
 	}
 
+	uint64_t Material::GetHash()
+	{
+		if (hash)
+			return hash;
+
+		int counter = 0;
+		for (auto tex : textures)
+		{
+			hash += tex.second.handle << counter;
+			counter++;
+			counter %= 64;
+		}
+
+		for (auto fl : vector4s)
+		{
+			float f = fl.second.x + fl.second.y * 10 + fl.second.z * 100 * fl.second.w * 1000;
+			hash += *(uint64_t*)(&f) << counter;
+			counter++;
+			counter %= 64;
+		}
+
+		for (auto fl : vector3s)
+		{
+			float f = fl.second.x + fl.second.y * 10 + fl.second.z * 100;
+			hash += *(uint64_t*)(&f) << counter;
+			counter++;
+			counter %= 64;
+		}
+
+		for (auto fl : floats)
+		{
+			hash += *(uint64_t*)(&fl) << counter;
+			counter++;
+			counter %= 64;
+		}
+
+		return hash;
+	}
+
+	uint64_t Material::GetTextureHash()
+	{
+		if (texHash)
+			return texHash;
+
+		int counter = 0;
+		for (auto tex : textures)
+		{
+			texHash += tex.second.handle << counter;
+			counter++;
+			counter %= 64;
+		}
+
+		return texHash;
+	}
+
 	Texture* Material::getTexture(const std::string& key) const
 	{
 		auto index = textures.find(key);
