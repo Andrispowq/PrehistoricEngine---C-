@@ -44,13 +44,6 @@ namespace Prehistoric
 		camera->setSpeedControl({ MOUSE_SCROLL, PR_KEY_UNKNOWN, PR_JOYSTICK_1 });
 	}
 
-	RenderingEngine::~RenderingEngine()
-	{
-		//Order is important!
-		delete renderer.release();
-		delete camera.release();
-	}
-
 	void RenderingEngine::Init(AssembledAssetManager* manager)
 	{
 		if (FrameworkConfig::api == OpenGL)
@@ -61,6 +54,13 @@ namespace Prehistoric
 		{
 			renderer = std::make_unique<VKRenderer>(window.get(), camera.get(), manager);
 		}
+	}
+
+	void RenderingEngine::PreRelease()
+	{
+		//These depend on the Asset Manager, which needs to be deleted before the windows, so nasty hack ahead
+		delete renderer.release();
+		delete camera.release();
 	}
 
 	void RenderingEngine::OnEvent(Event& event)

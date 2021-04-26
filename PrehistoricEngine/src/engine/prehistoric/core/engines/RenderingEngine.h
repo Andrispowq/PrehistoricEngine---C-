@@ -22,9 +22,10 @@ namespace Prehistoric
 	{
 	public:
 		RenderingEngine();
-		virtual ~RenderingEngine();
+		virtual ~RenderingEngine() {}
 
 		void Init(AssembledAssetManager* manager);
+		void PreRelease();
 
 		virtual void OnEvent(Event& event) override;
 

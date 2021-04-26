@@ -428,7 +428,7 @@
     <ClInclude Include="src\engine\platform\vulkan\rendering\renderpass\VKRenderpass.h">
       <Filter>platform\vulkan\rendering\renderpass</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\rendering\shaders\VKShader.h">
+    <ClInclude Include="src\engine\platform\vulkan\rendering\shaders\VkShader.h">
       <Filter>platform\vulkan\rendering\shaders</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\platform\vulkan\rendering\shaders\basic\VKBasicShader.h">
@@ -442,6 +442,9 @@
     </ClInclude>
     <ClInclude Include="src\engine\platform\vulkan\rendering\synchronisation\VKSemaphore.h">
       <Filter>platform\vulkan\rendering\synchronisation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\texture\VKImage.h">
+      <Filter>platform\vulkan\texture</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\platform\vulkan\texture\VKTexture.h">
       <Filter>platform\vulkan\texture</Filter>
@@ -719,7 +722,6 @@
     <ClInclude Include="src\engine\prehistoric\core\util\time\Timer.h">
       <Filter>prehistoric\core\util\time</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\platform\vulkan\texture\VKImage.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -876,7 +878,7 @@
     <ClCompile Include="src\engine\platform\vulkan\rendering\renderpass\VKRenderpass.cpp">
       <Filter>platform\vulkan\rendering\renderpass</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\platform\vulkan\rendering\shaders\VKShader.cpp">
+    <ClCompile Include="src\engine\platform\vulkan\rendering\shaders\VkShader.cpp">
       <Filter>platform\vulkan\rendering\shaders</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\vulkan\rendering\shaders\basic\VKBasicShader.cpp">
@@ -890,6 +892,9 @@
     </ClCompile>
     <ClCompile Include="src\engine\platform\vulkan\rendering\synchronisation\VKSemaphore.cpp">
       <Filter>platform\vulkan\rendering\synchronisation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\vulkan\texture\VKImage.cpp">
+      <Filter>platform\vulkan\texture</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\vulkan\texture\VKTexture.cpp">
       <Filter>platform\vulkan\texture</Filter>
@@ -1119,6 +1124,5 @@
     <ClCompile Include="src\engine\prehistoric\core\util\time\Timer.cpp">
       <Filter>prehistoric\core\util\time</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\platform\vulkan\texture\VKImage.cpp" />
   </ItemGroup>
 </Project>

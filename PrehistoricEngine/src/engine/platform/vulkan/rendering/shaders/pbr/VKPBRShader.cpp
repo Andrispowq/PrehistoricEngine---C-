@@ -95,6 +95,8 @@ namespace Prehistoric
 		SetTexture(NORMAL_MAP, material->getTexture(NORMAL_MAP), descriptor_index);
 		SetTexture(MROT_MAP, material->getTexture(MROT_MAP), descriptor_index);
 		SetTexture(EMISSION_MAP, material->getTexture(EMISSION_MAP), descriptor_index);
+
+		BindSets(commandBuffer, 1, 1, descriptor_index);
 	}
 
 	void VKPBRShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const
@@ -109,6 +111,6 @@ namespace Prehistoric
 		SetUniform("material", material->getVector3f(EMISSION), 32, instance_index);
 		SetUniformi("material", material->exists(NORMAL_MAP), 48, instance_index);
 
-		BindSets(commandBuffer, 1, 2, instance_index);
+		BindSets(commandBuffer, 2, 1, instance_index);
 	}
 };

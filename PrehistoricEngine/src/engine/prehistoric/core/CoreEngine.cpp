@@ -24,9 +24,10 @@ namespace Prehistoric
 			delete EnvironmentMapRenderer::instance;
 		}
 
+		renderingEngine->PreRelease();
+		delete manager.release();
 		delete audioEngine.release();
 		delete renderingEngine.release();
-		delete manager.release();
 
 		Input::DeleteInstance();
 		Log::Shutdown();

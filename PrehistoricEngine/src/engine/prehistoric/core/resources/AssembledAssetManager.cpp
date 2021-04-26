@@ -26,7 +26,7 @@ namespace Prehistoric
 		{
 			hash = Pipeline::GetHash(APIHashFlags::GL, type, shaderHandle.handle, vboHandle.handle);
 		}
-		else if (FrameworkConfig::api == OpenGL)
+		else if (FrameworkConfig::api == Vulkan)
 		{
 			hash = Pipeline::GetHash(APIHashFlags::VK, type, shaderHandle.handle, vboHandle.handle);
 		}

@@ -136,22 +136,25 @@ namespace Prehistoric
 		uint32_t index = swapchain->getAquiredImageIndex();
 		VKCommandBuffer* buffer = commandPool->getCommandBuffer(index);
 
+		uint32_t counter = 0;
 		for (auto pipeline : models_3d)
 		{
 			Pipeline* pl = pipeline.first;
 
 			pl->BindPipeline(buffer);
 			pl->getShader()->UpdateGlobalUniforms(camera, lights);
-
-			uint32_t counter = 0;
+			
 			for (auto material : pipeline.second)
 			{
-				pl->getShader()->UpdateTextureUniforms(material.first, counter++);
+				pl->getShader()->UpdateTextureUniforms(material.first, (uint32_t)counter);
 
+				uint32_t counter2 = 0;
 				for (size_t i = 0; i < material.second.size(); i++)
 				{
-					material.second[i]->BatchRender((uint32_t)i);
+					material.second[i]->BatchRender((uint32_t)(counter + counter2++));
 				}
+
+				counter++;
 			}
 
 			pl->UnbindPipeline();
