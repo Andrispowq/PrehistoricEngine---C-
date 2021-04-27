@@ -2,21 +2,6 @@
 
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 
-//We go around in a circle, from -range to range on the y and z axes
-static void sun_move_function(Prehistoric::GameObject* object, float frameTime)
-{
-	constexpr float range = 32000.0f;
-	constexpr float anglesPerSecond = 0.5f;
-
-	static float angle = 190.0f;
-
-	float x = cos(ToRadians(angle)) * range;
-	float y = sin(ToRadians(angle)) * range;
-	angle -= (anglesPerSecond * frameTime);
-
-	object->SetPosition({ x, y, 0 });
-}
-
 PrehistoricApp::PrehistoricApp()
 	: scene{nullptr}
 {
@@ -25,11 +10,11 @@ PrehistoricApp::PrehistoricApp()
 	GameObject* audioRoot = new GameObject();
 	engineLayer->getRootObject()->AddChild("audioRoot", audioRoot);
 
-	//GameObject* startupMusic = new GameObject();
-	//startupMusic->AddComponent(AUDIO_COMPONENT, new AudioComponent("res/sounds/_Closer.wav", 75.0f));
-	//startupMusic->GetComponent<AudioComponent>()->PreUpdate(engineLayer);
+	GameObject* startupMusic = new GameObject();
+	startupMusic->AddComponent(AUDIO_COMPONENT, new AudioComponent("res/sounds/_Closer.wav", 75.0f));
+	startupMusic->GetComponent<AudioComponent>()->PreUpdate(engineLayer);
 	
-	//audioRoot->AddChild("startupMusic", startupMusic);
+	audioRoot->AddChild("startupMusic", startupMusic);
 	engineLayer->getAudioEngine()->Update(0.0f);
 
 	GameObject* sceneRoot = new GameObject();

@@ -6,9 +6,9 @@
 static void sun_move_function(Prehistoric::GameObject* object, float frameTime)
 {
 	constexpr float range = 32000.0f;
-	constexpr float anglesPerSecond = 0.0f; // 0.5f
+	constexpr float anglesPerSecond = 0.5f;
 
-	static float angle = 175.0f;
+	static float angle = 190.0f;
 
 	float x = cos(ToRadians(angle)) * range;
 	float y = sin(ToRadians(angle)) * range;
@@ -42,15 +42,9 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 		material->addTexture(ALBEDO_MAP, man->loadTexture("res/textures/oakFloor/oakFloor_DIF.png", Anisotropic).value());
 		material->addTexture(NORMAL_MAP, man->loadTexture("res/textures/oakFloor/oakFloor_NRM.png").value());
 		material->addTexture(MROT_MAP, man->loadTexture("res/textures/oakFloor/oakFloor_MROT.png").value());
-
-		MaterialHandle material2 = manager->storeMaterial(new Material(man));
-		material2->addVector4f(MROT, { 0.2f, 0.3f, 0, 0 });
-		material2->addVector3f(COLOUR, Vector3f(1));
-
 		material->addVector4f(MROT, { -1, -1, -1, 0 });
 
 		RendererComponent* renderer = new RendererComponent(window, manager, pipeline, material);
-		RendererComponent* renderer2 = new RendererComponent(window, manager, pipeline2, material2);
 
 		GameObject* obj = new GameObject();
 		obj->AddComponent(RENDERER_COMPONENT, renderer);
@@ -58,14 +52,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 		obj->Move({ 0, 0, 15 });
 		root->AddChild("OBJ", obj);
 
-		GameObject* obj2 = new GameObject();
-		obj2->AddComponent(RENDERER_COMPONENT, renderer2);
-		obj2->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0.67f, 0.734f), 1000.0f));
-		obj2->Rotate({ 0, 0, 0 });
-		obj2->Move({ 0, 30, -20 });
-		root->AddChild("OBJ2", obj2);
-
-		/*float space = 4.0f;
+		float space = 4.0f;
 		float count = 7.0f;
 
 		for (float x = -(count / 2.0f); x <= (count / 2.0f); x++)
@@ -81,7 +68,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 				obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline2, material2));
 				root->AddChild(std::string("obj" + std::to_string(x) + std::to_string(y)), obj);
 			}
-		}*/
+		}
 	}
 	else
 	{

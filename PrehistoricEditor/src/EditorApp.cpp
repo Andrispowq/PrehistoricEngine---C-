@@ -18,6 +18,8 @@ EditorApp::EditorApp()
 	GameObject* root = engineLayer->getRootObject();
 	Camera* cam = engineLayer->getRenderingEngine()->getCamera();
 
+	cam->setCameraType(CameraControlType::FPS); //Editor camera is not stable enough yet
+
 	cam->setPosition(Vector3f(0, 5, -2));
 	cam->Update(engineLayer->getRenderingEngine()->getWindow(), 0.0f);
 
