@@ -9,13 +9,14 @@ namespace Prehistoric
 		AddShader(ResourceLoader::LoadShaderVK("vulkan/basic/basic_FS.spv"), FRAGMENT_SHADER);
 
 		AddUniform("camera", VERTEX_SHADER | FRAGMENT_SHADER, UniformBuffer, 0, 0, 2 * sizeof(float) * 16 + Vector3f::size());
-		AddUniform("model", VERTEX_SHADER, UniformBuffer, 1, 0, sizeof(float) * 16);
 		AddUniform("lights", FRAGMENT_SHADER, UniformBuffer, 0, 1, EngineConfig::lightsMaxNumber * 3 * Vector4f::size());
 		AddUniform("lightConditions", FRAGMENT_SHADER, UniformBuffer, 0, 2, sizeof(float) * 2);
-		AddUniform("material", FRAGMENT_SHADER, UniformBuffer, 1, 1, Vector3f::size() + 4 * sizeof(float));
 
-		AddUniform("albedoMap", FRAGMENT_SHADER, CombinedImageSampler, 1, 2, 0);
-		AddUniform("mrotMap", FRAGMENT_SHADER, CombinedImageSampler, 1, 3, 0);
+		AddUniform(ALBEDO_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 0, 0);
+		AddUniform(MROT_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 1, 0);
+
+		AddUniform("model", VERTEX_SHADER, UniformBuffer, 2, 0, sizeof(float) * 16);
+		AddUniform("material", FRAGMENT_SHADER, UniformBuffer, 2, 1, Vector3f::size() + 4 * sizeof(float));
 
 		descriptorPool->finalise(pipelineLayout);
 	}

@@ -31,14 +31,14 @@ layout (set = 0, binding = 2, std140) uniform LightConditions
 	layout (offset = 4) float gamma;
 };
 
-layout (set = 1, binding = 1, std140) uniform Materials
+layout (set = 2, binding = 1, std140) uniform Materials
 {
     layout (offset = 00) vec3 colour;	
 	layout (offset = 16) vec4 mrot;
 } material;
 
-layout(set = 1, binding = 2) uniform sampler2D albedoMap;
-layout(set = 1, binding = 3) uniform sampler2D mrotMap;
+layout(set = 1, binding = 0) uniform sampler2D albedoMap;
+layout(set = 1, binding = 1) uniform sampler2D mrotMap;
 
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 float GeometrySchlickGGX(float NdotV, float roughness);

@@ -13,14 +13,13 @@ namespace Prehistoric
 		AddUniform("lightConditions", VERTEX_SHADER | FRAGMENT_SHADER, UniformBuffer, 0, 1, sizeof(int) * 2 + sizeof(float) * 2);
 		AddUniform("lights", VERTEX_SHADER | FRAGMENT_SHADER, UniformBuffer, 0, 2, Vector4f::size() * 3 * EngineConfig::lightsMaxNumber);
 
-		AddUniform("material", GEOMETRY_SHADER | FRAGMENT_SHADER, UniformBuffer, 1, 0, Vector4f::size() * 2 + sizeof(int) + sizeof(float) * 4);
-
-		AddUniform(ALBEDO_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 1, 0, nullptr);
-		AddUniform(NORMAL_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 2, 0, nullptr);
-		AddUniform(MROT_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 3, 0, nullptr);
-		AddUniform(EMISSION_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 4, 0, nullptr);
+		AddUniform(ALBEDO_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 0, 0, nullptr);
+		AddUniform(NORMAL_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 1, 0, nullptr);
+		AddUniform(MROT_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 2, 0, nullptr);
+		AddUniform(EMISSION_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 3, 0, nullptr);
 
 		AddUniform("m_transform", VERTEX_SHADER, UniformBuffer, 2, 0, sizeof(float) * 16);
+		AddUniform("material", FRAGMENT_SHADER, UniformBuffer, 2, 1, Vector4f::size() * 2 + sizeof(int) + sizeof(float) * 4);
 
 		descriptorPool->finalise(pipelineLayout);
 	}
