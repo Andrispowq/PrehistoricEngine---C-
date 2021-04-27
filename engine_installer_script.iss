@@ -25,7 +25,7 @@ DefaultDirName={autopf}\{#MyAppName}
 DisableDirPage=no
 ChangesAssociations=yes
 DisableProgramGroupPage=yes
-LicenseFile=F:\Prehistoric - C++\Visual Studio Projects\PrehistoricEngine\LICENSE
+LicenseFile=F:\Prehistoric - C++\Visual Studio Projects\Projects\PrehistoricEngine\LICENSE
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
 OutputBaseFilename=PrehistoricEngineSetup
@@ -40,11 +40,11 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "F:\Prehistoric - C++\Visual Studio Projects\PrehistoricEngine\bin\Distribution-windows-x86_64\Prehistoric\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "F:\Prehistoric - C++\Visual Studio Projects\PrehistoricEngine\PrehistoricEngine\Dependencies\redist\*"; DestDir: "{app}\redist\"; Flags: ignoreversion
-Source: "F:\Prehistoric - C++\Visual Studio Projects\PrehistoricEngine\PrehistoricEngine\Dependencies\shared_libraries\Windows_x64\*"; DestDir: "{app}";
-Source: "F:\Prehistoric - C++\Visual Studio Projects\PrehistoricEngine\Prehistoric\res\*"; DestDir: "{app}\res\"; Flags: ignoreversion recursesubdirs
-Source: "F:\Prehistoric - C++\Visual Studio Projects\PrehistoricEngine\Prehistoric\imgui.ini"; DestDir: "{app}"; Flags: ignoreversion
+Source: "F:\Prehistoric - C++\Visual Studio Projects\Projects\PrehistoricEngine\bin\Distribution-windows-x86_64\Prehistoric\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "F:\Prehistoric - C++\Visual Studio Projects\Projects\PrehistoricEngine\PrehistoricEngine\Dependencies\redist\*"; DestDir: "{app}\redist\"; Flags: ignoreversion
+Source: "F:\Prehistoric - C++\Visual Studio Projects\Projects\PrehistoricEngine\PrehistoricEngine\Dependencies\shared_libraries\Windows_x64\*"; DestDir: "{app}";
+Source: "F:\Prehistoric - C++\Visual Studio Projects\Projects\PrehistoricEngine\Prehistoric\res\*"; DestDir: "{app}\res\"; Flags: ignoreversion recursesubdirs
+Source: "F:\Prehistoric - C++\Visual Studio Projects\Projects\PrehistoricEngine\Prehistoric\imgui.ini"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Registry]
