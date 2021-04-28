@@ -17,7 +17,7 @@ layout(set = 0, binding = 0) uniform Camera
     vec3 cameraPosition;
 };
 
-layout(set = 1, binding = 0) uniform Model
+layout(set = 2, binding = 0) uniform Model
 {
     mat4 model;
 };
