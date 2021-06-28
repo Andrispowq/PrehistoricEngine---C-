@@ -17,6 +17,7 @@ namespace Prehistoric
 
 		AddUniform("gamma");
 		AddUniform("exposure");
+		AddUniform("screenSize");
 	}
 
 	void GLHDRShader::UpdateUniforms(Texture* scene) const
@@ -26,5 +27,6 @@ namespace Prehistoric
 
 		SetUniformf("gamma", EngineConfig::rendererGamma);
 		SetUniformf("exposure", EngineConfig::rendererExposure);
+		SetUniform("screenSize", Vector2f(FrameworkConfig::windowWidth, FrameworkConfig::windowHeight));
 	}
 };

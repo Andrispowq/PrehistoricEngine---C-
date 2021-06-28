@@ -60,7 +60,13 @@ namespace Prehistoric
 			AddUniform(uniformName + MROT);
 		}
 
+		AddUniform("irradianceMap");
+		AddUniform("prefilterMap");
+		AddUniform("brdfLUT");
+
 		AddUniform("highDetailRange");
+		AddUniform("numberOfTilesX");
+		AddUniform("max_reflection_lod");
 	}
 
 	void GLTerrainShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
@@ -69,6 +75,17 @@ namespace Prehistoric
 		SetUniform("cameraPosition", camera->getPosition());
 
 		SetUniformi("highDetailRange", EngineConfig::rendererHighDetailRange);
+
+		EnvironmentMapConfig::irradianceMap->Bind(4);
+		SetUniformi("irradianceMap", 4);
+		EnvironmentMapConfig::prefilterMap->Bind(5);
+		SetUniformi("prefilterMap", 5);
+		EnvironmentMapConfig::brdfLUT->Bind(6);
+		SetUniformi("brdfLUT", 6);
+
+		//TODO: This is ugly!!!! 
+		SetUniformi("numberOfTilesX", FrameworkConfig::windowWidth / 16);
+		SetUniformi("max_reflection_lod", EnvironmentMapConfig::prefilterLevels);
 
 		//Some other stuff that is terrain-related
 		SetUniformf("scaleY", TerrainConfig::scaleY);

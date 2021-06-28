@@ -28,6 +28,7 @@ namespace Prehistoric
 
 	private:
 		std::unique_ptr<GLFramebuffer> depthFBO;
+		std::unique_ptr<GLFramebuffer> colourFBO;
 
 		std::unique_ptr<GLShaderStorageBuffer> lightBuffer;
 		std::unique_ptr<GLShaderStorageBuffer> visibleLightIndicesBuffer;
@@ -39,9 +40,13 @@ namespace Prehistoric
 		ShaderHandle depthShader;
 		ShaderHandle lightCullingShader;
 		ShaderHandle hdrShader;
+		ShaderHandle renderShader;
+
+		VertexBufferHandle quad;
 
 		Pipeline* lightCullingPipeline;
 		Pipeline* hdrPipeline;
+		Pipeline* renderPipeline;
 	};
 };
 

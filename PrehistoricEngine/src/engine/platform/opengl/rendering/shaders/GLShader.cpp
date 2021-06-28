@@ -172,7 +172,7 @@ namespace Prehistoric
 			GLchar log[1024];
 			glGetProgramInfoLog(program, 1024, NULL, log);
 
-			PR_LOG_RUNTIME_ERROR("Shader program linking has failed!");
+			PR_LOG_RUNTIME_ERROR("Shader program linking has failed! ERROR: \n%s\n", log);
 
 			return false;
 		}
@@ -185,7 +185,7 @@ namespace Prehistoric
 			GLchar log[1024];
 			glGetProgramInfoLog(program, 1024, NULL, log);
 
-			PR_LOG_RUNTIME_ERROR("Shader program validation has failed!");
+			PR_LOG_RUNTIME_ERROR("Shader program validation has failed! ERROR: \n%s\n", log);
 
 			return false;
 		}
@@ -243,7 +243,7 @@ namespace Prehistoric
 			GLchar log[1024];
 			glGetShaderInfoLog(shader, 1024, NULL, log);
 
-			PR_LOG_RUNTIME_ERROR("Shader stage addition has failed! Error: %s", log);
+			PR_LOG_RUNTIME_ERROR("Shader stage addition has failed! ERROR: \n%s\n", log);
 
 			return false;
 		}

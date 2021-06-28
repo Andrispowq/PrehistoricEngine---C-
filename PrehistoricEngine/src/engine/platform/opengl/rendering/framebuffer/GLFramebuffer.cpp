@@ -80,11 +80,11 @@ namespace Prehistoric
 
 		if (tex->isMultisample())
 		{
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment, GL_TEXTURE_2D_MULTISAMPLE, tex->getTextureID(), mipLevel);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, type, GL_TEXTURE_2D_MULTISAMPLE, tex->getTextureID(), mipLevel);
 		}
 		else
 		{
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment, GL_TEXTURE_2D, tex->getTextureID(), mipLevel);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, type, GL_TEXTURE_2D, tex->getTextureID(), mipLevel);
 		}
 	}
 
@@ -115,7 +115,7 @@ namespace Prehistoric
 
 	void GLFramebuffer::Blit(Framebuffer* destination, uint32_t width, uint32_t height, uint32_t source_attachment, uint32_t dest_attachment)
 	{
-		if (destination == 0)
+		if (destination == nullptr)
 		{
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 		}
@@ -125,10 +125,8 @@ namespace Prehistoric
 		}
 
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, id);
-		glReadBuffer(GL_COLOR_ATTACHMENT0 + source_attachment);
-		glDrawBuffer(GL_COLOR_ATTACHMENT0 + dest_attachment);
-		glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
-			GL_NEAREST);
+		glDrawBuffer(GL_BACK);
+		glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	}

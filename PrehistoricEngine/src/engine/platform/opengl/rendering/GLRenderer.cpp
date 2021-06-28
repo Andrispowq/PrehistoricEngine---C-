@@ -13,13 +13,16 @@
 #include "platform/opengl/rendering/shaders/forwardPlus/GLDepthPassShader.h"
 #include "platform/opengl/rendering/shaders/forwardPlus/GLLightCullingPassShader.h"
 #include "platform/opengl/rendering/shaders/postProcessing/GLHDRShader.h"
+#include "platform/opengl/rendering/shaders/gui/GLGUIShader.h"
 
 namespace Prehistoric
 {
 	GLRenderer::GLRenderer(Window* window, Camera* camera, AssembledAssetManager* manager)
-		: Renderer(window, camera, manager), depthFBO{nullptr}, lightBuffer{nullptr}, visibleLightIndicesBuffer{nullptr}
+		: Renderer(window, camera, manager), depthFBO{ nullptr }, colourFBO{ nullptr },
+			lightBuffer{ nullptr }, visibleLightIndicesBuffer{ nullptr }
 	{
 		depthFBO = std::make_unique<GLFramebuffer>(window);
+		colourFBO = std::make_unique<GLFramebuffer>(window);
 
 		uint32_t width = window->getWidth();
 		uint32_t height = window->getHeight();
@@ -29,18 +32,29 @@ namespace Prehistoric
 		outputImage = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
 
 		depthFBO->Bind();
-		depthFBO->addColourAttachment2D(depthImage, 0);
+		depthFBO->addColourAttachment2D(depthImage);
 		depthFBO->Check();
 		depthFBO->Unbind();
 
+		colourFBO->Bind();
+		colourFBO->addDepthAttachment(width, height);
+		colourFBO->addColourAttachment2D(colourImage);
+		colourFBO->Check();
+		colourFBO->Unbind();
+
 		AssetManager* man = manager->getAssetManager();
+
+		quad = man->storeVertexBuffer(ModelFabricator::CreateQuad(window));
+		quad->setFrontFace(FrontFace::DOUBLE_SIDED);
 
 		depthShader = man->loadShader(ShaderName::DepthPass).value();
 		lightCullingShader = man->loadShader(ShaderName::LightCullingPass).value();
 		hdrShader = man->loadShader(ShaderName::HDR).value();
+		renderShader = man->loadShader(ShaderName::Gui).value();
 
 		lightCullingPipeline = new GLComputePipeline(window, man, lightCullingShader);
 		hdrPipeline = new GLComputePipeline(window, man, hdrShader);
+		renderPipeline = new GLGraphicsPipeline(window, man, renderShader, quad);
 
 		uint32_t workGroupsX = (width + (width % 16)) / 16;
 		uint32_t workGroupsY = (height + (height % 16)) / 16;
@@ -106,6 +120,12 @@ namespace Prehistoric
 			depthFBO->Check();
 			depthFBO->Unbind();
 
+			colourFBO->Bind();
+			colourFBO->addDepthAttachment(width, height);
+			colourFBO->addColourAttachment2D(colourImage);
+			colourFBO->Check();
+			colourFBO->Unbind();
+
 			//Recreate the pipelines
 			std::vector<Pipeline*> pipes = manager->get<Pipeline>();
 			for (Pipeline* pipe : pipes)
@@ -140,6 +160,7 @@ namespace Prehistoric
 			depthFBO->Clear(0.0f);
 
 			depthShader->Bind(nullptr);
+			depthShader->UpdateGlobalUniforms(camera, lights);
 
 			for (auto pipeline : models_3d)
 			{
@@ -150,7 +171,8 @@ namespace Prehistoric
 				{
 					for (auto renderer : material.second)
 					{
-						renderer->BatchRender();
+						depthShader->UpdateObjectUniforms(renderer->getParent());
+						pl->RenderPipeline();
 					}
 				}
 
@@ -167,9 +189,11 @@ namespace Prehistoric
 				{
 					for (auto renderer : material.second)
 					{
-						renderer->BatchRender();
+						depthShader->UpdateObjectUniforms(renderer->getParent());
+						pl->RenderPipeline();
 					}
 				}
+
 				static_cast<GLGraphicsPipeline*>(pl)->getVertexBuffer()->Unbind();
 			}
 
@@ -187,6 +211,11 @@ namespace Prehistoric
 			
 		}
 
+		colourFBO->Bind();
+		uint32_t arr[] = { GL_COLOR_ATTACHMENT0 };
+		colourFBO->SetDrawAttachments(1, arr);
+		colourFBO->Clear(0.0f);
+
 		{
 			PR_PROFILE("Cubemap pass");
 			if (FrameworkConfig::api == OpenGL && EnvironmentMapRenderer::instance && EnvironmentMapRenderer::instance->enabled
@@ -198,12 +227,16 @@ namespace Prehistoric
 
 		{
 			PR_PROFILE("Main pass");
+
 			for (auto pipeline : models_3d)
 			{
 				Pipeline* pl = pipeline.first;
 
 				pl->BindPipeline(nullptr);
 				pl->getShader()->UpdateGlobalUniforms(camera, lights);
+
+				lightBuffer->Bind(nullptr, 0);
+				visibleLightIndicesBuffer->Bind(nullptr, 1);
 
 				for (auto material : pipeline.second)
 				{
@@ -240,6 +273,8 @@ namespace Prehistoric
 			}
 		}
 
+		colourFBO->Unbind(); 
+
 		//Render using the deferred shader
 		{
 			PR_PROFILE("HDR post processing");
@@ -249,20 +284,32 @@ namespace Prehistoric
 			hdrPipeline->UnbindPipeline();
 		}
 
-		//TODO: disable alpha blending and depth testing
-		for (auto pipeline : models_2d)
 		{
-			Pipeline* pl = pipeline.first;
-
-			pl->BindPipeline(nullptr);
-
-			for (auto renderer : pipeline.second)
-			{
-				renderer->BatchRender();
-			}
-
-			pl->UnbindPipeline();
+			PR_PROFILE("Render to screen");
+			renderPipeline->BindPipeline(nullptr);
+			static_cast<GLGUIShader*>(renderPipeline->getShader())->UpdateCustomUniforms(outputImage, -1);
+			renderPipeline->RenderPipeline();
+			renderPipeline->UnbindPipeline();
 		}
+
+		//TODO: disable alpha blending and depth testing
+		{
+			PR_PROFILE("GUI pass");
+			for (auto pipeline : models_2d)
+			{
+				Pipeline* pl = pipeline.first;
+
+				pl->BindPipeline(nullptr);
+
+				for (auto renderer : pipeline.second)
+				{
+					renderer->BatchRender();
+				}
+
+				pl->UnbindPipeline();
+			}
+		}
+
 	}
 
 	void GLRenderer::UpdateLightBuffer()

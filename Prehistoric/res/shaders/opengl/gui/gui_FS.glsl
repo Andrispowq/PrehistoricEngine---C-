@@ -11,6 +11,9 @@ uniform sampler2D image;
 void main()
 {
 	outColour = vec4(colour, 1.0);
+
 	if (outColour.r == -1)
+	{
 		outColour = texture(image, texture_FS);
+	}
 }

@@ -27,7 +27,7 @@ layout (std430, binding = 1) writeonly buffer VisibleLightIndicesBuffer
 
 uniform sampler2D depthMap;
 uniform mat4 m_view;
-uniform mat4 m_proj;
+uniform mat4 m_projection;
 uniform vec2 scrnSize;
 uniform int lightCount;
 
@@ -43,7 +43,7 @@ void main()
 {
 	ivec2 screenSize = ivec2(scrnSize);
 
-	ivec2 location = ivec2(gl_GlobalInvactionID.xy);
+	ivec2 location = ivec2(gl_GlobalInvocationID.xy);
 	ivec2 itemID = ivec2(gl_LocalInvocationID.xy);
 	ivec2 tileID = ivec2(gl_WorkGroupID.xy);
 	ivec2 tileNumber = ivec2(gl_NumWorkGroups.xy);
@@ -55,7 +55,7 @@ void main()
 		minDepthInt = 0xFFFFFFFF;
 		maxDepthInt = 0;
 		visibleLightCount = 0;
-		viewProjection = projection * view;
+		m_viewProj = m_projection * m_view;
 	}
 
 	barrier();
@@ -65,7 +65,7 @@ void main()
 	vec2 text = vec2(location) / screenSize;
 	float depth = texture(depthMap, text).r;
 	// Linearize the depth value from depth buffer (must do this because we created it using projection)
-	depth = (0.5 * projection[3][2]) / (depth + 0.5 * projection[2][2] - 0.5);
+	depth = (0.5 * m_projection[3][2]) / (depth + 0.5 * m_projection[2][2] - 0.5);
 
 	// Convert depth to uint so we can do atomic min and max comparisons between the threads
 	uint depthInt = floatBitsToUint(depth);
@@ -96,14 +96,14 @@ void main()
 		// Transform the first four planes
 		for (uint i = 0; i < 4; i++) 
 		{
-			frustumPlanes[i] *= viewProjection;
+			frustumPlanes[i] *= m_viewProj;
 			frustumPlanes[i] /= length(frustumPlanes[i].xyz);
 		}
 
 		// Transform the depth planes
-		frustumPlanes[4] *= view;
+		frustumPlanes[4] *= m_view;
 		frustumPlanes[4] /= length(frustumPlanes[4].xyz);
-		frustumPlanes[5] *= view;
+		frustumPlanes[5] *= m_view;
 		frustumPlanes[5] /= length(frustumPlanes[5].xyz);
 	}
 
@@ -125,7 +125,7 @@ void main()
 		}
 
 		vec4 position = lightBuffer.data[lightIndex].position;
-		float radius = lightBuffer.data[lightIndex].paddingAndRadius.w;
+		float radius = lightBuffer.data[lightIndex].padding_radius.w;
 
 		// We check if the light exists in our frustum
 		float distance = 0.0;

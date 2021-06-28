@@ -8,13 +8,14 @@ uniform sampler2D scene;
 
 uniform float gamma;
 uniform float exposure;
+uniform vec2 screenSize;
 
 void main()
 {
     ivec2 x = ivec2(gl_GlobalInvocationID.xy);
-    vec2 texCoord = gl_GlobalInvocationID.xy / dimension;
+    vec2 texCoord = gl_GlobalInvocationID.xy / screenSize;
 
-    vec4 sceneColour = texture(scene, texCoord);
+    vec3 sceneColour = texture(scene, texCoord).rgb;
        
     sceneColour = 1.0 - exp(-sceneColour * exposure);
     sceneColour = pow(sceneColour, vec3(1.0 / gamma));

@@ -1,4 +1,4 @@
-#version 330
+#version 430
 
 layout (location = 0) out vec4 outColour;
 
@@ -20,6 +20,31 @@ struct Material
 	vec3 emission;
 };
 
+struct PointLight 
+{
+	vec4 colour;
+	vec4 position;
+	vec4 padding_radius;
+};
+
+struct VisibleIndex
+{
+	int index;
+};
+
+layout (std430, binding = 0) readonly buffer LightBuffer
+{
+	PointLight data[];
+} lightBuffer;
+
+layout (std430, binding = 1) readonly buffer VisibleLightIndicesBuffer 
+{
+	VisibleIndex data[];
+} visibleLightIndicesBuffer;
+
+const float PI = 3.141592653589793;
+const float emissionFactor = 3;
+
 uniform Material material;
 
 uniform samplerCube irradianceMap;
@@ -29,28 +54,7 @@ uniform sampler2D brdfLUT;
 uniform vec3 cameraPosition;
 uniform int highDetailRange;
 uniform int numberOfTilesX;
-
-struct PointLight 
-{
-	vec4 colour;
-	vec4 position;
-	vec4 paddingAndRadius;
-};
-
-struct VisibleIndex 
-{
-	int index;
-};
-
-layout(std430, binding = 0) readonly buffer LightBuffer 
-{
-	PointLight data[];
-} lightBuffer;
-
-layout(std430, binding = 1) readonly buffer VisibleLightIndicesBuffer 
-{
-	VisibleIndex data[];
-} visibleLightIndicesBuffer;
+uniform int max_reflection_lod;
 
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 float GeometrySchlickGGX(float NdotV, float roughness);
@@ -72,7 +76,7 @@ void main()
 {
 	ivec2 location = ivec2(gl_FragCoord.xy);
 	ivec2 tileID = location / ivec2(16, 16);
-	uint index = tileID.y * numberOfTilesX + tileID.x;
+	uint index = uint(tileID.y * numberOfTilesX + tileID.x);
 
 	vec3 albedoColour = material.colour;
 	vec4 mrot = material.mrot;
@@ -101,6 +105,10 @@ void main()
 		mrot.a = mrotMap.a;
 	}
 
+	float roughness = mrot.r;
+	float metallic = mrot.g;
+	float occlusion = mrot.b;
+
 	if (emission.r == -1)
 	{
 		emission = texture(material.emissionMap, texture_FS).rgb;
@@ -123,25 +131,25 @@ void main()
 	}
 	
 	vec3 N = normalize(normal);
-    vec3 V = normalize(cameraPosition - position);
+    vec3 V = normalize(cameraPosition - position_FS);
     vec3 R = normalize(reflect(-V, N));
 
     vec3 F0 = vec3(0.04);
-    F0 = mix(F0, albedo, metallic);
+    F0 = mix(F0, albedoColour, metallic);
 
     vec3 Lo = vec3(0);
-	uint offset = index * 1024;
-    for (uint i = 0; i < 1024 && visibleLightIndicesBuffer.data[offset + i].index != -1; i++)
+	uint offset = uint(index * 1024);
+    for (uint i = 0; i < 1024u && visibleLightIndicesBuffer.data[offset + i].index != -1; i++)
     {
 		uint lightIndex = visibleLightIndicesBuffer.data[offset + i].index;
 		PointLight light = lightBuffer.data[lightIndex];
 		
-		vec3 lightPos = light.position;
+		vec3 lightPos = light.position.xyz;
 		
-        vec3 L = normalize(lightPos - position);
+        vec3 L = normalize(lightPos - position_FS);
         vec3 H = normalize(V + L);
-        float attenuation = attenuate(L, light.paddingAndRadius.w);
-        vec3 radiance = light.colour * attenuation;
+        float attenuation = attenuate(L, light.padding_radius.w);
+        vec3 radiance = light.colour.rgb * attenuation;
 
         float NDF = DistributionGGX(N, H, roughness);
         float G = GeometrySmith(N, V, L, roughness);
@@ -156,11 +164,7 @@ void main()
         vec3 specular = numerator / max(denominator, 0.001);
 
         float NdotL = max(dot(N, L), 0);
-        //Specular lighting looks weird on terrain while there is no shadow mapping, so we disable it with the magic value of lit == 0.9
-        if (lit == 0.9)
-            Lo += (kD * albedo / PI) * radiance * NdotL;
-        else
-            Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+        Lo += (kD * albedoColour / PI + specular) * radiance * NdotL;
     }
 
     vec3 F = FresnelSchlickRoughness(max(dot(N, V), 0), F0, roughness);
@@ -170,7 +174,7 @@ void main()
     kD *= 1.0 - metallic;
 
     vec3 irradiance = texture(irradianceMap, N).rgb;
-    vec3 diffuse = irradiance * albedo;
+    vec3 diffuse = irradiance * albedoColour;
 
     float lod = roughness * max_reflection_lod;
     vec3 prefilteredColour = textureLod(prefilterMap, R, lod).rgb;
@@ -178,7 +182,53 @@ void main()
     vec3 specular = prefilteredColour * (F * envBRDF.x + envBRDF.y);
 
     vec3 ambient = (kD * diffuse + specular) * occlusion;
-    colour = ambient + Lo + max(emission * emissionFactor, 0.0);
+    vec3 colour = ambient + Lo + max(emission * emissionFactor, 0.0);
 
 	outColour = vec4(colour, 1);
+}
+
+float DistributionGGX(vec3 N, vec3 H, float roughness)
+{
+    float a = roughness * roughness;
+    float a2 = a * a;
+    float NdotH = max(dot(N, H), 0.0);
+    float NdotH2 = NdotH * NdotH;
+
+    float num = a2;
+    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    denom = PI * denom * denom;
+
+    return num / denom;
+}
+
+float GeometrySchlickGGX(float NdotV, float roughness)
+{
+    float r = (roughness + 1.0);
+    float k = (r * r) / 2.0;
+
+    float num = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+
+    return num / denom;
+}
+
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+{
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+
+    float ggx2 = GeometrySchlickGGX(NdotV, roughness);
+    float ggx1 = GeometrySchlickGGX(NdotL, roughness);
+
+    return ggx1 * ggx2;
+}
+
+vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+{
+    return F0 + (max(vec3(1 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
+}
+
+vec3 FresnelSchlick(float cosTheta, vec3 F0)
+{
+    return F0 + (1 - F0) * pow(1.0 - cosTheta, 5.0);
 }

@@ -28,7 +28,7 @@ namespace Prehistoric
 
 		if (FrameworkConfig::api == OpenGL)
 		{
-			buffer = new GLShaderStorageBuffer(window, heights, N * N);
+			buffer = new GLShaderStorageBuffer(window, heights, N * N * sizeof(float));
 		}
 		else if (FrameworkConfig::api == Vulkan)
 		{
