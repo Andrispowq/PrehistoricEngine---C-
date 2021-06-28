@@ -10,7 +10,7 @@ namespace Prehistoric
 	class GLShaderStorageBuffer : public ShaderStorageBuffer
 	{
 	public:
-		GLShaderStorageBuffer(Window* window, void* data, const Layout& layout);
+		GLShaderStorageBuffer(Window* window, void* data, size_t size);
 		virtual ~GLShaderStorageBuffer() override;
 
 		virtual void Bind(CommandBuffer* commandBuffer, uint32_t binding) const override;

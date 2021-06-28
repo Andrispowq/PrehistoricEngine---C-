@@ -21,6 +21,30 @@ namespace Prehistoric
 		descriptorPool->finalise(pipelineLayout);
 	}
 
+	void VKBasicShader::BindGlobalSets() const
+	{
+		if (commandBuffer)
+		{
+			BindSets(commandBuffer, 0, 1);
+		}
+	}
+
+	void VKBasicShader::BindTextureSets(uint32_t descriptor_index) const
+	{
+		if (commandBuffer)
+		{
+			BindSets(commandBuffer, 1, 1, descriptor_index);
+		}
+	}
+
+	void VKBasicShader::BindObjectSets(uint32_t instance_index) const
+	{
+		if (commandBuffer)
+		{
+			BindSets(commandBuffer, 2, 1, instance_index);
+		}
+	}
+
 	void VKBasicShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
 	{
 		SetUniform("camera", camera->getViewMatrix(), 16 * sizeof(float) * 0);
@@ -51,9 +75,6 @@ namespace Prehistoric
 				SetUniform("lights", Vector4f(), baseOffset * 2 + currentOffset);
 			}
 		}
-
-		if (commandBuffer)
-			BindSets(commandBuffer, 0, 1);
 	}
 
 	void VKBasicShader::UpdateTextureUniforms(Material* material, uint32_t descriptor_index) const
@@ -70,8 +91,5 @@ namespace Prehistoric
 
 		SetUniform("material", material->getVector3f(COLOUR), instance_index);
 		SetUniform("material", material->getVector4f(MROT), Vector4f::size(), instance_index);
-
-		if (commandBuffer)
-			BindSets(commandBuffer, 1, 1, instance_index);
 	}
 };

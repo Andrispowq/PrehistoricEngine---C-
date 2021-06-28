@@ -9,15 +9,12 @@ namespace Prehistoric
 
 		'data' gets managed by OpenGL
 	*/
-	GLShaderStorageBuffer::GLShaderStorageBuffer(Window* window, void* data, const Layout& layout)
-		: ShaderStorageBuffer(window, data, layout)
+	GLShaderStorageBuffer::GLShaderStorageBuffer(Window* window, void* data, size_t size)
+		: ShaderStorageBuffer(window, data, size)
 	{
-		this->data = data;
-		this->layout = layout;
-
 		glGenBuffers(1, &id);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, id);
-		glBufferData(GL_SHADER_STORAGE_BUFFER, layout.getSize(), data, GL_STATIC_READ);
+		glBufferData(GL_SHADER_STORAGE_BUFFER, size, data, GL_STATIC_READ);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 	}
 
@@ -38,7 +35,7 @@ namespace Prehistoric
 
 	void GLShaderStorageBuffer::MapBuffer()
 	{
-		data = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
+		data = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_WRITE);
 	}
 
 	void GLShaderStorageBuffer::UnmapBuffer()

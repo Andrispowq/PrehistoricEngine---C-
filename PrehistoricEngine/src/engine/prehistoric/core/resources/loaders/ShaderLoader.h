@@ -19,9 +19,9 @@ namespace Prehistoric
 		GPGPUNormal,
 		GPGPUSplat,
 		GPGPUHeightQuery,
-		Deferred,
-		AlphaCoverage,
-		FXAA
+		HDR,
+		DepthPass,
+		LightCullingPass
 	};
 
 	class ShaderLoader : public Loader

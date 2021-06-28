@@ -24,6 +24,30 @@ namespace Prehistoric
 		descriptorPool->finalise(pipelineLayout);
 	}
 
+	void VKPBRShader::BindGlobalSets() const
+	{
+		if (commandBuffer)
+		{
+			BindSets(commandBuffer, 0, 1);
+		}
+	}
+
+	void VKPBRShader::BindTextureSets(uint32_t descriptor_index) const
+	{
+		if (commandBuffer)
+		{
+			BindSets(commandBuffer, 1, 1, descriptor_index);
+		}
+	}
+
+	void VKPBRShader::BindObjectSets(uint32_t instance_index) const
+	{
+		if (commandBuffer)
+		{
+			BindSets(commandBuffer, 2, 1, instance_index);
+		}
+	}
+
 	void VKPBRShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
 	{
 		//Offset values are copied from shaders
@@ -84,8 +108,6 @@ namespace Prehistoric
 		SetUniform("lights", lightData, Vector4f::size() * 3 * EngineConfig::lightsMaxNumber, 0);
 
 		delete[] lightData;
-
-		BindSets(commandBuffer, 0, 1);
 	}
 
 	void VKPBRShader::UpdateTextureUniforms(Material* material, uint32_t descriptor_index) const
@@ -94,8 +116,6 @@ namespace Prehistoric
 		SetTexture(NORMAL_MAP, material->getTexture(NORMAL_MAP), descriptor_index);
 		SetTexture(MROT_MAP, material->getTexture(MROT_MAP), descriptor_index);
 		SetTexture(EMISSION_MAP, material->getTexture(EMISSION_MAP), descriptor_index);
-
-		BindSets(commandBuffer, 1, 1, descriptor_index);
 	}
 
 	void VKPBRShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const
@@ -109,7 +129,5 @@ namespace Prehistoric
 		SetUniform("material", material->getVector3f(COLOUR), 16, instance_index);
 		SetUniform("material", material->getVector3f(EMISSION), 32, instance_index);
 		SetUniformi("material", material->exists(NORMAL_MAP), 48, instance_index);
-
-		BindSets(commandBuffer, 2, 1, instance_index);
 	}
 };

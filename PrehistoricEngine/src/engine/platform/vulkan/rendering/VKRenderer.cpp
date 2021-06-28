@@ -5,6 +5,7 @@
 
 #include "platform/vulkan/framework/context/VKContext.h"
 #include "platform/vulkan/framework/swapchain/VKSwapchain.h"
+#include "platform/vulkan/rendering/shaders/VkShader.h"
 
 #include "prehistoric/core/resources/AssetManager.h"
 
@@ -54,6 +55,8 @@ namespace Prehistoric
 
 		if (window->isResized())
 		{
+			PR_PROFILE("Resizing window");
+
 			delete renderpass.release();
 			primaryFramebuffers.clear();
 
@@ -103,13 +106,20 @@ namespace Prehistoric
 			}
 
 			window->setResized(false);
+			commandBuffersReady = false;
 		}
 
-		uint32_t index = swapchain->getAquiredImageIndex();
+		if (!commandBuffersReady)
+		{
+			BuildCommandBuffers();
+			commandBuffersReady = true;
+		}
+
+		/*uint32_t index = swapchain->getAquiredImageIndex();
 		VKCommandBuffer* buffer = commandPool->getCommandBuffer(index);
 
 		buffer->BindBuffer();
-		renderpass->BeginRenderpass(buffer, primaryFramebuffers[index].get(), swapchain->getSwapchainExtent(), swapchain->getClearColour());
+		renderpass->BeginRenderpass(buffer, primaryFramebuffers[index].get(), swapchain->getSwapchainExtent(), swapchain->getClearColour());*/
 	}
 
 	void VKRenderer::EndRendering()
@@ -118,10 +128,13 @@ namespace Prehistoric
 		uint32_t index = swapchain->getAquiredImageIndex();
 		VKCommandBuffer* buffer = commandPool->getCommandBuffer(index);
 
-		renderpass->EndRenderpass(buffer);
-		buffer->UnbindBuffer();
+		/*renderpass->EndRenderpass(buffer);
+		buffer->UnbindBuffer();*/
 
-		window->Render(commandPool->getCommandBuffer(index));
+		{
+			PR_PROFILE("Submitting");
+			window->Render(buffer);
+		}
 
 		//Clear the lists
 		models_3d.clear();
@@ -132,54 +145,45 @@ namespace Prehistoric
 
 	void VKRenderer::Render()
 	{
+		PR_PROFILE("Update uniforms");
+
 		VKSwapchain* swapchain = (VKSwapchain*)window->getSwapchain();
 		uint32_t index = swapchain->getAquiredImageIndex();
 		VKCommandBuffer* buffer = commandPool->getCommandBuffer(index);
 
-		uint32_t counter = 0;
+		uint32_t matIdx = 0;
+		uint32_t instIdx = 0;
 		for (auto pipeline : models_3d)
 		{
 			Pipeline* pl = pipeline.first;
-
-			pl->BindPipeline(buffer);
 			pl->getShader()->UpdateGlobalUniforms(camera, lights);
-			
+
 			for (auto material : pipeline.second)
 			{
-				pl->getShader()->UpdateTextureUniforms(material.first, (uint32_t)counter);
+				pl->getShader()->UpdateTextureUniforms(material.first, (uint32_t)matIdx++);
 
-				uint32_t counter2 = 0;
 				for (size_t i = 0; i < material.second.size(); i++)
 				{
-					material.second[i]->BatchRender((uint32_t)(counter + counter2++));
+					pl->getShader()->UpdateObjectUniforms(material.second[i]->getParent(), (uint32_t)instIdx++);
 				}
-
-				counter++;
 			}
-
-			pl->UnbindPipeline();
 		}
 
 		//TODO: enable alpha blending
 		for (auto pipeline : models_transparency)
 		{
 			Pipeline* pl = pipeline.first;
-
-			pl->BindPipeline(buffer);
 			pl->getShader()->UpdateGlobalUniforms(camera, lights);
 
-			uint32_t counter = 0;
 			for (auto material : pipeline.second)
 			{
-				pl->getShader()->UpdateTextureUniforms(material.first, counter++);
+				pl->getShader()->UpdateTextureUniforms(material.first, (uint32_t)matIdx++);
 
 				for (size_t i = 0; i < material.second.size(); i++)
 				{
-					material.second[i]->BatchRender((uint32_t)i);
+					pl->getShader()->UpdateObjectUniforms(material.second[i]->getParent(), (uint32_t)instIdx++);
 				}
 			}
-
-			pl->UnbindPipeline();
 		}
 
 		//TODO: disable alpha blending and depth testing
@@ -187,18 +191,88 @@ namespace Prehistoric
 		{
 			Pipeline* pl = pipeline.first;
 
-			pl->BindPipeline(buffer);
-
+			instIdx = 0;
 			for (size_t i = 0; i < pipeline.second.size(); i++)
 			{
-				pipeline.second[i]->BatchRender((uint32_t)i);
+				pl->getShader()->UpdateObjectUniforms(pipeline.second[i]->getParent(), instIdx++);
 			}
-
-			pl->UnbindPipeline();
 		}
+
+		BuildCommandBuffers();
 	}
 
 	void VKRenderer::BuildCommandBuffers()
 	{
+		PR_PROFILE("Recording command buffers");
+
+		VKSwapchain* swapchain = (VKSwapchain*)window->getSwapchain();
+		for (uint32_t i = 0; i < swapchain->getSwapchainImages().size(); i++)
+		{
+			VKCommandBuffer* buffer = commandPool->getCommandBuffer(i);
+
+			buffer->BindBuffer();
+			renderpass->BeginRenderpass(buffer, primaryFramebuffers[i].get(), swapchain->getSwapchainExtent(), swapchain->getClearColour());
+
+			uint32_t matIdx = 0;
+			uint32_t instIdx = 0;
+			for (auto pipeline : models_3d)
+			{
+				Pipeline* pl = pipeline.first;
+				pl->BindPipeline(buffer);
+				((VKShader*)pl->getShader())->BindGlobalSets();
+
+				for (auto material : pipeline.second)
+				{
+					((VKShader*)pl->getShader())->BindTextureSets(matIdx++);
+
+					for (size_t i = 0; i < material.second.size(); i++)
+					{
+						((VKShader*)pl->getShader())->BindObjectSets(instIdx++);
+						pl->RenderPipeline();
+					}
+				}
+
+				pl->UnbindPipeline();
+			}
+
+			//TODO: enable alpha blending
+			for (auto pipeline : models_transparency)
+			{
+				Pipeline* pl = pipeline.first;
+				pl->BindPipeline(buffer);
+				((VKShader*)pl->getShader())->BindGlobalSets();
+
+				for (auto material : pipeline.second)
+				{
+					((VKShader*)pl->getShader())->BindTextureSets(matIdx++);
+
+					for (size_t i = 0; i < material.second.size(); i++)
+					{
+						((VKShader*)pl->getShader())->BindObjectSets(instIdx++);
+						pl->RenderPipeline();
+					}
+				}
+
+				pl->UnbindPipeline();
+			}
+
+			//TODO: disable alpha blending and depth testing
+			for (auto pipeline : models_2d)
+			{
+				Pipeline* pl = pipeline.first;
+				pl->BindPipeline(buffer);
+
+				for (size_t i = 0; i < pipeline.second.size(); i++)
+				{
+					((VKShader*)pl->getShader())->BindObjectSets(instIdx++);
+					pl->RenderPipeline();
+				}
+
+				pl->UnbindPipeline();
+			}
+
+			renderpass->EndRenderpass(buffer);
+			buffer->UnbindBuffer();
+		}
 	}
 };

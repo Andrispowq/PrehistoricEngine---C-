@@ -14,7 +14,7 @@ namespace Prehistoric
 	class Framebuffer
 	{
 	public:
-		Framebuffer(Window* window) : window(window) {}
+		Framebuffer(Window* window) : window(window), width(0), height(0) {}
 		virtual ~Framebuffer() {}
 
 		virtual void Bind() = 0;

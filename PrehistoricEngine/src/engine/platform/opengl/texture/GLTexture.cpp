@@ -21,8 +21,8 @@ namespace Prehistoric
 		return -1;
 	}
 
-	GLTexture::GLTexture(uint32_t width, uint32_t height, ImageFormat format, ImageType type, bool multisample)
-		: Texture(width, height, format, type), multisample(multisample)
+	GLTexture::GLTexture(uint32_t width, uint32_t height, ImageFormat format, ImageType type, bool multisample, bool depth)
+		: Texture(width, height, format, type), multisample(multisample), depth(depth)
 	{
 		glGenTextures(1, &id);
 	}
@@ -152,7 +152,8 @@ namespace Prehistoric
 
 	Texture* GLTexture::Storage2D(uint32_t width, uint32_t height, uint32_t levels, ImageFormat format, SamplerFilter filter, TextureWrapMode wrapMode, bool generate_mipmaps, bool multisample)
 	{
-		Texture* texture = new GLTexture(width, height, format, TEXTURE_2D, multisample);
+		bool depth = (format == D32_LINEAR) || (format == D32_SFLOAT);
+		Texture* texture = new GLTexture(width, height, format, TEXTURE_2D, multisample, depth);
 		texture->Bind();
 
 		if (multisample)
@@ -220,6 +221,8 @@ namespace Prehistoric
 			return GL_RGB32F;
 		if (format == R8G8B8A8_SRGB || format == R8G8B8A8_LINEAR)
 			return GL_RGBA32F;
+		if (format == D32_LINEAR || format == D32_SFLOAT)
+			return GL_DEPTH_COMPONENT32F;
 
 		PR_LOG_ERROR("Unsupported texture format: %u\n", format);
 
@@ -244,6 +247,8 @@ namespace Prehistoric
 			return GL_RGB;
 		if (format == R8G8B8A8_SRGB || format == R8G8B8A8_LINEAR)
 			return GL_RGBA;
+		if (format == D32_LINEAR || format == D32_SFLOAT)
+			return GL_DEPTH_COMPONENT;
 
 		PR_LOG_ERROR("Unsupported texture format: %u\n", format);
 

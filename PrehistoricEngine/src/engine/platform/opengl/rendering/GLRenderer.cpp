@@ -18,71 +18,55 @@
 namespace Prehistoric
 {
 	GLRenderer::GLRenderer(Window* window, Camera* camera, AssembledAssetManager* manager)
-		: Renderer(window, camera, manager), deferredFBO{nullptr}
+		: Renderer(window, camera, manager), depthFBO{nullptr}, lightBuffer{nullptr}, visibleLightIndicesBuffer{nullptr}
 	{
-		deferredFBO = std::make_unique<GLFramebuffer>(window);
+		depthFBO = std::make_unique<GLFramebuffer>(window);
 
 		uint32_t width = window->getWidth();
 		uint32_t height = window->getHeight();
 
-		positionMetalic = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false, true);
-		albedoRoughness = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false, true);
-		normalLit = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false, true);
-		emissionExtra = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false, true);
-
-		alphaCoverage = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
+		depthImage = GLTexture::Storage2D(width, height, 1, D32_LINEAR, Bilinear, ClampToEdge, false);
+		colourImage = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
 		outputImage = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
-		fxaaTexture = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
 
-		deferredFBO->Bind();
-		deferredFBO->addDepthAttachment(width, height, true);
-		
-		deferredFBO->addColourAttachment2D(positionMetalic, 0);
-		deferredFBO->addColourAttachment2D(albedoRoughness, 1);
-		deferredFBO->addColourAttachment2D(normalLit, 2);
-		deferredFBO->addColourAttachment2D(emissionExtra, 3);
-
-		deferredFBO->Check();
-		deferredFBO->Unbind();
+		depthFBO->Bind();
+		depthFBO->addColourAttachment2D(depthImage, 0);
+		depthFBO->Check();
+		depthFBO->Unbind();
 
 		AssetManager* man = manager->getAssetManager();
-		quadVBO = man->storeVertexBuffer(ModelFabricator::CreateQuad(window));
-		quadVBO->setFrontFace(FrontFace::DOUBLE_SIDED);
 
-		alphaCoverageShader = man->loadShader(ShaderName::AlphaCoverage).value();
-		deferredShader = man->loadShader(ShaderName::Deferred).value();
-		fxaaShader = man->loadShader(ShaderName::FXAA).value();
-		renderShader = man->loadShader(ShaderName::Gui).value();
+		depthShader = man->loadShader(ShaderName::DepthPass).value();
+		lightCullingShader = man->loadShader(ShaderName::LightCullingPass).value();
+		hdrShader = man->loadShader(ShaderName::HDR).value();
 
-		alphaCoveragePipeline = new GLComputePipeline(window, man, alphaCoverageShader);
-		deferredPipeline = new GLComputePipeline(window, man, deferredShader);
-		fxaaPipeline = new GLComputePipeline(window, man, fxaaShader);
-		renderPipeline = new GLGraphicsPipeline(window, man, renderShader, quadVBO);
+		lightCullingPipeline = new GLComputePipeline(window, man, lightCullingShader);
+		hdrPipeline = new GLComputePipeline(window, man, hdrShader);
 
-		static_cast<GLComputePipeline*>(alphaCoveragePipeline)->setInvocationSize({ width / 16, height / 16, 1 });
-		static_cast<GLComputePipeline*>(alphaCoveragePipeline)->addTextureBinding(0, alphaCoverage, WRITE_ONLY);
+		uint32_t width = window->getWidth();
+		uint32_t height = window->getHeight();
 
-		static_cast<GLComputePipeline*>(deferredPipeline)->setInvocationSize({ width / 16, height / 16, 1 });
-		static_cast<GLComputePipeline*>(deferredPipeline)->addTextureBinding(0, outputImage, WRITE_ONLY);
+		uint32_t workGroupsX = (width + (width % 16)) / 16;
+		uint32_t workGroupsY = (height + (height % 16)) / 16;
 
-		static_cast<GLComputePipeline*>(fxaaPipeline)->setInvocationSize({ width / 16, height / 16, 1 });
-		static_cast<GLComputePipeline*>(fxaaPipeline)->addTextureBinding(0, fxaaTexture, WRITE_ONLY);
+		uint32_t numberOfTiles = workGroupsX * workGroupsY;
+
+		lightBuffer = std::make_unique<GLShaderStorageBuffer>(window, 0, EngineConfig::lightsMaxNumber * sizeof(InternalLight));
+		visibleLightIndicesBuffer = std::make_unique<GLShaderStorageBuffer>(window, 0, numberOfTiles * sizeof(VisibleIndex));
+
+		static_cast<GLComputePipeline*>(lightCullingPipeline)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
+		static_cast<GLComputePipeline*>(lightCullingPipeline)->addSSBOBinding(0, (ShaderStorageBuffer*)lightBuffer.get(), READ_ONLY);
+		static_cast<GLComputePipeline*>(lightCullingPipeline)->addSSBOBinding(1, (ShaderStorageBuffer*)visibleLightIndicesBuffer.get(), WRITE_ONLY);
+
+		static_cast<GLComputePipeline*>(hdrPipeline)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
+		static_cast<GLComputePipeline*>(hdrPipeline)->addTextureBinding(0, outputImage, WRITE_ONLY);
 	}
 
 	GLRenderer::~GLRenderer()
 	{
-		delete positionMetalic;
-		delete albedoRoughness;
-		delete normalLit;
-		delete emissionExtra;
-		
-		delete alphaCoverage;
+		delete depthImage;
+		delete colourImage;
 		delete outputImage;
-		delete fxaaTexture;
-
-		delete deferredPipeline;
-		delete fxaaPipeline;
-		delete renderPipeline;
 	}
 
 	void GLRenderer::PrepareRendering()
@@ -94,48 +78,37 @@ namespace Prehistoric
 			uint32_t width = window->getWidth();
 			uint32_t height = window->getHeight();
 
+			uint32_t workGroupsX = (width + (width % 16)) / 16;
+			uint32_t workGroupsY = (height + (height % 16)) / 16;
+
+			uint32_t numberOfTiles = workGroupsX * workGroupsY;
+
+			PR_LOG(GREEN, "%d by %d\n", width, height);
 			window->getSwapchain()->SetWindowSize(width, height);
 
 			//Recreate the FBO and the images
-			delete positionMetalic;
-			delete albedoRoughness;
-			delete normalLit;
-			delete emissionExtra;
-
-			delete alphaCoverage;
+			delete depthImage;
+			delete colourImage;
 			delete outputImage;
-			delete fxaaTexture;
 
-			positionMetalic = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false, true);
-			albedoRoughness = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false, true);
-			normalLit = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false, true);
-			emissionExtra = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false, true);
-
-			static_cast<GLComputePipeline*>(alphaCoveragePipeline)->removeTextureBinding(0);
-			alphaCoverage = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
-			static_cast<GLComputePipeline*>(alphaCoveragePipeline)->setInvocationSize({ width / 16, height / 16, 1 });
-			static_cast<GLComputePipeline*>(alphaCoveragePipeline)->addTextureBinding(0, alphaCoverage, WRITE_ONLY);
-
-			static_cast<GLComputePipeline*>(deferredPipeline)->removeTextureBinding(0);
+			depthImage = GLTexture::Storage2D(width, height, 1, D32_LINEAR, Bilinear, ClampToEdge, false);
+			colourImage = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
 			outputImage = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
-			static_cast<GLComputePipeline*>(deferredPipeline)->setInvocationSize({ width / 16, height / 16, 1 });
-			static_cast<GLComputePipeline*>(deferredPipeline)->addTextureBinding(0, outputImage, WRITE_ONLY);
 
-			static_cast<GLComputePipeline*>(fxaaPipeline)->removeTextureBinding(0);
-			fxaaTexture = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
-			static_cast<GLComputePipeline*>(fxaaPipeline)->setInvocationSize({ width / 16, height / 16, 1 });
-			static_cast<GLComputePipeline*>(fxaaPipeline)->addTextureBinding(0, fxaaTexture, WRITE_ONLY);
+			static_cast<GLComputePipeline*>(lightCullingPipeline)->removeSSBOBinding(0);
+			static_cast<GLComputePipeline*>(lightCullingPipeline)->removeSSBOBinding(1);
+			static_cast<GLComputePipeline*>(lightCullingPipeline)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
+			static_cast<GLComputePipeline*>(lightCullingPipeline)->addSSBOBinding(0, (ShaderStorageBuffer*)lightBuffer.get(), READ_ONLY);
+			static_cast<GLComputePipeline*>(lightCullingPipeline)->addSSBOBinding(1, (ShaderStorageBuffer*)visibleLightIndicesBuffer.get(), WRITE_ONLY);
 
-			deferredFBO->Bind();
-			deferredFBO->addDepthAttachment(width, height, true);
+			static_cast<GLComputePipeline*>(hdrPipeline)->removeTextureBinding(0);
+			static_cast<GLComputePipeline*>(hdrPipeline)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
+			static_cast<GLComputePipeline*>(hdrPipeline)->addTextureBinding(0, outputImage, WRITE_ONLY);
 
-			deferredFBO->addColourAttachment2D(positionMetalic, 0);
-			deferredFBO->addColourAttachment2D(albedoRoughness, 1);
-			deferredFBO->addColourAttachment2D(normalLit, 2);
-			deferredFBO->addColourAttachment2D(emissionExtra, 3);
-
-			deferredFBO->Check();
-			deferredFBO->Unbind();
+			depthFBO->Bind();
+			depthFBO->addColourAttachment2D(depthImage, 0);
+			depthFBO->Check();
+			depthFBO->Unbind();
 
 			//Recreate the pipelines
 			std::vector<Pipeline*> pipes = manager->get<Pipeline>();

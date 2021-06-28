@@ -6,9 +6,9 @@
 static void sun_move_function(Prehistoric::GameObject* object, float frameTime)
 {
 	constexpr float range = 32000.0f;
-	constexpr float anglesPerSecond = 0.5f;
+	constexpr float anglesPerSecond = 0.0f; // 0.5f
 
-	static float angle = 190.0f;
+	static float angle = 130.0f;
 
 	float x = cos(ToRadians(angle)) * range;
 	float y = sin(ToRadians(angle)) * range;
@@ -29,7 +29,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 	{
 		loader.LoadWorld(worldFile, root, window, manager);
 
-		AssetManager* man = manager->getAssetManager();
+		/*AssetManager* man = manager->getAssetManager();
 
 		VertexBufferHandle quad = man->loadVertexBuffer(std::nullopt, "quadModel").value();
 		VertexBufferHandle sphere = man->loadVertexBuffer(std::nullopt, "sphereModel").value();
@@ -68,7 +68,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 				obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline2, material2));
 				root->AddChild(std::string("obj" + std::to_string(x) + std::to_string(y)), obj);
 			}
-		}
+		}*/
 	}
 	else
 	{
@@ -76,15 +76,15 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 
 		loader.LoadWorld(worldFile, root, window, manager);
 
-		GameObject* sun = new GameObject();
+		/*GameObject* sun = new GameObject();
 		sun->setUpdateFunction(sun_move_function);
 		sun->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0.95f, 0.87f), Vector3f(10000000000.0f)));
 		sun_move_function(sun, 0.0f);
-		//root->AddChild("sun", sun);
+		root->AddChild("sun", sun);
 
 		Atmosphere* atm = new Atmosphere(window, manager);
 		atm->setSun(sun->GetComponent<Light>());
-		//root->AddChild("atmosphere", atm);
+		root->AddChild("atmosphere", atm);*/
 
 		Terrain* terrain = new Terrain(window, camera, manager, "res/config/terrain_0.cfg");
 		terrain->UpdateQuadtree();

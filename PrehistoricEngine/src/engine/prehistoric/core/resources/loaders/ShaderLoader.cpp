@@ -11,9 +11,9 @@
 #include "platform/opengl/rendering/shaders/pbr/GLPBRShader.h"
 #include "platform/opengl/rendering/shaders/terrain/GLTerrainShader.h"
 #include "platform/opengl/rendering/shaders/terrain/GLTerrainWireframeShader.h"
-#include "platform/opengl/rendering/shaders/deferred/GLDeferredShader.h"
-#include "platform/opengl/rendering/shaders/deferred/GLAlphaCoverageShader.h"
-#include "platform/opengl/rendering/shaders/deferred/GLFXAAShader.h"
+#include "platform/opengl/rendering/shaders/postProcessing/GLHDRShader.h"
+#include "platform/opengl/rendering/shaders/forwardPlus/GLDepthPassShader.h"
+#include "platform/opengl/rendering/shaders/forwardPlus/GLLightCullingShader.h"
 
 #include "platform/vulkan/rendering/shaders/basic/VKBasicShader.h"
 #include "platform/vulkan/rendering/shaders/pbr/VKPBRShader.h"
@@ -65,17 +65,17 @@ namespace Prehistoric
 			{
 				shader = new GLTerrainHeightsShader();
 			}
-			else if (path == "deferred")
+			else if (path == "hdr")
 			{
-				shader = new GLDeferredShader();
+				shader = new GLHDRShader();
 			}
-			else if (path == "alpha_coverage")
+			else if (path == "depth_pass")
 			{
-				shader = new GLAlphaCoverageShader();
+				shader = new GLDepthPassShader();
 			}
-			else if (path == "fxaa")
+			else if (path == "light_culling_pass")
 			{
-				shader = new GLFXAAShader();
+				shader = new GLLightCullingPassShader();
 			}
 		}
 		else if (FrameworkConfig::api == Vulkan)

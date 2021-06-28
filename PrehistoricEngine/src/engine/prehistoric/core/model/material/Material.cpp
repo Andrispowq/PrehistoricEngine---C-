@@ -3,9 +3,12 @@
 
 namespace Prehistoric
 {
+	size_t Material::lastID = 0;
+
 	Material::Material(AssetManager* manager)
 	{
 		this->manager = manager;
+		this->ID = lastID++;
 
 		TextureHandle def = manager->loadTexture("res/textures/default.png").value();
 		manager->addReference<Texture>(def.handle);

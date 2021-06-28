@@ -72,10 +72,20 @@ namespace Prehistoric
 	void GLFramebuffer::addColourAttachment2D(Texture* texture, uint32_t attachment, uint32_t mipLevel)
 	{
 		GLTexture* tex = (GLTexture*)texture;
+		GLenum type = GL_COLOR_ATTACHMENT0 + attachment;
+		if (tex->isDepth())
+		{
+			type = GL_DEPTH_ATTACHMENT;
+		}
+
 		if (tex->isMultisample())
+		{
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment, GL_TEXTURE_2D_MULTISAMPLE, tex->getTextureID(), mipLevel);
+		}
 		else
+		{
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment, GL_TEXTURE_2D, tex->getTextureID(), mipLevel);
+		}
 	}
 
 	void GLFramebuffer::addColourAttachmentMultisample2D(uint32_t attachment)

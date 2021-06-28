@@ -228,6 +228,7 @@
     <ClInclude Include="src\engine\prehistoric\common\rendering\pipeline\GraphicsPipeline.h" />
     <ClInclude Include="src\engine\prehistoric\common\rendering\pipeline\Pipeline.h" />
     <ClInclude Include="src\engine\prehistoric\common\rendering\pipeline\RayTracingPipeline.h" />
+    <ClInclude Include="src\engine\prehistoric\common\rendering\renderStage\RenderStage.h" />
     <ClInclude Include="src\engine\prehistoric\common\rendering\shaders\Shader.h" />
     <ClInclude Include="src\engine\prehistoric\common\texture\Texture.h" />
     <ClInclude Include="src\engine\prehistoric\common\util\DeviceProperties.h" />

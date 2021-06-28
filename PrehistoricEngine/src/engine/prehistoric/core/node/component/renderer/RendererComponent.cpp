@@ -9,8 +9,6 @@
 
 namespace Prehistoric
 {
-	size_t RendererComponent::nextInstanceID = 0;
-
 	RendererComponent::RendererComponent(Window* window, AssembledAssetManager* manager, PipelineHandle pipeline, MaterialHandle material)
 		: RenderableComponent(window, manager, pipeline), material(material)
 	{
@@ -21,7 +19,6 @@ namespace Prehistoric
 		if (FrameworkConfig::api == Vulkan)
 		{
 			static_cast<VKShader*>(pipeline->getShader())->RegisterInstance();
-			instanceID = nextInstanceID++;
 		}
 	}
 
@@ -61,7 +58,7 @@ namespace Prehistoric
 
 	void RendererComponent::BatchRender(uint32_t instance_index) const
 	{
-		pipeline->getShader()->UpdateObjectUniforms(parent, (uint32_t)instanceID);
+		pipeline->getShader()->UpdateObjectUniforms(parent);
 		pipeline->RenderPipeline();
 	}
 };
