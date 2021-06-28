@@ -28,7 +28,7 @@ layout (std430, binding = 1) writeonly buffer VisibleLightIndicesBuffer
 uniform sampler2D depthMap;
 uniform mat4 m_view;
 uniform mat4 m_proj;
-uniform ivec2 screenSize;
+uniform vec2 scrnSize;
 uniform int lightCount;
 
 shared uint minDepthInt;
@@ -41,6 +41,8 @@ shared mat4 m_viewProj;
 
 void main()
 {
+	ivec2 screenSize = ivec2(scrnSize);
+
 	ivec2 location = ivec2(gl_GlobalInvactionID.xy);
 	ivec2 itemID = ivec2(gl_LocalInvocationID.xy);
 	ivec2 tileID = ivec2(gl_WorkGroupID.xy);

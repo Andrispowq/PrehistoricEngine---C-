@@ -10,10 +10,9 @@
 #include "prehistoric/core/modules/environmentMapRenderer/EnvironmentMapRenderer.h"
 #include "prehistoric/core/resources/AssetManager.h"
 
-#include "platform/opengl/rendering/shaders/deferred/GLAlphaCoverageShader.h"
-#include "platform/opengl/rendering/shaders/deferred/GLDeferredShader.h"
-#include "platform/opengl/rendering/shaders/deferred/GLFXAAShader.h"
-#include "platform/opengl/rendering/shaders/gui/GLGUIShader.h"
+#include "platform/opengl/rendering/shaders/forwardPlus/GLDepthPassShader.h"
+#include "platform/opengl/rendering/shaders/forwardPlus/GLLightCullingPassShader.h"
+#include "platform/opengl/rendering/shaders/postProcessing/GLHDRShader.h"
 
 namespace Prehistoric
 {
@@ -43,16 +42,13 @@ namespace Prehistoric
 		lightCullingPipeline = new GLComputePipeline(window, man, lightCullingShader);
 		hdrPipeline = new GLComputePipeline(window, man, hdrShader);
 
-		uint32_t width = window->getWidth();
-		uint32_t height = window->getHeight();
-
 		uint32_t workGroupsX = (width + (width % 16)) / 16;
 		uint32_t workGroupsY = (height + (height % 16)) / 16;
 
 		uint32_t numberOfTiles = workGroupsX * workGroupsY;
 
-		lightBuffer = std::make_unique<GLShaderStorageBuffer>(window, 0, EngineConfig::lightsMaxNumber * sizeof(InternalLight));
-		visibleLightIndicesBuffer = std::make_unique<GLShaderStorageBuffer>(window, 0, numberOfTiles * sizeof(VisibleIndex));
+		lightBuffer = std::make_unique<GLShaderStorageBuffer>(window, nullptr, EngineConfig::lightsMaxNumber * sizeof(InternalLight));
+		visibleLightIndicesBuffer = std::make_unique<GLShaderStorageBuffer>(window, nullptr, numberOfTiles * sizeof(VisibleIndex));
 
 		static_cast<GLComputePipeline*>(lightCullingPipeline)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
 		static_cast<GLComputePipeline*>(lightCullingPipeline)->addSSBOBinding(0, (ShaderStorageBuffer*)lightBuffer.get(), READ_ONLY);
@@ -136,10 +132,60 @@ namespace Prehistoric
 
 	void GLRenderer::Render()
 	{
-		deferredFBO->Bind();
-		uint32_t arr[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
-		deferredFBO->SetDrawAttachments(4, arr);
-		deferredFBO->Clear(0.0f);
+		{
+			PR_PROFILE("Depth pass");
+			depthFBO->Bind();
+			uint32_t arr[] = { GL_COLOR_ATTACHMENT0 };
+			depthFBO->SetDrawAttachments(1, arr);
+			depthFBO->Clear(0.0f);
+
+			depthShader->Bind(nullptr);
+
+			for (auto pipeline : models_3d)
+			{
+				Pipeline* pl = pipeline.first;
+				static_cast<GLGraphicsPipeline*>(pl)->getVertexBuffer()->Bind(nullptr);
+
+				for (auto material : pipeline.second)
+				{
+					for (auto renderer : material.second)
+					{
+						renderer->BatchRender();
+					}
+				}
+
+				static_cast<GLGraphicsPipeline*>(pl)->getVertexBuffer()->Unbind();
+			}
+
+			//TODO: enable alpha blending
+			for (auto pipeline : models_transparency)
+			{
+				Pipeline* pl = pipeline.first;
+				static_cast<GLGraphicsPipeline*>(pl)->getVertexBuffer()->Bind(nullptr);
+
+				for (auto material : pipeline.second)
+				{
+					for (auto renderer : material.second)
+					{
+						renderer->BatchRender();
+					}
+				}
+				static_cast<GLGraphicsPipeline*>(pl)->getVertexBuffer()->Unbind();
+			}
+
+			depthShader->Unbind();
+			depthFBO->Unbind();
+		}
+
+		{
+			PR_PROFILE("Light culling pass");
+
+			lightCullingPipeline->BindPipeline(nullptr);
+			static_cast<GLLightCullingPassShader*>(lightCullingPipeline->getShader())->UpdateUniforms(camera, lights, depthImage);
+			lightCullingPipeline->RenderPipeline();
+			lightCullingPipeline->UnbindPipeline();
+			
+		}
 
 		{
 			PR_PROFILE("Cubemap pass");
@@ -195,38 +241,12 @@ namespace Prehistoric
 		}
 
 		//Render using the deferred shader
-		deferredFBO->Unbind();
-
 		{
-			PR_PROFILE("Alpha Coverage pass");
-			alphaCoveragePipeline->BindPipeline(nullptr);
-			static_cast<GLAlphaCoverageShader*>(alphaCoveragePipeline->getShader())->UpdateUniforms(this, camera, lights);
-			alphaCoveragePipeline->RenderPipeline();
-			alphaCoveragePipeline->UnbindPipeline();
-		}
-		
-		{
-			PR_PROFILE("Deferred shading pass");
-			deferredPipeline->BindPipeline(nullptr);
-			static_cast<GLDeferredShader*>(deferredPipeline->getShader())->UpdateUniforms(this, camera, lights);
-			deferredPipeline->RenderPipeline();
-			deferredPipeline->UnbindPipeline();
-		}
-
-		{
-			PR_PROFILE("FXAA pass");
-			//fxaaPipeline->BindPipeline(nullptr);
-			//static_cast<GLFXAAShader*>(fxaaPipeline->getShader())->UpdateUniforms(this, camera, lights);
-			//fxaaPipeline->RenderPipeline();
-			//fxaaPipeline->UnbindPipeline();
-		}
-
-		{
-			PR_PROFILE("Show pass");
-			renderPipeline->BindPipeline(nullptr);
-			static_cast<GLGUIShader*>(renderPipeline->getShader())->UpdateCustomUniforms(outputImage, Vector3f(-1));
-			renderPipeline->RenderPipeline();
-			renderPipeline->UnbindPipeline();
+			PR_PROFILE("HDR post processing");
+			hdrPipeline->BindPipeline(nullptr);
+			static_cast<GLHDRShader*>(hdrPipeline->getShader())->UpdateUniforms(colourImage);
+			hdrPipeline->RenderPipeline();
+			hdrPipeline->UnbindPipeline();
 		}
 
 		//TODO: disable alpha blending and depth testing
@@ -243,5 +263,9 @@ namespace Prehistoric
 
 			pl->UnbindPipeline();
 		}
+	}
+
+	void GLRenderer::UpdateLightBuffer()
+	{
 	}
 };

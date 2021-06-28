@@ -11,9 +11,9 @@
 #include "platform/opengl/rendering/shaders/pbr/GLPBRShader.h"
 #include "platform/opengl/rendering/shaders/terrain/GLTerrainShader.h"
 #include "platform/opengl/rendering/shaders/terrain/GLTerrainWireframeShader.h"
-#include "platform/opengl/rendering/shaders/deferred/GLDeferredShader.h"
-#include "platform/opengl/rendering/shaders/deferred/GLAlphaCoverageShader.h"
-#include "platform/opengl/rendering/shaders/deferred/GLFXAAShader.h"
+#include "platform/opengl/rendering/shaders/postProcessing/GLHDRShader.h"
+#include "platform/opengl/rendering/shaders/forwardPlus/GLDepthPassShader.h"
+#include "platform/opengl/rendering/shaders/forwardPlus/GLLightCullingPassShader.h"
 
 #include "platform/vulkan/rendering/shaders/basic/VKBasicShader.h"
 #include "platform/vulkan/rendering/shaders/pbr/VKPBRShader.h"
@@ -149,14 +149,14 @@ namespace Prehistoric
 		case Prehistoric::ShaderName::GPGPUHeightQuery:
 			name = "gpgpu_terrain_heights";
 			break;
-		case Prehistoric::ShaderName::Deferred:
-			name = "deferred";
+		case Prehistoric::ShaderName::HDR:
+			name = "hdr";
 			break;
-		case Prehistoric::ShaderName::AlphaCoverage:
-			name = "alpha_coverage";
+		case Prehistoric::ShaderName::LightCullingPass:
+			name = "light_culling";
 			break;
-		case Prehistoric::ShaderName::FXAA:
-			name = "fxaa";
+		case Prehistoric::ShaderName::DepthPass:
+			name = "depth_pass";
 			break;
 		default:
 			name = "invalid";

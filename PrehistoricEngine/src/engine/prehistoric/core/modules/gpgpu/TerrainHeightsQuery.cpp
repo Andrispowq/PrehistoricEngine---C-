@@ -26,12 +26,9 @@ namespace Prehistoric
 
 		heights = new float[N * N];
 
-		Layout layout;
-		layout.addLayoutMember(LayoutType::FLOAT, LayoutTypeInfo::UNSIZED_ARRAY, N * N);
-
 		if (FrameworkConfig::api == OpenGL)
 		{
-			buffer = new GLShaderStorageBuffer(window, heights, layout);
+			buffer = new GLShaderStorageBuffer(window, heights, N * N);
 		}
 		else if (FrameworkConfig::api == Vulkan)
 		{

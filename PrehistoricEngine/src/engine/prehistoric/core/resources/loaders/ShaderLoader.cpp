@@ -13,7 +13,7 @@
 #include "platform/opengl/rendering/shaders/terrain/GLTerrainWireframeShader.h"
 #include "platform/opengl/rendering/shaders/postProcessing/GLHDRShader.h"
 #include "platform/opengl/rendering/shaders/forwardPlus/GLDepthPassShader.h"
-#include "platform/opengl/rendering/shaders/forwardPlus/GLLightCullingShader.h"
+#include "platform/opengl/rendering/shaders/forwardPlus/GLLightCullingPassShader.h"
 
 #include "platform/vulkan/rendering/shaders/basic/VKBasicShader.h"
 #include "platform/vulkan/rendering/shaders/pbr/VKPBRShader.h"
@@ -73,7 +73,7 @@ namespace Prehistoric
 			{
 				shader = new GLDepthPassShader();
 			}
-			else if (path == "light_culling_pass")
+			else if (path == "light_culling")
 			{
 				shader = new GLLightCullingPassShader();
 			}

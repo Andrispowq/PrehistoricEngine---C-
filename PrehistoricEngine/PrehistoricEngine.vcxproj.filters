@@ -320,13 +320,7 @@
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\basic\GLBasicShader.h">
       <Filter>platform\opengl\rendering\shaders\basic</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\deferred\GLAlphaCoverageShader.h">
-      <Filter>platform\opengl\rendering\shaders\deferred</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\deferred\GLDeferredShader.h">
-      <Filter>platform\opengl\rendering\shaders\deferred</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\deferred\GLFXAAShader.h">
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLHDRShader.h">
       <Filter>platform\opengl\rendering\shaders\deferred</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLBRDFIntegrateShader.h">
@@ -723,6 +717,8 @@
       <Filter>prehistoric\core\util\time</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\prehistoric\common\rendering\renderStage\RenderStage.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\forwardPlus\GLDepthPassShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\forwardPlus\GLLightCullingPassShader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -771,13 +767,7 @@
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\basic\GLBasicShader.cpp">
       <Filter>platform\opengl\rendering\shaders\basic</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\deferred\GLAlphaCoverageShader.cpp">
-      <Filter>platform\opengl\rendering\shaders\deferred</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\deferred\GLDeferredShader.cpp">
-      <Filter>platform\opengl\rendering\shaders\deferred</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\deferred\GLFXAAShader.cpp">
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLHDRShader.cpp">
       <Filter>platform\opengl\rendering\shaders\deferred</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLBRDFIntegrateShader.cpp">
@@ -1125,5 +1115,7 @@
     <ClCompile Include="src\engine\prehistoric\core\util\time\Timer.cpp">
       <Filter>prehistoric\core\util\time</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\forwardPlus\GLDepthPassShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\forwardPlus\GLLightCullingPassShader.cpp" />
   </ItemGroup>
 </Project>

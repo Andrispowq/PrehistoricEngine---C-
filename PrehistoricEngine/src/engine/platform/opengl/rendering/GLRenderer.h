@@ -24,6 +24,9 @@ namespace Prehistoric
 		virtual Texture* getOutputTexture() const override { return outputImage; }
 
 	private:
+		void UpdateLightBuffer();
+
+	private:
 		std::unique_ptr<GLFramebuffer> depthFBO;
 
 		std::unique_ptr<GLShaderStorageBuffer> lightBuffer;
