@@ -88,7 +88,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 
 		Terrain* terrain = new Terrain(window, camera, manager, "res/config/terrain_0.cfg");
 		terrain->UpdateQuadtree();
-		//root->AddChild("terrain0", terrain);
+		root->AddChild("terrain0", terrain);
 
 		GameObject* slider = new GUISlider(window, manager, 0.0f, 2.0f, Vector3f(0.5f), &EngineConfig::rendererExposure, sizeof(float), true);
 		slider->SetPosition({ 0.5f, 0.5f, 0 });
@@ -100,7 +100,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 		slider2->SetScale({ 0.125f, 0.05f, 1 });
 		root->AddChild("slider2", slider2);
 
-		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "sphereModel").value();
+		/*VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "sphereModel").value();
 		ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
 		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
 
@@ -120,7 +120,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 				obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, material2));
 				root->AddChild(std::string("obj" + std::to_string(x) + std::to_string(y)), obj);
 			}
-		}
+		}*/
 	}
 }
 

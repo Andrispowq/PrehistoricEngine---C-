@@ -52,7 +52,7 @@ namespace Prehistoric
 
 		//TODO: This is ugly!!!! 
 		SetUniformi("numberOfTilesX", FrameworkConfig::windowWidth / 16);
-		SetUniformi("max_reflection_lod", EnvironmentMapConfig::prefilterLevels);
+		SetUniformf("max_reflection_lod", EnvironmentMapConfig::prefilterLevels - 1.0f);
 	}
 
 	void GLPBRShader::UpdateTextureUniforms(Material* material, uint32_t descriptor_index) const

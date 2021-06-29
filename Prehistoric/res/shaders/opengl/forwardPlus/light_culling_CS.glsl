@@ -3,11 +3,11 @@
 #define TILE_SIZE 16
 layout (local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
 
-struct PointLight 
+struct PointLight
 {
-	vec4 colour;
 	vec4 position;
-	vec4 padding_radius;
+	vec4 colour;
+	vec4 intensity_radius;
 };
 
 struct VisibleIndex
@@ -41,7 +41,7 @@ shared mat4 m_viewProj;
 
 void main()
 {
-	ivec2 screenSize = ivec2(scrnSize);
+	vec2 screenSize = vec2(scrnSize);
 
 	ivec2 location = ivec2(gl_GlobalInvocationID.xy);
 	ivec2 itemID = ivec2(gl_LocalInvocationID.xy);
@@ -125,7 +125,7 @@ void main()
 		}
 
 		vec4 position = lightBuffer.data[lightIndex].position;
-		float radius = lightBuffer.data[lightIndex].padding_radius.w;
+		float radius = lightBuffer.data[lightIndex].intensity_radius.w;
 
 		// We check if the light exists in our frustum
 		float distance = 0.0;

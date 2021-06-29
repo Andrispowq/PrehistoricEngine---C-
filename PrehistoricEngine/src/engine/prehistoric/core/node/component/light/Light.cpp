@@ -6,8 +6,8 @@
 
 namespace Prehistoric
 {
-	Light::Light(const Vector3f& colour, const Vector3f& intensity)
-		: colour(colour), intensity(intensity), toBeRegistered(true)
+	Light::Light(const Vector3f& colour, const Vector3f& intensity, float radius)
+		: colour(colour), intensity(intensity), radius(radius), toBeRegistered(true)
 	{
 		type = ComponentType::LightComponent;
 	}

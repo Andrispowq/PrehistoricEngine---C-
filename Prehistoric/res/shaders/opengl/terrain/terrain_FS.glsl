@@ -13,24 +13,24 @@ struct Material
 	vec4 mrot;
 };
 
-struct PointLight 
+struct PointLight
 {
-	vec4 colour;
 	vec4 position;
-	vec4 paddingAndRadius;
+	vec4 colour;
+	vec4 intensity_radius;
 };
 
-struct VisibleIndex 
+struct VisibleIndex
 {
 	int index;
 };
 
-layout(std430, binding = 0) readonly buffer LightBuffer 
+layout(std430, binding = 0) readonly buffer LightBuffer
 {
 	PointLight data[];
 } lightBuffer;
 
-layout(std430, binding = 1) readonly buffer VisibleLightIndicesBuffer 
+layout(std430, binding = 1) readonly buffer VisibleLightIndicesBuffer
 {
 	VisibleIndex data[];
 } visibleLightIndicesBuffer;
@@ -52,7 +52,7 @@ uniform sampler2D brdfLUT;
 uniform vec3 cameraPosition;
 uniform int highDetailRange;
 uniform int numberOfTilesX;
-uniform int max_reflection_lod;
+uniform float max_reflection_lod;
 
 const float PI = 3.141592653589793;
 const float emissionFactor = 3;
@@ -62,16 +62,6 @@ float GeometrySchlickGGX(float NdotV, float roughness);
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
 vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness);
 vec3 FresnelSchlick(float cosTheta, vec3 F0);
-
-float attenuate(vec3 lightDirection, float radius) 
-{
-	float cutoff = 0.5;
-	float attenuation = dot(lightDirection, lightDirection) / (100.0 * radius);
-	attenuation = 1.0 / (attenuation * 15.0 + 1.0);
-	attenuation = (attenuation - cutoff) / (1.0 - cutoff);
-
-	return clamp(attenuation, 0.0, 1.0);
-}
 
 void main()
 {
@@ -159,10 +149,11 @@ void main()
 		
 		vec3 lightPos = light.position.xyz;
 		
-        vec3 L = normalize(lightPos - position_FS);
-        vec3 H = normalize(V + L);
-        float attenuation = attenuate(L, light.paddingAndRadius.w);
-        vec3 radiance = light.colour.rgb * attenuation;
+		vec3 L = normalize(lightPos - position_FS);
+		vec3 H = normalize(V + L);
+		float dist = length(lightPos - position_FS);
+		float attenuation = dist / pow(dist, 2);
+		vec3 radiance = light.colour.rgb * light.intensity_radius.rgb * attenuation;
 
         float NDF = DistributionGGX(N, H, roughness);
         float G = GeometrySmith(N, V, L, roughness);

@@ -37,6 +37,7 @@ static void OpenGLMessageCallback(
 		sType = "OTHER or OTHER_ARB";
 		break;
 	case GL_DEBUG_TYPE_PERFORMANCE:
+		return; //Don't want the performance warnings
 		sType = "PERFORMANCE or PERFORMANCE_ARB";
 		break;
 	case GL_DEBUG_TYPE_POP_GROUP:

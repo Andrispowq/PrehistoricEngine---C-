@@ -22,9 +22,9 @@ struct Material
 
 struct PointLight 
 {
-	vec4 colour;
 	vec4 position;
-	vec4 padding_radius;
+	vec4 colour;
+	vec4 intensity_radius;
 };
 
 struct VisibleIndex
@@ -54,7 +54,7 @@ uniform sampler2D brdfLUT;
 uniform vec3 cameraPosition;
 uniform int highDetailRange;
 uniform int numberOfTilesX;
-uniform int max_reflection_lod;
+uniform float max_reflection_lod;
 
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 float GeometrySchlickGGX(float NdotV, float roughness);
@@ -62,21 +62,11 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
 vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness);
 vec3 FresnelSchlick(float cosTheta, vec3 F0);
 
-float attenuate(vec3 lightDirection, float radius) 
-{
-	float cutoff = 0.5;
-	float attenuation = dot(lightDirection, lightDirection) / (100.0 * radius);
-	attenuation = 1.0 / (attenuation * 15.0 + 1.0);
-	attenuation = (attenuation - cutoff) / (1.0 - cutoff);
-
-	return clamp(attenuation, 0.0, 1.0);
-}
-
 void main()
 {
 	ivec2 location = ivec2(gl_FragCoord.xy);
 	ivec2 tileID = location / ivec2(16, 16);
-	uint index = uint(tileID.y * numberOfTilesX + tileID.x);
+	int index = tileID.y * numberOfTilesX + tileID.x;
 
 	vec3 albedoColour = material.colour;
 	vec4 mrot = material.mrot;
@@ -105,8 +95,8 @@ void main()
 		mrot.a = mrotMap.a;
 	}
 
-	float roughness = mrot.r;
-	float metallic = mrot.g;
+	float metallic = mrot.r;
+	float roughness = mrot.g;
 	float occlusion = mrot.b;
 
 	if (emission.r == -1)
@@ -138,18 +128,19 @@ void main()
     F0 = mix(F0, albedoColour, metallic);
 
     vec3 Lo = vec3(0);
-	uint offset = uint(index * 1024);
-    for (uint i = 0; i < 1024u && visibleLightIndicesBuffer.data[offset + i].index != -1; i++)
+	int offset = index * 1024;
+    for (int i = 0; i < 1024 && visibleLightIndicesBuffer.data[offset + i].index != -1; i++)
     {
-		uint lightIndex = visibleLightIndicesBuffer.data[offset + i].index;
+		int lightIndex = visibleLightIndicesBuffer.data[offset + i].index;
 		PointLight light = lightBuffer.data[lightIndex];
 		
 		vec3 lightPos = light.position.xyz;
 		
         vec3 L = normalize(lightPos - position_FS);
         vec3 H = normalize(V + L);
-        float attenuation = attenuate(L, light.padding_radius.w);
-        vec3 radiance = light.colour.rgb * attenuation;
+		float dist = length(lightPos - position_FS);
+		float attenuation = 1 / pow(dist, 2);
+        vec3 radiance = light.colour.rgb * light.intensity_radius.rgb * attenuation;
 
         float NDF = DistributionGGX(N, H, roughness);
         float G = GeometrySmith(N, V, L, roughness);

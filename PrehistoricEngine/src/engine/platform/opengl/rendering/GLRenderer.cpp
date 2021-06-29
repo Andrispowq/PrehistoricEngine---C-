@@ -152,6 +152,8 @@ namespace Prehistoric
 
 	void GLRenderer::Render()
 	{
+		UpdateLightBuffer();
+
 		{
 			PR_PROFILE("Depth pass");
 			depthFBO->Bind();
@@ -200,6 +202,8 @@ namespace Prehistoric
 			depthShader->Unbind();
 			depthFBO->Unbind();
 		}
+		
+		size_t i = sizeof(InternalLight);
 
 		{
 			PR_PROFILE("Light culling pass");
@@ -207,8 +211,7 @@ namespace Prehistoric
 			lightCullingPipeline->BindPipeline(nullptr);
 			static_cast<GLLightCullingPassShader*>(lightCullingPipeline->getShader())->UpdateUniforms(camera, lights, depthImage);
 			lightCullingPipeline->RenderPipeline();
-			lightCullingPipeline->UnbindPipeline();
-			
+			lightCullingPipeline->UnbindPipeline();			
 		}
 
 		colourFBO->Bind();
@@ -235,8 +238,8 @@ namespace Prehistoric
 				pl->BindPipeline(nullptr);
 				pl->getShader()->UpdateGlobalUniforms(camera, lights);
 
-				lightBuffer->Bind(nullptr, 0);
-				visibleLightIndicesBuffer->Bind(nullptr, 1);
+				lightBuffer->BindBase(nullptr, 0);
+				visibleLightIndicesBuffer->BindBase(nullptr, 1);
 
 				for (auto material : pipeline.second)
 				{
@@ -247,6 +250,9 @@ namespace Prehistoric
 						renderer->BatchRender();
 					}
 				}
+
+				visibleLightIndicesBuffer->UnbindBase(1);
+				lightBuffer->UnbindBase(0);
 
 				pl->UnbindPipeline();
 			}
@@ -259,6 +265,9 @@ namespace Prehistoric
 				pl->BindPipeline(nullptr);
 				pl->getShader()->UpdateGlobalUniforms(camera, lights);
 
+				lightBuffer->BindBase(nullptr, 0);
+				visibleLightIndicesBuffer->BindBase(nullptr, 1);
+
 				for (auto material : pipeline.second)
 				{
 					pl->getShader()->UpdateTextureUniforms(material.first, 0);
@@ -268,6 +277,9 @@ namespace Prehistoric
 						renderer->BatchRender();
 					}
 				}
+
+				visibleLightIndicesBuffer->UnbindBase(1);
+				lightBuffer->UnbindBase(0);
 
 				pl->UnbindPipeline();
 			}
@@ -314,5 +326,23 @@ namespace Prehistoric
 
 	void GLRenderer::UpdateLightBuffer()
 	{
+		lightBuffer->Bind(nullptr);
+		lightBuffer->MapBuffer();
+		InternalLight* light = (InternalLight*)lightBuffer->getMappedData();
+		memset(light, 0, EngineConfig::lightsMaxNumber * sizeof(InternalLight));
+
+		for (size_t i = 0; i < lights.size(); i++)
+		{
+			Light* l = lights[i];
+
+			light->position = Vector4f(l->getParent()->getWorldTransform().getPosition(), 1);
+			light->colour = Vector4f(l->getColour(), 1);
+			light->intensity_radius = Vector4f(l->getIntensity(), l->getRadius());
+
+			light++;
+		}
+		
+		lightBuffer->UnmapBuffer();
+		lightBuffer->Unbind();
 	}
 };

@@ -101,7 +101,7 @@ world.object cube5 0,0,-1 0,180,0 1,1,1 //position, rotation, scaling
 world.object otherQuad -10,0,0 -90,0,0 1,1,1 //position, rotation, scaling
 world.object metalPlane 0,-25,0 0,0,0 40,0.5,40 //position, rotation, scaling
 world.object sphere -5,1,-3 0,0,0 1,1,1 //position, rotation, scaling
-world.object light0 50,60,50 0,0,0 5,5,5
+world.object light0 50,60,50 0,0,0 2,2,2
 world.object sphere1 -30,20,20
 world.object sphere2 20,10,-30
 

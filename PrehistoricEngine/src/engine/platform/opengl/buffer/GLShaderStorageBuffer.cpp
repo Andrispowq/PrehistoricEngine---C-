@@ -14,7 +14,7 @@ namespace Prehistoric
 	{
 		glGenBuffers(1, &id);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, id);
-		glBufferData(GL_SHADER_STORAGE_BUFFER, size, data, GL_STATIC_READ);
+		glBufferData(GL_SHADER_STORAGE_BUFFER, size, data, GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 	}
 
@@ -23,9 +23,19 @@ namespace Prehistoric
 		glDeleteBuffers(1, &id);
 	}
 
-	void GLShaderStorageBuffer::Bind(CommandBuffer* commandBuffer, uint32_t binding) const
+	void GLShaderStorageBuffer::BindBase(CommandBuffer* commandBuffer, uint32_t binding) const
 	{
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, id);
+	}
+
+	void GLShaderStorageBuffer::UnbindBase(uint32_t binding) const
+	{
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, 0);
+	}
+
+	void GLShaderStorageBuffer::Bind(CommandBuffer* commandBuffer) const
+	{
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, id);
 	}
 
 	void GLShaderStorageBuffer::Unbind() const

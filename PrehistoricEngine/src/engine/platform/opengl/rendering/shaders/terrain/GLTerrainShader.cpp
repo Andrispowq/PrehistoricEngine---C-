@@ -76,16 +76,16 @@ namespace Prehistoric
 
 		SetUniformi("highDetailRange", EngineConfig::rendererHighDetailRange);
 
-		EnvironmentMapConfig::irradianceMap->Bind(4);
-		SetUniformi("irradianceMap", 4);
-		EnvironmentMapConfig::prefilterMap->Bind(5);
-		SetUniformi("prefilterMap", 5);
-		EnvironmentMapConfig::brdfLUT->Bind(6);
-		SetUniformi("brdfLUT", 6);
+		EnvironmentMapConfig::irradianceMap->Bind(0);
+		SetUniformi("irradianceMap", 0);
+		EnvironmentMapConfig::prefilterMap->Bind(1);
+		SetUniformi("prefilterMap", 1);
+		EnvironmentMapConfig::brdfLUT->Bind(2);
+		SetUniformi("brdfLUT", 2);
 
 		//TODO: This is ugly!!!! 
 		SetUniformi("numberOfTilesX", FrameworkConfig::windowWidth / 16);
-		SetUniformi("max_reflection_lod", EnvironmentMapConfig::prefilterLevels);
+		SetUniformf("max_reflection_lod", EnvironmentMapConfig::prefilterLevels - 1.0f);
 
 		//Some other stuff that is terrain-related
 		SetUniformf("scaleY", TerrainConfig::scaleY);
@@ -104,14 +104,14 @@ namespace Prehistoric
 
 	void GLTerrainShader::UpdateTextureUniforms(Material* material, uint32_t descriptor_index) const
 	{
-		TerrainConfig::heightmap->Bind(0);
-		SetUniformi("heightmap", 0);
-		TerrainConfig::normalmap->Bind(1);
-		SetUniformi("normalmap", 1);
-		TerrainConfig::splatmap->Bind(2);
-		SetUniformi("splatmap", 2);
+		TerrainConfig::heightmap->Bind(3);
+		SetUniformi("heightmap", 3);
+		TerrainConfig::normalmap->Bind(4);
+		SetUniformi("normalmap", 4);
+		TerrainConfig::splatmap->Bind(5);
+		SetUniformi("splatmap", 5);
 
-		uint32_t texUnit = 3;
+		uint32_t texUnit = 6;
 
 		for (unsigned int i = 0; i < 3; i++)
 		{

@@ -72,7 +72,7 @@ namespace Prehistoric
 		pipeline->RenderPipeline();
 		pipeline->UnbindPipeline();
 
-		buffer->Bind(nullptr, 0);
+		buffer->Bind(nullptr);
 		buffer->MapBuffer();
 		memcpy(heights, buffer->getMappedData(), N * N * sizeof(float));
 		buffer->UnmapBuffer();

@@ -36,7 +36,7 @@ namespace Prehistoric
 
 		for (const auto& ssbo : ssboBindingTable)
 		{
-			ssbo.second.first->Bind(nullptr, ssbo.first);
+			ssbo.second.first->BindBase(nullptr, ssbo.first);
 		}
 	}
 
@@ -55,7 +55,7 @@ namespace Prehistoric
 
 		for (const auto& ssbo : ssboBindingTable)
 		{
-			ssbo.second.first->Unbind();
+			ssbo.second.first->UnbindBase(ssbo.first);
 		}
 	}
 

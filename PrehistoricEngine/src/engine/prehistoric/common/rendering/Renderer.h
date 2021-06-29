@@ -16,7 +16,7 @@ namespace Prehistoric
 	{
 		Vector4f position;
 		Vector4f colour;
-		Vector4f paddingRadius;
+		Vector4f intensity_radius;
 	};
 
 	struct VisibleIndex

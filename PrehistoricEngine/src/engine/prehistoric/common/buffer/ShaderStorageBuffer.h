@@ -14,7 +14,10 @@ namespace Prehistoric
 		ShaderStorageBuffer(Window* window, void* data, size_t size) : window(window), data(data), size(size) {}
 		virtual ~ShaderStorageBuffer() = 0;
 
-		virtual void Bind(CommandBuffer* commandBuffer, uint32_t binding) const = 0;
+		virtual void BindBase(CommandBuffer* commandBuffer, uint32_t binding) const = 0;
+		virtual void UnbindBase(uint32_t binding) const = 0;
+
+		virtual void Bind(CommandBuffer* commandBuffer) const = 0;
 		virtual void Unbind() const = 0;
 
 		virtual void MapBuffer() = 0;
