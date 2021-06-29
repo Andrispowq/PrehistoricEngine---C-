@@ -152,7 +152,7 @@ void main()
 		vec3 L = normalize(lightPos - position_FS);
 		vec3 H = normalize(V + L);
 		float dist = length(lightPos - position_FS);
-		float attenuation = dist / pow(dist, 2);
+		float attenuation = 1 / pow(dist, 2);
 		vec3 radiance = light.colour.rgb * light.intensity_radius.rgb * attenuation;
 
         float NDF = DistributionGGX(N, H, roughness);
@@ -169,6 +169,13 @@ void main()
 
         float NdotL = max(dot(N, L), 0);
         Lo += (kD * albedoColour / PI) * radiance * NdotL;
+
+		break; //The light culling thing doesn't quite work rn, so this is added
+		/*if (i == 2)
+		{
+			outColour = vec4((kD * albedoColour / PI + specular) * radiance * NdotL, 1);
+			return;
+		}*/
     }
 
     vec3 F = FresnelSchlickRoughness(max(dot(N, V), 0), F0, roughness);
