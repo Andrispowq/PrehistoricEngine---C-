@@ -28,6 +28,7 @@ namespace Prehistoric
 
 	private:
 		std::unique_ptr<GLFramebuffer> depthFBO;
+		std::unique_ptr<GLFramebuffer> multisampleFBO;
 		std::unique_ptr<GLFramebuffer> colourFBO;
 
 		std::unique_ptr<GLShaderStorageBuffer> lightBuffer;

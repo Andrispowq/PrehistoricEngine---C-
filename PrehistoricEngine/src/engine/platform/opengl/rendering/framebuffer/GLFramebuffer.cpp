@@ -125,7 +125,7 @@ namespace Prehistoric
 		}
 
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, id);
-		glDrawBuffer(GL_BACK);
+		//glDrawBuffer(GL_BACK);
 		glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);

@@ -61,4 +61,4 @@ object.plane.component Renderer cubeModel,pbr,mat_plane
 object.cube.component Renderer cubeModel,pbr,mat_cube
 
 object.light.component Renderer cubeModel,pbr,mat_light
-object.light.component Light 1,0.65,0.35;10000
+object.light.component Light 1,0.65,0.35;10;50

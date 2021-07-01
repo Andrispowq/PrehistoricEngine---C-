@@ -18,10 +18,11 @@
 namespace Prehistoric
 {
 	GLRenderer::GLRenderer(Window* window, Camera* camera, AssembledAssetManager* manager)
-		: Renderer(window, camera, manager), depthFBO{ nullptr }, colourFBO{ nullptr },
-			lightBuffer{ nullptr }, visibleLightIndicesBuffer{ nullptr }
+		: Renderer(window, camera, manager), depthFBO{ nullptr }, multisampleFBO{ nullptr },
+			colourFBO{ nullptr }, lightBuffer{ nullptr }, visibleLightIndicesBuffer{ nullptr }
 	{
 		depthFBO = std::make_unique<GLFramebuffer>(window);
+		multisampleFBO = std::make_unique<GLFramebuffer>(window);
 		colourFBO = std::make_unique<GLFramebuffer>(window);
 
 		uint32_t width = window->getWidth();
@@ -35,6 +36,12 @@ namespace Prehistoric
 		depthFBO->addColourAttachment2D(depthImage);
 		depthFBO->Check();
 		depthFBO->Unbind();
+
+		multisampleFBO->Bind();
+		multisampleFBO->addDepthAttachment(width, height, true);
+		multisampleFBO->addColourAttachmentMultisample2D(0);
+		multisampleFBO->Check();
+		multisampleFBO->Unbind();
 
 		colourFBO->Bind();
 		colourFBO->addDepthAttachment(width, height);
@@ -93,6 +100,8 @@ namespace Prehistoric
 
 			uint32_t numberOfTiles = workGroupsX * workGroupsY;
 
+			visibleLightIndicesBuffer = std::make_unique<GLShaderStorageBuffer>(window, nullptr, numberOfTiles * sizeof(VisibleIndex) * 1024);
+
 			PR_LOG(GREEN, "%d by %d\n", width, height);
 			window->getSwapchain()->SetWindowSize(width, height);
 
@@ -116,9 +125,15 @@ namespace Prehistoric
 			static_cast<GLComputePipeline*>(hdrPipeline)->addTextureBinding(0, outputImage, WRITE_ONLY);
 
 			depthFBO->Bind();
-			depthFBO->addColourAttachment2D(depthImage, 0);
+			depthFBO->addColourAttachment2D(depthImage);
 			depthFBO->Check();
 			depthFBO->Unbind();
+
+			multisampleFBO->Bind();
+			multisampleFBO->addDepthAttachment(width, height, true);
+			multisampleFBO->addColourAttachmentMultisample2D(0);
+			multisampleFBO->Check();
+			multisampleFBO->Unbind();
 
 			colourFBO->Bind();
 			colourFBO->addDepthAttachment(width, height);
@@ -214,10 +229,10 @@ namespace Prehistoric
 			lightCullingPipeline->UnbindPipeline();			
 		}
 
-		colourFBO->Bind();
+		multisampleFBO->Bind();
 		uint32_t arr[] = { GL_COLOR_ATTACHMENT0 };
-		colourFBO->SetDrawAttachments(1, arr);
-		colourFBO->Clear(0.0f);
+		multisampleFBO->SetDrawAttachments(1, arr);
+		multisampleFBO->Clear(0.0f);
 
 		{
 			PR_PROFILE("Cubemap pass");
@@ -285,7 +300,8 @@ namespace Prehistoric
 			}
 		}
 
-		colourFBO->Unbind(); 
+		multisampleFBO->Unbind();
+		multisampleFBO->Blit(colourFBO.get(), window->getWidth(), window->getHeight(), 0, 0);
 
 		//Render using the deferred shader
 		{

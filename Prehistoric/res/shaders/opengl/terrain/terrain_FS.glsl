@@ -152,8 +152,8 @@ void main()
 		vec3 L = normalize(lightPos - position_FS);
 		vec3 H = normalize(V + L);
 		float dist = length(lightPos - position_FS);
-		float attenuation = clamp(1 - (dist / light.intensity_radius.w), 0, 1);
-		attenuation = pow(attenuation, 2);
+		float attenuation = clamp(dist / light.intensity_radius.w, 0, 1);
+		attenuation = 1 - pow(attenuation, 2);
 		vec3 radiance = light.colour.rgb * light.intensity_radius.rgb * attenuation;
 
         float NDF = DistributionGGX(N, H, roughness);
