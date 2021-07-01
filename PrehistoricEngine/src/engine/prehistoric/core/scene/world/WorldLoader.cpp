@@ -318,6 +318,7 @@ namespace Prehistoric
 							std::vector<std::string> posTokens = Util::Split(compTokens[0], ',');
 							light->setColour({ (float)std::atof(posTokens[0].c_str()), (float)std::atof(posTokens[1].c_str()), (float)std::atof(posTokens[2].c_str()) });
 							light->setIntensity((float)std::atof(compTokens[1].c_str()));
+							light->setRadius((float)std::atof(compTokens[2].c_str()));
 
 							obj->AddComponent("Light", light);
 						}

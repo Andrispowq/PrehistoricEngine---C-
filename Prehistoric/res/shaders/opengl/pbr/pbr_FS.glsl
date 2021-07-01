@@ -143,9 +143,6 @@ void main()
 		attenuation = pow(attenuation, 2);
         vec3 radiance = light.colour.rgb * light.intensity_radius.rgb * attenuation;
 
-		/*float attenuation = 1 / pow(dist, 2);
-		vec3 radiance = light.colour.rgb * light.intensity_radius.rgb * attenuation;*/
-
         float NDF = DistributionGGX(N, H, roughness);
         float G = GeometrySmith(N, V, L, roughness);
         vec3 F = FresnelSchlick(max(dot(H, V), 0), F0);
@@ -160,7 +157,6 @@ void main()
 
         float NdotL = max(dot(N, L), 0);
         Lo += (kD * albedoColour / PI + specular) * radiance * NdotL;
-		break;
     }
 
     vec3 F = FresnelSchlickRoughness(max(dot(N, V), 0), F0, roughness);
