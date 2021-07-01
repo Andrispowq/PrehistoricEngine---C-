@@ -4,6 +4,7 @@
 #include "imgui_internal.h"
 
 #include "prehistoric/core/node/component/renderer/RendererComponent.h"
+#include "prehistoric/core/node/component/light/Light.h"
 #include "prehistoric/application/Application.h"
 
 #include "platform/opengl/rendering/pipeline/GLGraphicsPipeline.h"
@@ -280,6 +281,29 @@ void SceneHierarchyPanel::DrawComponents(Prehistoric::GameObject* object)
 			float vals[] = { vec3.second.x, vec3.second.y, vec3.second.z };
 			ImGui::ColorEdit3(vec3.first.c_str(), vals);
 			vec3.second = Prehistoric::Vector3f(vals[0], vals[1], vals[2]);
+		}
+	});
+
+	DrawComponent<Prehistoric::Light>("Light", object, [](Prehistoric::Component* comp)
+	{
+		Prehistoric::Light* light = (Prehistoric::Light*)comp;
+
+		{
+			float vals[] = { light->getColour().x, light->getColour().y, light->getColour().z };
+			ImGui::ColorEdit3("Colour", vals);
+			light->setColour({ vals[0], vals[1], vals[2] });
+		}
+
+		{
+			float intensity = light->getIntensity();
+			ImGui::SliderFloat("Intensity", &intensity, 0.0f, 50.0f);
+			light->setIntensity({ intensity });
+		}
+
+		{
+			float radius = light->getRadius();
+			ImGui::SliderFloat("Radius", &radius, 0.0f, 2000.0f);
+			light->setRadius({ radius });
 		}
 	});
 

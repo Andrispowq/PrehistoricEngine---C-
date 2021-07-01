@@ -125,7 +125,7 @@ void main()
 		}
 
 		vec4 position = lightBuffer.data[lightIndex].position;
-		float radius = lightBuffer.data[lightIndex].intensity_radius.w;
+		float radius = lightBuffer.data[lightIndex].intensity_radius.g;
 
 		// We check if the light exists in our frustum
 		float distance = 0.0;

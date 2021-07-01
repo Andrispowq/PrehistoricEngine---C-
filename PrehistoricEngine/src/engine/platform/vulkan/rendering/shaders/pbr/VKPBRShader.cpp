@@ -87,7 +87,7 @@ namespace Prehistoric
 				
 				*(Vector4f*)(uintptr_t(lightData) + (baseOffset * 0 + currentOffset)) = Vector4f(light->getParent()->getWorldTransform().getPosition(), 0);
 				*(Vector4f*)(uintptr_t(lightData) + (baseOffset * 1 + currentOffset)) = Vector4f(light->getColour(), 0);
-				*(Vector4f*)(uintptr_t(lightData) + (baseOffset * 2 + currentOffset)) = Vector4f(light->getIntensity(), 0);
+				*(Vector4f*)(uintptr_t(lightData) + (baseOffset * 2 + currentOffset)) = Vector4f(light->getIntensity(), 1, 1, 0);
 
 				/*SetUniform("lights", Vector4f(light->getParent()->getWorldTransform().getPosition(), 0), baseOffset * 0 + currentOffset, instance_index);
 				SetUniform("lights", Vector4f(light->getColour(), 0), baseOffset * 1 + currentOffset, instance_index);

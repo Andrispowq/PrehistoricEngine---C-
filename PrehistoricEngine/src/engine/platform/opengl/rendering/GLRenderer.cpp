@@ -353,7 +353,7 @@ namespace Prehistoric
 
 			light->position = Vector4f(l->getParent()->getWorldTransform().getPosition(), 1);
 			light->colour = Vector4f(l->getColour(), 1);
-			light->intensity_radius = Vector4f(l->getIntensity(), l->getRadius());
+			light->intensity_radius = Vector4f(l->getIntensity(), l->getRadius(), 0, 0);
 
 			light++;
 		}

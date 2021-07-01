@@ -66,7 +66,7 @@ namespace Prehistoric
 
 				SetUniform("lights", Vector4f(light->getParent()->getWorldTransform().getPosition(), 0), baseOffset * 0 + currentOffset);
 				SetUniform("lights", Vector4f(light->getColour(), 0), baseOffset * 1 + currentOffset);
-				SetUniform("lights", Vector4f(light->getIntensity(), 0), baseOffset * 2 + currentOffset);
+				SetUniform("lights", Vector4f(light->getIntensity(), 1, 1, 0), baseOffset * 2 + currentOffset);
 			}
 			else
 			{
