@@ -8,7 +8,7 @@ namespace Prehistoric
 	class Light : public Component
 	{
 	public:
-		Light(const Vector3f& colour = 0, const Vector3f& intensity = 1, float radius = 10.0f);
+		Light(const Vector3f& colour = 0, const Vector3f& intensity = 1, float radius = 200.0f);
 		virtual ~Light();
 
 		virtual void PreRender(Renderer* renderer) override;

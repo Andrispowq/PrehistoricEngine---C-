@@ -597,10 +597,24 @@ Matrix4f Matrix4f::PerspectiveProjection(const float& fov, const float& aspectRa
 
 	res.m[0 * 4 + 0] = 1 / (tanFOV * aspectRatio);
 	res.m[1 * 4 + 1] = 1 / tanFOV;
-	res.m[2 * 4 + 2] = (farPlane + nearPlane) / frustumLength;
+	res.m[2 * 4 + 2] = -(farPlane + nearPlane) / frustumLength; //
 	res.m[3 * 4 + 2] = -(2 * farPlane * nearPlane) / frustumLength;
-	res.m[2 * 4 + 3] = 1;
+	res.m[2 * 4 + 3] = -1; //
 	res.m[3 * 4 + 3] = 0;
+
+	/*float range = tan(ToRadians(fov / 2)) * nearPlane;
+	float left = -range * aspectRatio;
+	float right = range * aspectRatio;
+	float bottom = -range;
+	float top = range;
+
+	Matrix4f res = Matrix4f::Identity();
+	res.m[0 * 4 + 0] = (2 * nearPlane) / (right - left);
+	res.m[1 * 4 + 1] = (2 * nearPlane) / (top - bottom);
+	res.m[2 * 4 + 2] = -(farPlane + nearPlane) / (farPlane - nearPlane);
+	res.m[2 * 4 + 3] = -1;
+	res.m[3 * 4 + 2] = -(2 * farPlane * nearPlane) / (farPlane - nearPlane);
+	res.m[3 * 4 + 3] = 0;*/
 
 	return res;
 }
@@ -1034,9 +1048,9 @@ Matrix4f Matrix4f::PerspectiveProjection(const float& fov, const float& aspectRa
 
 	res.m[0 * 4 + 0] = 1 / (tanFOV * aspectRatio);
 	res.m[1 * 4 + 1] = 1 / tanFOV;
-	res.m[2 * 4 + 2] = (farPlane + nearPlane) / frustumLength;
+	res.m[2 * 4 + 2] = -(farPlane + nearPlane) / frustumLength; //
 	res.m[3 * 4 + 2] = -(2 * farPlane * nearPlane) / frustumLength;
-	res.m[2 * 4 + 3] = 1;
+	res.m[2 * 4 + 3] = -1; //
 	res.m[3 * 4 + 3] = 0;
 
 	return res;

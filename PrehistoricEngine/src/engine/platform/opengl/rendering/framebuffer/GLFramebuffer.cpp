@@ -38,7 +38,7 @@ namespace Prehistoric
 	void GLFramebuffer::Clear(const Vector4f& colour)
 	{
 		glClearColor(colour.r, colour.g, colour.b, colour.a);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	}
 
 	void GLFramebuffer::SetDrawAttachments(uint32_t n, uint32_t* attachments)

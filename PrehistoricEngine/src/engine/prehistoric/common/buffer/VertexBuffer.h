@@ -16,7 +16,7 @@ namespace Prehistoric
 	class VertexBuffer
 	{
 	public:
-		VertexBuffer(Window* window) : window(window), size(0), indexed(false), frontFace(FrontFace::COUNTER_CLOCKWISE) {}
+		VertexBuffer(Window* window) : window(window), size(0), indexed(false), frontFace(FrontFace::CLOCKWISE) {}
 		virtual ~VertexBuffer() = 0;
 
 		virtual void Bind(CommandBuffer* commandBuffer) const = 0;

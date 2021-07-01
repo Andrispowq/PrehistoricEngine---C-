@@ -134,12 +134,12 @@ namespace Prehistoric
 		{
 			if (in.isForward() != 0 && !movedForward)
 			{
-				Move(forward, movAmt * in.isForward() * delta);
+				Move(forward, -movAmt * in.isForward() * delta); //
 				movedForward = true;
 			}
 			if (in.isBackward() != 0 && !movedBackward)
 			{
-				Move(forward, -movAmt * in.isBackward() * delta);
+				Move(forward, movAmt * in.isBackward() * delta); //
 				movedBackward = true;
 			}
 			if (in.isLeft() != 0 && !movedLeft)
@@ -155,22 +155,22 @@ namespace Prehistoric
 
 			if (in.isUp() != 0 && !rotUp)
 			{
-				RotateX(static_cast<float>(-rotAmt * 2.0 * in.isUp() * delta));
+				RotateX(static_cast<float>(rotAmt * 2.0 * in.isUp() * delta)); //
 				rotUp = true;
 			}
 			if (in.isDown() != 0 && !rotDown)
 			{
-				RotateX(static_cast<float>(rotAmt * 2.0 * in.isDown() * delta));
+				RotateX(static_cast<float>(-rotAmt * 2.0 * in.isDown() * delta)); //
 				rotDown = true;
 			}
 			if (in.isRightRot() != 0 && !rotRight)
 			{
-				RotateY(static_cast<float>(rotAmt * 2.0 * in.isRightRot() * delta));
+				RotateY(static_cast<float>(-rotAmt * 2.0 * in.isRightRot() * delta)); //
 				rotRight = true;
 			}
 			if (in.isLeftRot() != 0 && !rotLeft)
 			{
-				RotateY(static_cast<float>(-rotAmt * 2.0 * in.isLeftRot() * delta));
+				RotateY(static_cast<float>(rotAmt * 2.0 * in.isLeftRot() * delta)); //
 				rotLeft = true;
 			}
 		}
@@ -197,7 +197,7 @@ namespace Prehistoric
 				{
 					if (rotYcounter > rotYamt)
 					{
-						RotateX(-rotYstride * mouseSensitivity);
+						RotateX(rotYstride * mouseSensitivity); //
 						rotYcounter -= rotYstride;
 						rotYstride *= 0.98f;
 					}
@@ -211,7 +211,7 @@ namespace Prehistoric
 				{
 					if (rotYcounter < rotYamt)
 					{
-						RotateX(rotYstride * mouseSensitivity);
+						RotateX(-rotYstride * mouseSensitivity); //
 						rotYcounter += rotYstride;
 						rotYstride *= 0.98f;
 					}
@@ -238,7 +238,7 @@ namespace Prehistoric
 				{
 					if (rotXcounter > rotXamt)
 					{
-						RotateY(-rotXstride * mouseSensitivity);
+						RotateY(rotXstride * mouseSensitivity); //
 						rotXcounter -= rotXstride;
 						rotXstride *= 0.98f;
 					}
@@ -252,7 +252,7 @@ namespace Prehistoric
 				{
 					if (rotXcounter < rotXamt)
 					{
-						RotateY(rotXstride * mouseSensitivity);
+						RotateY(-rotXstride * mouseSensitivity); //
 						rotXcounter += rotXstride;
 						rotXstride *= 0.98f;
 					}

@@ -30,10 +30,10 @@ directories.models res/models/
 directories.textures res/textures/
 
 # MODELS/TEXTURE TO LOAD clockwise
-models.load quadModel quad.obj counter-clockwise
-models.load sphereModel sphere.obj clockwise
+models.load quadModel quad.obj clockwise
+models.load sphereModel sphere.obj counter-clockwise
 models.load atmosphere sphere.obj double-sided
-models.load cubeModel cube.obj clockwise
+models.load cubeModel cube.obj counter-clockwise
 
 # This means that the models are loaded asynchronously, on separate threads, and this command launches the execution
 models.dispatch
@@ -119,7 +119,7 @@ object.otherQuad.component Renderer quadModel,pbr,mat_metal //model name, shader
 object.metalPlane.component Renderer cubeModel,pbr,mat_iron //model name, shader type(currently: basic, pbr), material name
 object.sphere.component Renderer sphereModel,pbr,mat_sphere //model name, shader type(currently: basic, pbr), material name
 
-object.light0.component Light 1,1,1;50000
+object.light0.component Light 1,1,1;20
 object.light0.component Renderer sphereModel,pbr,mat_light0
 
 object.sphere1.component Renderer sphereModel,pbr,mat_sphere1

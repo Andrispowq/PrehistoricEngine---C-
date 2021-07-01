@@ -66,7 +66,7 @@ void main()
 {
 	ivec2 location = ivec2(gl_FragCoord.xy);
 	ivec2 tileID = location / ivec2(16, 16);
-	int index = tileID.y * numberOfTilesX + tileID.x;
+	uint index = uint(tileID.y * numberOfTilesX + tileID.x);
 
 	vec3 albedoColour = material.colour;
 	vec4 mrot = material.mrot;
@@ -128,8 +128,8 @@ void main()
     F0 = mix(F0, albedoColour, metallic);
 
     vec3 Lo = vec3(0);
-	int offset = index * 1024;
-    for (int i = 0; i < 1024 && visibleLightIndicesBuffer.data[offset + i].index != -1; i++)
+	uint offset = index * 1024;
+    for (uint i = 0; i < 1024 && visibleLightIndicesBuffer.data[offset + i].index != -1; i++)
     {
 		int lightIndex = visibleLightIndicesBuffer.data[offset + i].index;
 		PointLight light = lightBuffer.data[lightIndex];
@@ -139,9 +139,12 @@ void main()
         vec3 L = normalize(lightPos - position_FS);
         vec3 H = normalize(V + L);
 		float dist = length(lightPos - position_FS);
-		float attenuation = 1 / pow(dist, 2);
+		float attenuation = clamp(1 - (dist / light.intensity_radius.w), 0, 1);
+		attenuation = pow(attenuation, 2);
         vec3 radiance = light.colour.rgb * light.intensity_radius.rgb * attenuation;
 
+		/*float attenuation = 1 / pow(dist, 2);
+		vec3 radiance = light.colour.rgb * light.intensity_radius.rgb * attenuation;*/
 
         float NDF = DistributionGGX(N, H, roughness);
         float G = GeometrySmith(N, V, L, roughness);
@@ -157,13 +160,7 @@ void main()
 
         float NdotL = max(dot(N, L), 0);
         Lo += (kD * albedoColour / PI + specular) * radiance * NdotL;
-
-		break; //The light culling thing doesn't quite work rn, so this is added
-		/*if (i == 2)
-		{
-			outColour = vec4((kD * albedoColour / PI + specular) * radiance * NdotL, 1);
-			return;
-		}*/
+		break;
     }
 
     vec3 F = FresnelSchlickRoughness(max(dot(N, V), 0), F0, roughness);

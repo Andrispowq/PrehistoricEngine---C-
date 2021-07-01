@@ -169,13 +169,7 @@ void main()
 
         float NdotL = max(dot(N, L), 0);
         Lo += (kD * albedoColour / PI) * radiance * NdotL;
-
-		break; //The light culling thing doesn't quite work rn, so this is added
-		/*if (i == 2)
-		{
-			outColour = vec4((kD * albedoColour / PI + specular) * radiance * NdotL, 1);
-			return;
-		}*/
+		break;
     }
 
     vec3 F = FresnelSchlickRoughness(max(dot(N, V), 0), F0, roughness);
