@@ -30,7 +30,7 @@ directories.models res/models/
 directories.textures res/textures/
 
 # MODELS/TEXTURE TO LOAD
-models.load cubeModel cube.obj clockwise
+models.load cubeModel cube.obj counter-clockwise
 
 models.dispatch
 
