@@ -3,7 +3,8 @@
 
 #include "Engine.h"
 
-#include "prehistoric/core/node/movement/Camera.h"
+#include "prehistoric/core/node/movement/FPSCamera.h"
+#include "prehistoric/core/node/movement/EditorCamera.h"
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 
 #include "prehistoric/common/framework/Window.h"
@@ -21,7 +22,7 @@ namespace Prehistoric
 	class RenderingEngine : public Engine
 	{
 	public:
-		RenderingEngine();
+		RenderingEngine(Camera* cam);
 		virtual ~RenderingEngine() {}
 
 		void Init(AssembledAssetManager* manager);

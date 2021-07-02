@@ -5,6 +5,8 @@
 #include "prehistoric/core/config/FrameworkConfig.h"
 #include "prehistoric/core/modules/environmentMapRenderer/EnvironmentMapRenderer.h" 
 
+#include "prehistoric/core/node/movement/EditorCamera.h"
+
 EditorApp::EditorApp()
 {
 	using namespace Prehistoric;
@@ -18,16 +20,14 @@ EditorApp::EditorApp()
 	GameObject* root = engineLayer->getRootObject();
 	Camera* cam = engineLayer->getRenderingEngine()->getCamera();
 
-	cam->setCameraType(CameraControlType::FPS); //Editor camera is not stable enough yet
-
 	cam->setPosition(Vector3f(0, 5, -2));
 	cam->Update(engineLayer->getRenderingEngine()->getWindow(), 0.0f);
 
-	AudioComponent* startupSound;
-	GameObject* start = new GameObject;
-	start->AddComponent("startup", startupSound = new AudioComponent("res/sounds/_FlipReset.wav", 54.0f, true, false, true));
-	startupSound->setSpatial(true);
-	startupSound->PreUpdate(engineLayer);
+	//AudioComponent* startupSound;
+	//GameObject* start = new GameObject;
+	//start->AddComponent("startup", startupSound = new AudioComponent("res/sounds/_FlipReset.wav", 54.0f, true, false, true));
+	//startupSound->setSpatial(true);
+	//startupSound->PreUpdate(engineLayer);
 
 	engineLayer->getAudioEngine()->Update(0.0f);
 

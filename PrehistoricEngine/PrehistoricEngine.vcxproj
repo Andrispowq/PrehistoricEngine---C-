@@ -271,6 +271,8 @@
     <ClInclude Include="src\engine\prehistoric\core\modules\terrain\TerrainNode.h" />
     <ClInclude Include="src\engine\prehistoric\core\modules\terrain\TerrainQuadtree.h" />
     <ClInclude Include="src\engine\prehistoric\core\node\GameObject.h" />
+    <ClInclude Include="src\engine\prehistoric\core\node\movement\EditorCamera.h" />
+    <ClInclude Include="src\engine\prehistoric\core\node\movement\FPSCamera.h" />
     <ClInclude Include="src\engine\prehistoric\core\node\Node.h" />
     <ClInclude Include="src\engine\prehistoric\core\node\component\Component.h" />
     <ClInclude Include="src\engine\prehistoric\core\node\component\audio\AudioComponent.h" />
@@ -415,6 +417,8 @@
     <ClCompile Include="src\engine\prehistoric\core\modules\terrain\TerrainNode.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\modules\terrain\TerrainQuadtree.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\node\GameObject.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\node\movement\EditorCamera.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\node\movement\FPSCamera.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\node\Node.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\node\component\audio\AudioComponent.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\node\component\light\Light.cpp" />

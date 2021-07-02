@@ -12,7 +12,7 @@ namespace Prehistoric
 {
 	Statistics RenderingEngine::statistics;
 
-	RenderingEngine::RenderingEngine()
+	RenderingEngine::RenderingEngine(Camera* cam)
 		: window(nullptr), camera(nullptr), renderer(nullptr)
 	{
 
@@ -37,11 +37,9 @@ namespace Prehistoric
 		CameraInput keyInput({ KEY_HELD, PR_KEY_W, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_S, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_D, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_A, PR_JOYSTICK_1 },
 			{ KEY_HELD, PR_KEY_UP, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_DOWN, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_RIGHT, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_LEFT, PR_JOYSTICK_1 });
 
-		camera = std::make_unique<Camera>(5.0f, 50.0f, 0.8f, 80.0f, Vector3f(0));
+		camera = (std::unique_ptr<Camera>)cam;
 		camera->AddCameraInput(keyInput);
-
 		camera->LogStage();
-		camera->setSpeedControl({ MOUSE_SCROLL, PR_KEY_UNKNOWN, PR_JOYSTICK_1 });
 	}
 
 	void RenderingEngine::Init(AssembledAssetManager* manager)

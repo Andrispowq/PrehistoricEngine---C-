@@ -22,7 +22,7 @@ namespace Prehistoric
 
 		SetUniform("m_view", camera->getViewMatrix());
 		SetUniform("m_projection", camera->getProjectionMatrix());
-		SetUniform("scrnSize", Vector2f(FrameworkConfig::windowWidth, FrameworkConfig::windowHeight));
-		SetUniformi("lightCount", lights.size());
+		SetUniform("scrnSize", Vector2f((float)FrameworkConfig::windowWidth, (float)FrameworkConfig::windowHeight));
+		SetUniformi("lightCount", (int)lights.size());
 	}
 };

@@ -27,6 +27,6 @@ namespace Prehistoric
 
 		SetUniformf("gamma", EngineConfig::rendererGamma);
 		SetUniformf("exposure", EngineConfig::rendererExposure);
-		SetUniform("screenSize", Vector2f(FrameworkConfig::windowWidth, FrameworkConfig::windowHeight));
+		SetUniform("screenSize", Vector2f((float)FrameworkConfig::windowWidth, (float)FrameworkConfig::windowHeight));
 	}
 };

@@ -565,7 +565,7 @@ Matrix4f Matrix4f::Rotation(const Vector3f& rotation)
 	rz.m[0 * 4 + 1] = sinZ;
 	rz.m[1 * 4 + 1] = cosZ;
 
-	return ry * rx * rz;
+	return rx * ry * rz;
 }
 
 Matrix4f Matrix4f::Scaling(const Vector3f& scale)

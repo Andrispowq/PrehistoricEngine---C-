@@ -31,6 +31,7 @@ namespace Prehistoric
 		double getFrameTime() const { return last_frameTime; }
 
 		static Application& Get() { return *instance; }
+
 	protected:
 		LayerStack layerStack;
 		bool running = false;

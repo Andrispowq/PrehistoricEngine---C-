@@ -719,6 +719,8 @@
     <ClInclude Include="src\engine\prehistoric\common\rendering\renderStage\RenderStage.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\forwardPlus\GLDepthPassShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\forwardPlus\GLLightCullingPassShader.h" />
+    <ClInclude Include="src\engine\prehistoric\core\node\movement\FPSCamera.h" />
+    <ClInclude Include="src\engine\prehistoric\core\node\movement\EditorCamera.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -1117,5 +1119,7 @@
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\forwardPlus\GLDepthPassShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\forwardPlus\GLLightCullingPassShader.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\node\movement\FPSCamera.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\node\movement\EditorCamera.cpp" />
   </ItemGroup>
 </Project>
