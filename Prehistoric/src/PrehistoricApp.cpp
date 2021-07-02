@@ -25,9 +25,9 @@ PrehistoricApp::PrehistoricApp()
 
 	if (FrameworkConfig::api == OpenGL)
 	{
-		cam->setPosition(Vector3f(-178, 102, -47));
-		//cam->RotateY(-80);
-		//cam->RotateX(30);
+		/*cam->setPosition(Vector3f(-178, 102, -47));
+		cam->RotateY(-80);
+		cam->RotateX(30);*/
 	}
 	else
 	{

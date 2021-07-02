@@ -22,7 +22,7 @@ namespace Prehistoric
 	class RenderingEngine : public Engine
 	{
 	public:
-		RenderingEngine(Camera* cam);
+		RenderingEngine();
 		virtual ~RenderingEngine() {}
 
 		void Init(AssembledAssetManager* manager);
@@ -32,6 +32,8 @@ namespace Prehistoric
 
 		virtual void Update(float delta) override;
 		void Render();
+
+		void ChangeCamera(Camera* camera);
 
 		inline Window* getWindow() const { return window.get(); }
 		inline Camera* getCamera() const { return camera.get(); }

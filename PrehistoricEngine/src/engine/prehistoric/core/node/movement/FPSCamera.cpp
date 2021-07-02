@@ -12,6 +12,8 @@ namespace Prehistoric
 		movAmt += InputInstance.getScrollOffset() * delta * 35.0f;
 		movAmt = std::fmax(0.02f, movAmt);
 
+		PR_LOG_MESSAGE("%f\n", movAmt);
+
 		bool movedForward = false, movedBackward = false, movedRight = false, movedLeft = false,
 			rotUp = false, rotDown = false, rotRight = false, rotLeft = false;
 
@@ -82,7 +84,7 @@ namespace Prehistoric
 				{
 					if (rotYcounter > rotYamt)
 					{
-						RotateX(rotYstride * mouseSensitivity); //
+						RotateX(rotYstride * mouseSensitivity);
 						rotYcounter -= rotYstride;
 						rotYstride *= 0.98f;
 					}
@@ -96,7 +98,7 @@ namespace Prehistoric
 				{
 					if (rotYcounter < rotYamt)
 					{
-						RotateX(-rotYstride * mouseSensitivity); //
+						RotateX(-rotYstride * mouseSensitivity);
 						rotYcounter += rotYstride;
 						rotYstride *= 0.98f;
 					}
@@ -123,7 +125,7 @@ namespace Prehistoric
 				{
 					if (rotXcounter > rotXamt)
 					{
-						RotateY(rotXstride * mouseSensitivity); //
+						RotateY(rotXstride * mouseSensitivity);
 						rotXcounter -= rotXstride;
 						rotXstride *= 0.98f;
 					}
@@ -137,7 +139,7 @@ namespace Prehistoric
 				{
 					if (rotXcounter < rotXamt)
 					{
-						RotateY(-rotXstride * mouseSensitivity); //
+						RotateY(-rotXstride * mouseSensitivity);
 						rotXcounter += rotXstride;
 						rotXstride *= 0.98f;
 					}

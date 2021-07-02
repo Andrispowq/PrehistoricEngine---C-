@@ -47,6 +47,8 @@ namespace Prehistoric
 		Window* getWindow() const { return window; }
 		Camera* getCamera() const { return camera; }
 
+		void setCamera(Camera* camera) { this->camera = camera; }
+
 		inline std::vector<Light*> getLights() const { return lights; }
 
 		inline bool isWireframeMode() const { return wireframeMode; }

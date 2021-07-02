@@ -47,10 +47,8 @@ namespace Prehistoric
 		//Root object and manager initialisation
 		root = std::make_unique<GameObject>();
 
-		Camera* camera = new EditorCamera();
-
 		//Engines' initialisation
-		renderingEngine = std::make_unique<RenderingEngine>(camera);
+		renderingEngine = std::make_unique<RenderingEngine>();
 		audioEngine = std::make_unique<AudioEngine>();
 
 		//Manager and the renderers in the rendering engine
