@@ -21,7 +21,9 @@ namespace Prehistoric
 		GPGPUHeightQuery,
 		HDR,
 		DepthPass,
-		LightCullingPass
+		LightCullingPass,
+		Gaussian,
+		BloomCombine
 	};
 
 	class ShaderLoader : public Loader

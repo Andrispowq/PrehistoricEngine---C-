@@ -721,6 +721,9 @@
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\forwardPlus\GLLightCullingPassShader.h" />
     <ClInclude Include="src\engine\prehistoric\core\node\movement\FPSCamera.h" />
     <ClInclude Include="src\engine\prehistoric\core\node\movement\EditorCamera.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLDepthPass.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLGaussianShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLBloomCombineShader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -1121,5 +1124,9 @@
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\forwardPlus\GLLightCullingPassShader.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\node\movement\FPSCamera.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\node\movement\EditorCamera.cpp" />
+    <ClCompile Include="src\engine\prehistoric\common\rendering\renderStage\RenderStage.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLDepthPass.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLGaussianShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLBloomCombineShader.cpp" />
   </ItemGroup>
 </Project>

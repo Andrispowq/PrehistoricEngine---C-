@@ -34,6 +34,7 @@ namespace Prehistoric
 
 		AddUniform("numberOfTilesX");
 		AddUniform("max_reflection_lod");
+		AddUniform("threshold");
 	}
 
 	void GLPBRShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
@@ -53,6 +54,7 @@ namespace Prehistoric
 		//TODO: This is ugly!!!! 
 		SetUniformi("numberOfTilesX", FrameworkConfig::windowWidth / 16);
 		SetUniformf("max_reflection_lod", EnvironmentMapConfig::prefilterLevels - 1.0f);
+		SetUniformf("threshold", 1.0f);
 	}
 
 	void GLPBRShader::UpdateTextureUniforms(Material* material, uint32_t descriptor_index) const

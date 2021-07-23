@@ -8,8 +8,8 @@
 
 namespace Prehistoric
 {
-	class RenderableComponent;
 	class AssembledAssetManager;
+	class Renderer;
 
 	//This class represents a stage of the rendering pipeline, like alpha pass, g-pass, anti-aliasing, post-processing stages, etc
 	//It has a single method called Render(). The stage's constructor should already have everything needed for the rendering available
@@ -17,16 +17,19 @@ namespace Prehistoric
 	class RenderStage
 	{
 	public:
-		RenderStage(Window* window, Camera* camera, AssembledAssetManager* manager);
+		RenderStage(Renderer* renderer);
 		virtual ~RenderStage() {}
 
-		virtual void Render();
+		virtual void Render() = 0;
 
 	protected:
 		AssembledAssetManager* manager;
 
 		Window* window;
 		Camera* camera;
+
+	protected:
+		friend class Renderer;
 	};
 };
 

@@ -67,6 +67,7 @@ namespace Prehistoric
 		AddUniform("highDetailRange");
 		AddUniform("numberOfTilesX");
 		AddUniform("max_reflection_lod");
+		AddUniform("threshold");
 	}
 
 	void GLTerrainShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
@@ -86,6 +87,7 @@ namespace Prehistoric
 		//TODO: This is ugly!!!! 
 		SetUniformi("numberOfTilesX", FrameworkConfig::windowWidth / 16);
 		SetUniformf("max_reflection_lod", EnvironmentMapConfig::prefilterLevels - 1.0f);
+		SetUniformf("threshold", 1.0f);
 
 		//Some other stuff that is terrain-related
 		SetUniformf("scaleY", TerrainConfig::scaleY);

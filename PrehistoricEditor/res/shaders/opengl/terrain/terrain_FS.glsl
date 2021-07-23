@@ -1,6 +1,7 @@
 #version 430
 
 layout (location = 0) out vec4 outColour;
+layout (location = 1) out vec4 outBloom;
 
 struct Material
 {
@@ -53,6 +54,7 @@ uniform vec3 cameraPosition;
 uniform int highDetailRange;
 uniform int numberOfTilesX;
 uniform float max_reflection_lod;
+uniform float threshold;
 
 const float PI = 3.141592653589793;
 const float emissionFactor = 3;
@@ -189,7 +191,20 @@ void main()
     vec3 ambient = (kD * diffuse + specular) * occlusion;
     vec3 colour = ambient + Lo;
 
+	if (isnan(colour.r))
+	{
+		colour = vec3(0.0);
+	}
+
+	vec3 bloom = colour;
+	float brightness = dot(colour.rgb, vec3(0.2126, 0.7152, 0.0722));
+	if (brightness < threshold)
+	{
+		bloom = vec3(0.0);
+	}
+
 	outColour = vec4(colour, 1);
+	outBloom = vec4(bloom, 1);
 }
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)

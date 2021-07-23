@@ -12,8 +12,6 @@ namespace Prehistoric
 		movAmt += InputInstance.getScrollOffset() * delta * 35.0f;
 		movAmt = std::fmax(0.02f, movAmt);
 
-		PR_LOG_MESSAGE("%f\n", movAmt);
-
 		bool movedForward = false, movedBackward = false, movedRight = false, movedLeft = false,
 			rotUp = false, rotDown = false, rotRight = false, rotLeft = false;
 

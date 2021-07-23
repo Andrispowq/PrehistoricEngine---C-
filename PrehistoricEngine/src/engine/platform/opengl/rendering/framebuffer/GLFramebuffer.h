@@ -28,7 +28,7 @@ namespace Prehistoric
 
 		void Check() const;
 
-		virtual void Blit(Framebuffer* destination, uint32_t width, uint32_t height, uint32_t source_attachment = 0, uint32_t dest_attachment = 0) override;
+		virtual void Blit(Framebuffer* destination, uint32_t width, uint32_t height, uint32_t source_attachment = 0, uint32_t dest_attachment = 0, uint32_t dest_width = 0, uint32_t dest_height = 0) override;
 
 	private:
 		uint32_t id;

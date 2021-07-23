@@ -158,6 +158,12 @@ namespace Prehistoric
 		case Prehistoric::ShaderName::DepthPass:
 			name = "depth_pass";
 			break;
+		case Prehistoric::ShaderName::Gaussian:
+			name = "gaussian";
+			break;
+		case Prehistoric::ShaderName::BloomCombine:
+			name = "bloom_combine";
+			break;
 		default:
 			name = "invalid";
 			break;

@@ -11,9 +11,11 @@
 #include "platform/opengl/rendering/shaders/pbr/GLPBRShader.h"
 #include "platform/opengl/rendering/shaders/terrain/GLTerrainShader.h"
 #include "platform/opengl/rendering/shaders/terrain/GLTerrainWireframeShader.h"
-#include "platform/opengl/rendering/shaders/postProcessing/GLHDRShader.h"
 #include "platform/opengl/rendering/shaders/forwardPlus/GLDepthPassShader.h"
 #include "platform/opengl/rendering/shaders/forwardPlus/GLLightCullingPassShader.h"
+#include "platform/opengl/rendering/shaders/postProcessing/GLGaussianShader.h"
+#include "platform/opengl/rendering/shaders/postProcessing/GLBloomCombineShader.h"
+#include "platform/opengl/rendering/shaders/postProcessing/GLHDRShader.h"
 
 #include "platform/vulkan/rendering/shaders/basic/VKBasicShader.h"
 #include "platform/vulkan/rendering/shaders/pbr/VKPBRShader.h"
@@ -76,6 +78,14 @@ namespace Prehistoric
 			else if (path == "light_culling")
 			{
 				shader = new GLLightCullingPassShader();
+			}
+			else if (path == "gaussian")
+			{
+				shader = new GLGaussianShader();
+			}
+			else if (path == "bloom_combine")
+			{
+				shader = new GLBloomCombineShader();
 			}
 		}
 		else if (FrameworkConfig::api == Vulkan)

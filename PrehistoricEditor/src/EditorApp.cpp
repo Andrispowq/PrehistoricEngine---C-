@@ -25,11 +25,11 @@ EditorApp::EditorApp()
 	cam->setPosition(Vector3f(0, 5, -2));
 	cam->Update(engineLayer->getRenderingEngine()->getWindow(), 0.0f);
 
-	//AudioComponent* startupSound;
-	//GameObject* start = new GameObject;
-	//start->AddComponent("startup", startupSound = new AudioComponent("res/sounds/_FlipReset.wav", 54.0f, true, false, true));
-	//startupSound->setSpatial(true);
-	//startupSound->PreUpdate(engineLayer);
+	AudioComponent* startupSound;
+	GameObject* start = new GameObject;
+	start->AddComponent("startup", startupSound = new AudioComponent("res/sounds/_FlipReset.wav", 54.0f, true, false, true));
+	startupSound->setSpatial(true);
+	startupSound->PreUpdate(engineLayer);
 
 	engineLayer->getAudioEngine()->Update(0.0f);
 

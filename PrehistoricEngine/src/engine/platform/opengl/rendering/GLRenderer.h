@@ -36,16 +36,25 @@ namespace Prehistoric
 
 		Texture* depthImage;
 		Texture* colourImage;
+		Texture* bloomImage;
+		Texture* combinedImage;
 		Texture* outputImage;
+
+		Texture* pingpongImage;
+		Texture* pingpongImage2;
 
 		ShaderHandle depthShader;
 		ShaderHandle lightCullingShader;
+		ShaderHandle gaussianShader;
+		ShaderHandle bloomCombineShader;
 		ShaderHandle hdrShader;
 		ShaderHandle renderShader;
 
 		VertexBufferHandle quad;
 
 		Pipeline* lightCullingPipeline;
+		Pipeline* gaussianPipeline;
+		Pipeline* bloomCombinePipeline;
 		Pipeline* hdrPipeline;
 		Pipeline* renderPipeline;
 	};

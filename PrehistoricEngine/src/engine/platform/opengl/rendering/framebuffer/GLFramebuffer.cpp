@@ -113,7 +113,8 @@ namespace Prehistoric
 		}
 	}
 
-	void GLFramebuffer::Blit(Framebuffer* destination, uint32_t width, uint32_t height, uint32_t source_attachment, uint32_t dest_attachment)
+	void GLFramebuffer::Blit(Framebuffer* destination, uint32_t width, uint32_t height, uint32_t source_attachment, uint32_t dest_attachment,
+		uint32_t dest_width, uint32_t dest_height)
 	{
 		if (destination == nullptr)
 		{
@@ -125,8 +126,9 @@ namespace Prehistoric
 		}
 
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, id);
-		//glDrawBuffer(GL_BACK);
-		glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		glReadBuffer(GL_COLOR_ATTACHMENT0 + source_attachment);
+		glDrawBuffer(GL_COLOR_ATTACHMENT0 + dest_attachment);
+		glBlitFramebuffer(0, 0, width, height, 0, 0, (dest_width == 0) ? width : dest_width, (dest_height == 0) ? height : dest_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	}
