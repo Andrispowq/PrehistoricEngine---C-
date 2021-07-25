@@ -164,6 +164,9 @@ namespace Prehistoric
 		case Prehistoric::ShaderName::BloomCombine:
 			name = "bloom_combine";
 			break;
+		case Prehistoric::ShaderName::BloomDescale:
+			name = "bloom_descale";
+			break;
 		default:
 			name = "invalid";
 			break;

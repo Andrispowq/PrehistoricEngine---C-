@@ -141,8 +141,13 @@ void main()
         vec3 L = normalize(lightPos - position_FS);
         vec3 H = normalize(V + L);
 		float dist = length(lightPos - position_FS);
-		float attenuation = clamp(dist / light.intensity_radius.g, 0, 1);
-		attenuation = 1 - pow(attenuation, 2);
+		float attenuation = 1.0 / pow(dist, 2);
+
+		if (dist > light.intensity_radius.g)
+		{
+			attenuation = 0;
+		}
+
         vec3 radiance = light.colour.rgb * light.intensity_radius.r * attenuation;
 
         float NDF = DistributionGGX(N, H, roughness);
@@ -177,6 +182,11 @@ void main()
 
     vec3 ambient = (kD * diffuse + specular) * occlusion;
     vec3 colour = ambient + Lo + max(emission * emissionFactor, 0.0);
+
+	if (isnan(colour.r))
+	{
+		colour = vec3(0.0);
+	}
 
 	vec3 bloom = colour;
 	float brightness = dot(colour.rgb, vec3(0.2126, 0.7152, 0.0722));

@@ -7,6 +7,9 @@ namespace Prehistoric
 {
 	void GameObject::PreUpdate(CoreEngine* engine)
 	{
+		if (!enabled)
+			return;
+
 		for (auto& kv : components)
 		{
 			kv.second->PreUpdate(engine);
@@ -20,6 +23,9 @@ namespace Prehistoric
 
 	void GameObject::PreRender(Renderer* renderer)
 	{
+		if (!enabled)
+			return;
+
 		for (auto& kv : components)
 		{
 			kv.second->PreRender(renderer);

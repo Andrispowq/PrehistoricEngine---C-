@@ -15,17 +15,21 @@
 #include "platform/opengl/rendering/shaders/postProcessing/GLHDRShader.h"
 #include "platform/opengl/rendering/shaders/postProcessing/GLGaussianShader.h"
 #include "platform/opengl/rendering/shaders/postProcessing/GLBloomCombineShader.h"
+#include "platform/opengl/rendering/shaders/postProcessing/GLBloomDescaleShader.h"
 #include "platform/opengl/rendering/shaders/gui/GLGUIShader.h"
 
 namespace Prehistoric
 {
 	GLRenderer::GLRenderer(Window* window, Camera* camera, AssembledAssetManager* manager)
 		: Renderer(window, camera, manager), depthFBO{ nullptr }, multisampleFBO{ nullptr },
-			colourFBO{ nullptr }, lightBuffer{ nullptr }, visibleLightIndicesBuffer{ nullptr }
+			colourFBO{ nullptr }, lightBuffer{ nullptr }, visibleLightIndicesBuffer{ nullptr },
+			smallFBO{ nullptr }
 	{
 		depthFBO = std::make_unique<GLFramebuffer>(window);
 		multisampleFBO = std::make_unique<GLFramebuffer>(window);
 		colourFBO = std::make_unique<GLFramebuffer>(window);
+
+		smallFBO = std::make_unique<GLFramebuffer>(window);
 
 		uint32_t width = window->getWidth();
 		uint32_t height = window->getHeight();
@@ -36,8 +40,14 @@ namespace Prehistoric
 		combinedImage = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
 		outputImage = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
 
-		pingpongImage = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
-		pingpongImage2 = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
+		for (uint32_t i = 0; i < 5; i++)
+		{
+			uint32_t local_width = width / (uint32_t)pow(2, (i + 1));
+			uint32_t local_height = height / (uint32_t)pow(2, (i + 1));
+
+			temporaryImages[i] = GLTexture::Storage2D(local_width, local_height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
+			bloomImages[i] = GLTexture::Storage2D(local_width, local_height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
+		}
 
 		depthFBO->Bind();
 		depthFBO->addColourAttachment2D(depthImage);
@@ -68,12 +78,14 @@ namespace Prehistoric
 
 		depthShader = man->loadShader(ShaderName::DepthPass).value();
 		lightCullingShader = man->loadShader(ShaderName::LightCullingPass).value();
+		descaleShader = man->loadShader(ShaderName::BloomDescale).value();
 		hdrShader = man->loadShader(ShaderName::HDR).value();
 		gaussianShader = man->loadShader(ShaderName::Gaussian).value();
 		bloomCombineShader = man->loadShader(ShaderName::BloomCombine).value();
 		renderShader = man->loadShader(ShaderName::Gui).value();
 
 		lightCullingPipeline = new GLComputePipeline(window, man, lightCullingShader);
+		descalePipeline = new GLGraphicsPipeline(window, man, descaleShader, quad);
 		hdrPipeline = new GLComputePipeline(window, man, hdrShader);
 		gaussianPipeline = new GLComputePipeline(window, man, gaussianShader);
 		bloomCombinePipeline = new GLComputePipeline(window, man, bloomCombineShader);
@@ -106,8 +118,11 @@ namespace Prehistoric
 		delete combinedImage;
 		delete outputImage;
 
-		delete pingpongImage;
-		delete pingpongImage2;
+		for (uint32_t i = 0; i < 5; i++)
+		{
+			delete temporaryImages[i];
+			delete bloomImages[i];
+		}
 	}
 
 	void GLRenderer::PrepareRendering()
@@ -136,17 +151,23 @@ namespace Prehistoric
 			delete combinedImage;
 			delete outputImage;
 
-			delete pingpongImage;
-			delete pingpongImage2;
-
 			depthImage = GLTexture::Storage2D(width, height, 1, D32_LINEAR, Bilinear, ClampToEdge, false);
 			colourImage = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
 			bloomImage = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
 			combinedImage = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
 			outputImage = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
 
-			pingpongImage = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
-			pingpongImage2 = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
+			for (uint32_t i = 0; i < 5; i++)
+			{
+				delete temporaryImages[i];
+				delete bloomImages[i];
+
+				uint32_t local_width = width / (uint32_t)pow(2, (i + 1));
+				uint32_t local_height = height / (uint32_t)pow(2, (i + 1));
+
+				temporaryImages[i] = GLTexture::Storage2D(local_width, local_height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
+				bloomImages[i] = GLTexture::Storage2D(local_width, local_height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
+			}
 
 			static_cast<GLComputePipeline*>(lightCullingPipeline)->removeSSBOBinding(0);
 			static_cast<GLComputePipeline*>(lightCullingPipeline)->removeSSBOBinding(1);
@@ -353,61 +374,57 @@ namespace Prehistoric
 			uint32_t width = window->getWidth();
 			uint32_t height = window->getHeight();
 
-			uint32_t workGroupsX = (width + (width % 16)) / 16;
-			uint32_t workGroupsY = (height + (height % 16)) / 16;
-
-			//VERTICAL
-			for (uint32_t i = 0; i < 1; i++)
+			//DONWSCALING THE IMAGES
+			smallFBO->Bind();
+			for (uint32_t i = 0; i < 5; i++)
 			{
-				static_cast<GLComputePipeline*>(gaussianPipeline)->removeTextureBinding(0);
-				static_cast<GLComputePipeline*>(gaussianPipeline)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
-				static_cast<GLComputePipeline*>(gaussianPipeline)->addTextureBinding(0, pingpongImage, WRITE_ONLY);
-				gaussianPipeline->BindPipeline(nullptr);
-				static_cast<GLGaussianShader*>(gaussianPipeline->getShader())->UpdateUniforms(bloomImage, false);
-				gaussianPipeline->RenderPipeline();
+				smallFBO->addColourAttachment2D(bloomImages[i], i);
+			}
 
-				static_cast<GLComputePipeline*>(gaussianPipeline)->removeTextureBinding(0);
-				static_cast<GLComputePipeline*>(gaussianPipeline)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
-				static_cast<GLComputePipeline*>(gaussianPipeline)->addTextureBinding(0, pingpongImage2, WRITE_ONLY);
-				gaussianPipeline->BindPipeline(nullptr);
-				static_cast<GLGaussianShader*>(gaussianPipeline->getShader())->UpdateUniforms(pingpongImage, false);
-				gaussianPipeline->RenderPipeline();
+			uint32_t _arr[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4 };
+			smallFBO->SetDrawAttachments(5, _arr);
+			smallFBO->Clear(0.0f);
 
+			descalePipeline->BindPipeline(nullptr);
+			static_cast<GLBloomDescaleShader*>(descalePipeline->getShader())->UpdateUniforms(bloomImage);
+			descalePipeline->RenderPipeline();
+			descalePipeline->UnbindPipeline();
+			
+			smallFBO->Unbind();
+
+			//GAUSSIAN STAGE
+			for (uint32_t i = 0; i < 5; i++)
+			{
+				uint32_t local_width = width / (uint32_t)pow(2, (i + 1));
+				uint32_t local_height = height / (uint32_t)pow(2, (i + 1));
+
+				uint32_t workGroupsX = (local_width + (local_width % 16)) / 16;
+				uint32_t workGroupsY = (local_height + (local_height % 16)) / 16;
+
+				Vector2f dim = Vector2f((float)local_width, (float)local_height);
+
+				//VERTICAL
 				static_cast<GLComputePipeline*>(gaussianPipeline)->removeTextureBinding(0);
 				static_cast<GLComputePipeline*>(gaussianPipeline)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
-				static_cast<GLComputePipeline*>(gaussianPipeline)->addTextureBinding(0, bloomImage, WRITE_ONLY);
+				static_cast<GLComputePipeline*>(gaussianPipeline)->addTextureBinding(0, temporaryImages[i], WRITE_ONLY);
 				gaussianPipeline->BindPipeline(nullptr);
-				static_cast<GLGaussianShader*>(gaussianPipeline->getShader())->UpdateUniforms(pingpongImage2, false);
+				static_cast<GLGaussianShader*>(gaussianPipeline->getShader())->UpdateUniforms(bloomImages[i], false, dim);
 				gaussianPipeline->RenderPipeline();
 
 				//HORIZONTAL
 				static_cast<GLComputePipeline*>(gaussianPipeline)->removeTextureBinding(0);
 				static_cast<GLComputePipeline*>(gaussianPipeline)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
-				static_cast<GLComputePipeline*>(gaussianPipeline)->addTextureBinding(0, pingpongImage, WRITE_ONLY);
+				static_cast<GLComputePipeline*>(gaussianPipeline)->addTextureBinding(0, bloomImages[i], WRITE_ONLY);
 				gaussianPipeline->BindPipeline(nullptr);
-				static_cast<GLGaussianShader*>(gaussianPipeline->getShader())->UpdateUniforms(bloomImage, true);
+				static_cast<GLGaussianShader*>(gaussianPipeline->getShader())->UpdateUniforms(temporaryImages[i], true, dim);
 				gaussianPipeline->RenderPipeline();
-
-				static_cast<GLComputePipeline*>(gaussianPipeline)->removeTextureBinding(0);
-				static_cast<GLComputePipeline*>(gaussianPipeline)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
-				static_cast<GLComputePipeline*>(gaussianPipeline)->addTextureBinding(0, pingpongImage2, WRITE_ONLY);
-				gaussianPipeline->BindPipeline(nullptr);
-				static_cast<GLGaussianShader*>(gaussianPipeline->getShader())->UpdateUniforms(pingpongImage, true);
-				gaussianPipeline->RenderPipeline();
-
-				static_cast<GLComputePipeline*>(gaussianPipeline)->removeTextureBinding(0);
-				static_cast<GLComputePipeline*>(gaussianPipeline)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
-				static_cast<GLComputePipeline*>(gaussianPipeline)->addTextureBinding(0, bloomImage, WRITE_ONLY);
-				gaussianPipeline->BindPipeline(nullptr);
-				static_cast<GLGaussianShader*>(gaussianPipeline->getShader())->UpdateUniforms(pingpongImage2, true);
-				gaussianPipeline->RenderPipeline();
-
-				gaussianPipeline->UnbindPipeline();
 			}
+
+			gaussianPipeline->UnbindPipeline();
 
 			//COMBINE
 			bloomCombinePipeline->BindPipeline(nullptr);
-			static_cast<GLBloomCombineShader*>(bloomCombinePipeline->getShader())->UpdateUniforms(colourImage, bloomImage, 1.0f);
+			static_cast<GLBloomCombineShader*>(bloomCombinePipeline->getShader())->UpdateUniforms(colourImage, bloomImages, 1.0f);
 			bloomCombinePipeline->RenderPipeline();
 			bloomCombinePipeline->UnbindPipeline();
 		}

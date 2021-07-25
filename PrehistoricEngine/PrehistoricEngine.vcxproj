@@ -149,6 +149,7 @@
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\forwardPlus\GLDepthPassShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\forwardPlus\GLLightCullingPassShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLBloomCombineShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLBLoomDescaleShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLGaussianShader.h" />
     <ClInclude Include="src\engine\Prehistoric.h" />
     <ClInclude Include="src\engine\platform\Platform.h" />
@@ -326,6 +327,7 @@
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\basic\GLBasicShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLBloomCombineShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLBLoomDescaleShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLGaussianShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLHDRShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLBRDFIntegrateShader.cpp" />

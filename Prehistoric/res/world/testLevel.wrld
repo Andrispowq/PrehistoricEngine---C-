@@ -85,7 +85,7 @@ materials.mat_light0.vec3 emission 0,5,0
 materials.add mat_light1
 materials.mat_light1.vec3 colour 1,0,0
 materials.mat_light1.vec4 mrot 0.4,0.3,1,-1
-materials.mat_light1.vec3 emission 10,0,0
+materials.mat_light1.vec3 emission 20,0,0
 
 materials.add mat_sphere1
 materials.mat_sphere1.vec3 colour 0.78,0.56,0.45
@@ -107,7 +107,8 @@ world.object otherQuad -10,0,0 -90,0,0 1,1,1 //position, rotation, scaling
 world.object metalPlane 0,-25,0 0,0,0 40,0.5,40 //position, rotation, scaling
 world.object sphere -5,1,-3 0,0,0 1,1,1 //position, rotation, scaling
 world.object light0 2,3,5 0,0,0 0.5,0.5,0.5
-world.object light1 0,-20,0 0,0,0 0.5,0.5,0.5
+world.object sabre_metal_part 4,-2,-3 0,0,0 0.03,0.5,0.03
+world.object sabre 4,0,-3 0,0,0 0.01,1.75,0.01
 world.object sphere1 -30,20,20
 world.object sphere2 20,10,-30
 
@@ -125,11 +126,12 @@ object.otherQuad.component Renderer quadModel,pbr,mat_metal //model name, shader
 object.metalPlane.component Renderer cubeModel,pbr,mat_iron //model name, shader type(currently: basic, pbr), material name
 object.sphere.component Renderer sphereModel,pbr,mat_sphere //model name, shader type(currently: basic, pbr), material name
 
-object.light0.component Light 0,1,0;20;20
+object.light0.component Light 0,1,0;1000;150
 object.light0.component Renderer sphereModel,pbr,mat_light0
 
-object.light1.component Light 1,0,0;0.5;10
-object.light1.component Renderer sphereModel,pbr,mat_light1
+object.sabre.component Light 1,0,0;500;100
+object.sabre.component Renderer cubeModel,pbr,mat_light1
+object.sabre_metal_part.component Renderer cubeModel,pbr,mat_iron
 
 object.sphere1.component Renderer sphereModel,pbr,mat_sphere1
 object.sphere2.component Renderer sphereModel,pbr,mat_sphere2

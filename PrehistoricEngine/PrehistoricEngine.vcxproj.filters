@@ -724,6 +724,7 @@
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLDepthPass.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLGaussianShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLBloomCombineShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLBLoomDescaleShader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -1128,5 +1129,6 @@
     <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLDepthPass.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLGaussianShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLBloomCombineShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLBLoomDescaleShader.cpp" />
   </ItemGroup>
 </Project>

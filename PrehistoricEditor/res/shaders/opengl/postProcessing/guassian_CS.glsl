@@ -13,58 +13,6 @@ uniform vec2 screenSize;
 uniform int horizontal;
 uniform float weight[KERNEL_SIZE] = float[](0.227027, 0.1945946, 0.1216216, 0.054054, 0.016216);
 
-/*shared float weight[KERNEL_SIZE];
-
-float erf(float x)
-{
-    const float a1 = 0.254829592;
-    const float a2 = -0.284496736;
-    const float a3 = 1.421413741;
-    const float a4 = -1.453152027;
-    const float a5 = 1.061405429;
-    const float p = 0.3275911;
-
-    // A&S formula 7.1.26
-    float t = 1.0 / (1.0 + p * abs(x));
-    float y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * exp(-x * x);
-
-    return sign(x) * y;
-}
-
-float def_int_gaussian(float x, float mu, float sigma) 
-{
-    return 0.5 * erf((x - mu) / (sqrt(2) * sigma));
-}
-
-void generate_kernel()
-{
-    float end = 0.5 * KERNEL_SIZE;
-    float start = -end;
-    int index = 0;
-
-    float sum = 0;
-    float x = start;
-    float last_int = def_int_gaussian(x, 0, SIGMA);
-    float acc = 0;
-
-    while (x < end)
-    {
-        x += step;
-        float new_int = def_int_gaussian(x, 0, SIGMA);
-        float c = new_int - last_int;
-        weight[index++] = c;
-        sum += c;
-        last_int = new_int;
-    }
-
-    //normalize
-    sum = 1 / sum;
-    for (int i = 0; i < KERNEL_SIZE; i++)
-    {
-        weight[i] *= sum;
-    }
-}*/
-
 void main()
 {
 
@@ -74,11 +22,6 @@ void main()
 	
 	vec3 combined = vec3(0);
 	combined = texture(scene, texCoord).rgb * weight[0];
-
-    /*if (gl_GlobalInvocationID == 0)
-        generate_kernel();
-
-    barrier();*/
 	
 	if(horizontal == 1)
 	{	

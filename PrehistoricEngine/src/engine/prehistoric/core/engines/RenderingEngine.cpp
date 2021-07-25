@@ -8,6 +8,8 @@
 
 #include "platform/windows/WindowsWindow.h"
 
+#include "prehistoric/application/Application.h"
+
 namespace Prehistoric
 {
 	Statistics RenderingEngine::statistics;
@@ -84,6 +86,20 @@ namespace Prehistoric
 		}
 
 		camera->Update(window.get(), delta);
+
+		if (InputInstance.IsKeyPushed(PR_KEY_K))
+		{
+			GameObject* laser = (GameObject*)Application::Get().getEngineLayer()->getRootObject()->getChild("scene0")->getChild("sabre");
+
+			if (laser->isEnabled())
+			{
+				laser->setEnabled(false);
+			}
+			else
+			{
+				laser->setEnabled(true);
+			}
+		}
 	}
 
 	void RenderingEngine::Render()
