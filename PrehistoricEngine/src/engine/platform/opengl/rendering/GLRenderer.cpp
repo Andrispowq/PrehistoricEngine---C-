@@ -42,8 +42,8 @@ namespace Prehistoric
 
 		for (uint32_t i = 0; i < 5; i++)
 		{
-			uint32_t local_width = width / (uint32_t)pow(2, (i + 1));
-			uint32_t local_height = height / (uint32_t)pow(2, (i + 1));
+			uint32_t local_width = width / (uint32_t)pow(2, i);
+			uint32_t local_height = height / (uint32_t)pow(2, i);
 
 			temporaryImages[i] = GLTexture::Storage2D(local_width, local_height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
 			bloomImages[i] = GLTexture::Storage2D(local_width, local_height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
@@ -55,12 +55,9 @@ namespace Prehistoric
 		depthFBO->Unbind();
 
 		multisampleFBO->Bind();
-		multisampleFBO->addDepthAttachment(width, height);
-		multisampleFBO->addColourAttachment2D(colourImage, 0);
-		multisampleFBO->addColourAttachment2D(bloomImage, 1);
-		/*multisampleFBO->addDepthAttachment(width, height, true);
+		multisampleFBO->addDepthAttachment(width, height, true);
 		multisampleFBO->addColourAttachmentMultisample2D(0);
-		multisampleFBO->addColourAttachmentMultisample2D(1);*/
+		multisampleFBO->addColourAttachmentMultisample2D(1);
 		multisampleFBO->Check();
 		multisampleFBO->Unbind();
 
@@ -141,7 +138,6 @@ namespace Prehistoric
 
 			visibleLightIndicesBuffer = std::make_unique<GLShaderStorageBuffer>(window, nullptr, numberOfTiles * sizeof(VisibleIndex) * 1024);
 
-			PR_LOG(GREEN, "%d by %d\n", width, height);
 			window->getSwapchain()->SetWindowSize(width, height);
 
 			//Recreate the FBO and the images
@@ -162,8 +158,8 @@ namespace Prehistoric
 				delete temporaryImages[i];
 				delete bloomImages[i];
 
-				uint32_t local_width = width / (uint32_t)pow(2, (i + 1));
-				uint32_t local_height = height / (uint32_t)pow(2, (i + 1));
+				uint32_t local_width = width / (uint32_t)pow(2, i);
+				uint32_t local_height = height / (uint32_t)pow(2, i);
 
 				temporaryImages[i] = GLTexture::Storage2D(local_width, local_height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
 				bloomImages[i] = GLTexture::Storage2D(local_width, local_height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
@@ -189,12 +185,9 @@ namespace Prehistoric
 			depthFBO->Unbind();
 
 			multisampleFBO->Bind();
-			multisampleFBO->addDepthAttachment(width, height);
-			multisampleFBO->addColourAttachment2D(colourImage, 0);
-			multisampleFBO->addColourAttachment2D(bloomImage, 1);
-			/*multisampleFBO->addDepthAttachment(width, height, true);
+			multisampleFBO->addDepthAttachment(width, height, true);
 			multisampleFBO->addColourAttachmentMultisample2D(0);
-			multisampleFBO->addColourAttachmentMultisample2D(1);*/
+			multisampleFBO->addColourAttachmentMultisample2D(1);
 			multisampleFBO->Check();
 			multisampleFBO->Unbind();
 
@@ -281,8 +274,6 @@ namespace Prehistoric
 			depthShader->Unbind();
 			depthFBO->Unbind();
 		}
-		
-		size_t i = sizeof(InternalLight);
 
 		{
 			PR_PROFILE("Light culling pass");
@@ -374,34 +365,35 @@ namespace Prehistoric
 			uint32_t width = window->getWidth();
 			uint32_t height = window->getHeight();
 
-			//DONWSCALING THE IMAGES
-			smallFBO->Bind();
-			for (uint32_t i = 0; i < 5; i++)
-			{
-				smallFBO->addColourAttachment2D(bloomImages[i], i);
-			}
-
-			uint32_t _arr[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4 };
-			smallFBO->SetDrawAttachments(5, _arr);
-			smallFBO->Clear(0.0f);
-
-			descalePipeline->BindPipeline(nullptr);
-			static_cast<GLBloomDescaleShader*>(descalePipeline->getShader())->UpdateUniforms(bloomImage);
-			descalePipeline->RenderPipeline();
-			descalePipeline->UnbindPipeline();
-			
-			smallFBO->Unbind();
-
 			//GAUSSIAN STAGE
-			for (uint32_t i = 0; i < 5; i++)
+			for (uint32_t i = 0; i < 3; i++)
 			{
-				uint32_t local_width = width / (uint32_t)pow(2, (i + 1));
-				uint32_t local_height = height / (uint32_t)pow(2, (i + 1));
+
+				uint32_t local_width = width / (uint32_t)pow(2, i);
+				uint32_t local_height = height / (uint32_t)pow(2, i);
 
 				uint32_t workGroupsX = (local_width + (local_width % 16)) / 16;
 				uint32_t workGroupsY = (local_height + (local_height % 16)) / 16;
 
 				Vector2f dim = Vector2f((float)local_width, (float)local_height);
+
+				//DONWSCALING THE IMAGES
+				smallFBO->Bind();
+				smallFBO->addDepthAttachment(local_width, local_height);
+				smallFBO->addColourAttachment2D(bloomImages[i]);
+				smallFBO->Check();
+
+				uint32_t _arr[] = { GL_COLOR_ATTACHMENT0 };
+				smallFBO->SetDrawAttachments(1, _arr);
+				smallFBO->Clear(0.0f);
+				window->getSwapchain()->SetWindowSize(local_width, local_height);
+
+				descalePipeline->BindPipeline(nullptr);
+				static_cast<GLBloomDescaleShader*>(descalePipeline->getShader())->UpdateUniforms(bloomImage);
+				descalePipeline->RenderPipeline();
+				descalePipeline->UnbindPipeline();
+
+				smallFBO->Unbind();
 
 				//VERTICAL
 				static_cast<GLComputePipeline*>(gaussianPipeline)->removeTextureBinding(0);
@@ -420,6 +412,7 @@ namespace Prehistoric
 				gaussianPipeline->RenderPipeline();
 			}
 
+			window->getSwapchain()->SetWindowSize(width, height);
 			gaussianPipeline->UnbindPipeline();
 
 			//COMBINE

@@ -8,5 +8,5 @@ out vec2 texture_FS;
 void main()
 {
 	gl_Position = vec4(position_VS, 1.0);
-	texture_FS = (position_VS.xy + 1) / 2;
+	texture_FS = texture_VS;
 }

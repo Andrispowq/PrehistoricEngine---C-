@@ -22,11 +22,11 @@ void main()
 
     vec3 sceneColour = texture(scene, texCoord).rgb;
 
-    sceneColour += texture(bloom0, texCoord).rgb;
-    sceneColour += texture(bloom1, texCoord).rgb;
-    sceneColour += texture(bloom2, texCoord).rgb;
-    sceneColour += texture(bloom3, texCoord).rgb;
-    sceneColour += texture(bloom4, texCoord).rgb;
+    sceneColour += texture(bloom0, texCoord).rgb * 0.2;
+    sceneColour += texture(bloom1, texCoord).rgb * 0.2;
+    sceneColour += texture(bloom2, texCoord).rgb * 0.2;
+    sceneColour += texture(bloom3, texCoord).rgb * 0.2;
+    sceneColour += texture(bloom4, texCoord).rgb * 0.2;
     
     imageStore(outColour, x, vec4(sceneColour, 1.0));
 }

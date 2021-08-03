@@ -93,7 +93,7 @@ namespace Prehistoric
 		uint32_t id;
 		glGenRenderbuffers(1, &id);
 		glBindRenderbuffer(GL_RENDERBUFFER, id);
-		glRenderbufferStorageMultisample(GL_RENDERBUFFER, FrameworkConfig::windowNumSamples, GL_RGBA16, width, height);
+		glRenderbufferStorageMultisample(GL_RENDERBUFFER, FrameworkConfig::windowNumSamples, GL_RGBA16F, width, height);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment, GL_RENDERBUFFER, id);
 
 		multisampleAttachments.push_back(std::make_pair(attachment, id));

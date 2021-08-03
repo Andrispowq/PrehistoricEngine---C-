@@ -40,7 +40,6 @@ namespace Prehistoric
 
 	void GLSwapchain::SetWindowSize(uint32_t width, uint32_t height)
 	{
-		PR_LOG(GREEN, "%d by %d\n", width, height);
 		glViewport(0, 0, width, height);
 		FrameworkConfig::windowWidth = width;
 		FrameworkConfig::windowHeight = height;
