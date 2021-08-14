@@ -283,10 +283,11 @@ void SceneHierarchyPanel::DrawComponents(Prehistoric::GameObject* object)
 			vec3.second = Prehistoric::Vector3f(vals[0], vals[1], vals[2]);
 		}
 
-		for (auto fl : mat->getFloats())
+		for (auto& fl : mat->getFloats())
 		{
 			float val[] = { fl.second };
-			ImGui::SliderFloat(fl.first.c_str(), val, 0.0f, 20.0f, fl.first.c_str());
+			ImGui::InputFloat(fl.first.c_str(), val, 0.5f, 10.0f, 2);
+			//ImGui::SliderFloat(fl.first.c_str(), val, 0.0f, 20.0f, fl.first.c_str());
 			fl.second = val[0];
 		}
 	});
@@ -303,13 +304,13 @@ void SceneHierarchyPanel::DrawComponents(Prehistoric::GameObject* object)
 
 		{
 			float intensity = light->getIntensity();
-			ImGui::SliderFloat("Intensity", &intensity, 0.0f, 50.0f);
+			ImGui::InputFloat("Intensity", &intensity, 0.5f, 10.0f, 2);
 			light->setIntensity({ intensity });
 		}
 
 		{
 			float radius = light->getRadius();
-			ImGui::SliderFloat("Radius", &radius, 0.0f, 2000.0f);
+			ImGui::InputFloat("Radius", &radius, 10.0f, 200.0f, 2);
 			light->setRadius({ radius });
 		}
 	});
