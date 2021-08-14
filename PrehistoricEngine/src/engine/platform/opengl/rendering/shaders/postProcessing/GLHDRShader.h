@@ -13,7 +13,7 @@ namespace Prehistoric
 		GLHDRShader();
 		virtual ~GLHDRShader() {}
 
-		void UpdateUniforms(Texture* scene) const;
+		void UpdateUniforms(Texture* scene, Vector2f resolution) const;
 	};
 };
 

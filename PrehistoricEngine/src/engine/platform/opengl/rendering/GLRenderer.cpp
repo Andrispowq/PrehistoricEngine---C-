@@ -15,7 +15,7 @@
 #include "platform/opengl/rendering/shaders/postProcessing/GLHDRShader.h"
 #include "platform/opengl/rendering/shaders/postProcessing/GLGaussianShader.h"
 #include "platform/opengl/rendering/shaders/postProcessing/GLBloomCombineShader.h"
-#include "platform/opengl/rendering/shaders/postProcessing/GLBloomDescaleShader.h"
+#include "platform/opengl/rendering/shaders/postProcessing/GLBloomDecomposeShader.h"
 #include "platform/opengl/rendering/shaders/gui/GLGUIShader.h"
 
 namespace Prehistoric
@@ -23,13 +23,13 @@ namespace Prehistoric
 	GLRenderer::GLRenderer(Window* window, Camera* camera, AssembledAssetManager* manager)
 		: Renderer(window, camera, manager), depthFBO{ nullptr }, multisampleFBO{ nullptr },
 			colourFBO{ nullptr }, lightBuffer{ nullptr }, visibleLightIndicesBuffer{ nullptr },
-			smallFBO{ nullptr }
+			scratchFBO{ nullptr }
 	{
 		depthFBO = std::make_unique<GLFramebuffer>(window);
 		multisampleFBO = std::make_unique<GLFramebuffer>(window);
 		colourFBO = std::make_unique<GLFramebuffer>(window);
 
-		smallFBO = std::make_unique<GLFramebuffer>(window);
+		scratchFBO = std::make_unique<GLFramebuffer>(window);
 
 		uint32_t width = window->getWidth();
 		uint32_t height = window->getHeight();
@@ -40,10 +40,10 @@ namespace Prehistoric
 		combinedImage = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
 		outputImage = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
 
-		for (uint32_t i = 0; i < 5; i++)
+		for (uint32_t i = 0; i < 8; i++)
 		{
-			uint32_t local_width = width / (uint32_t)pow(2, i);
-			uint32_t local_height = height / (uint32_t)pow(2, i);
+			uint32_t local_width = width / (uint32_t)pow(2, i + 1);
+			uint32_t local_height = height / (uint32_t)pow(2, i + 1);
 
 			temporaryImages[i] = GLTexture::Storage2D(local_width, local_height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
 			bloomImages[i] = GLTexture::Storage2D(local_width, local_height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
@@ -75,17 +75,17 @@ namespace Prehistoric
 
 		depthShader = man->loadShader(ShaderName::DepthPass).value();
 		lightCullingShader = man->loadShader(ShaderName::LightCullingPass).value();
-		descaleShader = man->loadShader(ShaderName::BloomDescale).value();
+		decomposeShader = man->loadShader(ShaderName::BloomDecompose).value();
 		hdrShader = man->loadShader(ShaderName::HDR).value();
 		gaussianShader = man->loadShader(ShaderName::Gaussian).value();
 		bloomCombineShader = man->loadShader(ShaderName::BloomCombine).value();
 		renderShader = man->loadShader(ShaderName::Gui).value();
 
 		lightCullingPipeline = new GLComputePipeline(window, man, lightCullingShader);
-		descalePipeline = new GLGraphicsPipeline(window, man, descaleShader, quad);
+		decomposePipeline = new GLGraphicsPipeline(window, man, decomposeShader, quad);
 		hdrPipeline = new GLComputePipeline(window, man, hdrShader);
-		gaussianPipeline = new GLComputePipeline(window, man, gaussianShader);
-		bloomCombinePipeline = new GLComputePipeline(window, man, bloomCombineShader);
+		gaussianPipeline = new GLGraphicsPipeline(window, man, gaussianShader, quad);
+		bloomCombinePipeline = new GLGraphicsPipeline(window, man, bloomCombineShader, quad);
 		renderPipeline = new GLGraphicsPipeline(window, man, renderShader, quad);
 
 		uint32_t workGroupsX = (width + (width % 16)) / 16;
@@ -100,9 +100,6 @@ namespace Prehistoric
 		static_cast<GLComputePipeline*>(lightCullingPipeline)->addSSBOBinding(0, (ShaderStorageBuffer*)lightBuffer.get(), READ_ONLY);
 		static_cast<GLComputePipeline*>(lightCullingPipeline)->addSSBOBinding(1, (ShaderStorageBuffer*)visibleLightIndicesBuffer.get(), WRITE_ONLY);
 
-		static_cast<GLComputePipeline*>(bloomCombinePipeline)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
-		static_cast<GLComputePipeline*>(bloomCombinePipeline)->addTextureBinding(0, combinedImage, WRITE_ONLY);
-		
 		static_cast<GLComputePipeline*>(hdrPipeline)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
 		static_cast<GLComputePipeline*>(hdrPipeline)->addTextureBinding(0, outputImage, WRITE_ONLY);
 	}
@@ -153,13 +150,13 @@ namespace Prehistoric
 			combinedImage = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
 			outputImage = GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
 
-			for (uint32_t i = 0; i < 5; i++)
+			for (uint32_t i = 0; i < 8; i++)
 			{
 				delete temporaryImages[i];
 				delete bloomImages[i];
 
-				uint32_t local_width = width / (uint32_t)pow(2, i);
-				uint32_t local_height = height / (uint32_t)pow(2, i);
+				uint32_t local_width = width / (uint32_t)pow(2, i + 1);
+				uint32_t local_height = height / (uint32_t)pow(2, i + 1);
 
 				temporaryImages[i] = GLTexture::Storage2D(local_width, local_height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
 				bloomImages[i] = GLTexture::Storage2D(local_width, local_height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false);
@@ -170,10 +167,6 @@ namespace Prehistoric
 			static_cast<GLComputePipeline*>(lightCullingPipeline)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
 			static_cast<GLComputePipeline*>(lightCullingPipeline)->addSSBOBinding(0, (ShaderStorageBuffer*)lightBuffer.get(), READ_ONLY);
 			static_cast<GLComputePipeline*>(lightCullingPipeline)->addSSBOBinding(1, (ShaderStorageBuffer*)visibleLightIndicesBuffer.get(), WRITE_ONLY);
-
-			static_cast<GLComputePipeline*>(bloomCombinePipeline)->removeTextureBinding(0);
-			static_cast<GLComputePipeline*>(bloomCombinePipeline)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
-			static_cast<GLComputePipeline*>(bloomCombinePipeline)->addTextureBinding(0, combinedImage, WRITE_ONLY);
 
 			static_cast<GLComputePipeline*>(hdrPipeline)->removeTextureBinding(0);
 			static_cast<GLComputePipeline*>(hdrPipeline)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
@@ -225,6 +218,9 @@ namespace Prehistoric
 	void GLRenderer::Render()
 	{
 		UpdateLightBuffer();
+
+		uint32_t width = window->getWidth();
+		uint32_t height = window->getHeight();
 
 		{
 			PR_PROFILE("Depth pass");
@@ -362,70 +358,118 @@ namespace Prehistoric
 		{
 			PR_PROFILE("Bloom pass");
 
-			uint32_t width = window->getWidth();
-			uint32_t height = window->getHeight();
+			//DECOMPOSE STAGE
+			scratchFBO->Bind();
+			scratchFBO->addColourAttachment2D(bloomImage);
+			scratchFBO->Clear(0.0f);
+
+			decomposePipeline->BindPipeline(nullptr);
+			static_cast<GLBloomDecomposeShader*>(decomposePipeline->getShader())->UpdateUniforms(colourImage, 1.0f);
+			decomposePipeline->RenderPipeline();
+			decomposePipeline->UnbindPipeline();
+
+			scratchFBO->Unbind();
 
 			//GAUSSIAN STAGE
-			for (uint32_t i = 0; i < 3; i++)
+			for (uint32_t i = 0; i < 8; i++)
 			{
-
-				uint32_t local_width = width / (uint32_t)pow(2, i);
-				uint32_t local_height = height / (uint32_t)pow(2, i);
+				uint32_t local_width = width / (uint32_t)pow(2, i + 1);
+				uint32_t local_height = height / (uint32_t)pow(2, i + 1);
 
 				uint32_t workGroupsX = (local_width + (local_width % 16)) / 16;
 				uint32_t workGroupsY = (local_height + (local_height % 16)) / 16;
 
 				Vector2f dim = Vector2f((float)local_width, (float)local_height);
 
-				//DONWSCALING THE IMAGES
-				smallFBO->Bind();
-				smallFBO->addDepthAttachment(local_width, local_height);
-				smallFBO->addColourAttachment2D(bloomImages[i]);
-				smallFBO->Check();
+				//VERTICAL
+				scratchFBO->Bind();
+				scratchFBO->addDepthAttachment(local_width, local_height);
+				scratchFBO->addColourAttachment2D(temporaryImages[i]);
+				scratchFBO->Check();
+				scratchFBO->Clear(0.0f);
 
-				uint32_t _arr[] = { GL_COLOR_ATTACHMENT0 };
-				smallFBO->SetDrawAttachments(1, _arr);
-				smallFBO->Clear(0.0f);
 				window->getSwapchain()->SetWindowSize(local_width, local_height);
 
-				descalePipeline->BindPipeline(nullptr);
-				static_cast<GLBloomDescaleShader*>(descalePipeline->getShader())->UpdateUniforms(bloomImage);
-				descalePipeline->RenderPipeline();
-				descalePipeline->UnbindPipeline();
+				Texture* source = bloomImage;
+				if (i > 0)
+				{
+					source = bloomImages[i - 1];
+				}
 
-				smallFBO->Unbind();
-
-				//VERTICAL
-				static_cast<GLComputePipeline*>(gaussianPipeline)->removeTextureBinding(0);
-				static_cast<GLComputePipeline*>(gaussianPipeline)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
-				static_cast<GLComputePipeline*>(gaussianPipeline)->addTextureBinding(0, temporaryImages[i], WRITE_ONLY);
 				gaussianPipeline->BindPipeline(nullptr);
-				static_cast<GLGaussianShader*>(gaussianPipeline->getShader())->UpdateUniforms(bloomImages[i], false, dim);
+				static_cast<GLGaussianShader*>(gaussianPipeline->getShader())->UpdateUniforms(source, false, Vector2f{ (float)local_width, (float)local_height });
 				gaussianPipeline->RenderPipeline();
 
 				//HORIZONTAL
-				static_cast<GLComputePipeline*>(gaussianPipeline)->removeTextureBinding(0);
-				static_cast<GLComputePipeline*>(gaussianPipeline)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
-				static_cast<GLComputePipeline*>(gaussianPipeline)->addTextureBinding(0, bloomImages[i], WRITE_ONLY);
+				scratchFBO->addColourAttachment2D(bloomImages[i]);
+				scratchFBO->Clear(0.0f);
+
 				gaussianPipeline->BindPipeline(nullptr);
-				static_cast<GLGaussianShader*>(gaussianPipeline->getShader())->UpdateUniforms(temporaryImages[i], true, dim);
+				static_cast<GLGaussianShader*>(gaussianPipeline->getShader())->UpdateUniforms(temporaryImages[i], true, Vector2f{ (float)local_width, (float)local_height });
 				gaussianPipeline->RenderPipeline();
+
+				scratchFBO->Unbind();
+			}
+
+			window->getSwapchain()->SetWindowSize(width, height);
+			gaussianPipeline->UnbindPipeline();
+
+			//COMBINE STAGE
+			for (int i = 6; i >= 0; i--)
+			{
+				uint32_t local_width = width / (uint32_t)pow(2, i + 1);
+				uint32_t local_height = height / (uint32_t)pow(2, i + 1);
+
+				uint32_t workGroupsX = (local_width + (local_width % 16)) / 16;
+				uint32_t workGroupsY = (local_height + (local_height % 16)) / 16;
+
+				Vector2f dim = Vector2f((float)local_width, (float)local_height);
+
+				//COMBINE
+				scratchFBO->Bind();
+				scratchFBO->addDepthAttachment(local_width, local_height);
+				scratchFBO->addColourAttachment2D(temporaryImages[i]);
+				scratchFBO->Check();
+				scratchFBO->Clear(0.0f);
+
+				window->getSwapchain()->SetWindowSize(local_width, local_height);
+
+				bloomCombinePipeline->BindPipeline(nullptr);
+				static_cast<GLBloomCombineShader*>(bloomCombinePipeline->getShader())->UpdateUniforms(bloomImages[i], bloomImages[i + 1]);
+				bloomCombinePipeline->RenderPipeline();
+
+				//COPY
+				scratchFBO->addColourAttachment2D(bloomImages[i]);
+				scratchFBO->Clear(0.0f);
+
+				renderPipeline->BindPipeline(nullptr);
+				static_cast<GLGUIShader*>(renderPipeline->getShader())->UpdateCustomUniforms(temporaryImages[i], -1);
+				renderPipeline->RenderPipeline();
+
+				scratchFBO->Unbind();
 			}
 
 			window->getSwapchain()->SetWindowSize(width, height);
 			gaussianPipeline->UnbindPipeline();
 
 			//COMBINE
+			scratchFBO->Bind();
+			scratchFBO->addDepthAttachment(width, height);
+			scratchFBO->addColourAttachment2D(combinedImage);
+			scratchFBO->Check();
+			scratchFBO->Clear(0.0f);
+
 			bloomCombinePipeline->BindPipeline(nullptr);
-			static_cast<GLBloomCombineShader*>(bloomCombinePipeline->getShader())->UpdateUniforms(colourImage, bloomImages, 1.0f);
+			static_cast<GLBloomCombineShader*>(bloomCombinePipeline->getShader())->UpdateUniforms(colourImage, bloomImages[0]);
 			bloomCombinePipeline->RenderPipeline();
-			bloomCombinePipeline->UnbindPipeline();
+
+			scratchFBO->Unbind();
 		}
 
 		{
 			PR_PROFILE("HDR post processing");
 			hdrPipeline->BindPipeline(nullptr);
-			static_cast<GLHDRShader*>(hdrPipeline->getShader())->UpdateUniforms(combinedImage);
+			static_cast<GLHDRShader*>(hdrPipeline->getShader())->UpdateUniforms(combinedImage, { (float)width, (float)height });
 			hdrPipeline->RenderPipeline();
 			hdrPipeline->UnbindPipeline();
 		}

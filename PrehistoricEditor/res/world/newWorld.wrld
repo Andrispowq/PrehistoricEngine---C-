@@ -38,17 +38,17 @@ models.dispatch
 materials.add mat_plane
 materials.mat_plane.vec3 colour 0.3,0.3,0.3
 materials.mat_plane.vec4 mrot 0,0.6,1,0
-materials.mat_plane.vec3 emission 0,0,0
+materials.mat_plane.float emission 0
 
 materials.add mat_cube
 materials.mat_cube.vec3 colour 0.4,0.4,0.4
 materials.mat_cube.vec4 mrot 0.2,0.3,1,0
-materials.mat_cube.vec3 emission 0,0,0
+materials.mat_cube.float emission 0
 
 materials.add mat_light
 materials.mat_light.vec3 colour 1,0.65,0.35
 materials.mat_light.vec4 mrot 0,1,1,0
-materials.mat_light.vec3 emission 10,6.5,3.5
+materials.mat_light.float emission 10
 
 # GAMEOBJECT CREATION
 # You can specify position, rotation, and scale, but only in this order, and you cannot have rotation or scale specified without position and scale without position and rotatino

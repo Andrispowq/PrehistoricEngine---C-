@@ -1,7 +1,6 @@
 #version 430
 
 layout (location = 0) out vec4 outColour;
-layout (location = 1) out vec4 outBloom;
 
 struct Material
 {
@@ -196,15 +195,7 @@ void main()
 		colour = vec3(0.0);
 	}
 
-	vec3 bloom = colour;
-	float brightness = dot(colour.rgb, vec3(0.2126, 0.7152, 0.0722));
-	if (brightness < threshold)
-	{
-		bloom = vec3(0.0);
-	}
-
 	outColour = vec4(colour, 1);
-	outBloom = vec4(bloom, 1);
 }
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)

@@ -13,7 +13,7 @@ namespace Prehistoric
 		GLBloomCombineShader();
 		virtual ~GLBloomCombineShader() {}
 
-		void UpdateUniforms(Texture* scene, Texture* bloom[5], float bloom_factor) const;
+		void UpdateUniforms(Texture* tex0, Texture* tex1) const;
 	};
 };
 

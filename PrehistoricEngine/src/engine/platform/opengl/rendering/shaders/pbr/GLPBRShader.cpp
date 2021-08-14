@@ -78,6 +78,6 @@ namespace Prehistoric
 		SetUniform(colour, material->getVector3f(COLOUR));
 		SetUniformi(usesNormalMap, material->exists(NORMAL_MAP));
 		SetUniform(mrot, material->getVector4f(MROT));
-		SetUniform(emission, material->getVector3f(EMISSION));
+		SetUniformf(emission, material->getFloat(EMISSION));
 	}
 };

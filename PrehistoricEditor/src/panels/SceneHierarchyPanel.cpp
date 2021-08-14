@@ -282,6 +282,13 @@ void SceneHierarchyPanel::DrawComponents(Prehistoric::GameObject* object)
 			ImGui::ColorEdit3(vec3.first.c_str(), vals);
 			vec3.second = Prehistoric::Vector3f(vals[0], vals[1], vals[2]);
 		}
+
+		for (auto fl : mat->getFloats())
+		{
+			float val[] = { fl.second };
+			ImGui::SliderFloat(fl.first.c_str(), val, 0.0f, 20.0f, fl.first.c_str());
+			fl.second = val[0];
+		}
 	});
 
 	DrawComponent<Prehistoric::Light>("Light", object, [](Prehistoric::Component* comp)

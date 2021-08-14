@@ -31,7 +31,7 @@ namespace Prehistoric
 		std::unique_ptr<GLFramebuffer> multisampleFBO;
 		std::unique_ptr<GLFramebuffer> colourFBO;
 
-		std::unique_ptr<GLFramebuffer> smallFBO;
+		std::unique_ptr<GLFramebuffer> scratchFBO;
 
 		std::unique_ptr<GLShaderStorageBuffer> lightBuffer;
 		std::unique_ptr<GLShaderStorageBuffer> visibleLightIndicesBuffer;
@@ -42,12 +42,12 @@ namespace Prehistoric
 		Texture* combinedImage;
 		Texture* outputImage;
 
-		Texture* temporaryImages[5];
-		Texture* bloomImages[5];
+		Texture* temporaryImages[8];
+		Texture* bloomImages[8];
 
 		ShaderHandle depthShader;
 		ShaderHandle lightCullingShader;
-		ShaderHandle descaleShader;
+		ShaderHandle decomposeShader;
 		ShaderHandle gaussianShader;
 		ShaderHandle bloomCombineShader;
 		ShaderHandle hdrShader;
@@ -56,7 +56,7 @@ namespace Prehistoric
 		VertexBufferHandle quad;
 
 		Pipeline* lightCullingPipeline;
-		Pipeline* descalePipeline;
+		Pipeline* decomposePipeline;
 		Pipeline* gaussianPipeline;
 		Pipeline* bloomCombinePipeline;
 		Pipeline* hdrPipeline;

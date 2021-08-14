@@ -24,7 +24,7 @@ namespace Prehistoric
 		LightCullingPass,
 		Gaussian,
 		BloomCombine,
-		BloomDescale
+		BloomDecompose
 	};
 
 	class ShaderLoader : public Loader

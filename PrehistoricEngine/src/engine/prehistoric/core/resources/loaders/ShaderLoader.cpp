@@ -16,7 +16,7 @@
 #include "platform/opengl/rendering/shaders/postProcessing/GLGaussianShader.h"
 #include "platform/opengl/rendering/shaders/postProcessing/GLBloomCombineShader.h"
 #include "platform/opengl/rendering/shaders/postProcessing/GLHDRShader.h"
-#include "platform/opengl/rendering/shaders/postProcessing/GLBloomDescaleShader.h"
+#include "platform/opengl/rendering/shaders/postProcessing/GLBloomDecomposeShader.h"
 
 #include "platform/vulkan/rendering/shaders/basic/VKBasicShader.h"
 #include "platform/vulkan/rendering/shaders/pbr/VKPBRShader.h"
@@ -88,9 +88,9 @@ namespace Prehistoric
 			{
 				shader = new GLBloomCombineShader();
 			}
-			else if (path == "bloom_descale")
+			else if (path == "bloom_decompose")
 			{
-				shader = new GLBloomDescaleShader();
+				shader = new GLBloomDecomposeShader();
 			}
 		}
 		else if (FrameworkConfig::api == Vulkan)

@@ -1,7 +1,6 @@
 #version 430
 
 layout (location = 0) out vec4 outColour;
-layout (location = 1) out vec4 outBloom;
 
 in vec3 position_FS;
 in vec2 texture_FS;
@@ -18,7 +17,7 @@ struct Material
 	vec3 colour;
 	int usesNormalMap;
 	vec4 mrot;
-	vec3 emission;
+	float emission;
 };
 
 struct PointLight 
@@ -72,7 +71,7 @@ void main()
 
 	vec3 albedoColour = material.colour;
 	vec4 mrot = material.mrot;
-	vec3 emission = material.emission;
+	float emission = material.emission.r;
 	
 	if (albedoColour.r == -1)
 	{
@@ -101,9 +100,9 @@ void main()
 	float roughness = mrot.g;
 	float occlusion = mrot.b;
 
-	if (emission.r == -1)
+	if (emission == -1)
 	{
-		emission = texture(material.emissionMap, texture_FS).rgb;
+		emission = texture(material.emissionMap, texture_FS).r;
 	}
 
 	float dist = length(cameraPosition - position_FS);
@@ -181,22 +180,14 @@ void main()
     vec3 specular = prefilteredColour * (F * envBRDF.x + envBRDF.y);
 
     vec3 ambient = (kD * diffuse + specular) * occlusion;
-    vec3 colour = ambient + Lo + max(emission * emissionFactor, 0.0);
+    vec3 colour = ambient + Lo + max(albedoColour * emission * emissionFactor, 0.0);
 
 	if (isnan(colour.r))
 	{
 		colour = vec3(0.0);
 	}
-
-	vec3 bloom = colour;
-	float brightness = dot(colour.rgb, vec3(0.2126, 0.7152, 0.0722));
-	if (brightness < threshold)
-	{
-		bloom = vec3(0.0);
-	}
-
+	
 	outColour = vec4(colour, 1);
-	outBloom = vec4(bloom, 1);
 }
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)

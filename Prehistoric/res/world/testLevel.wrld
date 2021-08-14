@@ -57,35 +57,35 @@ materials.mat_quad.texture albedo oak_DIF
 materials.mat_quad.texture normal oak_NRM
 materials.mat_quad.texture mrot oak_MROT
 materials.mat_quad.vec4 mrot -1,-1,-1,0
-materials.mat_quad.vec3 emission 0,0,0
+materials.mat_quad.float emission 0
 
 materials.add mat_metal
 materials.mat_metal.texture albedo metal_DIF
 materials.mat_metal.texture normal metal_NRM
 materials.mat_metal.texture mrot metal_MROT
 materials.mat_metal.vec4 mrot -1,-1,-1,0
-materials.mat_metal.vec3 emission 0,0,0
+materials.mat_metal.float emission 0
 
 materials.add mat_sphere
 materials.mat_sphere.vec3 colour 1,1,1
 materials.mat_sphere.texture normal metal_NRM
 materials.mat_sphere.vec4 mrot 1,0.1,1,-1
-materials.mat_sphere.vec3 emission 0,0,0
+materials.mat_sphere.float emission 0
 
 materials.add mat_iron
 materials.mat_iron.vec3 colour 0.56,0.57,0.58
 materials.mat_iron.vec4 mrot 1,0.3,1,-1
-materials.mat_iron.vec3 emission 0,0,0
+materials.mat_iron.float emission 0
 
 materials.add mat_light0
-materials.mat_light0.vec3 colour 0,1,0
+materials.mat_light0.vec3 colour 0.1,1,0.1
 materials.mat_light0.vec4 mrot 0.4,0.3,1,-1
-materials.mat_light0.vec3 emission 0,5,0
+materials.mat_light0.float emission 5
 
 materials.add mat_light1
-materials.mat_light1.vec3 colour 1,0,0
+materials.mat_light1.vec3 colour 1,0.1,0.1
 materials.mat_light1.vec4 mrot 0.4,0.3,1,-1
-materials.mat_light1.vec3 emission 20,0,0
+materials.mat_light1.float emission 20
 
 materials.add mat_sphere1
 materials.mat_sphere1.vec3 colour 0.78,0.56,0.45
@@ -108,7 +108,7 @@ world.object metalPlane 0,-25,0 0,0,0 40,0.5,40 //position, rotation, scaling
 world.object sphere -5,1,-3 0,0,0 1,1,1 //position, rotation, scaling
 world.object light0 2,3,5 0,0,0 0.5,0.5,0.5
 world.object sabre_metal_part 4,-2,-3 0,0,0 0.03,0.5,0.03
-world.object sabre 4,0,-3 0,0,0 0.01,1.75,0.01
+world.object sabre 4,0.25,-3 0,0,0 0.03,1.75,0.03
 world.object sphere1 -30,20,20
 world.object sphere2 20,10,-30
 

@@ -14,19 +14,20 @@ namespace Prehistoric
 		CompileShader();
 
 		AddUniform("scene");
+		AddUniform("resolution");
 
 		AddUniform("gamma");
 		AddUniform("exposure");
-		AddUniform("screenSize");
 	}
 
-	void GLHDRShader::UpdateUniforms(Texture* scene) const
+	void GLHDRShader::UpdateUniforms(Texture* scene, Vector2f resolution) const
 	{
 		scene->Bind();
 		SetUniformi("scene", 0);
 
+		SetUniform("resolution", resolution);
+
 		SetUniformf("gamma", EngineConfig::rendererGamma);
 		SetUniformf("exposure", EngineConfig::rendererExposure);
-		SetUniform("screenSize", Vector2f((float)FrameworkConfig::windowWidth, (float)FrameworkConfig::windowHeight));
 	}
 };

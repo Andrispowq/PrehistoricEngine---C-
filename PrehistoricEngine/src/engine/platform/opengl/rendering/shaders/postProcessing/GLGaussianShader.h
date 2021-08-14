@@ -13,7 +13,7 @@ namespace Prehistoric
 		GLGaussianShader();
 		virtual ~GLGaussianShader() {}
 
-		void UpdateUniforms(Texture* scene, bool horizontal, Vector2f dimension) const;
+		void UpdateUniforms(Texture* scene, bool horizontal, Vector2f targetSize) const;
 	};
 };
 

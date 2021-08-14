@@ -8,12 +8,12 @@ uniform sampler2D scene;
 
 uniform float gamma;
 uniform float exposure;
-uniform vec2 screenSize;
+uniform vec2 resolution;
 
 void main()
 {
     ivec2 x = ivec2(gl_GlobalInvocationID.xy);
-    vec2 texCoord = gl_GlobalInvocationID.xy / screenSize;
+    vec2 texCoord = gl_GlobalInvocationID.xy / resolution;
 
     vec3 sceneColour = texture(scene, texCoord).rgb;
        

@@ -27,7 +27,8 @@ EditorApp::EditorApp()
 
 	AudioComponent* startupSound;
 	GameObject* start = new GameObject;
-	start->AddComponent("startup", startupSound = new AudioComponent("res/sounds/_FlipReset.wav", 54.0f, true, false, true));
+	//start->AddComponent("startup", startupSound = new AudioComponent("res/sounds/_FlipReset.wav", 54.0f, true, false, true));
+	start->AddComponent(AUDIO_COMPONENT, startupSound = new AudioComponent("res/sounds/_Saviour.wav", 38.0f, true, true));
 	startupSound->setSpatial(true);
 	startupSound->PreUpdate(engineLayer);
 

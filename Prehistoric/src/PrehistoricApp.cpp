@@ -12,7 +12,7 @@ PrehistoricApp::PrehistoricApp()
 
 	GameObject* startupMusic = new GameObject();
 	//startupMusic->AddComponent(AUDIO_COMPONENT, new AudioComponent("res/sounds/_Closer.wav", 75.0f, true, true));
-	startupMusic->AddComponent(AUDIO_COMPONENT, new AudioComponent("res/sounds/_Saviour.wav", 38.0f, true, true));
+	startupMusic->AddComponent("startup", new AudioComponent("res/sounds/_Eternal.wav", 0.0f, true, false, true));
 	startupMusic->GetComponent<AudioComponent>()->PreUpdate(engineLayer);
 	
 	audioRoot->AddChild("startupMusic", startupMusic);
