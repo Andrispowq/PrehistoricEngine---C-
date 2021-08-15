@@ -12,16 +12,16 @@ PrehistoricApp::PrehistoricApp()
 
 	GameObject* startupMusic = new GameObject();
 	//startupMusic->AddComponent(AUDIO_COMPONENT, new AudioComponent("res/sounds/_Closer.wav", 75.0f, true, true));
-	startupMusic->AddComponent("startup", new AudioComponent("res/sounds/_Eternal.wav", 0.0f, true, false, true));
-	startupMusic->GetComponent<AudioComponent>()->PreUpdate(engineLayer);
+	//startupMusic->AddComponent("startup", new AudioComponent("res/sounds/_Eternal.wav", 0.0f, true, false, true));
+	//startupMusic->GetComponent<AudioComponent>()->PreUpdate(engineLayer);
 	
 	audioRoot->AddChild("startupMusic", startupMusic);
 	engineLayer->getAudioEngine()->Update(0.0f);
 
-	GameObject* sceneRoot = new GameObject();
-	scene = std::make_unique<PrehistoricScene>("scene0", sceneRoot, engineLayer->getRenderingEngine()->getWindow(),
-		engineLayer->getRenderingEngine()->getCamera(), engineLayer->getAssetManager(), "res/world/testLevel.wrld");
+	scene = std::make_unique<PrehistoricScene>("res/world/testLevel.wrld", engineLayer->getRenderingEngine()->getWindow(),
+		engineLayer->getRenderingEngine()->getCamera(), engineLayer->getAssetManager());
 
+	GameObject* sceneRoot = scene->getSceneRoot();
 	Camera* cam = engineLayer->getRenderingEngine()->getCamera();
 
 	if (FrameworkConfig::api == OpenGL)
@@ -55,7 +55,7 @@ PrehistoricApp::PrehistoricApp()
 			EnvironmentMapRenderer::instance = new EnvironmentMapRenderer(engineLayer->getRenderingEngine()->getWindow(), engineLayer->getAssetManager());
 		}
 
-		//EnvironmentMapRenderer::instance->atmosphere = (Atmosphere*)sceneRoot->getChild("atmosphere");
+		EnvironmentMapRenderer::instance->atmosphere = (Atmosphere*)sceneRoot->getChild("atmosphere");
 
 		{
 			PR_PROFILE("Environment map generation - Cubemap, Irradiance, Prefilter map");

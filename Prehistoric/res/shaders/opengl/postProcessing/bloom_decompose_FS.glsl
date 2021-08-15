@@ -17,5 +17,7 @@ void main()
 		bloomColour = vec3(0.0);
 	}
 
+	bloomColour = clamp(bloomColour, 0.0, 500.0);
+
 	outBloom = vec4(bloomColour, 1.0);
 }

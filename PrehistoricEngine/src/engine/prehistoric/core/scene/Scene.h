@@ -24,27 +24,28 @@
 
 namespace Prehistoric
 {
-	/*
-		TODO: the scene will have a function later on, but it is just some legacy code right now
-	*/
 	class Scene
 	{
 	public:
-		Scene(const std::string& name, GameObject* root, Window* window, Camera* camera, AssembledAssetManager* manager) 
-			: name(name), root(root), window(window), camera(camera), manager(manager) {}
-		virtual ~Scene() {}
+		Scene(const std::string& worldFile, Window* window, Camera* camera, AssembledAssetManager* manager);
+		virtual ~Scene();
 
 		std::string getName() const { return name; }
-		GameObject* getSceneRoot() const { return root; }
-
-		Scene(const Scene&) = default;
+		GameObject* getSceneRoot() const { return sceneRoot; }
 	protected:
 		std::string name = "";
 		
-		GameObject* root;
+		GameObject* sceneRoot;
 		Window* window;
 		Camera* camera;
 		AssembledAssetManager* manager;
+
+		std::vector<TextureHandle> textures;
+		std::vector<MaterialHandle> materials;
+
+		std::vector<VertexBufferHandle> models;
+		std::vector<ShaderHandle> shaders;
+		std::vector<PipelineHandle> pipelines;
 	};
 };
 

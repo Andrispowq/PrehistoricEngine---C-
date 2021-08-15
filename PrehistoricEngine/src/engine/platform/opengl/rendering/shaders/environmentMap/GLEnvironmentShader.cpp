@@ -15,7 +15,6 @@ namespace Prehistoric
 
 		AddUniform("environmentMap");
 		AddUniform("lod");
-		AddUniform("threshold");
 	}
 
 	void GLEnvironmentShader::UpdateUniforms(const Matrix4f& projection, const Matrix4f& view, Texture* texture, float lod) const
@@ -26,6 +25,5 @@ namespace Prehistoric
 		texture->Bind(0);
 		SetUniformi("environmentMap", 0);
 		SetUniformf("lod", lod);
-		SetUniformf("threshold", 1.0f);
 	}
 };

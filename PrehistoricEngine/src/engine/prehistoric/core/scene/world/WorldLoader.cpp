@@ -28,6 +28,14 @@ namespace Prehistoric
 					continue;
 
 				//Setting the directories which we'll be using to load models and textures from
+				if (nameTokens[0] == "world")
+				{
+					if (nameTokens[1] == "name")
+					{
+						sceneName = tokens[1];
+					}
+				}
+
 				if (nameTokens[0] == "directories")
 				{
 					if (nameTokens[1] == "models")
@@ -172,7 +180,7 @@ namespace Prehistoric
 				}
 
 				//Creating GameObjects
-				if (nameTokens[0] == "world")
+				if (nameTokens[0] == "root")
 				{
 					if (nameTokens[1] == "object")
 					{

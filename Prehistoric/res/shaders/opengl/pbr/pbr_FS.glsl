@@ -180,7 +180,7 @@ void main()
     vec3 specular = prefilteredColour * (F * envBRDF.x + envBRDF.y);
 
     vec3 ambient = (kD * diffuse + specular) * occlusion;
-    vec3 colour = ambient + Lo + max(albedoColour * emission * emissionFactor, 0.0);
+    vec3 colour = ambient + Lo + max(clamp(albedoColour, vec3(0.05), vec3(1.0)) * emission * emissionFactor, 0.0);
 
 	if (isnan(colour.r))
 	{

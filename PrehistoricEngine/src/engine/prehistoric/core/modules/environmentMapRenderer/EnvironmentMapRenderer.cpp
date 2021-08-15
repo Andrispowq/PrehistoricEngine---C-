@@ -156,7 +156,6 @@ namespace Prehistoric
 			}
 			else
 			{
-
 				environmentMap = man->storeTexture(GLTexture::Storage3D(size, size, 1, R8G8B8A8_LINEAR, Trilinear, ClampToEdge, true));
 			}
 

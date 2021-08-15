@@ -32,7 +32,10 @@ namespace Prehistoric
 		virtual ~WorldLoader() {}
 
 		void LoadWorld(const std::string& worldFile, GameObject* root, Window* window, AssembledAssetManager* manager);
-	private:
+
+	public:
+		std::string sceneName;
+
 		std::string directoryModels;
 		std::string directoryTextures;
 
