@@ -277,14 +277,19 @@ namespace Prehistoric
 			for (auto pipeline : models_3d)
 			{
 				Pipeline* pl = pipeline.first;
-				static_cast<GLGraphicsPipeline*>(pl)->getVertexBuffer()->Bind(nullptr);
+				VertexBuffer* vbo = static_cast<GLGraphicsPipeline*>(pl)->getVertexBuffer();
+				vbo->Bind(nullptr);
 
 				for (auto material : pipeline.second)
 				{
 					for (auto renderer : material.second)
 					{
 						depthShader->UpdateObjectUniforms(renderer->getParent());
-						pl->RenderPipeline();
+
+						for (uint32_t i = 0; i < vbo->getSubmeshCount(); i++)
+						{
+							vbo->Draw(nullptr, i);
+						}
 					}
 				}
 
@@ -295,14 +300,19 @@ namespace Prehistoric
 			for (auto pipeline : models_transparency)
 			{
 				Pipeline* pl = pipeline.first;
-				static_cast<GLGraphicsPipeline*>(pl)->getVertexBuffer()->Bind(nullptr);
+				VertexBuffer* vbo = static_cast<GLGraphicsPipeline*>(pl)->getVertexBuffer();
+				vbo->Bind(nullptr);
 
 				for (auto material : pipeline.second)
 				{
 					for (auto renderer : material.second)
 					{
 						depthShader->UpdateObjectUniforms(renderer->getParent());
-						pl->RenderPipeline();
+
+						for (uint32_t i = 0; i < vbo->getSubmeshCount(); i++)
+						{
+							vbo->Draw(nullptr, i);
+						}
 					}
 				}
 
@@ -351,7 +361,7 @@ namespace Prehistoric
 
 				for (auto material : pipeline.second)
 				{
-					pl->getShader()->UpdateTextureUniforms(material.first, 0);
+					pl->getShader()->UpdateMaterialUniforms(material.first, 0);
 					
 					for (auto renderer : material.second)
 					{
@@ -378,7 +388,7 @@ namespace Prehistoric
 
 				for (auto material : pipeline.second)
 				{
-					pl->getShader()->UpdateTextureUniforms(material.first, 0);
+					pl->getShader()->UpdateMaterialUniforms(material.first, 0);
 
 					for (auto renderer : material.second)
 					{

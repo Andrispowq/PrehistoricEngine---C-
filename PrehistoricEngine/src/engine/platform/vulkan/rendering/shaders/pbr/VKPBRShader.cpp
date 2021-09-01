@@ -110,7 +110,7 @@ namespace Prehistoric
 		delete[] lightData;
 	}
 
-	void VKPBRShader::UpdateTextureUniforms(Material* material, uint32_t descriptor_index) const
+	void VKPBRShader::UpdateMaterialUniforms(Material* material, uint32_t descriptor_index) const
 	{
 		SetTexture(ALBEDO_MAP, material->getTexture(ALBEDO_MAP), descriptor_index);
 		SetTexture(NORMAL_MAP, material->getTexture(NORMAL_MAP), descriptor_index);

@@ -20,6 +20,7 @@ namespace Prehistoric
 			mesh.AddVertex(Vertex(Vector3f(1, -1, 0), Vector2f(1, 0), Vector3f(0, 0, -1)));
 
 			mesh.setIndices({ 0, 1, 2, 2, 3, 0 });
+			mesh.setMaterialIndex(-1);
 
 			model.AddMesh(std::move(mesh));
 

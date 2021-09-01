@@ -19,6 +19,8 @@ namespace Prehistoric
 		inline std::vector<Mesh> getMeshes() const { return meshes; }
 		inline std::vector<Material*> getMaterials() const { return materials; }
 
+		inline Mesh& getMesh(uint32_t index) { return meshes[index]; }
+
 		inline void setMeshes(const std::vector<Mesh>& meshes) { this->meshes = meshes; }
 		inline void setMaterials(const std::vector<Material*>& materials) { this->materials = materials; }
 

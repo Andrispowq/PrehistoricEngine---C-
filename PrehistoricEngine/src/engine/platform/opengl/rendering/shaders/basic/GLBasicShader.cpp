@@ -29,7 +29,7 @@ namespace Prehistoric
 		SetUniform("cameraPosition", camera->getPosition());
 	}
 
-	void GLBasicShader::UpdateTextureUniforms(Material* material, uint32_t descriptor_index) const
+	void GLBasicShader::UpdateMaterialUniforms(Material* material, uint32_t descriptor_index) const
 	{
 		material->getTexture(ALBEDO_MAP)->Bind(0);
 		SetUniformi(albedoMap, 0);

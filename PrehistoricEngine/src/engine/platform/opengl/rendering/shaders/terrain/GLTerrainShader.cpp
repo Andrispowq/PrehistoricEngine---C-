@@ -102,7 +102,7 @@ namespace Prehistoric
 		}
 	}
 
-	void GLTerrainShader::UpdateTextureUniforms(Material* material, uint32_t descriptor_index) const
+	void GLTerrainShader::UpdateMaterialUniforms(Material* material, uint32_t descriptor_index) const
 	{
 		TerrainConfig::heightmap->Bind(3);
 		SetUniformi("heightmap", 3);

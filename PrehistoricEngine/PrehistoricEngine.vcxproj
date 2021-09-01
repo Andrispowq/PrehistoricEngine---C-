@@ -409,6 +409,7 @@
     <ClCompile Include="src\engine\prehistoric\core\layers\Layer.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\layers\LayerStack.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\model\Mesh.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\model\Model.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\model\Transform.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\model\Vertex.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\model\material\Material.cpp" />

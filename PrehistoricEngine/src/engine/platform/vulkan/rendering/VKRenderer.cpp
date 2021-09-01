@@ -160,7 +160,7 @@ namespace Prehistoric
 
 			for (auto material : pipeline.second)
 			{
-				pl->getShader()->UpdateTextureUniforms(material.first, (uint32_t)matIdx++);
+				pl->getShader()->UpdateMaterialUniforms(material.first, (uint32_t)matIdx++);
 
 				for (size_t i = 0; i < material.second.size(); i++)
 				{
@@ -177,7 +177,7 @@ namespace Prehistoric
 
 			for (auto material : pipeline.second)
 			{
-				pl->getShader()->UpdateTextureUniforms(material.first, (uint32_t)matIdx++);
+				pl->getShader()->UpdateMaterialUniforms(material.first, (uint32_t)matIdx++);
 
 				for (size_t i = 0; i < material.second.size(); i++)
 				{

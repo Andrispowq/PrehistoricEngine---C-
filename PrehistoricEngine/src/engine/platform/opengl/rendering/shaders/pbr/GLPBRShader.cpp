@@ -54,7 +54,7 @@ namespace Prehistoric
 		SetUniformf("max_reflection_lod", EnvironmentMapConfig::prefilterLevels - 1.0f);
 	}
 
-	void GLPBRShader::UpdateTextureUniforms(Material* material, uint32_t descriptor_index) const
+	void GLPBRShader::UpdateMaterialUniforms(Material* material, uint32_t descriptor_index) const
 	{
 		material->getTexture(ALBEDO_MAP)->Bind(0);
 		SetUniformi(albedoMap, 0);
@@ -62,17 +62,15 @@ namespace Prehistoric
 		SetUniformi(normalMap, 1);
 		material->getTexture(MROT_MAP)->Bind(2);
 		SetUniformi(mrotMap, 2);
-	}
-
-	void GLPBRShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const
-	{
-		SetUniform(m_transform, object->getWorldTransform().getTransformationMatrix());
-
-		Material* material = static_cast<RendererComponent*>(object->GetComponent(RENDERER_COMPONENT))->getMaterial();
 
 		SetUniform(colour, material->getVector3f(COLOUR));
 		SetUniformi(usesNormalMap, material->exists(NORMAL_MAP));
 		SetUniform(mrot, material->getVector4f(MROT));
 		SetUniformf(emission, material->getFloat(EMISSION));
+	}
+
+	void GLPBRShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const
+	{
+		SetUniform(m_transform, object->getWorldTransform().getTransformationMatrix());
 	}
 };

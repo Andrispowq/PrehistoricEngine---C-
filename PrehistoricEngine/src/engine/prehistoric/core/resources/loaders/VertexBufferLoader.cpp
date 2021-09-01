@@ -44,7 +44,12 @@ namespace Prehistoric
             }
             else
             {
-                Model model = loader.LoadModel(path, "", "");
+                size_t last_slash = path.find_last_of('/');
+
+                std::string _path = path.substr(0, last_slash);
+                std::string _obj = path.substr(last_slash + 1, path.length() - last_slash - 1);
+
+                Model model = loader.LoadModel(_path, _obj, "");
                 if (FrameworkConfig::api == OpenGL)
                 {
                     ret = new GLMeshVertexBuffer(window, model);

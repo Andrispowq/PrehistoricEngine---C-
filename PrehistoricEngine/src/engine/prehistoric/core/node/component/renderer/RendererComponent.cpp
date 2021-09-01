@@ -49,7 +49,7 @@ namespace Prehistoric
 	{
 		pipeline->BindPipeline(renderer->getDrawCommandBuffer());
 		pipeline->getShader()->UpdateGlobalUniforms(renderer->getCamera(), renderer->getLights());
-		pipeline->getShader()->UpdateTextureUniforms(material.pointer, 0);
+		pipeline->getShader()->UpdateMaterialUniforms(material.pointer, 0);
 		pipeline->getShader()->UpdateObjectUniforms(parent);
 
 		pipeline->RenderPipeline();

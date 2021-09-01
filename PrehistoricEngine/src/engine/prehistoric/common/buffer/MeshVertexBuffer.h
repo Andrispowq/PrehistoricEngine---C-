@@ -18,6 +18,8 @@ namespace Prehistoric
 		virtual void Bind(CommandBuffer* commandBuffer) const override = 0;
 		virtual void Draw(CommandBuffer* commandBuffer, uint32_t submesh) const = 0;
 		virtual void Unbind() const override = 0;
+
+		Model& getModel() { return model; }
 	protected:
 		Model model;
 

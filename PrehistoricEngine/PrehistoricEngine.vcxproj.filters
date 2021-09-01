@@ -1173,5 +1173,6 @@
     <ClCompile Include="src\engine\prehistoric\core\util\time\Timer.cpp">
       <Filter>prehistoric\core\util\time</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\model\Model.cpp" />
   </ItemGroup>
 </Project>

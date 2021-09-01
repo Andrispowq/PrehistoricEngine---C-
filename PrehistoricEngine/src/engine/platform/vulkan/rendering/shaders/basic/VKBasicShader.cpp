@@ -77,7 +77,7 @@ namespace Prehistoric
 		}
 	}
 
-	void VKBasicShader::UpdateTextureUniforms(Material* material, uint32_t descriptor_index) const
+	void VKBasicShader::UpdateMaterialUniforms(Material* material, uint32_t descriptor_index) const
 	{
 		SetTexture(ALBEDO_MAP, material->getTexture(ALBEDO_MAP), descriptor_index);
 		SetTexture(MROT_MAP, material->getTexture(MROT_MAP), descriptor_index);

@@ -31,7 +31,7 @@ namespace Prehistoric
 		bool CompileShader() const override;
 
 		virtual void UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const override {}
-		virtual void UpdateTextureUniforms(Material* material, uint32_t descriptor_index = 0) const override {}
+		virtual void UpdateMaterialUniforms(Material* material, uint32_t descriptor_index = 0) const override {}
 		virtual void UpdateObjectUniforms(GameObject* object, uint32_t instance_index = 0) const override {}
 
 		virtual void SetUniformi(const std::string& name, int value, size_t offset = 0, uint32_t instance_index = 0) const override { glUniform1i(getUniformLocation(name), value); }
