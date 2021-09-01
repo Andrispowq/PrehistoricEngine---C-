@@ -50,7 +50,7 @@ namespace Prehistoric
 
 		where 'pointer' is a pointer to the resource for ease of access, and 'handle' is the actual handle which helps with ref counting, creation and deletion.
 		The handle is not a transparent reference, it's an opaque handle, which is never updated, but the system will unload resources only when there are no
-		references left, this should not be a problem, since by reloading a resource, every reference to it will have been decayed
+		references left, this should not be a problem, since by reloading a resource, every reference to it will have decayed
 	
 		FUNCTIONS
 
@@ -70,7 +70,7 @@ namespace Prehistoric
 			The return type is an optional THandle struct, which will contain the loaded resource when using the Load option, will contain
 			the resource that was queued for loading last when using the Dispatch mode, or will be a nullopt, when using the QueuedLoad mode
 
-		std::vector<THandle>&& getLoadedHandles() -> this function returns all of the loaded resources of type T, except for the last one, which is returned on loadT
+		std::vector<THandle>&& getLoadedHandles() -> this function returns all of the loaded resources of type T
 
 		THandle storeT(T* t) -> this function stores one resource of type T in the registry, and returns the appropriate handle
 
@@ -86,7 +86,7 @@ namespace Prehistoric
 		~AssetManager() {}
 
 		std::optional<TextureHandle> loadTexture(const std::string& location, SamplerFilter filter = Bilinear, TextureWrapMode wrapMode = ClampToEdge, BatchSettings settings = BatchSettings::Load);
-		std::optional<VertexBufferHandle> loadVertexBuffer(std::optional<Mesh> mesh, const std::string& name, BatchSettings settings = BatchSettings::Load);
+		std::optional<VertexBufferHandle> loadVertexBuffer(std::optional<Model> mesh, const std::string& name, BatchSettings settings = BatchSettings::Load);
 		std::optional<ShaderHandle> loadShader(ShaderName type, BatchSettings settings = BatchSettings::Load);
 
 		TextureHandle storeTexture(Texture* texture, const std::string& cacheName = "");

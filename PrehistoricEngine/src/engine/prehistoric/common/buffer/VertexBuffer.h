@@ -16,15 +16,17 @@ namespace Prehistoric
 	class VertexBuffer
 	{
 	public:
-		VertexBuffer(Window* window) : window(window), size(0), indexed(false), frontFace(FrontFace::CLOCKWISE) {}
+		VertexBuffer(Window* window) : window(window), indexed(false), frontFace(FrontFace::CLOCKWISE), size(0), submeshCount(0) {}
 		virtual ~VertexBuffer() = 0;
 
 		virtual void Bind(CommandBuffer* commandBuffer) const = 0;
-		virtual void Draw(CommandBuffer* commandBuffer) const = 0;
+		virtual void Draw(CommandBuffer* commandBuffer, uint32_t submesh) const = 0;
 		virtual void Unbind() const = 0;
 
 		FrontFace getFrontFace() const { return frontFace; }
 		void setFrontFace(FrontFace frontFace) { this->frontFace = frontFace; }
+
+		uint32_t getSubmeshCount() const { return submeshCount; }
 
 		//We should avoid copying this class, because it manages some GPU resources
 		VertexBuffer(VertexBuffer&) = delete;
@@ -34,6 +36,7 @@ namespace Prehistoric
 		Window* window;
 
 		uint32_t size;
+		uint32_t submeshCount;
 		bool indexed;
 
 		FrontFace frontFace;

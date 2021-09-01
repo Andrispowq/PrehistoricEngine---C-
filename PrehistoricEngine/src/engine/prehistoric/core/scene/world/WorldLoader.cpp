@@ -5,7 +5,7 @@
 
 namespace Prehistoric
 {
-	void WorldLoader::LoadWorld(const std::string& worldFile, GameObject* root, Window* window, AssembledAssetManager* manager)
+	void WorldLoader::LoadWorld(const std::string& worldFile, GameObject* root)
 	{
 		std::ifstream file;
 		file.open(worldFile.c_str());

@@ -196,7 +196,14 @@ namespace Prehistoric
 					framebuffer->addColourAttachment3D(environmentMap.pointer, i);
 					framebuffer->Clear(0.0f);
 
-					static_cast<GLAtmosphereScatteringShader*>(pipeline->getShader())->UpdateUniforms(atmosphere, viewMatrices[i], projectionMatrix);
+					if (AtmosphereConfig::scatteringEnabled)
+					{
+						static_cast<GLAtmosphereScatteringShader*>(pipeline->getShader())->UpdateUniforms(atmosphere, viewMatrices[i], projectionMatrix);
+					}
+					else
+					{
+						static_cast<GLAtmosphereShader*>(pipeline->getShader())->UpdateUniforms(viewMatrices[i], projectionMatrix);
+					}
 					pipeline->RenderPipeline();
 				}
 				pipeline->UnbindPipeline();

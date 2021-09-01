@@ -18,11 +18,11 @@ namespace Prehistoric
 	class VKMeshVertexBuffer : public MeshVertexBuffer
 	{
 	public:
-		VKMeshVertexBuffer(Window* window, const Mesh& mesh);
+		VKMeshVertexBuffer(Window* window, const Model& model);
 		virtual ~VKMeshVertexBuffer() {}
 
 		void Bind(CommandBuffer* commandBuffer) const override;
-		void Draw(CommandBuffer* commandBuffer) const override;
+		void Draw(CommandBuffer* commandBuffer, uint32_t submesh) const override;
 		void Unbind() const override {}
 
 		VkVertexInputBindingDescription getBindingDescription() const;

@@ -31,6 +31,9 @@
     <Filter Include="platform\opengl\rendering\pipeline">
       <UniqueIdentifier>{30E5A3C1-1C21-A72B-8533-BF22718E4F46}</UniqueIdentifier>
     </Filter>
+    <Filter Include="platform\opengl\rendering\renderStage">
+      <UniqueIdentifier>{0E990C1E-7A5D-0B0E-43C3-3BD8AF46A743}</UniqueIdentifier>
+    </Filter>
     <Filter Include="platform\opengl\rendering\shaders">
       <UniqueIdentifier>{846C8E84-F0DA-E303-39C4-9E03A571D99F}</UniqueIdentifier>
     </Filter>
@@ -40,11 +43,11 @@
     <Filter Include="platform\opengl\rendering\shaders\basic">
       <UniqueIdentifier>{55BE7DEE-C14D-3FD9-CA49-20F136587AE5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="platform\opengl\rendering\shaders\deferred">
-      <UniqueIdentifier>{D4F0960F-C058-5DDD-29C4-71F3154B74C9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="platform\opengl\rendering\shaders\environmentMap">
       <UniqueIdentifier>{2645CD03-12EE-3433-3B84-50B2278C4F74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\opengl\rendering\shaders\forwardPlus">
+      <UniqueIdentifier>{0C4CC59C-78BC-C715-41DB-419EAD0A0017}</UniqueIdentifier>
     </Filter>
     <Filter Include="platform\opengl\rendering\shaders\gpgpu">
       <UniqueIdentifier>{7640E0EE-E2CF-A1D9-EBCB-82F157DADCE5}</UniqueIdentifier>
@@ -54,6 +57,9 @@
     </Filter>
     <Filter Include="platform\opengl\rendering\shaders\pbr">
       <UniqueIdentifier>{D7BD54C7-4382-53B7-0CE8-8381786BEFEC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\opengl\rendering\shaders\postProcessing">
+      <UniqueIdentifier>{1663F4C5-020C-5CF5-2BA2-777417AA7636}</UniqueIdentifier>
     </Filter>
     <Filter Include="platform\opengl\rendering\shaders\terrain">
       <UniqueIdentifier>{086CC6F7-7486-2999-BDA8-392D290251A0}</UniqueIdentifier>
@@ -162,6 +168,9 @@
     </Filter>
     <Filter Include="prehistoric\common\rendering\pipeline">
       <UniqueIdentifier>{9B7ADA24-073F-D914-D0A4-09DF3C28754A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\common\rendering\renderStage">
+      <UniqueIdentifier>{99BA718F-8537-65D2-AEB4-65E69A900166}</UniqueIdentifier>
     </Filter>
     <Filter Include="prehistoric\common\rendering\shaders">
       <UniqueIdentifier>{8F804251-7B67-0449-24B8-6A66107E7DAF}</UniqueIdentifier>
@@ -308,6 +317,9 @@
     <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLPipeline.h">
       <Filter>platform\opengl\rendering\pipeline</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLDepthPass.h">
+      <Filter>platform\opengl\rendering\renderStage</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\GLShader.h">
       <Filter>platform\opengl\rendering\shaders</Filter>
     </ClInclude>
@@ -319,9 +331,6 @@
     </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\basic\GLBasicShader.h">
       <Filter>platform\opengl\rendering\shaders\basic</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLHDRShader.h">
-      <Filter>platform\opengl\rendering\shaders\deferred</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLBRDFIntegrateShader.h">
       <Filter>platform\opengl\rendering\shaders\environmentMap</Filter>
@@ -338,6 +347,12 @@
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLPrefilterShader.h">
       <Filter>platform\opengl\rendering\shaders\environmentMap</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\forwardPlus\GLDepthPassShader.h">
+      <Filter>platform\opengl\rendering\shaders\forwardPlus</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\forwardPlus\GLLightCullingPassShader.h">
+      <Filter>platform\opengl\rendering\shaders\forwardPlus</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\gpgpu\GLNormalmapShader.h">
       <Filter>platform\opengl\rendering\shaders\gpgpu</Filter>
     </ClInclude>
@@ -352,6 +367,18 @@
     </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\pbr\GLPBRShader.h">
       <Filter>platform\opengl\rendering\shaders\pbr</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLBLoomDecomposeShader.h">
+      <Filter>platform\opengl\rendering\shaders\postProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLBloomCombineShader.h">
+      <Filter>platform\opengl\rendering\shaders\postProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLGaussianShader.h">
+      <Filter>platform\opengl\rendering\shaders\postProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLHDRShader.h">
+      <Filter>platform\opengl\rendering\shaders\postProcessing</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShader.h">
       <Filter>platform\opengl\rendering\shaders\terrain</Filter>
@@ -512,6 +539,9 @@
     <ClInclude Include="src\engine\prehistoric\common\rendering\pipeline\RayTracingPipeline.h">
       <Filter>prehistoric\common\rendering\pipeline</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\rendering\renderStage\RenderStage.h">
+      <Filter>prehistoric\common\rendering\renderStage</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\prehistoric\common\rendering\shaders\Shader.h">
       <Filter>prehistoric\common\rendering\shaders</Filter>
     </ClInclude>
@@ -596,9 +626,6 @@
     <ClInclude Include="src\engine\prehistoric\core\model\obj\OBJLoader.h">
       <Filter>prehistoric\core\model\obj</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\model\obj\Shape.h">
-      <Filter>prehistoric\core\model\obj</Filter>
-    </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\modules\atmosphere\Atmosphere.h">
       <Filter>prehistoric\core\modules\atmosphere</Filter>
     </ClInclude>
@@ -659,6 +686,12 @@
     <ClInclude Include="src\engine\prehistoric\core\node\movement\Camera.h">
       <Filter>prehistoric\core\node\movement</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\node\movement\EditorCamera.h">
+      <Filter>prehistoric\core\node\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\node\movement\FPSCamera.h">
+      <Filter>prehistoric\core\node\movement</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\resources\AssembledAssetManager.h">
       <Filter>prehistoric\core\resources</Filter>
     </ClInclude>
@@ -716,15 +749,7 @@
     <ClInclude Include="src\engine\prehistoric\core\util\time\Timer.h">
       <Filter>prehistoric\core\util\time</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\common\rendering\renderStage\RenderStage.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\forwardPlus\GLDepthPassShader.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\forwardPlus\GLLightCullingPassShader.h" />
-    <ClInclude Include="src\engine\prehistoric\core\node\movement\FPSCamera.h" />
-    <ClInclude Include="src\engine\prehistoric\core\node\movement\EditorCamera.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLDepthPass.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLGaussianShader.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLBloomCombineShader.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLBLoomDecomposeShader.h" />
+    <ClInclude Include="src\engine\prehistoric\core\model\Model.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -761,6 +786,9 @@
     <ClCompile Include="src\engine\platform\opengl\rendering\pipeline\GLPipeline.cpp">
       <Filter>platform\opengl\rendering\pipeline</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLDepthPass.cpp">
+      <Filter>platform\opengl\rendering\renderStage</Filter>
+    </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\GLShader.cpp">
       <Filter>platform\opengl\rendering\shaders</Filter>
     </ClCompile>
@@ -772,9 +800,6 @@
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\basic\GLBasicShader.cpp">
       <Filter>platform\opengl\rendering\shaders\basic</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLHDRShader.cpp">
-      <Filter>platform\opengl\rendering\shaders\deferred</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLBRDFIntegrateShader.cpp">
       <Filter>platform\opengl\rendering\shaders\environmentMap</Filter>
@@ -791,6 +816,12 @@
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLPrefilterShader.cpp">
       <Filter>platform\opengl\rendering\shaders\environmentMap</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\forwardPlus\GLDepthPassShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\forwardPlus</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\forwardPlus\GLLightCullingPassShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\forwardPlus</Filter>
+    </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\gpgpu\GLNormalmapShader.cpp">
       <Filter>platform\opengl\rendering\shaders\gpgpu</Filter>
     </ClCompile>
@@ -805,6 +836,18 @@
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\pbr\GLPBRShader.cpp">
       <Filter>platform\opengl\rendering\shaders\pbr</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLBLoomDecomposeShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\postProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLBloomCombineShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\postProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLGaussianShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\postProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLHDRShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\postProcessing</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShader.cpp">
       <Filter>platform\opengl\rendering\shaders\terrain</Filter>
@@ -956,6 +999,9 @@
     <ClCompile Include="src\engine\prehistoric\common\rendering\pipeline\RayTracingPipeline.cpp">
       <Filter>prehistoric\common\rendering\pipeline</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\common\rendering\renderStage\RenderStage.cpp">
+      <Filter>prehistoric\common\rendering\renderStage</Filter>
+    </ClCompile>
     <ClCompile Include="src\engine\prehistoric\common\rendering\shaders\Shader.cpp">
       <Filter>prehistoric\common\rendering\shaders</Filter>
     </ClCompile>
@@ -1079,6 +1125,12 @@
     <ClCompile Include="src\engine\prehistoric\core\node\movement\Camera.cpp">
       <Filter>prehistoric\core\node\movement</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\node\movement\EditorCamera.cpp">
+      <Filter>prehistoric\core\node\movement</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\node\movement\FPSCamera.cpp">
+      <Filter>prehistoric\core\node\movement</Filter>
+    </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\resources\AssembledAssetManager.cpp">
       <Filter>prehistoric\core\resources</Filter>
     </ClCompile>
@@ -1121,14 +1173,5 @@
     <ClCompile Include="src\engine\prehistoric\core\util\time\Timer.cpp">
       <Filter>prehistoric\core\util\time</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\forwardPlus\GLDepthPassShader.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\forwardPlus\GLLightCullingPassShader.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\node\movement\FPSCamera.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\node\movement\EditorCamera.cpp" />
-    <ClCompile Include="src\engine\prehistoric\common\rendering\renderStage\RenderStage.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLDepthPass.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLGaussianShader.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLBloomCombineShader.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLBLoomDecomposeShader.cpp" />
   </ItemGroup>
 </Project>

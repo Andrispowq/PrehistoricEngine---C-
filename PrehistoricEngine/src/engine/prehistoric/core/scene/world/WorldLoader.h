@@ -28,10 +28,11 @@ namespace Prehistoric
 	class WorldLoader
 	{
 	public:
-		WorldLoader() {}
+		WorldLoader(Window* window, AssembledAssetManager* manager) 
+			: window(window), manager(manager) {}
 		virtual ~WorldLoader() {}
 
-		void LoadWorld(const std::string& worldFile, GameObject* root, Window* window, AssembledAssetManager* manager);
+		void LoadWorld(const std::string& worldFile, GameObject* root);
 
 	public:
 		std::string sceneName;
@@ -49,6 +50,10 @@ namespace Prehistoric
 		std::vector<FrontFace> frontFaces;
 		std::unordered_map<std::string, ShaderHandle> shaders;
 		std::unordered_map<std::string, PipelineHandle> pipelines;
+
+	private:
+		Window* window;
+		AssembledAssetManager* manager;
 	};
 };
 

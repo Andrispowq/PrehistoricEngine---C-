@@ -55,7 +55,7 @@ PrehistoricApp::PrehistoricApp()
 			EnvironmentMapRenderer::instance = new EnvironmentMapRenderer(engineLayer->getRenderingEngine()->getWindow(), engineLayer->getAssetManager());
 		}
 
-		EnvironmentMapRenderer::instance->atmosphere = (Atmosphere*)sceneRoot->getChild("atmosphere");
+		//EnvironmentMapRenderer::instance->atmosphere = (Atmosphere*)sceneRoot->getChild("atmosphere");
 
 		{
 			PR_PROFILE("Environment map generation - Cubemap, Irradiance, Prefilter map");
@@ -73,7 +73,8 @@ PrehistoricApp::PrehistoricApp()
 		slider3->SetScale({ 0.125f, 0.05f, 1 });
 		sceneRoot->AddChild("slider3", slider3);
 
-		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "sphereModel").value();
+		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/sponza.obj").value();
+		vbo->setFrontFace(FrontFace::DOUBLE_SIDED);
 		ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
 		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
 
@@ -86,17 +87,17 @@ PrehistoricApp::PrehistoricApp()
 		material->addVector4f(MROT, { 1.0f, 0.3f, 1.0f, 0.0f });
 
 		GameObject* obj = new GameObject;
-		obj->SetPosition({ 0, 200, 0 });
-		obj->SetScale({ 10, 10, 10 });
+		obj->SetPosition({ 0, -50, 0 });
+		obj->SetScale({ 1, 1, 1 });
 		obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, material));
 		sceneRoot->AddChild("someobj", obj);
 
-		GameObject* obj2 = new GameObject;
+		/*GameObject* obj2 = new GameObject;
 		obj2->SetPosition({ -50, 10, 0 });
 		obj2->SetScale({ 1, 1, 1 });
 		obj2->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, material));
 
-		sceneRoot->AddChild("someobj2", obj2);
+		sceneRoot->AddChild("someobj2", obj2);*/
 	}
 }
 

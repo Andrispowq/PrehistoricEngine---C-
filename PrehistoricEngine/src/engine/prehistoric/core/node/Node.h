@@ -25,7 +25,8 @@ namespace Prehistoric
         inline Transform& getWorldTransform() { return worldTransform; }
 
         inline Node* getChild(const std::string& key) const { return children.at(key).get(); }
-        void deleteChild(Node* node);
+        inline Node* getParent() { return parent; }
+        void RemoveChild(Node* node);
 
         inline void Move(const Vector3f& d) { worldTransform.setPosition(worldTransform.getPosition() + d); }
         inline void Rotate(const Vector3f& d) { worldTransform.setRotation(worldTransform.getRotation() + d); }

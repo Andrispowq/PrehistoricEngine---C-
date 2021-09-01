@@ -8,6 +8,8 @@
 #include "platform/opengl/rendering/framebuffer/GLFramebuffer.h"
 #include "platform/opengl/buffer/GLShaderStorageBuffer.h"
 
+#include "prehistoric/core/resources/AssembledAssetManager.h"
+
 namespace Prehistoric
 {
 	class GLRenderer : public Renderer
@@ -21,7 +23,7 @@ namespace Prehistoric
 
 		virtual void Render() override;
 
-		virtual Texture* getOutputTexture() const override { return outputImage; }
+		virtual Texture* getOutputTexture() const override { return outputImage.pointer; }
 
 	private:
 		void UpdateLightBuffer();
@@ -36,14 +38,14 @@ namespace Prehistoric
 		std::unique_ptr<GLShaderStorageBuffer> lightBuffer;
 		std::unique_ptr<GLShaderStorageBuffer> visibleLightIndicesBuffer;
 
-		Texture* depthImage;
-		Texture* colourImage;
-		Texture* bloomImage;
-		Texture* combinedImage;
-		Texture* outputImage;
+		TextureHandle depthImage;
+		TextureHandle colourImage;
+		TextureHandle bloomImage;
+		TextureHandle combinedImage;
+		TextureHandle outputImage;
 
-		Texture* temporaryImages[8];
-		Texture* bloomImages[8];
+		TextureHandle temporaryImages[8];
+		TextureHandle bloomImages[8];
 
 		ShaderHandle depthShader;
 		ShaderHandle lightCullingShader;
@@ -55,12 +57,12 @@ namespace Prehistoric
 
 		VertexBufferHandle quad;
 
-		Pipeline* lightCullingPipeline;
-		Pipeline* decomposePipeline;
-		Pipeline* gaussianPipeline;
-		Pipeline* bloomCombinePipeline;
-		Pipeline* hdrPipeline;
-		Pipeline* renderPipeline;
+		PipelineHandle lightCullingPipeline;
+		PipelineHandle decomposePipeline;
+		PipelineHandle gaussianPipeline;
+		PipelineHandle bloomCombinePipeline;
+		PipelineHandle hdrPipeline;
+		PipelineHandle renderPipeline;
 	};
 };
 

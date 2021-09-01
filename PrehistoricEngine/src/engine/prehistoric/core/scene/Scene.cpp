@@ -8,8 +8,8 @@ namespace Prehistoric
 	{
 		sceneRoot = new GameObject();
 
-		WorldLoader loader;
-		loader.LoadWorld(worldFile, sceneRoot, window, manager);
+		WorldLoader loader(window, manager);
+		loader.LoadWorld(worldFile, sceneRoot);
 
 		name = loader.sceneName;
 
@@ -43,6 +43,10 @@ namespace Prehistoric
 
 	Scene::~Scene()
 	{
-		//delete sceneRoot;
+		Node* root = sceneRoot->getParent();
+		if (root)
+		{
+			root->RemoveChild(sceneRoot);
+		}
 	}
 };

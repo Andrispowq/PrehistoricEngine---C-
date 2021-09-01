@@ -170,7 +170,7 @@ void main()
         vec3 specular = numerator / max(denominator, 0.001);
 
         float NdotL = max(dot(N, L), 0);
-        Lo += (kD * albedoColour / PI) * radiance * NdotL;
+        Lo += (kD * albedoColour / PI + specular) * radiance * NdotL;
     }
 
     vec3 F = FresnelSchlickRoughness(max(dot(N, V), 0), F0, roughness);

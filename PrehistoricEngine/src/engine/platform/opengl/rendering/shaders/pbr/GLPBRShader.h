@@ -31,7 +31,6 @@ namespace Prehistoric
 		int albedoMap;
 		int normalMap;
 		int mrotMap;
-		int emissionMap;
 
 		int colour;
 		int usesNormalMap;

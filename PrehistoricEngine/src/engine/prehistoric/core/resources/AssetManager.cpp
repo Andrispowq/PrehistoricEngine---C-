@@ -29,7 +29,7 @@ namespace Prehistoric
 		shaders.reserve(ShadersSize);
 
 		textureLoader = new TextureLoader(window);
-		vertexBufferLoader = new VertexBufferLoader(window);
+		vertexBufferLoader = new VertexBufferLoader(window, this);
 		shaderLoader = new ShaderLoader(window);
 	}
 
@@ -75,7 +75,7 @@ namespace Prehistoric
 		return handle;
 	}
 
-	std::optional<VertexBufferHandle> AssetManager::loadVertexBuffer(std::optional<Mesh> mesh, const std::string& name, BatchSettings settings)
+	std::optional<VertexBufferHandle> AssetManager::loadVertexBuffer(std::optional<Model> mesh, const std::string& name, BatchSettings settings)
 	{
 		if (settings == BatchSettings::QueuedLoad)
 		{

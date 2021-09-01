@@ -47,7 +47,7 @@ namespace Prehistoric
 		glEnableVertexAttribArray(0);
 	}
 
-	void GLPatchVertexBuffer::Draw(CommandBuffer* commandBuffer) const
+	void GLPatchVertexBuffer::Draw(CommandBuffer* commandBuffer, uint32_t submesh) const
 	{
 		RenderingEngine::getStats().drawcalls += 1;
 		RenderingEngine::getStats().vertexCount += vertexCount;

@@ -1,16 +1,26 @@
 #include "Includes.hpp"
 #include "VertexBufferLoader.h"
 
+#include "prehistoric/core/resources/AssetManager.h"
+
 namespace Prehistoric
 {
-    static Mesh meshes[NUM_THREADS];
+    static Model meshes[NUM_THREADS];
+
+    static OBJLoader loader;
 
     static void load_meshes(size_t start, size_t count, std::string locations[])
     {
         for (size_t i = start; i < (start + count); i++)
         {
-            meshes[i] = OBJLoader::LoadMesh(locations[i], "", "");
+            meshes[i] = std::move(loader.LoadModel(locations[i], "", "")); //TODO
         }
+    }
+
+    VertexBufferLoader::VertexBufferLoader(Window* window, AssetManager* manager)
+        : Loader(window), manager(manager)
+    {
+        loader = OBJLoader(window, manager);
     }
 
     void* VertexBufferLoader::LoadResourceInternal(const std::string& path, Extra* extra)
@@ -34,14 +44,14 @@ namespace Prehistoric
             }
             else
             {
-                Mesh mesh = OBJLoader::LoadMesh(path, "", "");
+                Model model = loader.LoadModel(path, "", "");
                 if (FrameworkConfig::api == OpenGL)
                 {
-                    ret = new GLMeshVertexBuffer(window, mesh);
+                    ret = new GLMeshVertexBuffer(window, model);
                 }
                 else
                 {
-                    ret = new VKMeshVertexBuffer(window, mesh);
+                    ret = new VKMeshVertexBuffer(window, model);
                 }
             }
 
@@ -111,9 +121,8 @@ namespace Prehistoric
 		threads.clear();
 	}
 
-    Mesh VertexBufferLoader::LoadMesh(const std::string& path)
+    Model VertexBufferLoader::LoadModel(const std::string& path)
     {
-        Mesh mesh = OBJLoader::LoadMesh(path, "", "");
-        return mesh;
+        return loader.LoadModel(path, "", "");
     }
 };

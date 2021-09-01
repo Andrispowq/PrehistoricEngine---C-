@@ -12,7 +12,6 @@ struct Material
 	sampler2D albedoMap;
 	sampler2D normalMap;
 	sampler2D mrotMap;
-	sampler2D emissionMap;
 	
 	vec3 colour;
 	int usesNormalMap;
@@ -99,11 +98,6 @@ void main()
 	float metallic = mrot.r;
 	float roughness = mrot.g;
 	float occlusion = mrot.b;
-
-	if (emission == -1)
-	{
-		emission = texture(material.emissionMap, texture_FS).r;
-	}
 
 	float dist = length(cameraPosition - position_FS);
 	vec3 normal = normalize(normal_FS);	

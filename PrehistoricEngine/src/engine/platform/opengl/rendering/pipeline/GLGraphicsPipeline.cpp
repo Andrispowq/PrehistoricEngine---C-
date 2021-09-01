@@ -49,7 +49,10 @@ namespace Prehistoric
 			state_culling = NO_CULL;
 		}
 
-		vbo->Draw(buffer);
+		for (uint32_t i = 0; i < vbo->getSubmeshCount(); i++)
+		{
+			vbo->Draw(buffer, i);
+		}
 	}
 
 	void GLGraphicsPipeline::UnbindPipeline() const

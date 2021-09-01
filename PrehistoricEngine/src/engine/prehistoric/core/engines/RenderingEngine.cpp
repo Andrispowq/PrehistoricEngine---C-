@@ -14,6 +14,8 @@ namespace Prehistoric
 {
 	Statistics RenderingEngine::statistics;
 
+	bool bloomEnabled = true;
+
 	RenderingEngine::RenderingEngine()
 		: window(nullptr), camera(nullptr), renderer(nullptr)
 	{
@@ -89,16 +91,7 @@ namespace Prehistoric
 
 		if (InputInstance.IsKeyPushed(PR_KEY_K))
 		{
-			GameObject* laser = (GameObject*)Application::Get().getEngineLayer()->getRootObject()->getChild("scene0")->getChild("sabre");
-
-			if (laser->isEnabled())
-			{
-				laser->setEnabled(false);
-			}
-			else
-			{
-				laser->setEnabled(true);
-			}
+			bloomEnabled = !bloomEnabled;
 		}
 	}
 

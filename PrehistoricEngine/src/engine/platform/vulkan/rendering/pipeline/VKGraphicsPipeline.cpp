@@ -29,7 +29,10 @@ namespace Prehistoric
 	{
 		VKPipeline::RenderPipeline();
 
-		vbo->Draw(buffer);
+		for (uint32_t i = 0; i < vbo->getSubmeshCount(); i++)
+		{
+			vbo->Draw(buffer, i);
+		}
 	}
 
 	void VKGraphicsPipeline::UnbindPipeline() const

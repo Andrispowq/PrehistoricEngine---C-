@@ -42,7 +42,7 @@ namespace Prehistoric
         return this;
     }
 
-    void Node::deleteChild(Node* node)
+    void Node::RemoveChild(Node* node)
     {
         for (auto& entry : children)
         {

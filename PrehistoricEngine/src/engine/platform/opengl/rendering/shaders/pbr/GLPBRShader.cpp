@@ -21,7 +21,6 @@ namespace Prehistoric
 		albedoMap = glGetUniformLocation(program, (std::string("material.") + ALBEDO_MAP).c_str());
 		normalMap = glGetUniformLocation(program, (std::string("material.") + NORMAL_MAP).c_str());
 		mrotMap = glGetUniformLocation(program, (std::string("material.") + MROT_MAP).c_str());
-		emissionMap = glGetUniformLocation(program, (std::string("material.") + EMISSION_MAP).c_str());
 
 		colour = glGetUniformLocation(program, (std::string("material.") + COLOUR).c_str());
 		usesNormalMap = glGetUniformLocation(program, (std::string("material.") + USES_NORMAL_MAP).c_str());
@@ -34,7 +33,6 @@ namespace Prehistoric
 
 		AddUniform("numberOfTilesX");
 		AddUniform("max_reflection_lod");
-		AddUniform("threshold");
 	}
 
 	void GLPBRShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
@@ -54,7 +52,6 @@ namespace Prehistoric
 		//TODO: This is ugly!!!! 
 		SetUniformi("numberOfTilesX", FrameworkConfig::windowWidth / 16);
 		SetUniformf("max_reflection_lod", EnvironmentMapConfig::prefilterLevels - 1.0f);
-		SetUniformf("threshold", 1.0f);
 	}
 
 	void GLPBRShader::UpdateTextureUniforms(Material* material, uint32_t descriptor_index) const
@@ -65,8 +62,6 @@ namespace Prehistoric
 		SetUniformi(normalMap, 1);
 		material->getTexture(MROT_MAP)->Bind(2);
 		SetUniformi(mrotMap, 2);
-		material->getTexture(EMISSION_MAP)->Bind(3);
-		SetUniformi(emissionMap, 3);
 	}
 
 	void GLPBRShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const
