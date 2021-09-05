@@ -351,7 +351,7 @@ namespace Prehistoric
 
 			for (auto pipeline : models_3d)
 			{
-				Pipeline* pl = pipeline.first;
+ 				Pipeline* pl = pipeline.first;
 
 				pl->BindPipeline(nullptr);
 				pl->getShader()->UpdateGlobalUniforms(camera, lights);
@@ -362,7 +362,7 @@ namespace Prehistoric
 				for (auto material : pipeline.second)
 				{
 					pl->getShader()->UpdateMaterialUniforms(material.first, 0);
-					
+
 					for (auto renderer : material.second)
 					{
 						renderer->BatchRender();

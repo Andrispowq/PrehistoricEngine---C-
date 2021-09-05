@@ -74,7 +74,7 @@ PrehistoricApp::PrehistoricApp()
 		sceneRoot->AddChild("slider3", slider3);
 
 		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/sponza.obj").value();
-		vbo->setFrontFace(FrontFace::DOUBLE_SIDED);
+		vbo->setFrontFace(FrontFace::COUNTER_CLOCKWISE);
 		ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
 		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
 

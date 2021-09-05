@@ -52,7 +52,7 @@ Vector3f Vector3f::reflect(const Vector3f& normal) const
 
 Vector3f Vector3f::refract(const Vector3f& normal, const float& eta) const
 {
-	float k = 1 - std::pow(eta, 2) * (1 - std::pow(this->dot(normal), 2));
+	float k = (float)(1 - std::pow(eta, 2) * (1 - std::pow(this->dot(normal), 2)));
 
 	if (k < 0)
 		return Vector3f(0);

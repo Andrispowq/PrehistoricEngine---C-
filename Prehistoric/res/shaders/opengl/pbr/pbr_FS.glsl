@@ -181,7 +181,7 @@ void main()
 		colour = vec3(0.0);
 	}
 	
-	outColour = vec4(colour, 1);
+	outColour = vec4(albedoColour, 1);
 }
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)

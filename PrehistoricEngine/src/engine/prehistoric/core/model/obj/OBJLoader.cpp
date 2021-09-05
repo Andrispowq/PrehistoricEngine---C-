@@ -18,7 +18,13 @@ namespace Prehistoric
 
 		tinyobj::ObjReader reader;
 
-		if (!reader.ParseFromFile(path + '/' + objectFile, config))
+		std::string fullPath = path;
+		if (!objectFile.empty())
+		{
+			fullPath += ('/' + objectFile);
+		}
+
+		if (!reader.ParseFromFile(fullPath, config))
 		{
 			if (!reader.Error().empty()) 
 			{
@@ -40,96 +46,22 @@ namespace Prehistoric
 		Model model;
 
 		//Add materials
+		size_t index = 0;
 		for (const auto& material : materials)
 		{
 			Material* new_mat = new Material(manager);
 
-			if(!material.diffuse_texname.empty()) new_mat->addTexture(ALBEDO_MAP, manager->loadTexture("res/textures/" + material.diffuse_texname).value());
-			if(!material.normal_texname.empty()) new_mat->addTexture(NORMAL_MAP, manager->loadTexture("res/textures/" + material.normal_texname).value());
+			if(!material.diffuse_texname.empty()) new_mat->addTexture(ALBEDO_MAP, manager->loadTexture("res/textures/" + material.diffuse_texname, Anisotropic, Repeat).value());
+			if(!material.normal_texname.empty()) new_mat->addTexture(NORMAL_MAP, manager->loadTexture("res/textures/" + material.normal_texname, Anisotropic, Repeat).value());
 
 			if(material.diffuse_texname.empty()) new_mat->addVector3f(COLOUR, { material.diffuse[0], material.diffuse[1], material.diffuse[2] });
-			new_mat->addVector4f(MROT, { material.metallic, material.roughness, 1, -1 });
+			new_mat->addVector4f(MROT, { /*material.metallic*/ 0, /*material.roughness*/ 1, 1, -1 });
 			new_mat->addFloat(EMISSION, 0.0f);
 
 			model.AddMaterial(new_mat);
 		}
 
 		//Add meshes
-		/*for (size_t s = 0; s < shapes.size(); s++)
-		{
-			Mesh mesh;
-
-			std::vector<Vertex> vertices;
-			std::vector<uint32_t> indices;
-
-			size_t face_verts = shapes[s].mesh.num_face_vertices.size();
-			vertices.reserve(face_verts);
-
-			size_t index_offset = 0;
-			size_t id = 0;
-			int matIdx = 0;
-			for (size_t f = 0; f < face_verts; f++)
-			{
-				size_t fv = size_t(shapes[s].mesh.num_face_vertices[f]);
-
-				// Loop over vertices in the face.
-				for (size_t v = 0; v < fv; v++) 
-				{
-					Vertex vertex{};
-
-					tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
-
-					vertex.setPosition({ attrib.vertices[3 * size_t(idx.vertex_index) + 0],
-							attrib.vertices[3 * size_t(idx.vertex_index) + 1],
-							attrib.vertices[3 * size_t(idx.vertex_index) + 2] });
-
-					if (idx.normal_index >= 0)
-					{
-						vertex.setNormal({ attrib.normals[3 * size_t(idx.normal_index) + 0],
-							attrib.normals[3 * size_t(idx.normal_index) + 1],
-							attrib.normals[3 * size_t(idx.normal_index) + 2] });
-					}
-
-					if (idx.texcoord_index >= 0) 
-					{
-						vertex.setTexture({ attrib.texcoords[3 * size_t(idx.texcoord_index) + 0],
-							attrib.texcoords[3 * size_t(idx.texcoord_index) + 1] });
-					}
-
-					vertices.push_back(std::move(vertex));
-					indices.push_back(id++);
-				}
-
-				index_offset += fv;
-
-				matIdx = shapes[s].mesh.material_ids[f];
-			}
-
-			for (size_t i = 0; i < indices.size() / 3; i++)
-			{
-				uint32_t i0 = indices[i * 3 + 0];
-				uint32_t i1 = indices[i * 3 + 1];
-				uint32_t i2 = indices[i * 3 + 2];
-
-				Vertex& v0 = vertices[i0];
-				Vertex& v1 = vertices[i1];
-				Vertex& v2 = vertices[i2];
-
-				CalculateTangents(v0, v1, v2);
-			}
-
-			for (auto& vert : vertices)
-			{
-				vert.averageTangents();
-			}
-
-			mesh.setVertices(std::move(vertices));
-			mesh.setIndices(std::move(indices));
-			mesh.setMaterialIndex(matIdx);
-
-			model.AddMesh(std::move(mesh));
-		}*/
-
 		for (const auto& shape : shapes) 
 		{
 			Mesh mesh;
@@ -137,41 +69,78 @@ namespace Prehistoric
 			std::vector<Vertex> vertices;
 			std::vector<uint32_t> indices;
 
+			std::vector<uint64_t> vertexCache;
+
 			size_t face_verts = shape.mesh.num_face_vertices.size();
 			vertices.reserve(face_verts);
 
-			uint32_t id = 0;
+			size_t vertCacheSize = 0;
 			int matIdx = shape.mesh.material_ids[0];
 			for (const auto& index : shape.mesh.indices)
 			{
-				Vertex vertex{};
+				int vertex_index = index.vertex_index;
+				int texture_index = index.texcoord_index;
+				int normal_index = index.normal_index;
 
-				vertex.setPosition({
-					attrib.vertices[3 * index.vertex_index + 0],
-					attrib.vertices[3 * index.vertex_index + 1],
-					attrib.vertices[3 * index.vertex_index + 2]
-				});
+				int64_t hash = 0;
+				hash |= (vertex_index & 0x1FFFFF) << 0;
+				hash |= (texture_index & 0x1FFFFF) << 21;
+				hash |= (normal_index & 0x2FFFFF) << 42;
 
-				if (index.texcoord_index != -1)
+				size_t idx = 0;
+				bool found = false;
+				for (size_t i = 0; i < vertCacheSize; i++)
 				{
-					vertex.setTexture({
-						attrib.texcoords[2 * index.texcoord_index + 0],
-						attrib.texcoords[2 * index.texcoord_index + 1]
-						});
+					if (vertexCache[i] == hash)
+					{
+						found = true;
+						idx = i;
+					}
 				}
 
-				if (index.normal_index != -1)
+				if (!found)
 				{
-					vertex.setNormal({
-						attrib.normals[3 * index.normal_index + 0],
-						attrib.normals[3 * index.normal_index + 1],
-						attrib.normals[3 * index.normal_index + 2]
-						});
-				}
+					Vertex vertex{}; 
+					
+					Vector3f pos = {
+						attrib.vertices[3 * index.vertex_index + 0],
+						attrib.vertices[3 * index.vertex_index + 1],
+						attrib.vertices[3 * index.vertex_index + 2]
+					};
 
-				vertices.push_back(std::move(vertex));
-				indices.push_back(id);
-				id++;
+					Vector2f tex = { -1, -1 };
+					Vector3f norm = { -1, -1, -1 };
+
+					if (index.texcoord_index != -1)
+					{
+						tex = {
+							attrib.texcoords[2 * index.texcoord_index + 0],
+							attrib.texcoords[2 * index.texcoord_index + 1]
+						};
+					}
+
+					if (index.normal_index != -1)
+					{
+						norm = {
+							attrib.normals[3 * index.normal_index + 0],
+							attrib.normals[3 * index.normal_index + 1],
+							attrib.normals[3 * index.normal_index + 2]
+						};
+					}
+
+					vertex.position = pos;
+					vertex.texture = tex;
+					vertex.normal = norm;
+
+					vertices.push_back(std::move(vertex));
+					indices.push_back((uint32_t)vertCacheSize);
+					vertexCache.push_back(hash);
+					vertCacheSize++;
+				}
+				else
+				{
+					indices.push_back((uint32_t)idx);
+				}
 			}
 
 			for (size_t i = 0; i < indices.size() / 3; i++)

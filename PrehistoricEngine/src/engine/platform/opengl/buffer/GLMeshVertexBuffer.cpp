@@ -98,7 +98,7 @@ namespace Prehistoric
 		RenderingEngine::getStats().vertexCount += vertices[submesh];
 		RenderingEngine::getStats().indexCount += sizes[submesh];
 
-		glDrawElements(GL_TRIANGLES, sizes[submesh], GL_UNSIGNED_INT, (const void*)(index_offsets[submesh] * sizeof(uint32_t)));
+		glDrawElements(GL_TRIANGLES, (int)sizes[submesh], GL_UNSIGNED_INT, (const void*)(index_offsets[submesh] * sizeof(uint32_t)));
 	}
 
 	void GLMeshVertexBuffer::Unbind() const

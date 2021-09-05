@@ -41,7 +41,7 @@ namespace Prehistoric
 			index_offsets[index] = size;
 			sizes[index] = inds;
 
-			size += inds;
+			size += (uint32_t)inds;
 			index++;
 		}
 
@@ -96,7 +96,7 @@ namespace Prehistoric
 		RenderingEngine::getStats().vertexCount += vertices[submesh];
 		RenderingEngine::getStats().indexCount += sizes[submesh];
 
-		vkCmdDrawIndexed(((VKCommandBuffer*)commandBuffer)->getCommandBuffer(), sizes[submesh], 1, index_offsets[submesh], 0, 0);
+		vkCmdDrawIndexed(((VKCommandBuffer*)commandBuffer)->getCommandBuffer(), (uint32_t)sizes[submesh], 1, index_offsets[submesh], 0, 0);
 	}
 
 	VkVertexInputBindingDescription VKMeshVertexBuffer::getBindingDescription() const
