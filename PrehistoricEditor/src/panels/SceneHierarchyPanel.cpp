@@ -81,7 +81,7 @@ void SceneHierarchyPanel::DrawGameObjectNode(Prehistoric::GameObject* object)
 
 	if (entityDeleted)
 	{
-		root->deleteChild(object);
+		root->RemoveChild(object);
 		if (selectionContext == object)
 			selectionContext = nullptr;
 	}

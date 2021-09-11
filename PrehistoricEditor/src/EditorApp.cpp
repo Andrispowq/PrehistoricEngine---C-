@@ -35,8 +35,8 @@ EditorApp::EditorApp()
 
 	engineLayer->getAudioEngine()->Update(0.0f);
 
-	WorldLoader loader;
-	loader.LoadWorld("res/world/newWorld.wrld", root, window, manager);
+	Scene* scene = new Scene("res/world/newWorld.wrld", window, cam, manager);
+	engineLayer->SetScene(scene);
 
 	//Load in the environment map
 	if (FrameworkConfig::api == OpenGL)

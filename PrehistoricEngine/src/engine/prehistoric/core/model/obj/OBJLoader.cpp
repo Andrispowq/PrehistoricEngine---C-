@@ -92,7 +92,7 @@ namespace Prehistoric
 			if(!material.normal_texname.empty()) new_mat->addTexture(NORMAL_MAP, manager->loadTexture("res/textures/" + material.normal_texname, Anisotropic, Repeat).value());
 
 			if(material.diffuse_texname.empty()) new_mat->addVector3f(COLOUR, { material.diffuse[0], material.diffuse[1], material.diffuse[2] });
-			new_mat->addVector4f(MROT, { /*material.metallic*/ 1, /*material.roughness*/ 0.1f, 1, -1 });
+			new_mat->addVector4f(MROT, { /*material.metallic*/ 0, /*material.roughness*/ 1, 1, -1 });
 			new_mat->addFloat(EMISSION, 0.0f);
 
 			model.AddMaterial(new_mat);
