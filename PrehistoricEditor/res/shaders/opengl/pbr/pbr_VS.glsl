@@ -5,8 +5,6 @@ layout(location = 1) in vec2 texture_VS;
 layout(location = 2) in vec3 normal_VS;
 layout(location = 3) in vec3 tangent_VS;
 
-const int max_lights = 10;
-
 out vec3 position_FS;
 out vec2 texture_FS;
 out vec3 normal_FS;
@@ -24,6 +22,11 @@ void main()
 	vec3 N = normalize((m_transform * vec4(normal_VS, 0.0)).xyz);
 	vec3 T = normalize((m_transform * vec4(tangent_VS, 0.0)).xyz);
 	T = normalize(T - dot(T, N) * N); // re-orthogonalise T with respect to N
+
+	if (isnan(T.x))
+	{
+		T = vec3(0);
+	}
 
 	position_FS = worldPosition.xyz;
 	texture_FS = texture_VS;

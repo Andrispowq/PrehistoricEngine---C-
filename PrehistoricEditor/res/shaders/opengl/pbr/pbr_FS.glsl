@@ -101,7 +101,7 @@ void main()
 
 	float dist = length(cameraPosition - position_FS);
 	vec3 normal = normalize(normal_FS);	
-	if(dist < (highDetailRange - 50) && material.usesNormalMap == 1)
+	if((dist < (highDetailRange - 50)) && (material.usesNormalMap == 1) && (dot(tangent_FS, vec3(0)) != 1))
 	{
 		float attenuation = clamp(-dist / (highDetailRange - 50) + 1.0, 0.0, 1.0);
 
@@ -174,7 +174,7 @@ void main()
     vec3 specular = prefilteredColour * (F * envBRDF.x + envBRDF.y);
 
     vec3 ambient = (kD * diffuse + specular) * occlusion;
-    vec3 colour = ambient + Lo + max(albedoColour * emission * emissionFactor, 0.0);
+    vec3 colour = ambient + Lo + (clamp(albedoColour, vec3(0.05), vec3(1.0)) * max(emission, 0.0) * emissionFactor);
 
 	if (isnan(colour.r))
 	{

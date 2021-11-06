@@ -27,12 +27,13 @@ namespace Prehistoric
 			std::vector<float> vdat = mesh.GetVertexData();
 			std::vector<uint32_t> idat = mesh.GetIndexData();
 
-			vdata.insert(vdata.begin(), vdat.begin(), vdat.end());
-
 			for (uint32_t& elem : idat)
 			{
-				elem += size;
+				elem += vertCount;
 			}
+
+			vdata.insert(vdata.end(), vdat.begin(), vdat.end());
+			idata.insert(idata.end(), idat.begin(), idat.end());
 
 			size_t verts = mesh.getVertices().size();
 			size_t inds = mesh.getIndices().size();
@@ -42,6 +43,7 @@ namespace Prehistoric
 			sizes[index] = inds;
 
 			size += (uint32_t)inds;
+			vertCount += verts;
 			index++;
 		}
 

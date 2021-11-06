@@ -10,10 +10,14 @@ namespace Prehistoric
 	void FPSCamera::UpdateCamera(Window* window, float delta)
 	{
 		movAmt += InputInstance.getScrollOffset() * delta * 35.0f;
+		movAmt += (InputInstance.getJoystickAxisOffset(PR_GAMEPAD_AXIS_RIGHT_TRIGGER, PR_JOYSTICK_1) + 1) * delta * 35.0f / 2.0f;
+		movAmt -= (InputInstance.getJoystickAxisOffset(PR_GAMEPAD_AXIS_LEFT_TRIGGER, PR_JOYSTICK_1) + 1) * delta * 35.0f / 2.0f;
 		movAmt = std::fmax(0.02f, movAmt);
 
 		bool movedForward = false, movedBackward = false, movedRight = false, movedLeft = false,
 			rotUp = false, rotDown = false, rotRight = false, rotLeft = false;
+
+		constexpr float rotationMultiplier = 320.0f;
 
 		for (CameraInput& in : inputs)
 		{
@@ -40,22 +44,22 @@ namespace Prehistoric
 
 			if (in.isUp() != 0 && !rotUp)
 			{
-				RotateX(static_cast<float>(rotAmt * 2.0 * in.isUp() * delta));
+				RotateX(static_cast<float>(rotAmt * rotationMultiplier * in.isUp() * delta));
 				rotUp = true;
 			}
 			if (in.isDown() != 0 && !rotDown)
 			{
-				RotateX(static_cast<float>(-rotAmt * 2.0 * in.isDown() * delta));
+				RotateX(static_cast<float>(-rotAmt * rotationMultiplier * in.isDown() * delta));
 				rotDown = true;
 			}
 			if (in.isRightRot() != 0 && !rotRight)
 			{
-				RotateY(static_cast<float>(-rotAmt * 2.0 * in.isRightRot() * delta));
+				RotateY(static_cast<float>(-rotAmt * rotationMultiplier * in.isRightRot() * delta));
 				rotRight = true;
 			}
 			if (in.isLeftRot() != 0 && !rotLeft)
 			{
-				RotateY(static_cast<float>(rotAmt * 2.0 * in.isLeftRot() * delta));
+				RotateY(static_cast<float>(rotAmt * rotationMultiplier * in.isLeftRot() * delta));
 				rotLeft = true;
 			}
 		}

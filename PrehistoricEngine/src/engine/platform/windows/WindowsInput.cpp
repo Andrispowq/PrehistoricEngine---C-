@@ -167,7 +167,7 @@ namespace Prehistoric
 		return true;
 	}
 
-	bool WindowsInput::Init(Window* window) const
+	bool WindowsInput::Init(Window* window)
 	{
 		static_callback = window->getEventCallback();
 
@@ -257,6 +257,21 @@ namespace Prehistoric
 			}
 		});
 
+		for (uint32_t i = 0; i < (uint32_t)JoystickID::JOYSTICK_LAST; i++)
+		{
+			if (glfwJoystickPresent(i) == GLFW_TRUE)
+			{
+				if (glfwJoystickIsGamepad(i) == GLFW_TRUE)
+				{
+					joysticks.push_back((JoystickID)i);
+				}
+			}
+			else
+			{
+				break;
+			}
+		}
+
 		return true;
 	}
 
@@ -279,14 +294,20 @@ namespace Prehistoric
 		for (uint32_t i = 0; i < joysticks.size(); i++)
 		{
 			GLFWgamepadstate state;
-			glfwGetGamepadState(GLFW_JOYSTICK_1 + i, &state);
+			if (glfwGetGamepadState(GLFW_JOYSTICK_1 + i, &state) == GLFW_FALSE)
+			{
+				PR_LOG_ERROR("ERROR: could not retrieve state of Gamepad #%d\n", i);
+			}
 
-			for (uint32_t j = 0; j < sizeof(state.buttons) / sizeof(state.buttons[0]); j++)
+			constexpr uint32_t buttons = sizeof(state.buttons) / sizeof(state.buttons[0]);
+			constexpr uint32_t axes = sizeof(state.axes) / sizeof(state.axes[0]);
+
+			for (uint32_t j = 0; j < buttons; j++)
 			{
 				joystickButtons[i].push_back((int)state.buttons[j]);
 			}
 
-			for (uint32_t j = 0; j < sizeof(state.axes) / sizeof(state.axes[0]); j++)
+			for (uint32_t j = 0; j < axes; j++)
 			{
 				joystickAxes[i].push_back((float)state.axes[j]);
 			}

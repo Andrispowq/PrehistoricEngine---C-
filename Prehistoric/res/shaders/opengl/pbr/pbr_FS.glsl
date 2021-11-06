@@ -101,7 +101,7 @@ void main()
 
 	float dist = length(cameraPosition - position_FS);
 	vec3 normal = normalize(normal_FS);	
-	if(dist < (highDetailRange - 50) && material.usesNormalMap == 1)
+	if((dist < (highDetailRange - 50)) && (material.usesNormalMap == 1) && (dot(tangent_FS, vec3(0)) != 1))
 	{
 		float attenuation = clamp(-dist / (highDetailRange - 50) + 1.0, 0.0, 1.0);
 

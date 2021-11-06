@@ -5,22 +5,23 @@ namespace Prehistoric
 {
 	GLGaussianShader::GLGaussianShader()
 	{
-		AddShader(ResourceLoader::LoadShaderGL("opengl/postProcessing/quad_VS.glsl"), VERTEX_SHADER);
-		AddShader(ResourceLoader::LoadShaderGL("opengl/postProcessing/gaussian_FS.glsl"), FRAGMENT_SHADER);
+		AddShader(ResourceLoader::LoadShaderGL("opengl/postProcessing/gaussian_CS.glsl"), COMPUTE_SHADER);
 		CompileShader();
 
 		AddUniform("scene");
 		AddUniform("horizontal");
 
 		AddUniform("targetSize");
+		AddUniform("sceneSize");
 	}
 
-	void GLGaussianShader::UpdateUniforms(Texture* scene, bool horizontal, Vector2f targetSize) const
+	void GLGaussianShader::UpdateUniforms(Texture* scene, bool horizontal, Vector2f targetSize, Vector2f sceneSize) const
 	{
 		scene->Bind();
 		SetUniformi("scene", 0);
 
 		SetUniformi("horizontal", horizontal);
 		SetUniform("targetSize", targetSize);
+		SetUniform("sceneSize", sceneSize);
 	}
 };

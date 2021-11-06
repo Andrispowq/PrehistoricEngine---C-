@@ -92,7 +92,7 @@ namespace Prehistoric
 			if(!material.normal_texname.empty()) new_mat->addTexture(NORMAL_MAP, manager->loadTexture("res/textures/" + material.normal_texname, Anisotropic, Repeat).value());
 
 			if(material.diffuse_texname.empty()) new_mat->addVector3f(COLOUR, { material.diffuse[0], material.diffuse[1], material.diffuse[2] });
-			new_mat->addVector4f(MROT, { /*material.metallic*/ 0, /*material.roughness*/ 1, 1, -1 });
+			new_mat->addVector4f(MROT, { /*material.metallic*/ 0, /*material.roughness*/ 0.3f, 1, -1 });
 			new_mat->addFloat(EMISSION, 0.0f);
 
 			model.AddMaterial(new_mat);
@@ -161,7 +161,16 @@ namespace Prehistoric
 
 			for (auto& vert : vertices)
 			{
-				vert.averageTangents();
+				Vector3f tang = vert.tang_sum;
+
+				if (tang == 0)
+				{
+					vert.tangent = 0;
+				}
+				else
+				{
+					vert.tangent = tang.normalise();
+				}
 			}
 
 			mesh.setVertices(std::move(vertices));

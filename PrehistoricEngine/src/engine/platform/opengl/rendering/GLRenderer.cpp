@@ -24,8 +24,8 @@ namespace Prehistoric
 
 	GLRenderer::GLRenderer(Window* window, Camera* camera, AssembledAssetManager* manager)
 		: Renderer(window, camera, manager), depthFBO{ nullptr }, multisampleFBO{ nullptr },
-			colourFBO{ nullptr }, lightBuffer{ nullptr }, visibleLightIndicesBuffer{ nullptr },
-			scratchFBO{ nullptr }
+			colourFBO{ nullptr }, lightBuffer{ nullptr }, visibleLightIndicesBuffer{ nullptr }, 
+		scratchFBO{ nullptr }
 	{
 		depthFBO = std::make_unique<GLFramebuffer>(window);
 		multisampleFBO = std::make_unique<GLFramebuffer>(window);
@@ -50,7 +50,7 @@ namespace Prehistoric
 		man->addReference<Texture>(combinedImage.handle);
 		man->addReference<Texture>(outputImage.handle);
 
-		for (uint32_t i = 0; i < 8; i++)
+		for (uint32_t i = 0; i < BLOOM_PASSES; i++)
 		{
 			uint32_t local_width = width / (uint32_t)pow(2, i + 1);
 			uint32_t local_height = height / (uint32_t)pow(2, i + 1);
@@ -95,10 +95,10 @@ namespace Prehistoric
 		man->addReference<Shader>(depthShader.handle);
 
 		lightCullingPipeline = manager->storePipeline(new GLComputePipeline(window, man, lightCullingShader));
-		decomposePipeline = manager->storePipeline(new GLGraphicsPipeline(window, man, decomposeShader, quad));
+		decomposePipeline = manager->storePipeline(new GLComputePipeline(window, man, decomposeShader));
 		hdrPipeline = manager->storePipeline(new GLComputePipeline(window, man, hdrShader));
-		gaussianPipeline = manager->storePipeline(new GLGraphicsPipeline(window, man, gaussianShader, quad));
-		bloomCombinePipeline = manager->storePipeline(new GLGraphicsPipeline(window, man, bloomCombineShader, quad));
+		gaussianPipeline = manager->storePipeline(new GLComputePipeline(window, man, gaussianShader));
+		bloomCombinePipeline = manager->storePipeline(new GLComputePipeline(window, man, bloomCombineShader));
 		renderPipeline = manager->storePipeline(new GLGraphicsPipeline(window, man, renderShader, quad));
 
 		manager->addReference<Pipeline>(lightCullingPipeline.handle);
@@ -119,6 +119,9 @@ namespace Prehistoric
 		static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
 		static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->addSSBOBinding(0, (ShaderStorageBuffer*)lightBuffer.get(), READ_ONLY);
 		static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->addSSBOBinding(1, (ShaderStorageBuffer*)visibleLightIndicesBuffer.get(), WRITE_ONLY);
+
+		static_cast<GLComputePipeline*>(decomposePipeline.pointer)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
+		static_cast<GLComputePipeline*>(decomposePipeline.pointer)->addTextureBinding(0, bloomImage.pointer, WRITE_ONLY);
 
 		static_cast<GLComputePipeline*>(hdrPipeline.pointer)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
 		static_cast<GLComputePipeline*>(hdrPipeline.pointer)->addTextureBinding(0, outputImage.pointer, WRITE_ONLY);
@@ -189,7 +192,7 @@ namespace Prehistoric
 			man->addReference<Texture>(combinedImage.handle);
 			man->addReference<Texture>(outputImage.handle);
 
-			for (uint32_t i = 0; i < 8; i++)
+			for (uint32_t i = 0; i < BLOOM_PASSES; i++)
 			{
 				man->removeReference<Texture>(temporaryImages[i].handle);
 				man->removeReference<Texture>(bloomImages[i].handle);
@@ -209,6 +212,10 @@ namespace Prehistoric
 			static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
 			static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->addSSBOBinding(0, (ShaderStorageBuffer*)lightBuffer.get(), READ_ONLY);
 			static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->addSSBOBinding(1, (ShaderStorageBuffer*)visibleLightIndicesBuffer.get(), WRITE_ONLY);
+
+			static_cast<GLComputePipeline*>(decomposePipeline.pointer)->removeTextureBinding(0);
+			static_cast<GLComputePipeline*>(decomposePipeline.pointer)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
+			static_cast<GLComputePipeline*>(decomposePipeline.pointer)->addTextureBinding(0, bloomImage.pointer, WRITE_ONLY);
 
 			static_cast<GLComputePipeline*>(hdrPipeline.pointer)->removeTextureBinding(0);
 			static_cast<GLComputePipeline*>(hdrPipeline.pointer)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
@@ -411,111 +418,108 @@ namespace Prehistoric
 			PR_PROFILE("Bloom pass");
 
 			//DECOMPOSE STAGE
-			scratchFBO->Bind();
-			scratchFBO->addColourAttachment2D(bloomImage.pointer);
-			scratchFBO->Clear(0.0f);
+			Vector2f size = { (float)width, (float)height };
 
-			decomposePipeline->BindPipeline(nullptr);
-			static_cast<GLBloomDecomposeShader*>(decomposePipeline->getShader())->UpdateUniforms(colourImage.pointer, 1.0f);
-			decomposePipeline->RenderPipeline();
-			decomposePipeline->UnbindPipeline();
-
-			scratchFBO->Unbind();
+			{
+				PR_PROFILE("Decompose pass");
+				decomposePipeline->BindPipeline(nullptr);
+				static_cast<GLBloomDecomposeShader*>(decomposePipeline->getShader())->UpdateUniforms(colourImage.pointer, 1.0f, size);
+				decomposePipeline->RenderPipeline();
+				decomposePipeline->UnbindPipeline();
+			}
 
 			//GAUSSIAN STAGE
-			for (uint32_t i = 0; i < 8; i++)
 			{
-				uint32_t local_width = width / (uint32_t)pow(2, i + 1);
-				uint32_t local_height = height / (uint32_t)pow(2, i + 1);
-
-				uint32_t workGroupsX = (local_width + (local_width % 16)) / 16;
-				uint32_t workGroupsY = (local_height + (local_height % 16)) / 16;
-
-				Vector2f dim = Vector2f((float)local_width, (float)local_height);
-
-				//VERTICAL
-				scratchFBO->Bind();
-				scratchFBO->addDepthAttachment(local_width, local_height);
-				scratchFBO->addColourAttachment2D(temporaryImages[i].pointer);
-				scratchFBO->Check();
-				scratchFBO->Clear(0.0f);
-
-				window->getSwapchain()->SetWindowSize(local_width, local_height);
-
-				Texture* source = bloomImage.pointer;
-				if (i > 0)
+				PR_PROFILE("Gaussian pass");
+				for (uint32_t i = 0; i < BLOOM_PASSES; i++)
 				{
-					source = bloomImages[i - 1].pointer;
+					uint32_t local_width = width / (uint32_t)pow(2, i + 1);
+					uint32_t local_height = height / (uint32_t)pow(2, i + 1);
+
+					uint32_t workGroupsX = (local_width + (local_width % 16)) / 16;
+					uint32_t workGroupsY = (local_height + (local_height % 16)) / 16;
+
+					Vector2f targetDim = Vector2f((float)local_width, (float)local_height);
+
+					//VERTICAL
+					static_cast<GLComputePipeline*>(gaussianPipeline.pointer)->removeTextureBinding(0);
+					static_cast<GLComputePipeline*>(gaussianPipeline.pointer)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
+					static_cast<GLComputePipeline*>(gaussianPipeline.pointer)->addTextureBinding(0, temporaryImages[i].pointer, WRITE_ONLY);
+
+					Texture* source = bloomImage.pointer;
+					if (i > 0)
+					{
+						source = bloomImages[i - 1].pointer;
+					}
+
+					gaussianPipeline->BindPipeline(nullptr);
+					static_cast<GLGaussianShader*>(gaussianPipeline->getShader())->UpdateUniforms(source, false, targetDim, targetDim);
+					gaussianPipeline->RenderPipeline();
+
+					//HORIZONTAL
+					static_cast<GLComputePipeline*>(gaussianPipeline.pointer)->removeTextureBinding(0);
+					static_cast<GLComputePipeline*>(gaussianPipeline.pointer)->addTextureBinding(0, bloomImages[i].pointer, WRITE_ONLY);
+
+					gaussianPipeline->BindPipeline(nullptr);
+					static_cast<GLGaussianShader*>(gaussianPipeline->getShader())->UpdateUniforms(temporaryImages[i].pointer, true, targetDim, targetDim);
+					gaussianPipeline->RenderPipeline();
+
+					gaussianPipeline->UnbindPipeline();
 				}
-
-				gaussianPipeline->BindPipeline(nullptr);
-				static_cast<GLGaussianShader*>(gaussianPipeline->getShader())->UpdateUniforms(source, false, Vector2f{ (float)local_width, (float)local_height });
-				gaussianPipeline->RenderPipeline();
-
-				//HORIZONTAL
-				scratchFBO->addColourAttachment2D(bloomImages[i].pointer);
-				scratchFBO->Clear(0.0f);
-
-				gaussianPipeline->BindPipeline(nullptr);
-				static_cast<GLGaussianShader*>(gaussianPipeline->getShader())->UpdateUniforms(temporaryImages[i].pointer, true, Vector2f{ (float)local_width, (float)local_height });
-				gaussianPipeline->RenderPipeline();
-
-				scratchFBO->Unbind();
 			}
-
-			window->getSwapchain()->SetWindowSize(width, height);
-			gaussianPipeline->UnbindPipeline();
 
 			//COMBINE STAGE
-			for (int i = 6; i >= 0; i--)
 			{
-				uint32_t local_width = width / (uint32_t)pow(2, i + 1);
-				uint32_t local_height = height / (uint32_t)pow(2, i + 1);
+				PR_PROFILE("Combine pass");
+				for (int i = BLOOM_PASSES - 2; i >= 0; i--)
+				{
+					uint32_t local_width = width / (uint32_t)pow(2, i + 1);
+					uint32_t local_height = height / (uint32_t)pow(2, i + 1);
 
-				uint32_t workGroupsX = (local_width + (local_width % 16)) / 16;
-				uint32_t workGroupsY = (local_height + (local_height % 16)) / 16;
+					uint32_t workGroupsX = (local_width + (local_width % 16)) / 16;
+					uint32_t workGroupsY = (local_height + (local_height % 16)) / 16;
 
-				Vector2f dim = Vector2f((float)local_width, (float)local_height);
+					Vector2f targetDim = Vector2f((float)local_width, (float)local_height);
 
-				//COMBINE
-				scratchFBO->Bind();
-				scratchFBO->addDepthAttachment(local_width, local_height);
-				scratchFBO->addColourAttachment2D(temporaryImages[i].pointer);
-				scratchFBO->Check();
-				scratchFBO->Clear(0.0f);
+					//COMBINE
+					static_cast<GLComputePipeline*>(bloomCombinePipeline.pointer)->removeTextureBinding(0);
+					static_cast<GLComputePipeline*>(bloomCombinePipeline.pointer)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
+					static_cast<GLComputePipeline*>(bloomCombinePipeline.pointer)->addTextureBinding(0, temporaryImages[i].pointer, WRITE_ONLY);
 
-				window->getSwapchain()->SetWindowSize(local_width, local_height);
+					bloomCombinePipeline->BindPipeline(nullptr);
+					static_cast<GLBloomCombineShader*>(bloomCombinePipeline->getShader())->UpdateUniforms(bloomImages[i].pointer, bloomImages[i + 1].pointer, targetDim);
+					bloomCombinePipeline->RenderPipeline();
 
-				bloomCombinePipeline->BindPipeline(nullptr);
-				static_cast<GLBloomCombineShader*>(bloomCombinePipeline->getShader())->UpdateUniforms(bloomImages[i].pointer, bloomImages[i + 1].pointer);
-				bloomCombinePipeline->RenderPipeline();
+					//COPY
+					scratchFBO->Bind();
+					scratchFBO->addColourAttachment2D(bloomImages[i].pointer);
+					scratchFBO->Clear(0.0f);
+					window->getSwapchain()->SetWindowSize(local_width, local_height);
 
-				//COPY
-				scratchFBO->addColourAttachment2D(bloomImages[i].pointer);
-				scratchFBO->Clear(0.0f);
+					renderPipeline->BindPipeline(nullptr);
+					static_cast<GLGUIShader*>(renderPipeline->getShader())->UpdateCustomUniforms(temporaryImages[i].pointer, -1);
+					renderPipeline->RenderPipeline();
+					renderPipeline->UnbindPipeline();
 
-				renderPipeline->BindPipeline(nullptr);
-				static_cast<GLGUIShader*>(renderPipeline->getShader())->UpdateCustomUniforms(temporaryImages[i].pointer, -1);
-				renderPipeline->RenderPipeline();
-
-				scratchFBO->Unbind();
+					scratchFBO->Unbind();
+				}
 			}
 
 			window->getSwapchain()->SetWindowSize(width, height);
-			gaussianPipeline->UnbindPipeline();
-
+			
 			//COMBINE
-			scratchFBO->Bind();
-			scratchFBO->addDepthAttachment(width, height);
-			scratchFBO->addColourAttachment2D(combinedImage.pointer);
-			scratchFBO->Check();
-			scratchFBO->Clear(0.0f);
+			{
+				PR_PROFILE("Combine pass");
+				static_cast<GLComputePipeline*>(bloomCombinePipeline.pointer)->removeTextureBinding(0);
+				static_cast<GLComputePipeline*>(bloomCombinePipeline.pointer)->setInvocationSize({ width / 16, height / 16, 1 });
+				static_cast<GLComputePipeline*>(bloomCombinePipeline.pointer)->addTextureBinding(0, combinedImage.pointer, WRITE_ONLY);
 
-			bloomCombinePipeline->BindPipeline(nullptr);
-			static_cast<GLBloomCombineShader*>(bloomCombinePipeline->getShader())->UpdateUniforms(colourImage.pointer, bloomImages[0].pointer);
-			bloomCombinePipeline->RenderPipeline();
+				bloomCombinePipeline->BindPipeline(nullptr);
+				static_cast<GLBloomCombineShader*>(bloomCombinePipeline->getShader())->UpdateUniforms(colourImage.pointer, bloomImages[0].pointer, size);
+				bloomCombinePipeline->RenderPipeline();
 
-			scratchFBO->Unbind();
+				scratchFBO->Unbind();
+			}
 		}
 
 		{

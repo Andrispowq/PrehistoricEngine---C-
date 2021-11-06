@@ -18,7 +18,7 @@ namespace Prehistoric
 		static Input& getInstance();
 		static void DeleteInstance();
 
-		virtual bool Init(Window* window) const = 0;
+		virtual bool Init(Window* window) = 0;
 		virtual bool Update() = 0;
 
 		virtual void OnEvent(Event& event) = 0;

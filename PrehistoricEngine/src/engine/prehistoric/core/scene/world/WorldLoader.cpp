@@ -24,7 +24,7 @@ namespace Prehistoric
 				std::vector<std::string> tokens = Util::Split(line, ' ');
 				std::vector<std::string> nameTokens = Util::Split(tokens[0], '.');
 
-				if (tokens.size() == 0 || nameTokens[0] == "#")
+				if (line.empty() || nameTokens[0][0] == '#')
 					continue;
 
 				//Setting the directories which we'll be using to load models and textures from

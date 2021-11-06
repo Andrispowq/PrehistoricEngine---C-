@@ -12,6 +12,8 @@
 
 namespace Prehistoric
 {
+#define BLOOM_PASSES 8
+
 	class GLRenderer : public Renderer
 	{
 	public:
@@ -44,8 +46,8 @@ namespace Prehistoric
 		TextureHandle combinedImage;
 		TextureHandle outputImage;
 
-		TextureHandle temporaryImages[8];
-		TextureHandle bloomImages[8];
+		TextureHandle temporaryImages[BLOOM_PASSES];
+		TextureHandle bloomImages[BLOOM_PASSES];
 
 		ShaderHandle depthShader;
 		ShaderHandle lightCullingShader;

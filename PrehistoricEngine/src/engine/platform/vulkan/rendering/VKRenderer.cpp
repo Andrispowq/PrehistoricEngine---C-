@@ -162,6 +162,7 @@ namespace Prehistoric
 			{
 				pl->getShader()->UpdateMaterialUniforms(material.first, (uint32_t)matIdx++);
 
+				instIdx = 0;
 				for (size_t i = 0; i < material.second.size(); i++)
 				{
 					pl->getShader()->UpdateObjectUniforms(material.second[i]->getParent(), (uint32_t)instIdx++);
@@ -225,6 +226,7 @@ namespace Prehistoric
 				{
 					((VKShader*)pl->getShader())->BindTextureSets(matIdx++);
 
+					instIdx = 0;
 					for (size_t i = 0; i < material.second.size(); i++)
 					{
 						((VKShader*)pl->getShader())->BindObjectSets(instIdx++);

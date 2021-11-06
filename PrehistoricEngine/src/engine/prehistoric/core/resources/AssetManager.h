@@ -19,6 +19,11 @@
 
 #define HANDLE_OF(type) typedef struct type##_handle_t { type* pointer = nullptr; size_t handle = -1; type* operator->() { return pointer;}; type* const operator->() const { return pointer;} } type##Handle
 
+typedef uint64_t UUID_t;
+
+#define SHIFT(val,am) ((UUID_t)val << am)
+#define UUID(type,subtype,id) (SHIFT(type,56) | SHIFT(subtype,48) | id)
+
 namespace Prehistoric
 {
 	HANDLE_OF(Texture);

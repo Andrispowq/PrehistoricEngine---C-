@@ -13,7 +13,7 @@ namespace Prehistoric
 		GLBloomDecomposeShader();
 		virtual ~GLBloomDecomposeShader() {}
 
-		void UpdateUniforms(Texture* scene, float threshold) const;
+		void UpdateUniforms(Texture* scene, float threshold, Vector2f targetSize) const;
 	};
 };
 

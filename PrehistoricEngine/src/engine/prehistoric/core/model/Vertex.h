@@ -39,8 +39,6 @@ namespace Prehistoric
 		inline void setNormal(const Vector3f& normal) { this->normal = normal; }
 		inline void addTangent(const Vector3f& tangent) { this->tang_sum += tangent; }
 
-		inline void averageTangents() { (tang_sum == Vector3f(0)) ? tangent = 0 : tangent = tang_sum.normalise(); }
-
 	public:
 		Vector3f position = 0;
 		Vector2f texture = 0;

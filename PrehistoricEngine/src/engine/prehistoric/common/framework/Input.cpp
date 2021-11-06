@@ -28,23 +28,23 @@ namespace Prehistoric
 	{
 		auto buttons = joystickButtons[(uint32_t)joystick];
 
-		if (std::find(buttons.begin(), buttons.end(), (int32_t)key) != buttons.end())
+		if (buttons.size() == 0)
 		{
-			return buttons[(uint32_t)key] == 1;
+			return 0;
 		}
 
-		return false;
+		return buttons[(uint32_t)key] == 1;
 	}
 
 	float Input::getJoystickAxisOffset(const InputCode& axis, const JoystickID& joystick) const
 	{
 		auto axes = joystickAxes[(uint32_t)joystick];
 
-		if (std::find(axes.begin(), axes.end(), (float)axis) != axes.end())
+		if (axes.size() == 0)
 		{
-			return axes[(uint32_t)axis];
+			return 0;
 		}
 
-		return 0;
+		return axes[(uint32_t)axis];
 	}
 };
