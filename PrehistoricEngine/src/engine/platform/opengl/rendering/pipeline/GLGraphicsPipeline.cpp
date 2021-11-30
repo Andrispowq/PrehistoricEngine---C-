@@ -51,7 +51,13 @@ namespace Prehistoric
 
 		for (uint32_t i = 0; i < vbo->getSubmeshCount(); i++)
 		{
-			MeshVertexBuffer* mesh_vbo = (MeshVertexBuffer*)vbo.pointer;
+			MeshVertexBuffer* mesh_vbo = reinterpret_cast<MeshVertexBuffer*>(vbo.pointer);
+			if (reinterpret_cast<PatchVertexBuffer*>(vbo.pointer) != nullptr)
+			{
+				vbo->Draw(buffer, i);
+				continue;
+			}
+
 			Model& model = mesh_vbo->getModel();
 			int matIdx = model.getMesh(i).getMaterialIndex();
 

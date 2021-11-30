@@ -88,7 +88,7 @@ PrehistoricApp::PrehistoricApp()
 
 		GameObject* obj = new GameObject;
 		obj->SetPosition({ 0, -50, 0 });
-		obj->SetScale({ 0.1f, 0.1f, 0.1f });
+		obj->SetScale({ 1.f, 1.f, 1.f });
 		obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, material));
 		sceneRoot->AddChild("someobj", obj);
 
