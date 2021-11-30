@@ -57,7 +57,7 @@ namespace Prehistoric
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
 		glEnableVertexAttribArray(2);
-		glEnableVertexAttribArray(4);
+		glEnableVertexAttribArray(3);
 
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, int(sizeof(float) * Vertex::getNumberOfFloats()), (void*)(sizeof(float) * 0));
 		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, int(sizeof(float) * Vertex::getNumberOfFloats()), (void*)(sizeof(float) * 3));

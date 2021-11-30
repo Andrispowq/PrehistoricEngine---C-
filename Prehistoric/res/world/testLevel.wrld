@@ -49,6 +49,10 @@ textures.load metal_DIF metalFloor/metalFloor_DIF.png
 textures.load metal_NRM metalFloor/metalFloor_NRM.png
 textures.load metal_MROT metalFloor/metalFloor_MROT.png
 
+textures.load rock_DIF lunar/lunar-rock_DIF.png
+textures.load rock_NRM lunar/lunar-rock_NRM.png
+textures.load rock_MROT lunar/lunar-rock_MROT.png
+
 # This means that the textures are loaded asynchronously, on separate threads, and this command launches the execution
 textures.dispatch
 
@@ -68,6 +72,13 @@ materials.mat_metal.texture normal metal_NRM
 materials.mat_metal.texture mrot metal_MROT
 materials.mat_metal.vec4 mrot -1,-1,-1,0
 materials.mat_metal.float emission 0
+
+materials.add mat_rock
+materials.mat_rock.texture albedo rock_DIF
+materials.mat_rock.texture normal rock_NRM
+materials.mat_rock.texture mrot metal_MROT
+materials.mat_rock.vec4 mrot 0.1,0.6,-1,0
+materials.mat_rock.float emission 0
 
 materials.add mat_sphere
 materials.mat_sphere.vec3 colour 1,1,1
@@ -138,7 +149,7 @@ object.cube4.component Renderer quadModel,pbr,mat_quad //model name, shader type
 object.cube5.component Renderer quadModel,pbr,mat_quad //model name, shader type(currently: basic, pbr), material name
 object.otherQuad.component Renderer quadModel,pbr,mat_metal //model name, shader type(currently: basic, pbr), material name
 object.metalPlane.component Renderer cubeModel,pbr,mat_iron //model name, shader type(currently: basic, pbr), material name
-object.sphere.component Renderer sphereModel,pbr,mat_sphere //model name, shader type(currently: basic, pbr), material name
+object.sphere.component Renderer sphereModel,pbr,mat_rock,mat_sphere //model name, shader type(currently: basic, pbr), material name
 
 object.light0.component Light 0,1,0;1000;150
 object.light0.component Renderer sphereModel,pbr,mat_light0

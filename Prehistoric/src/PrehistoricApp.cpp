@@ -64,7 +64,7 @@ PrehistoricApp::PrehistoricApp()
 
 		EnvironmentMapRenderer::instance->enabled = true;
 	}
-	
+
 	if (FrameworkConfig::api == OpenGL)
 	{
 		GameObject* slider3 = new GUISlider(window, manager, 0.0f, 4.0f, Vector3f(0.4f), &EnvironmentMapRenderer::instance->lodRenderedMap, sizeof(float), true);
@@ -73,7 +73,7 @@ PrehistoricApp::PrehistoricApp()
 		slider3->SetScale({ 0.125f, 0.05f, 1 });
 		sceneRoot->AddChild("slider3", slider3);
 
-		/*VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/sponza.obj").value();
+		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/myscene.obj").value();
 		vbo->setFrontFace(FrontFace::COUNTER_CLOCKWISE);
 		ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
 		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
@@ -90,7 +90,7 @@ PrehistoricApp::PrehistoricApp()
 		obj->SetPosition({ 0, -50, 0 });
 		obj->SetScale({ 0.1f, 0.1f, 0.1f });
 		obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, material));
-		sceneRoot->AddChild("someobj", obj);*/
+		sceneRoot->AddChild("someobj", obj);
 
 		/*GameObject* obj2 = new GameObject;
 		obj2->SetPosition({ -50, 10, 0 });
