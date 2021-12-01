@@ -23,11 +23,12 @@ namespace Prehistoric
 	extern bool bloomEnabled;
 
 	GLRenderer::GLRenderer(Window* window, Camera* camera, AssembledAssetManager* manager)
-		: Renderer(window, camera, manager), depthFBO{ nullptr }, multisampleFBO{ nullptr },
-			colourFBO{ nullptr }, lightBuffer{ nullptr }, visibleLightIndicesBuffer{ nullptr }, 
-		scratchFBO{ nullptr }
+		: Renderer(window, camera, manager), multisampleFBO{ nullptr },
+			colourFBO{ nullptr }, scratchFBO{ nullptr }
 	{
-		depthFBO = std::make_unique<GLFramebuffer>(window);
+		depthPass = new GLDepthPass(this);
+		lightCullingPass = new GLLightCullingPass(this);
+
 		multisampleFBO = std::make_unique<GLFramebuffer>(window);
 		colourFBO = std::make_unique<GLFramebuffer>(window);
 
@@ -38,13 +39,11 @@ namespace Prehistoric
 
 		AssetManager* man = manager->getAssetManager();
 
-		depthImage = man->storeTexture(GLTexture::Storage2D(width, height, 1, D32_LINEAR, Bilinear, ClampToEdge, false));
 		colourImage = man->storeTexture(GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false));
 		bloomImage = man->storeTexture(GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false));
 		combinedImage = man->storeTexture(GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false));
 		outputImage = man->storeTexture(GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false));
 
-		man->addReference<Texture>(depthImage.handle);
 		man->addReference<Texture>(colourImage.handle);
 		man->addReference<Texture>(bloomImage.handle);
 		man->addReference<Texture>(combinedImage.handle);
@@ -61,11 +60,6 @@ namespace Prehistoric
 			man->addReference<Texture>(temporaryImages[i].handle);
 			man->addReference<Texture>(bloomImages[i].handle);
 		}
-
-		depthFBO->Bind();
-		depthFBO->addColourAttachment2D(depthImage.pointer);
-		depthFBO->Check();
-		depthFBO->Unbind();
 
 		multisampleFBO->Bind();
 		multisampleFBO->addDepthAttachment(width, height, true);
@@ -84,24 +78,18 @@ namespace Prehistoric
 		quad = man->storeVertexBuffer(ModelFabricator::CreateQuad(window));
 		quad->setFrontFace(FrontFace::DOUBLE_SIDED);
 
-		depthShader = man->loadShader(ShaderName::DepthPass).value();
-		lightCullingShader = man->loadShader(ShaderName::LightCullingPass).value();
 		decomposeShader = man->loadShader(ShaderName::BloomDecompose).value();
 		hdrShader = man->loadShader(ShaderName::HDR).value();
 		gaussianShader = man->loadShader(ShaderName::Gaussian).value();
 		bloomCombineShader = man->loadShader(ShaderName::BloomCombine).value();
 		renderShader = man->loadShader(ShaderName::Gui).value();
 
-		man->addReference<Shader>(depthShader.handle);
-
-		lightCullingPipeline = manager->storePipeline(new GLComputePipeline(window, man, lightCullingShader));
 		decomposePipeline = manager->storePipeline(new GLComputePipeline(window, man, decomposeShader));
 		hdrPipeline = manager->storePipeline(new GLComputePipeline(window, man, hdrShader));
 		gaussianPipeline = manager->storePipeline(new GLComputePipeline(window, man, gaussianShader));
 		bloomCombinePipeline = manager->storePipeline(new GLComputePipeline(window, man, bloomCombineShader));
 		renderPipeline = manager->storePipeline(new GLGraphicsPipeline(window, man, renderShader, quad));
 
-		manager->addReference<Pipeline>(lightCullingPipeline.handle);
 		manager->addReference<Pipeline>(decomposePipeline.handle);
 		manager->addReference<Pipeline>(hdrPipeline.handle);
 		manager->addReference<Pipeline>(gaussianPipeline.handle);
@@ -113,13 +101,6 @@ namespace Prehistoric
 
 		uint32_t numberOfTiles = workGroupsX * workGroupsY;
 
-		lightBuffer = std::make_unique<GLShaderStorageBuffer>(window, nullptr, EngineConfig::lightsMaxNumber * sizeof(InternalLight));
-		visibleLightIndicesBuffer = std::make_unique<GLShaderStorageBuffer>(window, nullptr, numberOfTiles * sizeof(VisibleIndex) * 1024);
-
-		static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
-		static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->addSSBOBinding(0, (ShaderStorageBuffer*)lightBuffer.get(), READ_ONLY);
-		static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->addSSBOBinding(1, (ShaderStorageBuffer*)visibleLightIndicesBuffer.get(), WRITE_ONLY);
-
 		static_cast<GLComputePipeline*>(decomposePipeline.pointer)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
 		static_cast<GLComputePipeline*>(decomposePipeline.pointer)->addTextureBinding(0, bloomImage.pointer, WRITE_ONLY);
 
@@ -129,18 +110,17 @@ namespace Prehistoric
 
 	GLRenderer::~GLRenderer()
 	{
+		delete depthPass;
+		delete lightCullingPass;
+
 		AssetManager* man = manager->getAssetManager();
 
-		man->removeReference<Shader>(depthShader.handle);
-
-		manager->removeReference<Pipeline>(lightCullingPipeline.handle);
 		manager->removeReference<Pipeline>(decomposePipeline.handle);
 		manager->removeReference<Pipeline>(hdrPipeline.handle);
 		manager->removeReference<Pipeline>(gaussianPipeline.handle);
 		manager->removeReference<Pipeline>(bloomCombinePipeline.handle);
 		manager->removeReference<Pipeline>(renderPipeline.handle);
 
-		man->removeReference<Texture>(depthImage.handle);
 		man->removeReference<Texture>(colourImage.handle);
 		man->removeReference<Texture>(bloomImage.handle);
 		man->removeReference<Texture>(combinedImage.handle);
@@ -159,6 +139,9 @@ namespace Prehistoric
 		{
 			PR_PROFILE("Window resize pass");
 
+			depthPass->OnResized();
+			lightCullingPass->OnResized();
+
 			uint32_t width = window->getWidth();
 			uint32_t height = window->getHeight();
 
@@ -167,26 +150,22 @@ namespace Prehistoric
 
 			uint32_t numberOfTiles = workGroupsX * workGroupsY;
 
-			visibleLightIndicesBuffer = std::make_unique<GLShaderStorageBuffer>(window, nullptr, numberOfTiles * sizeof(VisibleIndex) * 1024);
 
 			window->getSwapchain()->SetWindowSize(width, height);
 
 			AssetManager* man = manager->getAssetManager();
 
 			//Recreate the FBO and the images
-			man->removeReference<Texture>(depthImage.handle);
 			man->removeReference<Texture>(colourImage.handle);
 			man->removeReference<Texture>(bloomImage.handle);
 			man->removeReference<Texture>(combinedImage.handle);
 			man->removeReference<Texture>(outputImage.handle);
 
-			depthImage = man->storeTexture(GLTexture::Storage2D(width, height, 1, D32_LINEAR, Bilinear, ClampToEdge, false));
 			colourImage = man->storeTexture(GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false));
 			bloomImage = man->storeTexture(GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false));
 			combinedImage = man->storeTexture(GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false));
 			outputImage = man->storeTexture(GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false));
 
-			man->addReference<Texture>(depthImage.handle);
 			man->addReference<Texture>(colourImage.handle);
 			man->addReference<Texture>(bloomImage.handle);
 			man->addReference<Texture>(combinedImage.handle);
@@ -207,12 +186,6 @@ namespace Prehistoric
 				man->addReference<Texture>(bloomImages[i].handle);
 			}
 
-			static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->removeSSBOBinding(0);
-			static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->removeSSBOBinding(1);
-			static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
-			static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->addSSBOBinding(0, (ShaderStorageBuffer*)lightBuffer.get(), READ_ONLY);
-			static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->addSSBOBinding(1, (ShaderStorageBuffer*)visibleLightIndicesBuffer.get(), WRITE_ONLY);
-
 			static_cast<GLComputePipeline*>(decomposePipeline.pointer)->removeTextureBinding(0);
 			static_cast<GLComputePipeline*>(decomposePipeline.pointer)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
 			static_cast<GLComputePipeline*>(decomposePipeline.pointer)->addTextureBinding(0, bloomImage.pointer, WRITE_ONLY);
@@ -220,11 +193,6 @@ namespace Prehistoric
 			static_cast<GLComputePipeline*>(hdrPipeline.pointer)->removeTextureBinding(0);
 			static_cast<GLComputePipeline*>(hdrPipeline.pointer)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
 			static_cast<GLComputePipeline*>(hdrPipeline.pointer)->addTextureBinding(0, outputImage.pointer, WRITE_ONLY);
-
-			depthFBO->Bind();
-			depthFBO->addColourAttachment2D(depthImage.pointer);
-			depthFBO->Check();
-			depthFBO->Unbind();
 
 			multisampleFBO->Bind();
 			multisampleFBO->addDepthAttachment(width, height, true);
@@ -273,70 +241,12 @@ namespace Prehistoric
 
 		{
 			PR_PROFILE("Depth pass");
-			depthFBO->Bind();
-			uint32_t arr[] = { GL_COLOR_ATTACHMENT0 };
-			depthFBO->SetDrawAttachments(1, arr);
-			depthFBO->Clear(0.0f);
-
-			depthShader->Bind(nullptr);
-			depthShader->UpdateGlobalUniforms(camera, lights);
-
-			for (auto pipeline : models_3d)
-			{
-				Pipeline* pl = pipeline.first;
-				VertexBuffer* vbo = static_cast<GLGraphicsPipeline*>(pl)->getVertexBuffer();
-				vbo->Bind(nullptr);
-
-				for (auto material : pipeline.second)
-				{
-					for (auto renderer : material.second)
-					{
-						depthShader->UpdateObjectUniforms(renderer->getParent());
-
-						for (uint32_t i = 0; i < vbo->getSubmeshCount(); i++)
-						{
-							vbo->Draw(nullptr, i);
-						}
-					}
-				}
-
-				static_cast<GLGraphicsPipeline*>(pl)->getVertexBuffer()->Unbind();
-			}
-
-			//TODO: enable alpha blending
-			for (auto pipeline : models_transparency)
-			{
-				Pipeline* pl = pipeline.first;
-				VertexBuffer* vbo = static_cast<GLGraphicsPipeline*>(pl)->getVertexBuffer();
-				vbo->Bind(nullptr);
-
-				for (auto material : pipeline.second)
-				{
-					for (auto renderer : material.second)
-					{
-						depthShader->UpdateObjectUniforms(renderer->getParent());
-
-						for (uint32_t i = 0; i < vbo->getSubmeshCount(); i++)
-						{
-							vbo->Draw(nullptr, i);
-						}
-					}
-				}
-
-				static_cast<GLGraphicsPipeline*>(pl)->getVertexBuffer()->Unbind();
-			}
-
-			depthShader->Unbind();
-			depthFBO->Unbind();
+			depthPass->Render();
 		}
 
 		{
 			PR_PROFILE("Light culling pass");
-
-			lightCullingPipeline->BindPipeline(nullptr);
-			static_cast<GLLightCullingPassShader*>(lightCullingPipeline->getShader())->UpdateUniforms(camera, lights, depthImage.pointer);
-			lightCullingPipeline->RenderPipeline();
-			lightCullingPipeline->UnbindPipeline();			
+			lightCullingPass->Render();
 		}
 
 		multisampleFBO->Bind();
@@ -363,8 +273,8 @@ namespace Prehistoric
 				pl->BindPipeline(nullptr);
 				pl->getShader()->UpdateGlobalUniforms(camera, lights);
 
-				lightBuffer->BindBase(nullptr, 0);
-				visibleLightIndicesBuffer->BindBase(nullptr, 1);
+				lightCullingPass->getLightBuffer()->BindBase(nullptr, 0);
+				lightCullingPass->getVisibleLightIndicesBuffer()->BindBase(nullptr, 1);
 
 				for (auto material : pipeline.second)
 				{
@@ -376,8 +286,8 @@ namespace Prehistoric
 					}
 				}
 
-				visibleLightIndicesBuffer->UnbindBase(1);
-				lightBuffer->UnbindBase(0);
+				lightCullingPass->getVisibleLightIndicesBuffer()->UnbindBase(1);
+				lightCullingPass->getLightBuffer()->UnbindBase(0);
 
 				pl->UnbindPipeline();
 			}
@@ -390,8 +300,8 @@ namespace Prehistoric
 				pl->BindPipeline(nullptr);
 				pl->getShader()->UpdateGlobalUniforms(camera, lights);
 
-				lightBuffer->BindBase(nullptr, 0);
-				visibleLightIndicesBuffer->BindBase(nullptr, 1);
+				lightCullingPass->getLightBuffer()->BindBase(nullptr, 0);
+				lightCullingPass->getVisibleLightIndicesBuffer()->BindBase(nullptr, 1);
 
 				for (auto material : pipeline.second)
 				{
@@ -403,8 +313,8 @@ namespace Prehistoric
 					}
 				}
 
-				visibleLightIndicesBuffer->UnbindBase(1);
-				lightBuffer->UnbindBase(0);
+				lightCullingPass->getVisibleLightIndicesBuffer()->UnbindBase(1);
+				lightCullingPass->getLightBuffer()->UnbindBase(0);
 
 				pl->UnbindPipeline();
 			}
@@ -560,9 +470,9 @@ namespace Prehistoric
 
 	void GLRenderer::UpdateLightBuffer()
 	{
-		lightBuffer->Bind(nullptr);
-		lightBuffer->MapBuffer();
-		InternalLight* light = (InternalLight*)lightBuffer->getMappedData();
+		lightCullingPass->getLightBuffer()->Bind(nullptr);
+		lightCullingPass->getLightBuffer()->MapBuffer();
+		InternalLight* light = (InternalLight*)lightCullingPass->getLightBuffer()->getMappedData();
 		memset(light, 0, EngineConfig::lightsMaxNumber * sizeof(InternalLight));
 
 		for (size_t i = 0; i < lights.size(); i++)
@@ -576,7 +486,7 @@ namespace Prehistoric
 			light++;
 		}
 		
-		lightBuffer->UnmapBuffer();
-		lightBuffer->Unbind();
+		lightCullingPass->getLightBuffer()->UnmapBuffer();
+		lightCullingPass->getLightBuffer()->Unbind();
 	}
 };

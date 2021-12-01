@@ -6,7 +6,7 @@
 namespace Prehistoric
 {
 	RenderStage::RenderStage(Renderer* renderer)
-		: window(renderer->getWindow()), camera(renderer->getCamera()), manager(renderer->getAssetManager())
+		: renderer(renderer), window(renderer->getWindow()), camera(renderer->getCamera()), manager(renderer->getAssetManager())
 	{
 	}
 };

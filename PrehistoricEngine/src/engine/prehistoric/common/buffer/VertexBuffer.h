@@ -13,6 +13,11 @@ namespace Prehistoric
 		CLOCKWISE, COUNTER_CLOCKWISE, DOUBLE_SIDED
 	};
 
+	enum class VertexBufferType
+	{
+		MESH, PATCH
+	};
+
 	class VertexBuffer
 	{
 	public:
@@ -28,6 +33,8 @@ namespace Prehistoric
 
 		uint32_t getSubmeshCount() const { return submeshCount; }
 
+		VertexBufferType getType() const { return type; }
+
 		//We should avoid copying this class, because it manages some GPU resources
 		VertexBuffer(VertexBuffer&) = delete;
 		VertexBuffer(VertexBuffer&&) = delete;
@@ -40,6 +47,7 @@ namespace Prehistoric
 		bool indexed;
 
 		FrontFace frontFace;
+		VertexBufferType type;
 	};
 };
 

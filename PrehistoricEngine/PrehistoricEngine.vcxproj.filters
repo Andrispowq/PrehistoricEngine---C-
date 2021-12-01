@@ -750,6 +750,7 @@
       <Filter>prehistoric\core\util\time</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\model\Model.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLLightCullingPass.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -1174,5 +1175,6 @@
       <Filter>prehistoric\core\util\time</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\model\Model.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLLightCullingPass.cpp" />
   </ItemGroup>
 </Project>

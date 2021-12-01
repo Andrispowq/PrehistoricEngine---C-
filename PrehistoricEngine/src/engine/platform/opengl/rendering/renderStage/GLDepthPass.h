@@ -1,12 +1,9 @@
 #ifndef GL_DEPTH_PASS_H
 #define GL_DEPTH_PASS_H
 
-#include "prehistoric/common/rendering//renderStage/RenderStage.h"
+#include "prehistoric/common/rendering/renderStage/RenderStage.h"
 
 #include "platform/opengl/rendering/framebuffer/GLFramebuffer.h"
-#include "platform/opengl/buffer/GLShaderStorageBuffer.h"
-
-#include "platform/opengl/rendering/GLRenderer.h"
 
 namespace Prehistoric
 {
@@ -17,13 +14,16 @@ namespace Prehistoric
 	{
 	public:
 		GLDepthPass(Renderer* renderer);
-		virtual ~GLDepthPass() {}
+		virtual ~GLDepthPass();
 
+		virtual void OnResized() override;
 		virtual void Render() override;
+
+		TextureHandle getDepthTexture() const { return depthTexture; }
 	private:
-		Renderer* renderer;
-	private:
-		friend class GLRenderer;
+		std::unique_ptr<GLFramebuffer> framebuffer;
+		ShaderHandle depthShader;
+		TextureHandle depthTexture;
 	};
 };
 

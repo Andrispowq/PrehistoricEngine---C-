@@ -10,6 +10,9 @@
 
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 
+#include "platform/opengl/rendering/renderStage/GLDepthPass.h"
+#include "platform/opengl/rendering/renderStage/GLLightCullingPass.h"
+
 namespace Prehistoric
 {
 #define BLOOM_PASSES 8
@@ -27,20 +30,21 @@ namespace Prehistoric
 
 		virtual Texture* getOutputTexture() const override { return outputImage.pointer; }
 
+		GLDepthPass* getDepthPass() const { return depthPass; }
+		GLLightCullingPass* getLightCullingPass() const { return lightCullingPass; }
+
 	private:
 		void UpdateLightBuffer();
 
-	private:
-		std::unique_ptr<GLFramebuffer> depthFBO;
+	protected:
+		GLDepthPass* depthPass;
+		GLLightCullingPass* lightCullingPass;
+
 		std::unique_ptr<GLFramebuffer> multisampleFBO;
 		std::unique_ptr<GLFramebuffer> colourFBO;
 
 		std::unique_ptr<GLFramebuffer> scratchFBO;
 
-		std::unique_ptr<GLShaderStorageBuffer> lightBuffer;
-		std::unique_ptr<GLShaderStorageBuffer> visibleLightIndicesBuffer;
-
-		TextureHandle depthImage;
 		TextureHandle colourImage;
 		TextureHandle bloomImage;
 		TextureHandle combinedImage;
@@ -49,8 +53,6 @@ namespace Prehistoric
 		TextureHandle temporaryImages[BLOOM_PASSES];
 		TextureHandle bloomImages[BLOOM_PASSES];
 
-		ShaderHandle depthShader;
-		ShaderHandle lightCullingShader;
 		ShaderHandle decomposeShader;
 		ShaderHandle gaussianShader;
 		ShaderHandle bloomCombineShader;
@@ -59,7 +61,6 @@ namespace Prehistoric
 
 		VertexBufferHandle quad;
 
-		PipelineHandle lightCullingPipeline;
 		PipelineHandle decomposePipeline;
 		PipelineHandle gaussianPipeline;
 		PipelineHandle bloomCombinePipeline;

@@ -20,16 +20,15 @@ namespace Prehistoric
 		RenderStage(Renderer* renderer);
 		virtual ~RenderStage() {}
 
+		virtual void OnResized() = 0;
 		virtual void Render() = 0;
 
 	protected:
 		AssembledAssetManager* manager;
+		Renderer* renderer;
 
 		Window* window;
 		Camera* camera;
-
-	protected:
-		friend class Renderer;
 	};
 };
 
