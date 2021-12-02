@@ -95,9 +95,12 @@ namespace Prehistoric
 		if (pipeIdx != map.end())
 		{
 			auto& renderables = pipeIdx->second;
-			auto rendIdx = std::find(renderables.begin(), renderables.end(), renderable);
-
-			renderables.erase(rendIdx);
+			renderables.push_back(renderable);
+		}
+		else
+		{
+			std::vector<RenderableComponent*> renderers = { renderable };
+			map.insert(std::make_pair(pipeline, renderers));
 		}
 	}
 
@@ -105,16 +108,13 @@ namespace Prehistoric
 	{
 		Pipeline* pipeline = renderable->getPipeline();
 		auto pipeIdx = map.find(pipeline);
-
+	
 		if (pipeIdx != map.end())
 		{
 			auto& renderables = pipeIdx->second;
-			renderables.push_back(renderable);
-		}
-		else
-		{
-			std::vector<RenderableComponent*> renderers = { renderable };
-			map.insert(std::make_pair(pipeline, renderers));
+			auto rendIdx = std::find(renderables.begin(), renderables.end(), renderable);
+	
+			renderables.erase(rendIdx);
 		}
 	}
 

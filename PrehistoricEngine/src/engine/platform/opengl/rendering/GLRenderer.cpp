@@ -114,7 +114,7 @@ namespace Prehistoric
 		{
 			PR_PROFILE("Render to screen");
 			renderPipeline->BindPipeline(nullptr);
-			static_cast<GLGUIShader*>(renderPipeline->getShader())->UpdateCustomUniforms(mainPass->getColourImage().pointer, -1);
+			static_cast<GLGUIShader*>(renderPipeline->getShader())->UpdateCustomUniforms(hdrPass->getOutputImage().pointer, -1);
 			renderPipeline->RenderPipeline();
 			renderPipeline->UnbindPipeline();
 		}
