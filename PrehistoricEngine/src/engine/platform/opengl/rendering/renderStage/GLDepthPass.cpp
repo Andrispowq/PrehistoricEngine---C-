@@ -54,6 +54,8 @@ namespace Prehistoric
 
 	void GLDepthPass::Render()
 	{
+		PR_PROFILE("Depth pass");
+
 		GLRenderer* rend = (GLRenderer*)renderer;
 
 		uint32_t width = window->getWidth();

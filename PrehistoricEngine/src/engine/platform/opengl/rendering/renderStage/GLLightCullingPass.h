@@ -21,6 +21,8 @@ namespace Prehistoric
 		virtual void OnResized() override;
 		virtual void Render() override;
 
+		void GLLightCullingPass::UpdateLightBuffer();
+
 		GLShaderStorageBuffer* getLightBuffer() const { return lightBuffer.get(); }
 		GLShaderStorageBuffer* getVisibleLightIndicesBuffer() const { return visibleLightIndicesBuffer.get(); }
 	private:

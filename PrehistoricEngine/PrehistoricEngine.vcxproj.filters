@@ -751,6 +751,9 @@
     </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\model\Model.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLLightCullingPass.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLMainPass.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLBloomPass.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLHDRPass.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -1176,5 +1179,8 @@
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\model\Model.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLLightCullingPass.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLMainPass.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLBloomPass.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLHDRPass.cpp" />
   </ItemGroup>
 </Project>

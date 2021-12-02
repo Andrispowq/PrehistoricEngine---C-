@@ -6,6 +6,7 @@
 #include "platform/opengl/rendering/GLRenderer.h"
 
 #include "prehistoric/core/node/component/light/Light.h"
+#include "prehistoric/core/node/GameObject.h"
 
 namespace Prehistoric
 {
@@ -59,8 +60,31 @@ namespace Prehistoric
 
 	void GLLightCullingPass::Render()
 	{
+		PR_PROFILE("Light culling pass");
+
 		GLRenderer* rend = (GLRenderer*)renderer;
 
+		//Update light buffer
+		lightBuffer->Bind(nullptr);
+		lightBuffer->MapBuffer();
+		InternalLight* light = (InternalLight*)lightBuffer->getMappedData();
+		memset(light, 0, EngineConfig::lightsMaxNumber * sizeof(InternalLight));
+
+		for (size_t i = 0; i < rend->getLights().size(); i++)
+		{
+			Light* l = rend->getLights()[i];
+
+			light->position = Vector4f(l->getParent()->getWorldTransform().getPosition(), 1);
+			light->colour = Vector4f(l->getColour(), 1);
+			light->intensity_radius = Vector4f(l->getIntensity(), l->getRadius(), 0, 0);
+
+			light++;
+		}
+
+		lightBuffer->UnmapBuffer();
+		lightBuffer->Unbind();
+
+		//Render
 		lightCullingPipeline->BindPipeline(nullptr);
 		static_cast<GLLightCullingPassShader*>(lightCullingPipeline->getShader())->UpdateUniforms(camera, rend->getLights(), rend->getDepthPass()->getDepthTexture().pointer);
 		lightCullingPipeline->RenderPipeline();

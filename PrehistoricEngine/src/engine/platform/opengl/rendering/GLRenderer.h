@@ -12,11 +12,12 @@
 
 #include "platform/opengl/rendering/renderStage/GLDepthPass.h"
 #include "platform/opengl/rendering/renderStage/GLLightCullingPass.h"
+#include "platform/opengl/rendering/renderStage/GLMainPass.h"
+#include "platform/opengl/rendering/renderStage/GLBloomPass.h"
+#include "platform/opengl/rendering/renderStage/GLHDRPass.h"
 
 namespace Prehistoric
 {
-#define BLOOM_PASSES 8
-
 	class GLRenderer : public Renderer
 	{
 	public:
@@ -28,43 +29,23 @@ namespace Prehistoric
 
 		virtual void Render() override;
 
-		virtual Texture* getOutputTexture() const override { return outputImage.pointer; }
+		virtual Texture* getOutputTexture() const override { return hdrPass->getOutputImage().pointer; }
 
 		GLDepthPass* getDepthPass() const { return depthPass; }
 		GLLightCullingPass* getLightCullingPass() const { return lightCullingPass; }
-
-	private:
-		void UpdateLightBuffer();
+		GLMainPass* getMainPass() const { return mainPass; }
+		GLBloomPass* getBloomPass() const { return bloomPass; }
+		GLHDRPass* getHDRPass() const { return hdrPass; }
 
 	protected:
 		GLDepthPass* depthPass;
 		GLLightCullingPass* lightCullingPass;
-
-		std::unique_ptr<GLFramebuffer> multisampleFBO;
-		std::unique_ptr<GLFramebuffer> colourFBO;
-
-		std::unique_ptr<GLFramebuffer> scratchFBO;
-
-		TextureHandle colourImage;
-		TextureHandle bloomImage;
-		TextureHandle combinedImage;
-		TextureHandle outputImage;
-
-		TextureHandle temporaryImages[BLOOM_PASSES];
-		TextureHandle bloomImages[BLOOM_PASSES];
-
-		ShaderHandle decomposeShader;
-		ShaderHandle gaussianShader;
-		ShaderHandle bloomCombineShader;
-		ShaderHandle hdrShader;
-		ShaderHandle renderShader;
+		GLMainPass* mainPass;
+		GLBloomPass* bloomPass;
+		GLHDRPass* hdrPass;
 
 		VertexBufferHandle quad;
-
-		PipelineHandle decomposePipeline;
-		PipelineHandle gaussianPipeline;
-		PipelineHandle bloomCombinePipeline;
-		PipelineHandle hdrPipeline;
+		ShaderHandle renderShader;
 		PipelineHandle renderPipeline;
 	};
 };
