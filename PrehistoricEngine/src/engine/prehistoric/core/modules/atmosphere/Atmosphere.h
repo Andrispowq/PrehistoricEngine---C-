@@ -27,7 +27,7 @@ namespace Prehistoric
 		virtual ~Atmosphere() {}
 
 		inline Light* getSun() const { return sun; }
-		inline void setSun(Light* sun) { this->sun = sun; sun->SetToBeRegistered(false); }
+		inline void setSun(Light* sun) { this->sun = sun; sun->setIlluminate(false); }
 
 		Atmosphere(const Atmosphere&) = default;
 

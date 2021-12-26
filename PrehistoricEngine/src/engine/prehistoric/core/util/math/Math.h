@@ -395,6 +395,8 @@ namespace Prehistoric
 
 		std::array<float, 4> operator[](int index) const;
 
+		Matrix4f Invert() const;
+
 		static Matrix4f Identity();
 		static Matrix4f Zero();
 
@@ -406,7 +408,12 @@ namespace Prehistoric
 		static Matrix4f PerspectiveProjection(const float& fov, const float& aspectRatio, const float& nearPlane, const float& farPlane);
 		static Matrix4f View(const Vector3f& forward, const Vector3f& up);
 
+		static Matrix4f OrthographicProjection(float l, float r, float b, float t, float n, float f);
+
 		std::array<float, 4> const getRow(int i) const;
+
+		inline float Get(int x, int y) const;
+		inline void Set(int x, int y, float val);
 
 		void print() const
 		{
@@ -882,6 +889,8 @@ namespace Prehistoric
 
 		std::array<float, 4> operator[](const int& index) const;
 
+		Matrix4f Invert() const;
+
 		static Matrix4f Identity();
 		static Matrix4f Zero();
 
@@ -893,7 +902,12 @@ namespace Prehistoric
 		static Matrix4f PerspectiveProjection(const float& fov, const float& aspectRatio, const float& nearPlane, const float& farPlane);
 		static Matrix4f View(const Vector3f& forward, const Vector3f& up);
 
+		static Matrix4f OrthographicProjection(float l, float r, float b, float t, float n, float f);
+
 		std::array<float, 4> const getRow(const int i) const;
+
+		inline float Get(int x, int y) const;
+		inline void Set(int x, int y, float val);
 
 		void print() const
 		{

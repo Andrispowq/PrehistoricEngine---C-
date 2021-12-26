@@ -11,6 +11,7 @@
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 
 #include "platform/opengl/rendering/renderStage/GLDepthPass.h"
+#include "platform/opengl/rendering/renderStage/GLShadowDepthPass.h"
 #include "platform/opengl/rendering/renderStage/GLLightCullingPass.h"
 #include "platform/opengl/rendering/renderStage/GLMainPass.h"
 #include "platform/opengl/rendering/renderStage/GLBloomPass.h"
@@ -32,6 +33,7 @@ namespace Prehistoric
 		virtual Texture* getOutputTexture() const override { return hdrPass->getOutputImage().pointer; }
 
 		GLDepthPass* getDepthPass() const { return depthPass; }
+		GLShadowDepthPass* getShadowDepthPass() const { return shadowDepthPass; }
 		GLLightCullingPass* getLightCullingPass() const { return lightCullingPass; }
 		GLMainPass* getMainPass() const { return mainPass; }
 		GLBloomPass* getBloomPass() const { return bloomPass; }
@@ -39,6 +41,7 @@ namespace Prehistoric
 
 	protected:
 		GLDepthPass* depthPass;
+		GLShadowDepthPass* shadowDepthPass;
 		GLLightCullingPass* lightCullingPass;
 		GLMainPass* mainPass;
 		GLBloomPass* bloomPass;

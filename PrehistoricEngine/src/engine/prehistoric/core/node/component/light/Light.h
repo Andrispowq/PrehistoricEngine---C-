@@ -8,7 +8,7 @@ namespace Prehistoric
 	class Light : public Component
 	{
 	public:
-		Light(const Vector3f& colour = 0, float intensity = 1, float radius = 200.0f);
+		Light(const Vector3f& colour = 0, float intensity = 1, float radius = 200.0f, bool illuminate = true, bool castShadow = true);
 		virtual ~Light();
 
 		virtual void PreRender(Renderer* renderer) override;
@@ -17,11 +17,15 @@ namespace Prehistoric
 		inline float getIntensity() const { return intensity; }
 		inline float getRadius() const { return radius; }
 
+		inline bool illuminates() const { return illuminate; }
+		inline bool castShadows() const { return castShadow; }
+
 		inline void setColour(const Vector3f& colour) { this->colour = colour; }
 		inline void setIntensity(float intensity) { this->intensity = intensity; }
 		inline void setRadius(float radius) { this->radius = radius; }
 
-		inline void SetToBeRegistered(bool set) { this->toBeRegistered = set; }
+		inline void setIlluminate(bool set) { this->illuminate = set; }
+		inline void setCastShadow(bool set) { this->castShadow = set; }
 
 		static ComponentType getStaticComponentType() { return ComponentType::LightComponent; }
 
@@ -29,7 +33,9 @@ namespace Prehistoric
 		Vector3f colour;
 		float intensity;
 		float radius;
-		bool toBeRegistered;
+
+		bool illuminate;
+		bool castShadow;
 	};
 };
 

@@ -149,6 +149,7 @@
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLHDRPass.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLLightCullingPass.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLMainPass.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLShadowDepthPass.h" />
     <ClInclude Include="src\engine\Prehistoric.h" />
     <ClInclude Include="src\engine\platform\Platform.h" />
     <ClInclude Include="src\engine\platform\opengl\buffer\GLMeshVertexBuffer.h" />
@@ -328,6 +329,7 @@
     <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLHDRPass.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLLightCullingPass.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLMainPass.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLShadowDepthPass.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\GLShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereScatteringShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereShader.cpp" />

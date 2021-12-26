@@ -14,6 +14,12 @@ namespace Prehistoric
 		AddUniform("m_projection");
 	}
 
+	void GLDepthPassShader::UpdateGlobalUniforms(Matrix4f proj, Matrix4f view)
+	{
+		SetUniform("m_view", view);
+		SetUniform("m_projection", proj);
+	}
+
 	void GLDepthPassShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
 	{
 		SetUniform("m_view", camera->getViewMatrix());

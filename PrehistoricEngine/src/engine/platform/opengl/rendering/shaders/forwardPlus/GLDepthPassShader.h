@@ -15,6 +15,8 @@ namespace Prehistoric
 		GLDepthPassShader();
 		virtual ~GLDepthPassShader() {}
 
+		void UpdateGlobalUniforms(Matrix4f proj, Matrix4f view);
+
 		virtual void UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const override;
 		virtual void UpdateObjectUniforms(GameObject* object, uint32_t instance_index = 0) const override;
 

@@ -23,6 +23,7 @@ namespace Prehistoric
 		: Renderer(window, camera, manager)
 	{
 		depthPass = new GLDepthPass(this);
+		shadowDepthPass = new GLShadowDepthPass(this);
 		lightCullingPass = new GLLightCullingPass(this);
 		mainPass = new GLMainPass(this);
 		bloomPass = new GLBloomPass(this);
@@ -46,6 +47,7 @@ namespace Prehistoric
 	GLRenderer::~GLRenderer()
 	{
 		delete depthPass;
+		delete shadowDepthPass;
 		delete lightCullingPass;
 		delete mainPass;
 		delete bloomPass;
@@ -64,6 +66,7 @@ namespace Prehistoric
 			uint32_t height = window->getHeight();
 
 			depthPass->OnResized();
+			shadowDepthPass->OnResized();
 			lightCullingPass->OnResized();
 			mainPass->OnResized();
 			bloomPass->OnResized();
@@ -101,6 +104,10 @@ namespace Prehistoric
 		uint32_t height = window->getHeight();
 
 		depthPass->Render();
+		
+		//shadow pass
+		shadowDepthPass->Render();
+		
 		lightCullingPass->Render();
 		mainPass->Render();
 

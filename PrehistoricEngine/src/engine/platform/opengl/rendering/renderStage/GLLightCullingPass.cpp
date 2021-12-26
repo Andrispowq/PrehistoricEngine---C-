@@ -74,6 +74,11 @@ namespace Prehistoric
 		{
 			Light* l = rend->getLights()[i];
 
+			if (!l->illuminates())
+			{
+				continue;
+			}
+
 			light->position = Vector4f(l->getParent()->getWorldTransform().getPosition(), 1);
 			light->colour = Vector4f(l->getColour(), 1);
 			light->intensity_radius = Vector4f(l->getIntensity(), l->getRadius(), 0, 0);

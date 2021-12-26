@@ -6,7 +6,7 @@
 static void sun_move_function(Prehistoric::GameObject* object, float frameTime)
 {
 	constexpr float range = 32000.0f;
-	constexpr float anglesPerSecond = 0.0f; // 0.5f
+	constexpr float anglesPerSecond = 10.0f; // 0.5f
 
 	static float angle = 180.0f;
 
@@ -72,11 +72,11 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 	{
 		AssetManager* man = manager->getAssetManager();
 
-		GameObject* sun = new GameObject();
+		/*GameObject* sun = new GameObject();
 		sun->setUpdateFunction(sun_move_function);
-		sun->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0.95f, 0.87f), 10000000000.0f));
+		sun->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0.95f, 0.87f), 100.0f, 50000.0f, true));
 		sun_move_function(sun, 0.0f);
-		root->AddChild("sun", sun);
+		root->AddChild("sun", sun);*/
 
 		//Atmosphere* atm = new Atmosphere(window, manager);
 		//atm->setSun(sun->GetComponent<Light>());
@@ -86,7 +86,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 		terrain->UpdateQuadtree();
 		sceneRoot->AddChild("terrain0", terrain);
 
-		GameObject* slider = new GUISlider(window, manager, 0.0f, 2.0f, Vector3f(0.5f), &EngineConfig::rendererExposure, sizeof(float), true);
+		GameObject* slider = new GUISlider (window, manager, 0.0f, 2.0f, Vector3f(0.5f), &EngineConfig::rendererExposure, sizeof(float), true);
 		slider->SetPosition({ 0.5f, 0.5f, 0 });
 		slider->SetScale({ 0.125f, 0.05f, 1 });
 		sceneRoot->AddChild("slider", slider);

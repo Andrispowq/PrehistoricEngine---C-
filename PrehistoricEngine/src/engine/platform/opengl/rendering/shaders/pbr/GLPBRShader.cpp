@@ -33,7 +33,13 @@ namespace Prehistoric
 
 		AddUniform("numberOfTilesX");
 		AddUniform("max_reflection_lod");
+
+		AddUniform("shadowTex");
+		AddUniform("shadowMatrix");
 	}
+
+	extern Texture* shadowTex;
+	extern Matrix4f toLightSpace;
 
 	void GLPBRShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
 	{
@@ -41,6 +47,10 @@ namespace Prehistoric
 		SetUniform("m_projection", camera->getProjectionMatrix());
 		SetUniform("cameraPosition", camera->getPosition());
 		SetUniformi("highDetailRange", EngineConfig::rendererHighDetailRange);
+
+		shadowTex->Bind(3);
+		SetUniformi("shadowTex", 3);
+		SetUniform("shadowMatrix", toLightSpace);
 
 		EnvironmentMapConfig::irradianceMap->Bind(4);
 		SetUniformi("irradianceMap", 4);

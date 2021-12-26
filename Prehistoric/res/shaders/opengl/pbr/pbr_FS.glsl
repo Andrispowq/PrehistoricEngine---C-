@@ -56,6 +56,9 @@ uniform int numberOfTilesX;
 uniform float max_reflection_lod;
 uniform float threshold;
 
+in vec4 shadowCoord;
+uniform sampler2D shadowTex;
+
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 float GeometrySchlickGGX(float NdotV, float roughness);
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
@@ -64,6 +67,29 @@ vec3 FresnelSchlick(float cosTheta, vec3 F0);
 
 void main()
 {
+	const int pcfCount = 2;
+	const float totalTexels = (pcfCount * 2.0 + 1.0) * (pcfCount * 2.0 + 1.0);
+
+	float mapSize = 4096.0;
+	float texelSize = 1.0 / mapSize;
+	float total = 0.0;
+
+	for (int x = -pcfCount; x <= pcfCount; x++) 
+	{
+		for (int y = -pcfCount; y <= pcfCount; y++)
+		{
+			float objectNearestLight = texture(shadowTex, shadowCoord.xy + vec2(x, y) * texelSize).r;
+			if (shadowCoord.z > objectNearestLight + 0.002) 
+			{
+				total += 1.0;
+			}
+		}
+	}
+
+	total /= totalTexels;
+	float lightFactor = 1.0 - (total * shadowCoord.w);
+
+
 	ivec2 location = ivec2(gl_FragCoord.xy);
 	ivec2 tileID = location / ivec2(16, 16);
 	uint index = uint(tileID.y * numberOfTilesX + tileID.x);
@@ -180,8 +206,8 @@ void main()
 	{
 		colour = vec3(0.0);
 	}
-	
-	outColour = vec4(colour, 1);
+
+	outColour = vec4(colour * lightFactor, 1);
 }
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)
