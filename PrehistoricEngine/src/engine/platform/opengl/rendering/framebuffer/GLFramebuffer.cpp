@@ -78,6 +78,12 @@ namespace Prehistoric
 			type = GL_DEPTH_ATTACHMENT;
 		}
 
+		if (tex->getType() == TEXTURE_ARRAY_2D)
+		{
+			glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, tex->getTextureID(), 0);
+			return;
+		}
+
 		if (tex->isMultisample())
 		{
 			glFramebufferTexture2D(GL_FRAMEBUFFER, type, GL_TEXTURE_2D_MULTISAMPLE, tex->getTextureID(), mipLevel);

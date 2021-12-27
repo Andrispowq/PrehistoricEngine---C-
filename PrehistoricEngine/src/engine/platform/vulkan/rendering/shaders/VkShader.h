@@ -15,13 +15,6 @@
 
 namespace Prehistoric
 {
-	struct UniformBufferObject
-	{
-		Matrix4f transformation;
-		Matrix4f view;
-		Matrix4f projection;
-	};
-
 	class VKShader : public Shader
 	{
 	public:
@@ -49,6 +42,8 @@ namespace Prehistoric
 		virtual void SetUniform(const std::string& name, const Vector3f& value, size_t offset = 0, uint32_t instance_index = 0) const override;
 		virtual void SetUniform(const std::string& name, const Vector4f& value, size_t offset = 0, uint32_t instance_index = 0) const override;
 		virtual void SetUniform(const std::string& name, const Matrix4f& value, size_t offset = 0, uint32_t instance_index = 0) const override;
+
+		virtual void SetUniformBlock(const std::string& name, int value, size_t offset = 0, uint32_t instance_index = 0) const override {};
 
 		virtual void SetTexture(const std::string& name, Texture* value, uint32_t instance_index = 0) const override;
 

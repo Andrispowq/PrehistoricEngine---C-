@@ -17,6 +17,7 @@
 #include "platform/opengl/rendering/shaders/postProcessing/GLBloomCombineShader.h"
 #include "platform/opengl/rendering/shaders/postProcessing/GLHDRShader.h"
 #include "platform/opengl/rendering/shaders/postProcessing/GLBloomDecomposeShader.h"
+#include "platform/opengl/rendering/shaders/shadow/GLShadowDepthPassShader.h"
 
 #include "platform/vulkan/rendering/shaders/basic/VKBasicShader.h"
 #include "platform/vulkan/rendering/shaders/pbr/VKPBRShader.h"
@@ -91,6 +92,10 @@ namespace Prehistoric
 			else if (path == "bloom_decompose")
 			{
 				shader = new GLBloomDecomposeShader();
+			}
+			else if (path == "shadow_depth_pass")
+			{
+				shader = new GLShadowDepthPassShader();
 			}
 		}
 		else if (FrameworkConfig::api == Vulkan)

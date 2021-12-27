@@ -755,6 +755,9 @@
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLBloomPass.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLHDRPass.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLShadowDepthPass.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\shadow\GLShadowDepthPassShader.h" />
+    <ClInclude Include="src\engine\prehistoric\common\buffer\UniformBufferObject.h" />
+    <ClInclude Include="src\engine\platform\opengl\buffer\GLUniformBufferObject.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -1184,5 +1187,8 @@
     <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLBloomPass.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLHDRPass.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLShadowDepthPass.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\shadow\GLShadowDepthPassShader.cpp" />
+    <ClCompile Include="src\engine\prehistoric\common\buffer\UniformBufferObject.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\buffer\GLUniformBufferObject.cpp" />
   </ItemGroup>
 </Project>

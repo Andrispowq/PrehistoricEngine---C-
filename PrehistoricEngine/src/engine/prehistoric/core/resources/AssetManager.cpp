@@ -167,6 +167,9 @@ namespace Prehistoric
 		case Prehistoric::ShaderName::BloomDecompose:
 			name = "bloom_decompose";
 			break;
+		case Prehistoric::ShaderName::ShadowDepthPass:
+			name = "shadow_depth_pass";
+			break;
 		default:
 			name = "invalid";
 			break;

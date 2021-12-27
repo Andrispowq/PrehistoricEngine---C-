@@ -8,11 +8,20 @@
 #include "platform/opengl/rendering/pipeline/GLGraphicsPipeline.h"
 
 #include "platform/opengl/rendering/shaders/forwardPlus/GLDepthPassShader.h"
+#include "platform/opengl/buffer/GLUniformBufferObject.h"
+
+#ifdef max
+#undef max
+#endif
+
+#ifdef min
+#undef min
+#endif
 
 namespace Prehistoric
 {
-	Texture* shadowTex = nullptr;
-	Matrix4f toLightSpace;
+	UniformBufferObject* _matrices = nullptr;
+	std::vector<float> cascadeDistances;
 
 	GLShadowDepthPass::GLShadowDepthPass(Renderer* renderer)
 		: RenderStage(renderer), framebuffer{ nullptr }
@@ -20,21 +29,19 @@ namespace Prehistoric
 		uint32_t width = window->getWidth();
 		uint32_t height = window->getHeight();
 
-		float aspect = float(width) / float(height);
+		//TODO
+		float farPlane = EngineConfig::rendererFarPlane;
+		shadowCascadeLevels = std::vector<float>{ farPlane / 50.0f, farPlane / 25.0f, farPlane / 10.0f, farPlane / 2.0f };
+		cascadeDistances = shadowCascadeLevels;
 
-		farWidth = (float)(SHADOW_DISTANCE * tan(ToRadians(camera->getFov())));
-		nearWidth = (float)(EngineConfig::rendererNearPlane * tan(ToRadians(camera->getFov())));
-		farHeight = farWidth / aspect;
-		nearHeight = nearWidth / aspect;
-
-		lightViewMatrix = Matrix4f::Identity();
-		lightProjMatrix = Matrix4f::Identity();
+		matrices = new GLUniformBufferObject(window, nullptr, 16 * 16 * sizeof(float));
+		_matrices = matrices;
 
 		AssetManager* man = manager->getAssetManager();
-		depthTexture = man->storeTexture(GLTexture::Storage2D(SIZE, SIZE, 1, D32_LINEAR, Nearest, ClampToEdge, false));
+		depthTexture = man->storeTexture(GLTexture::Storage2DArray(SIZE, SIZE, (int)shadowCascadeLevels.size() + 1, D32_LINEAR, Nearest, Repeat, false));
 		man->addReference<Texture>(depthTexture.handle);
 
-		depthShader = man->loadShader(ShaderName::DepthPass).value();
+		depthShader = man->loadShader(ShaderName::ShadowDepthPass).value();
 		man->addReference<Shader>(depthShader.handle);
 
 		framebuffer = std::make_unique<GLFramebuffer>(window);
@@ -58,7 +65,7 @@ namespace Prehistoric
 
 		AssetManager* man = manager->getAssetManager();
 		man->removeReference<Texture>(depthTexture.handle);
-		depthTexture = man->storeTexture(GLTexture::Storage2D(SIZE, SIZE, 1, D32_LINEAR, Nearest, ClampToEdge, false));
+		depthTexture = man->storeTexture(GLTexture::Storage2DArray(SIZE, SIZE, (int)shadowCascadeLevels.size() + 1, D32_LINEAR, Nearest, Repeat, false));
 		man->addReference<Texture>(depthTexture.handle);
 
 		framebuffer->Bind();
@@ -76,25 +83,18 @@ namespace Prehistoric
 		uint32_t height = window->getHeight();
 
 		//update stuff
-		CalculateProjection();
+		std::vector<Matrix4f> lightMatrices = GetLightSpaceMatrices(Vector3f(0, -1, 1).normalise());
 
-		lightProjMatrix = Matrix4f::Identity();
-		lightProjMatrix.m[0 * 4 + 0] = 2.f / (maxX - minX);
-		lightProjMatrix.m[1 * 4 + 1] = 2.f / (maxY - minY);
-		lightProjMatrix.m[2 * 4 + 2] = -2.f / (maxZ - minZ);
-		lightProjMatrix.m[3 * 4 + 3] = 1;
-		CalculateLightViewMatrix(Vector3f(0, -1, 1), getBoxCentre());
-
-		/// <summary>
-		/// EXPERIMENTAL
-		/// </summary>
-		shadowTex = depthTexture.pointer;
-		lightSpaceMatrix = lightProjMatrix * lightViewMatrix;
-		lightSpaceMatrix = Matrix4f::Transformation(0.5f, 0.0f, 0.5f) * lightSpaceMatrix;
-		toLightSpace = lightSpaceMatrix;
-		/// <summary>
-		/// EXPERIMENTAL
-		/// </summary>
+		matrices->Bind(0);
+		matrices->MapBuffer();
+		uint8_t* ptr = (uint8_t*)matrices->getMappedData();
+		for (const auto& elem : lightMatrices)
+		{
+			memcpy(ptr, elem.m, 16 * sizeof(float));
+			ptr += (16 * sizeof(float));
+		}
+		matrices->UnmapBuffer();
+		matrices->Unbind();
 
 		framebuffer->Bind();
 		uint32_t arr[] = { GL_COLOR_ATTACHMENT0 };
@@ -104,7 +104,7 @@ namespace Prehistoric
 		window->getSwapchain()->SetWindowSize(SIZE, SIZE);
 
 		depthShader->Bind(nullptr);
-		dynamic_cast<GLDepthPassShader*>(depthShader.pointer)->UpdateGlobalUniforms(lightProjMatrix, lightViewMatrix);
+		dynamic_cast<GLShadowDepthPassShader*>(depthShader.pointer)->UpdateGlobalUniforms(matrices);
 
 		for (auto pipeline : rend->getModels3D())
 		{
@@ -114,6 +114,11 @@ namespace Prehistoric
 
 			for (auto material : pipeline.second)
 			{
+				if (material.first == nullptr)
+				{
+					continue;
+				}
+
 				for (auto renderer_ : material.second)
 				{
 					depthShader->UpdateObjectUniforms(renderer_->getParent());
@@ -157,119 +162,112 @@ namespace Prehistoric
 		framebuffer->Unbind();
 	}
 
-	void GLShadowDepthPass::CalculateProjection()
+	std::vector<Vector4f> GLShadowDepthPass::GetFrustumCornersWorldSpace(Matrix4f proj, Matrix4f view)
 	{
-		Matrix4f rotation = Matrix4f::View(camera->getForward(), camera->getUp());
-		Vector3f forward = (rotation * Vector4f(0, 0, -1, 0)).xyz();
+		Matrix4f inv = (proj * view).Invert();
 
-		Vector3f toFar = forward * SHADOW_DISTANCE;
-		Vector3f toNear = forward * NEAR_PLANE;
-		Vector3f centerFar = toFar + camera->getPosition();
-		Vector3f centerNear = toNear + camera->getPosition();
+		std::vector<Vector4f> frustumCorners;
 
-		std::array<Vector4f, 8> points = CalculateFrustumVertices(rotation, forward, centerNear, centerFar);
-
-		boolean first = true;
-		for (Vector4f point : points) 
+		for (uint32_t x = 0; x < 2; ++x)
 		{
-			if (first)
+			for (uint32_t y = 0; y < 2; ++y)
 			{
-				minX = point.x;
-				maxX = point.x;
-				minY = point.y;
-				maxY = point.y;
-				minZ = point.z;
-				maxZ = point.z;
-				first = false;
-				continue;
-			}
-			if (point.x > maxX) 
-			{
-				maxX = point.x;
-			}
-			else if (point.x < minX) 
-			{
-				minX = point.x;
-			}
-			if (point.y > maxY)
-			{
-				maxY = point.y;
-			}
-			else if (point.y < minY) 
-			{
-				minY = point.y;
-			}
-			if (point.z > maxZ)
-			{
-				maxZ = point.z;
-			}
-			else if (point.z < minZ) 
-			{
-				minZ = point.z;
+				for (uint32_t z = 0; z < 2; ++z)
+				{
+					Vector4f pt =
+						inv * Vector4f(
+							2.0f * x - 1.0f,
+							2.0f * y - 1.0f,
+							2.0f * z - 1.0f,
+							1.0f);
+					frustumCorners.push_back(pt / pt.w);
+				}
 			}
 		}
 
-		maxZ += OFFSET;
+		return frustumCorners;
 	}
 
-	std::array<Vector4f, 8> GLShadowDepthPass::CalculateFrustumVertices(Matrix4f rotation, Vector3f forwardVector, Vector3f centerNear, Vector3f centerFar)
+	Matrix4f GLShadowDepthPass::GetViewProjMatrix(Vector3f lightDir, float nearPlane, float farPlane)
 	{
-		std::array<Vector4f, 8> points;
+		Matrix4f cam_proj = Matrix4f::PerspectiveProjection(camera->getFov(), ((float)window->getWidth()) / ((float)window->getHeight()), nearPlane, farPlane);
+		Matrix4f cam_view = camera->getViewMatrix();
+		std::vector<Vector4f> corners = GetFrustumCornersWorldSpace(cam_proj, cam_view);
 
-		Vector3f upVector = (rotation * Vector4f(camera->getUp(), 0)).xyz();
-		Vector3f rightVector = forwardVector.cross(upVector);
-		Vector3f downVector = upVector * -1;
-		Vector3f leftVector = rightVector * -1;
-		Vector3f farTop = centerFar + upVector * farHeight;
-		Vector3f farBottom = centerFar + downVector * farHeight;
-		Vector3f nearTop = centerNear + upVector * nearHeight;
-		Vector3f nearBottom = centerNear + downVector * nearHeight;
+		//view matrix
+		Vector3f centre;
+		for (const auto& v : corners)
+		{
+			centre += v.xyz();
+		}
+		centre /= corners.size();
 
-		points[0] = CalculateLightSpaceFrustumCorner(farTop, rightVector, farWidth);
-		points[1] = CalculateLightSpaceFrustumCorner(farTop, leftVector, farWidth);
-		points[2] = CalculateLightSpaceFrustumCorner(farBottom, rightVector, farWidth);
-		points[3] = CalculateLightSpaceFrustumCorner(farBottom, leftVector, farWidth);
-		points[4] = CalculateLightSpaceFrustumCorner(nearTop, rightVector, nearWidth);
-		points[5] = CalculateLightSpaceFrustumCorner(nearTop, leftVector, nearWidth);
-		points[6] = CalculateLightSpaceFrustumCorner(nearBottom, rightVector, nearWidth);
-		points[7] = CalculateLightSpaceFrustumCorner(nearBottom, leftVector, nearWidth);
+		Matrix4f lightView = Matrix4f::View(lightDir, Vector3f(0, 1, 0));
 
-		return points;
+		//projection
+		float minX = std::numeric_limits<float>::max();
+		float maxX = std::numeric_limits<float>::min();
+		float minY = std::numeric_limits<float>::max();
+		float maxY = std::numeric_limits<float>::min();
+		float minZ = std::numeric_limits<float>::max();
+		float maxZ = std::numeric_limits<float>::min();
+
+		for (const auto& v : corners)
+		{
+			const auto trf = lightView * v;
+			minX = std::min(minX, trf.x);
+			maxX = std::max(maxX, trf.x);
+			minY = std::min(minY, trf.y);
+			maxY = std::max(maxY, trf.y);
+			minZ = std::min(minZ, trf.z);
+			maxZ = std::max(maxZ, trf.z);
+		}
+
+		//Tuneable
+		constexpr float zMult = 10.0f;
+		if (minZ < 0)
+		{
+			minZ *= zMult;
+		}
+		else
+		{
+			minZ /= zMult;
+		}
+
+		if (maxZ < 0)
+		{
+			maxZ /= zMult;
+		}
+		else
+		{
+			maxZ *= zMult;
+		}
+
+		Matrix4f lightProj = Matrix4f::OrthographicProjection(minX, maxX, minY, maxY, minZ, maxZ);
+		return lightProj * lightView;
 	}
 
-	Vector4f GLShadowDepthPass::CalculateLightSpaceFrustumCorner(Vector3f startPoint, Vector3f direction, float width)
+	std::vector<Matrix4f> GLShadowDepthPass::GetLightSpaceMatrices(Vector3f lightDir)
 	{
-		Vector3f point = startPoint + direction * width;
-		Vector4f point4f = Vector4f(point, 1);
-		point4f = lightViewMatrix * point4f;
-		return point4f;
-	}
+		std::vector<Matrix4f> ret;
 
-	void GLShadowDepthPass::CalculateLightViewMatrix(Vector3f direction, Vector3f center)
-	{
-		direction = direction.normalise();
-		center = center.negate();
-		lightViewMatrix = Matrix4f::Identity();
-		float pitch = (float)ToDegrees(acos(Vector2f(direction.x, direction.z).length()));
-		float yaw = (float)ToDegrees(((float)atan(direction.x / direction.z)));
-		yaw = direction.z > 0 ? yaw - 180 : yaw;
-		lightViewMatrix = Matrix4f::Rotation({ pitch, -yaw, 2 }) * Matrix4f::Translation(center);
+		for (size_t i = 0; i < shadowCascadeLevels.size() + 1; ++i)
+		{
+			//ret.push_back(GetViewProjMatrix(lightDir, EngineConfig::rendererNearPlane, EngineConfig::rendererFarPlane));
+			if (i == 0)
+			{
+				ret.push_back(GetViewProjMatrix(lightDir, EngineConfig::rendererNearPlane, shadowCascadeLevels[i]));
+			}
+			else if (i < shadowCascadeLevels.size())
+			{
+				ret.push_back(GetViewProjMatrix(lightDir, shadowCascadeLevels[i - 1], shadowCascadeLevels[i]));
+			}
+			else
+			{
+				ret.push_back(GetViewProjMatrix(lightDir, shadowCascadeLevels[i - 1], EngineConfig::rendererFarPlane));
+			}
+		}
 
-		/*float pitch = (float)Math.acos(new Vector2f(direction.x, direction.z).length());
-		Matrix4f.rotate(pitch, new Vector3f(1, 0, 0), lightViewMatrix, lightViewMatrix);
-		float yaw = (float)Math.toDegrees(((float)Math.atan(direction.x / direction.z)));
-		yaw = direction.z > 0 ? yaw - 180 : yaw;
-		Matrix4f.rotate((float)-Math.toRadians(yaw), new Vector3f(0, 1, 0), lightViewMatrix, lightViewMatrix);
-		Matrix4f.translate(center, lightViewMatrix, lightViewMatrix);*/
-	}
-
-	Vector3f GLShadowDepthPass::getBoxCentre() const
-	{
-		float x = (minX + maxX) / 2;
-		float y = (minY + maxY) / 2;
-		float z = (minZ + maxZ) / 2;
-		Vector4f cen = Vector4f(x, y, z, 1);
-		Matrix4f invertedLight = lightViewMatrix.Invert();
-		return (invertedLight * cen).xyz();
+		return ret;
 	}
 };

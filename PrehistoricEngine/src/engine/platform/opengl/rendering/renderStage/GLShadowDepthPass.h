@@ -4,13 +4,14 @@
 #include "prehistoric/common/rendering/renderStage/RenderStage.h"
 
 #include "platform/opengl/rendering/framebuffer/GLFramebuffer.h"
+#include "platform/opengl/rendering/shaders/shadow/GLShadowDepthPassShader.h"
 
 namespace Prehistoric
 {
 	class AssembledAssetManager;
 	class Renderer;
 
-	constexpr float SHADOW_DISTANCE = 300;
+	constexpr float SHADOW_DISTANCE = 500;
 	constexpr float NEAR_PLANE = 0.1f;
 	constexpr float OFFSET = 15;
 	constexpr float SIZE = 4096;
@@ -26,27 +27,17 @@ namespace Prehistoric
 
 		TextureHandle getDepthTexture() const { return depthTexture; }
 	private:
-		void CalculateProjection();
-
-		std::array<Vector4f, 8> CalculateFrustumVertices(Matrix4f rotation, Vector3f forwardVector, Vector3f centreNear,
-			Vector3f centreFar);
-		Vector4f CalculateLightSpaceFrustumCorner(Vector3f startPoint, Vector3f direction, float width);
-
-		void CalculateLightViewMatrix(Vector3f direction, Vector3f centre);
-
-		Vector3f getBoxCentre() const;
+		std::vector<Vector4f> GetFrustumCornersWorldSpace(Matrix4f proj, Matrix4f view);
+		Matrix4f GetViewProjMatrix(Vector3f lightDir, float nearPlane, float farPlane);
+		std::vector<Matrix4f> GetLightSpaceMatrices(Vector3f lightDir);
 
 	private:
 		std::unique_ptr<GLFramebuffer> framebuffer;
 		ShaderHandle depthShader;
 		TextureHandle depthTexture;
 
-		float farHeight, nearHeight, farWidth, nearWidth;
-		float minX = -1, minY = -1, minZ = -1, maxX = 1, maxY = 1, maxZ = 1;
-
-		Matrix4f lightViewMatrix;
-		Matrix4f lightProjMatrix;
-		Matrix4f lightSpaceMatrix;
+		std::vector<float> shadowCascadeLevels;
+		UniformBufferObject* matrices;
 	};
 };
 

@@ -145,11 +145,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\Includes.hpp" />
+    <ClInclude Include="src\engine\platform\opengl\buffer\GLUniformBufferObject.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLBloomPass.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLHDRPass.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLLightCullingPass.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLMainPass.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLShadowDepthPass.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\shadow\GLShadowDepthPassShader.h" />
     <ClInclude Include="src\engine\Prehistoric.h" />
     <ClInclude Include="src\engine\platform\Platform.h" />
     <ClInclude Include="src\engine\platform\opengl\buffer\GLMeshVertexBuffer.h" />
@@ -223,6 +225,7 @@
     <ClInclude Include="src\engine\prehistoric\common\buffer\MeshVertexBuffer.h" />
     <ClInclude Include="src\engine\prehistoric\common\buffer\PatchVertexBuffer.h" />
     <ClInclude Include="src\engine\prehistoric\common\buffer\ShaderStorageBuffer.h" />
+    <ClInclude Include="src\engine\prehistoric\common\buffer\UniformBufferObject.h" />
     <ClInclude Include="src\engine\prehistoric\common\buffer\VertexBuffer.h" />
     <ClInclude Include="src\engine\prehistoric\common\capabilities\Capabilities.h" />
     <ClInclude Include="src\engine\prehistoric\common\framework\CameraInput.h" />
@@ -316,6 +319,7 @@
     <ClCompile Include="src\engine\platform\opengl\buffer\GLMeshVertexBuffer.cpp" />
     <ClCompile Include="src\engine\platform\opengl\buffer\GLPatchVertexBuffer.cpp" />
     <ClCompile Include="src\engine\platform\opengl\buffer\GLShaderStorageBuffer.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\buffer\GLUniformBufferObject.cpp" />
     <ClCompile Include="src\engine\platform\opengl\capabilities\GLCapabilities.cpp" />
     <ClCompile Include="src\engine\platform\opengl\framework\context\GLContext.cpp" />
     <ClCompile Include="src\engine\platform\opengl\framework\swapchain\GLSwapchain.cpp" />
@@ -350,6 +354,7 @@
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLBloomCombineShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLGaussianShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLHDRShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\shadow\GLShadowDepthPassShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainWireframeShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\texture\GLTexture.cpp" />
@@ -387,6 +392,7 @@
     <ClCompile Include="src\engine\prehistoric\common\buffer\MeshVertexBuffer.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\buffer\PatchVertexBuffer.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\buffer\ShaderStorageBuffer.cpp" />
+    <ClCompile Include="src\engine\prehistoric\common\buffer\UniformBufferObject.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\buffer\VertexBuffer.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\capabilities\Capabilities.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\framework\Input.cpp" />

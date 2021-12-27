@@ -91,6 +91,8 @@ namespace Prehistoric
 		virtual void SetUniform(const std::string& name, const Vector4f& value, size_t offset = 0, uint32_t instance_index = 0) const = 0;
 		virtual void SetUniform(const std::string& name, const Matrix4f& value, size_t offset = 0, uint32_t instance_index = 0) const = 0;
 
+		virtual void SetUniformBlock(const std::string& name, int value, size_t offset = 0, uint32_t instance_index = 0) const = 0;
+
 		virtual void SetTexture(const std::string& name, Texture* value, uint32_t instance_index = 0) const = 0;
 
 		//General SetUniform method for Uniform Buffer Objects, like uploading view and projection matrix to the same uniform binding

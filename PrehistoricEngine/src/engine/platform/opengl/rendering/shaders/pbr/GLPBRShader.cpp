@@ -2,6 +2,7 @@
 #include "GLPBRShader.h"
 
 #include "prehistoric/core/config/EnvironmentMapConfig.h"
+#include "prehistoric/common/buffer/UniformBufferObject.h"
 
 namespace Prehistoric
 {
@@ -34,12 +35,15 @@ namespace Prehistoric
 		AddUniform("numberOfTilesX");
 		AddUniform("max_reflection_lod");
 
-		AddUniform("shadowTex");
-		AddUniform("shadowMatrix");
+		AddUniformBlock("LightSpaceMatrices");
+		AddUniform("cascadeCount");
+
+		for(uint32_t i = 0; i < 4; i++)
+			AddUniform("cascadePlaneDistances[" + std::to_string(i) + "]");
 	}
 
-	extern Texture* shadowTex;
-	extern Matrix4f toLightSpace;
+	extern UniformBufferObject* _matrices;
+	extern std::vector<float> cascadeDistances;
 
 	void GLPBRShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
 	{
@@ -48,9 +52,12 @@ namespace Prehistoric
 		SetUniform("cameraPosition", camera->getPosition());
 		SetUniformi("highDetailRange", EngineConfig::rendererHighDetailRange);
 
-		shadowTex->Bind(3);
-		SetUniformi("shadowTex", 3);
-		SetUniform("shadowMatrix", toLightSpace);
+		_matrices->BindBase(nullptr, 0);
+		SetUniformBlock("LightSpaceMatrices", 0);
+		SetUniformi("cascadeCount", 4);
+
+		for (uint32_t i = 0; i < 4; i++)
+			SetUniformf("cascadePlaneDistances[" + std::to_string(i) + "]", cascadeDistances[i]);
 
 		EnvironmentMapConfig::irradianceMap->Bind(4);
 		SetUniformi("irradianceMap", 4);

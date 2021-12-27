@@ -171,6 +171,19 @@ namespace Prehistoric
 		return texture;
 	}
 
+	Texture* GLTexture::Storage2DArray(uint32_t width, uint32_t height, uint32_t levels, ImageFormat format, SamplerFilter filter, TextureWrapMode wrapMode, bool generate_mipmaps)
+	{
+		bool depth = (format == D32_LINEAR) || (format == D32_SFLOAT);
+		Texture* texture = new GLTexture(width, height, format, TEXTURE_ARRAY_2D, false, depth);
+		texture->Bind();
+
+		glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, getInternalFormat(format), width, height, levels, 0, getFormat(format), GL_FLOAT, nullptr);
+
+		texture->SamplerProperties(filter, wrapMode, generate_mipmaps);
+		texture->Unbind();
+		return texture;
+	}
+
 	Texture* GLTexture::Storage3D(uint32_t width, uint32_t height, uint32_t levels, ImageFormat format, SamplerFilter filter, TextureWrapMode wrapMode, bool generate_mipmaps)
 	{
 		Texture* texture = new GLTexture(width, height, format, TEXTURE_CUBE_MAP);

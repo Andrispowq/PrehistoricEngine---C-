@@ -31,6 +31,7 @@ namespace Prehistoric
 	public:
 		//These methods give the caller the responsibility of deleting the generated textures! They must be registered to the AssetManagers list
 		static Texture* Storage2D(uint32_t width, uint32_t height, uint32_t levels = 1, ImageFormat format = R8G8B8A8_LINEAR, SamplerFilter filter = Trilinear, TextureWrapMode wrapMode = Repeat, bool generate_mipmaps = true, bool multisample = false);
+		static Texture* Storage2DArray(uint32_t width, uint32_t height, uint32_t levels = 1, ImageFormat format = R8G8B8A8_LINEAR, SamplerFilter filter = Trilinear, TextureWrapMode wrapMode = Repeat, bool generate_mipmaps = true);
 		static Texture* Storage3D(uint32_t width, uint32_t height, uint32_t levels = 1, ImageFormat format = R8G8B8A8_LINEAR, SamplerFilter filter = Trilinear, TextureWrapMode wrapMode = Repeat, bool generate_mipmaps = true);
 
 		static GLenum getImageType(ImageType imageType, bool multisample);

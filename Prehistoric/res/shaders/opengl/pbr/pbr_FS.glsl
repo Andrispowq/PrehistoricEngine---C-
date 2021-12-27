@@ -56,8 +56,14 @@ uniform int numberOfTilesX;
 uniform float max_reflection_lod;
 uniform float threshold;
 
-in vec4 shadowCoord;
-uniform sampler2D shadowTex;
+uniform mat4 m_view;
+layout(std140, binding = 0) uniform LightSpaceMatrices
+{
+	mat4 m_LightSpace[16];
+};
+uniform int cascadeCount;
+uniform float cascadePlaneDistances[4];
+uniform sampler2DArray shadowMap;
 
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 float GeometrySchlickGGX(float NdotV, float roughness);
@@ -65,29 +71,80 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
 vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness);
 vec3 FresnelSchlick(float cosTheta, vec3 F0);
 
-void main()
+float getShadow()
 {
-	const int pcfCount = 2;
-	const float totalTexels = (pcfCount * 2.0 + 1.0) * (pcfCount * 2.0 + 1.0);
+	vec4 viewSpacePos = m_view * vec4(position_FS, 1.0);
+	float depthValue = abs(viewSpacePos.z);
 
-	float mapSize = 4096.0;
-	float texelSize = 1.0 / mapSize;
-	float total = 0.0;
-
-	for (int x = -pcfCount; x <= pcfCount; x++) 
+	int layer = -1;
+	for (int i = 0; i < cascadeCount; ++i)
 	{
-		for (int y = -pcfCount; y <= pcfCount; y++)
+		if (depthValue < cascadePlaneDistances[i])
 		{
-			float objectNearestLight = texture(shadowTex, shadowCoord.xy + vec2(x, y) * texelSize).r;
-			if (shadowCoord.z > objectNearestLight + 0.002) 
-			{
-				total += 1.0;
-			}
+			layer = i;
+			break;
 		}
 	}
+	if (layer == -1)
+	{
+		layer = cascadeCount;
+	}
 
-	total /= totalTexels;
-	float lightFactor = 1.0 - (total * shadowCoord.w);
+	vec4 fragPosLightSpace = m_LightSpace[layer] * vec4(position_FS, 1.0);
+
+	// perform perspective divide
+	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+	// transform to [0,1] range
+	projCoords = projCoords * 0.5 + 0.5;
+
+	// get depth of current fragment from light's perspective
+	float currentDepth = projCoords.z;
+	if (currentDepth > 1.0)
+	{
+		return 0.0;
+	}
+
+	// calculate bias (based on depth map resolution and slope)
+	vec3 normal = normalize(normal_FS);
+	float bias = max(0.05 * (1.0 - dot(normal_FS, vec3(0, -1, 1)/*lightDir*/)), 0.005);
+	if (layer == cascadeCount)
+	{
+		bias *= 1 / (/*farPlane*/1000.0f * 0.5f);
+	}
+	else
+	{
+		bias *= 1 / (cascadePlaneDistances[layer] * 0.5f);
+	}
+
+	// PCF
+	float shadow = 0.0f;
+	vec2 texelSize = 1.0 / vec2(textureSize(shadowMap, 0));
+	for (int x = -1; x <= 1; ++x)
+	{
+		for (int y = -1; y <= 1; ++y)
+		{
+			float pcfDepth = texture(
+				shadowMap,
+				vec3(projCoords.xy + vec2(x, y) * texelSize,
+					layer)
+				).r;
+			shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;
+		}
+	}
+	shadow /= 9.0;
+
+	// keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
+	if (projCoords.z > 1.0)
+	{
+		shadow = 0.0;
+	}
+
+	return shadow;
+}
+
+void main()
+{
+	float shadow = getShadow();
 
 
 	ivec2 location = ivec2(gl_FragCoord.xy);
@@ -207,7 +264,7 @@ void main()
 		colour = vec3(0.0);
 	}
 
-	outColour = vec4(colour * lightFactor, 1);
+	outColour = vec4(/*colour * shadow*/vec3(shadow), 1);
 }
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)

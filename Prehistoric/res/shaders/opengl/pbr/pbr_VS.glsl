@@ -14,11 +14,6 @@ uniform mat4 m_transform;
 uniform mat4 m_view;
 uniform mat4 m_projection;
 
-out vec4 shadowCoord;
-uniform mat4 shadowMatrix;
-const float shadowDistance = 300.0;
-const float transitionDistance = 10.0;
-
 void main()
 {
 	vec4 worldPosition = m_transform * vec4(position_VS, 1.0);
@@ -38,11 +33,4 @@ void main()
 	texture_FS = texture_VS;
 	normal_FS = N;
 	tangent_FS = T;
-
-
-	shadowCoord = shadowMatrix * worldPosition;
-	float distance = length(positionViewSpace.xyz); 
-	distance = distance - (shadowDistance - transitionDistance);
-	distance = distance / transitionDistance;
-	shadowCoord.w = clamp(1.0 - distance, 0.0, 1.0);
 }
