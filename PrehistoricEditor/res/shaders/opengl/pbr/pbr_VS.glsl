@@ -17,7 +17,8 @@ uniform mat4 m_projection;
 void main()
 {
 	vec4 worldPosition = m_transform * vec4(position_VS, 1.0);
-	gl_Position = m_projection * m_view * worldPosition;
+	vec4 positionViewSpace = m_view * worldPosition;
+	gl_Position = m_projection * positionViewSpace;
 
 	vec3 N = normalize((m_transform * vec4(normal_VS, 0.0)).xyz);
 	vec3 T = normalize((m_transform * vec4(tangent_VS, 0.0)).xyz);

@@ -21,6 +21,7 @@
 namespace Prehistoric
 {
 	UniformBufferObject* _matrices = nullptr;
+	Texture* _shadowMap = nullptr;
 	std::vector<float> cascadeDistances;
 
 	GLShadowDepthPass::GLShadowDepthPass(Renderer* renderer)
@@ -38,7 +39,7 @@ namespace Prehistoric
 		_matrices = matrices;
 
 		AssetManager* man = manager->getAssetManager();
-		depthTexture = man->storeTexture(GLTexture::Storage2DArray(SIZE, SIZE, (int)shadowCascadeLevels.size() + 1, D32_LINEAR, Nearest, Repeat, false));
+		depthTexture = man->storeTexture(GLTexture::Storage2DArray(SIZE, SIZE, (int)shadowCascadeLevels.size() + 1, D32_LINEAR, Nearest, ClampToEdge, false));
 		man->addReference<Texture>(depthTexture.handle);
 
 		depthShader = man->loadShader(ShaderName::ShadowDepthPass).value();
@@ -65,7 +66,7 @@ namespace Prehistoric
 
 		AssetManager* man = manager->getAssetManager();
 		man->removeReference<Texture>(depthTexture.handle);
-		depthTexture = man->storeTexture(GLTexture::Storage2DArray(SIZE, SIZE, (int)shadowCascadeLevels.size() + 1, D32_LINEAR, Nearest, Repeat, false));
+		depthTexture = man->storeTexture(GLTexture::Storage2DArray(SIZE, SIZE, (int)shadowCascadeLevels.size() + 1, D32_LINEAR, Nearest, ClampToEdge, false));
 		man->addReference<Texture>(depthTexture.handle);
 
 		framebuffer->Bind();
@@ -83,7 +84,9 @@ namespace Prehistoric
 		uint32_t height = window->getHeight();
 
 		//update stuff
-		std::vector<Matrix4f> lightMatrices = GetLightSpaceMatrices(Vector3f(0, -1, 1).normalise());
+		std::vector<Matrix4f> lightMatrices = GetLightSpaceMatrices(Vector3f(20, 20, 0).normalise());
+
+		_shadowMap = depthTexture.pointer;
 
 		matrices->Bind(0);
 		matrices->MapBuffer();
@@ -202,7 +205,10 @@ namespace Prehistoric
 		}
 		centre /= corners.size();
 
-		Matrix4f lightView = Matrix4f::View(lightDir, Vector3f(0, 1, 0));
+		Vector3f up = Vector3f(0, 1, 0);
+		Vector3f right = lightDir.cross(up).normalise();
+		up = right.cross(lightDir).normalise();
+		Matrix4f lightView = Matrix4f::View(lightDir, up);
 
 		//projection
 		float minX = std::numeric_limits<float>::max();
@@ -253,7 +259,6 @@ namespace Prehistoric
 
 		for (size_t i = 0; i < shadowCascadeLevels.size() + 1; ++i)
 		{
-			//ret.push_back(GetViewProjMatrix(lightDir, EngineConfig::rendererNearPlane, EngineConfig::rendererFarPlane));
 			if (i == 0)
 			{
 				ret.push_back(GetViewProjMatrix(lightDir, EngineConfig::rendererNearPlane, shadowCascadeLevels[i]));

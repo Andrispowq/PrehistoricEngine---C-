@@ -37,12 +37,15 @@ namespace Prehistoric
 
 		AddUniformBlock("LightSpaceMatrices");
 		AddUniform("cascadeCount");
+		AddUniform("farPlane");
+		AddUniform("shadowMap");
 
 		for(uint32_t i = 0; i < 4; i++)
 			AddUniform("cascadePlaneDistances[" + std::to_string(i) + "]");
 	}
 
 	extern UniformBufferObject* _matrices;
+	extern Texture* _shadowMap;
 	extern std::vector<float> cascadeDistances;
 
 	void GLPBRShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
@@ -54,9 +57,12 @@ namespace Prehistoric
 
 		_matrices->BindBase(nullptr, 0);
 		SetUniformBlock("LightSpaceMatrices", 0);
-		SetUniformi("cascadeCount", 4);
+		SetUniformi("cascadeCount", cascadeDistances.size());
+		SetUniformf("farPlane", EngineConfig::rendererFarPlane);
+		_shadowMap->Bind(3);
+		SetUniformi("shadowMap", 3);
 
-		for (uint32_t i = 0; i < 4; i++)
+		for (uint32_t i = 0; i < cascadeDistances.size(); i++)
 			SetUniformf("cascadePlaneDistances[" + std::to_string(i) + "]", cascadeDistances[i]);
 
 		EnvironmentMapConfig::irradianceMap->Bind(4);

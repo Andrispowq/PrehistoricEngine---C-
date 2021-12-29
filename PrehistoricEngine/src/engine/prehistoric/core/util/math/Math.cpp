@@ -668,7 +668,7 @@ Matrix4f Matrix4f::PerspectiveProjection(const float& fov, const float& aspectRa
 
 Matrix4f Matrix4f::View(const Vector3f& forward, const Vector3f& up)
 {
-	Vector3f right = up.cross(forward);
+	Vector3f right = forward.cross(up);
 
 	Matrix4f mat = Matrix4f::Identity();
 
@@ -689,24 +689,14 @@ Matrix4f Matrix4f::View(const Vector3f& forward, const Vector3f& up)
 
 Matrix4f Matrix4f::OrthographicProjection(float l, float r, float b, float t, float n, float f)
 {
-	Matrix4f res;
+	Matrix4f res = Matrix4f::Identity();
 
-	res.m[0 * 4 + 0] = 2.0f / (r - l);
-	res.m[0 * 4 + 1] = 0;
-	res.m[0 * 4 + 2] = 0;
-	res.m[0 * 4 + 3] = -(r + l) / (r - l);
-	res.m[1 * 4 + 0] = 0;
-	res.m[1 * 4 + 1] = 2.0f / (t - b);
-	res.m[1 * 4 + 2] = 0;
-	res.m[1 * 4 + 3] = -(t + b) / (t - b);
-	res.m[2 * 4 + 0] = 0;
-	res.m[2 * 4 + 1] = 0;
-	res.m[2 * 4 + 2] = 2.0f / (f - n);
-	res.m[2 * 4 + 3] = -(f + n) / (f - n);
-	res.m[3 * 4 + 0] = 0;
-	res.m[3 * 4 + 1] = 0;
-	res.m[3 * 4 + 2] = 0;
-	res.m[3 * 4 + 3] = 1;
+	res.m[0 * 4 + 0] = 2.f / (r - l);
+	res.m[1 * 4 + 1] = 2.f / (t - b);
+	res.m[2 * 4 + 2] = -2.f / (f - n);
+	res.m[3 * 4 + 0] = -(r + l) / (r - l);
+	res.m[3 * 4 + 1] = -(t + b) / (t - b);
+	res.m[3 * 4 + 2] = -(f + n) / (f - n);
 
 	return res;
 }

@@ -32,11 +32,11 @@ world.name testLevel
 directories.models res/models/
 directories.textures res/textures/
 
-# MODELS/TEXTURE TO LOAD clockwise
-models.load quadModel quad.obj clockwise
-models.load sphereModel sphere.obj counter-clockwise
+# MODELS/TEXTURE TO LOAD
+models.load quadModel quad.obj counter-clockwise
+models.load sphereModel sphere.obj clockwise
 models.load atmosphere sphere.obj double-sided
-models.load cubeModel cube.obj counter-clockwise
+models.load cubeModel cube.obj clockwise
 
 # This means that the models are loaded asynchronously, on separate threads, and this command launches the execution
 models.dispatch

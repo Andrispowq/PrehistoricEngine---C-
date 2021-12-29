@@ -179,6 +179,10 @@ namespace Prehistoric
 
 		glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, getInternalFormat(format), width, height, levels, 0, getFormat(format), GL_FLOAT, nullptr);
 
+
+		constexpr float bordercolor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, bordercolor);
+
 		texture->SamplerProperties(filter, wrapMode, generate_mipmaps);
 		texture->Unbind();
 		return texture;

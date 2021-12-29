@@ -13,13 +13,13 @@ namespace Prehistoric
 		if (InputInstance.IsButtonHeld((InputCode)1))
 		{
 			float dy = InputInstance.getCursorDeltaPosition().y;
-			pitch += dy * 0.1f;
+			pitch -= dy * 0.1f;
 		}
 
 		if (InputInstance.IsButtonHeld((InputCode)0))
 		{
 			float dx = InputInstance.getCursorDeltaPosition().x;
-			angleAroundCentre -= dx * 0.3f;
+			angleAroundCentre += dx * 0.3f;
 		}
 
 		float horizDist = distanceFromCentre * std::cos(ToRadians(pitch));

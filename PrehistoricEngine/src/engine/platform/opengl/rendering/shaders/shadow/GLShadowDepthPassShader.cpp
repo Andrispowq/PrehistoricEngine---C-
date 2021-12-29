@@ -19,4 +19,13 @@ namespace Prehistoric
 		matrices->BindBase(nullptr, 0);
 		SetUniformBlock("LightSpaceMatrices", 0);
 	}
+
+	void GLShadowDepthPassShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
+	{
+	}
+
+	void GLShadowDepthPassShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const
+	{
+		SetUniform(m_transform, object->getWorldTransform().getTransformationMatrix());
+	}
 };

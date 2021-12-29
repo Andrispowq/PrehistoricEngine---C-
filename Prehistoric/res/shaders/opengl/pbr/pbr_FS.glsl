@@ -53,7 +53,7 @@ uniform sampler2D brdfLUT;
 uniform vec3 cameraPosition;
 uniform int highDetailRange;
 uniform int numberOfTilesX;
-uniform float max_reflection_lod;
+uniform float max_reflection_lod; 
 uniform float threshold;
 
 uniform mat4 m_view;
@@ -61,8 +61,10 @@ layout(std140, binding = 0) uniform LightSpaceMatrices
 {
 	mat4 m_LightSpace[16];
 };
+
 uniform int cascadeCount;
-uniform float cascadePlaneDistances[4];
+uniform float cascadePlaneDistances[16];
+uniform float farPlane;
 uniform sampler2DArray shadowMap;
 
 float DistributionGGX(vec3 N, vec3 H, float roughness);
@@ -71,10 +73,11 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
 vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness);
 vec3 FresnelSchlick(float cosTheta, vec3 F0);
 
-float getShadow()
+float getShadow(vec3 fragPosWorldSpace, vec3 lightDir)
 {
-	vec4 viewSpacePos = m_view * vec4(position_FS, 1.0);
-	float depthValue = abs(viewSpacePos.z);
+	// select cascade layer
+	vec4 fragPosViewSpace = m_view * vec4(fragPosWorldSpace, 1.0);
+	float depthValue = abs(fragPosViewSpace.z);
 
 	int layer = -1;
 	for (int i = 0; i < cascadeCount; ++i)
@@ -90,7 +93,7 @@ float getShadow()
 		layer = cascadeCount;
 	}
 
-	vec4 fragPosLightSpace = m_LightSpace[layer] * vec4(position_FS, 1.0);
+	vec4 fragPosLightSpace = m_LightSpace[layer] * vec4(fragPosWorldSpace, 1.0);
 
 	// perform perspective divide
 	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
@@ -103,13 +106,12 @@ float getShadow()
 	{
 		return 0.0;
 	}
-
 	// calculate bias (based on depth map resolution and slope)
 	vec3 normal = normalize(normal_FS);
-	float bias = max(0.05 * (1.0 - dot(normal_FS, vec3(0, -1, 1)/*lightDir*/)), 0.005);
+	float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
 	if (layer == cascadeCount)
 	{
-		bias *= 1 / (/*farPlane*/1000.0f * 0.5f);
+		bias *= 1 / (farPlane * 0.5f);
 	}
 	else
 	{
@@ -117,7 +119,7 @@ float getShadow()
 	}
 
 	// PCF
-	float shadow = 0.0f;
+	float shadow = 0.0;
 	vec2 texelSize = 1.0 / vec2(textureSize(shadowMap, 0));
 	for (int x = -1; x <= 1; ++x)
 	{
@@ -142,9 +144,60 @@ float getShadow()
 	return shadow;
 }
 
+
+const float G_SCATTERING = 0.03;
+const int NB_STEPS = 100;
+float ComputeScattering(float lightDotView)
+{
+	float result = 1.0f - G_SCATTERING * G_SCATTERING;
+	result /= (4.0f * PI * pow(1.0f + G_SCATTERING * G_SCATTERING - (2.0f * G_SCATTERING) * lightDotView, 1.5f));
+	return result;
+}
+
+vec3 getFog(vec3 worldPosition, vec3 lightDir, vec3 lightColour)
+{
+
+	vec3 worldPos = position_FS;
+	vec3 startPosition = cameraPosition;
+	vec3 endRayPosition = position_FS;
+
+	vec3 rayVector = endRayPosition.xyz - startPosition;
+
+	float rayLength = length(rayVector);
+	vec3 rayDirection = rayVector / rayLength;
+
+	float stepLength = rayLength / NB_STEPS;
+
+	vec3 step = rayDirection * stepLength;
+
+	vec3 currentPosition = startPosition;
+
+	vec4 fragPosViewSpace = m_view * vec4(cameraPosition, 1.0);
+	float depthValue = abs(fragPosViewSpace.z);
+
+	vec3 accumFog = vec3(0.0);
+	for (int i = 0; i < NB_STEPS; i++)
+	{
+		float shadow = getShadow(currentPosition, lightDir);
+		if (shadow > 0.0)
+		{
+			accumFog += ComputeScattering(dot(rayDirection, lightDir)) * lightColour;
+
+		}
+
+		currentPosition += step;
+	}
+	accumFog /= NB_STEPS;
+
+	return accumFog;
+}
+
+
+
 void main()
 {
-	float shadow = getShadow();
+	float shadow = getShadow(position_FS, normalize(vec3(-1, -1, 0)/*sunDirection*/));
+	vec3 accumFog = getFog(position_FS, normalize(vec3(-1, -1, 0)), vec3(0.9, 0.6, 0.3));
 
 
 	ivec2 location = ivec2(gl_FragCoord.xy);
@@ -264,7 +317,7 @@ void main()
 		colour = vec3(0.0);
 	}
 
-	outColour = vec4(/*colour * shadow*/vec3(shadow), 1);
+	outColour = vec4(colour * max((1 - shadow), 0.4) * accumFog, 1);
 }
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)

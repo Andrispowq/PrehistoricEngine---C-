@@ -33,33 +33,33 @@ namespace Prehistoric
 			}
 			if (in.isLeft() != 0 && !movedLeft)
 			{
-				Move(getLeft(), movAmt * in.isLeft() * delta);
+				Move(getLeft(), -movAmt * in.isLeft() * delta);
 				movedLeft = true;
 			}
 			if (in.isRight() != 0 && !movedRight)
 			{
-				Move(getLeft(), -movAmt * in.isRight() * delta);
+				Move(getLeft(), movAmt * in.isRight() * delta);
 				movedRight = true;
 			}
 
 			if (in.isUp() != 0 && !rotUp)
 			{
-				RotateX(static_cast<float>(rotAmt * rotationMultiplier * in.isUp() * delta));
+				RotateX(static_cast<float>(-rotAmt * rotationMultiplier * in.isUp() * delta));
 				rotUp = true;
 			}
 			if (in.isDown() != 0 && !rotDown)
 			{
-				RotateX(static_cast<float>(-rotAmt * rotationMultiplier * in.isDown() * delta));
+				RotateX(static_cast<float>(rotAmt * rotationMultiplier * in.isDown() * delta));
 				rotDown = true;
 			}
 			if (in.isRightRot() != 0 && !rotRight)
 			{
-				RotateY(static_cast<float>(-rotAmt * rotationMultiplier * in.isRightRot() * delta));
+				RotateY(static_cast<float>(rotAmt * rotationMultiplier * in.isRightRot() * delta));
 				rotRight = true;
 			}
 			if (in.isLeftRot() != 0 && !rotLeft)
 			{
-				RotateY(static_cast<float>(rotAmt * rotationMultiplier * in.isLeftRot() * delta));
+				RotateY(static_cast<float>(-rotAmt * rotationMultiplier * in.isLeftRot() * delta));
 				rotLeft = true;
 			}
 		}
@@ -127,7 +127,7 @@ namespace Prehistoric
 				{
 					if (rotXcounter > rotXamt)
 					{
-						RotateY(rotXstride * mouseSensitivity);
+						RotateY(-rotXstride * mouseSensitivity);
 						rotXcounter -= rotXstride;
 						rotXstride *= 0.98f;
 					}
@@ -141,7 +141,7 @@ namespace Prehistoric
 				{
 					if (rotXcounter < rotXamt)
 					{
-						RotateY(-rotXstride * mouseSensitivity);
+						RotateY(rotXstride * mouseSensitivity);
 						rotXcounter += rotXstride;
 						rotXstride *= 0.98f;
 					}
