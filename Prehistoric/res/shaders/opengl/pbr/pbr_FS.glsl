@@ -62,6 +62,8 @@ layout(std140, binding = 0) uniform LightSpaceMatrices
 	mat4 m_LightSpace[16];
 };
 
+uniform float time;
+
 uniform int cascadeCount;
 uniform float cascadePlaneDistances[16];
 uniform float farPlane;
@@ -73,7 +75,7 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
 vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness);
 vec3 FresnelSchlick(float cosTheta, vec3 F0);
 
-float getShadow(vec3 fragPosWorldSpace, vec3 lightDir)
+float getShadow(vec3 fragPosWorldSpace, vec3 lightDir, vec3 normal)
 {
 	// select cascade layer
 	vec4 fragPosViewSpace = m_view * vec4(fragPosWorldSpace, 1.0);
@@ -107,7 +109,6 @@ float getShadow(vec3 fragPosWorldSpace, vec3 lightDir)
 		return 0.0;
 	}
 	// calculate bias (based on depth map resolution and slope)
-	vec3 normal = normalize(normal_FS);
 	float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
 	if (layer == cascadeCount)
 	{
@@ -144,50 +145,66 @@ float getShadow(vec3 fragPosWorldSpace, vec3 lightDir)
 	return shadow;
 }
 
+const float G_SCATTERING = 0.85;
+const int NB_STEPS = 50;
 
-const float G_SCATTERING = 0.03;
-const int NB_STEPS = 100;
-float ComputeScattering(float lightDotView)
+vec3 RayleighScattering(float distance, float lightDotView, float intensity, /*float wavelength*/vec3 colour, float ior)
+{
+	vec3 result = vec3(intensity);
+	result *= ((1 + pow(lightDotView, 2)) / (2 * distance));
+	result *= colour;//result *= pow(((2 * PI) / wavelength), 4);
+	result *= pow(((ior * ior - 1) / (ior * ior + 2)), 2);
+	return result;
+}
+
+float MieScattering(float lightDotView)
 {
 	float result = 1.0f - G_SCATTERING * G_SCATTERING;
 	result /= (4.0f * PI * pow(1.0f + G_SCATTERING * G_SCATTERING - (2.0f * G_SCATTERING) * lightDotView, 1.5f));
 	return result;
 }
 
-vec3 getFog(vec3 worldPosition, vec3 lightDir, vec3 lightColour)
+vec3 ComputeScattering(float lightDotView, float distance)
 {
+	float mie = MieScattering(lightDotView);
+	vec3 rayleigh = RayleighScattering(distance, lightDotView, 1000.0, /*700*/vec3(0.9, 0.6, 0.3), 1.1);
 
-	vec3 worldPos = position_FS;
-	vec3 startPosition = cameraPosition;
-	vec3 endRayPosition = position_FS;
+	return vec3(mie)/* + rayleigh*/;
+}
 
-	vec3 rayVector = endRayPosition.xyz - startPosition;
+vec3 getFog(vec3 worldPosition, vec3 lightDir, vec3 lightColour, vec3 normal)
+{
+	vec3 startPosition = position_FS;
+	vec3 endPosition = cameraPosition;
 
+	float[4][4] ditherPattern = { { 0.0f, 0.5f, 0.125f, 0.625f},
+		{ 0.75f, 0.22f, 0.875f, 0.375f},
+		{ 0.1875f, 0.6875f, 0.0625f, 0.5625},
+		{ 0.9375f, 0.4375f, 0.8125f, 0.3125} };
+
+	vec3 rayVector = endPosition - startPosition;
 	float rayLength = length(rayVector);
+	float steps = float(NB_STEPS);
 	vec3 rayDirection = rayVector / rayLength;
-
-	float stepLength = rayLength / NB_STEPS;
-
+	float stepLength = rayLength / steps;
 	vec3 step = rayDirection * stepLength;
 
 	vec3 currentPosition = startPosition;
-
-	vec4 fragPosViewSpace = m_view * vec4(cameraPosition, 1.0);
-	float depthValue = abs(fragPosViewSpace.z);
-
 	vec3 accumFog = vec3(0.0);
 	for (int i = 0; i < NB_STEPS; i++)
 	{
-		float shadow = getShadow(currentPosition, lightDir);
-		if (shadow > 0.0)
-		{
-			accumFog += ComputeScattering(dot(rayDirection, lightDir)) * lightColour;
+		//float ditherValue = ditherPattern[int(time * 4) % 4][int(time * 16) % 4];
+		//ditherValue /= 1000.0;
+		//currentPosition += step * ditherValue;
 
+		float shadow = getShadow(currentPosition, lightDir, normal);
+		if (shadow == 0.0)
+		{
+			accumFog += ComputeScattering(dot(rayDirection, lightDir), length(vec3(400, 200, 0) - currentPosition)) * stepLength * lightColour;
 		}
 
 		currentPosition += step;
 	}
-	accumFog /= NB_STEPS;
 
 	return accumFog;
 }
@@ -196,10 +213,6 @@ vec3 getFog(vec3 worldPosition, vec3 lightDir, vec3 lightColour)
 
 void main()
 {
-	float shadow = getShadow(position_FS, normalize(vec3(-1, -1, 0)/*sunDirection*/));
-	vec3 accumFog = getFog(position_FS, normalize(vec3(-1, -1, 0)), vec3(0.9, 0.6, 0.3));
-
-
 	ivec2 location = ivec2(gl_FragCoord.xy);
 	ivec2 tileID = location / ivec2(16, 16);
 	uint index = uint(tileID.y * numberOfTilesX + tileID.x);
@@ -317,7 +330,14 @@ void main()
 		colour = vec3(0.0);
 	}
 
-	outColour = vec4(colour * max((1 - shadow), 0.4) * accumFog, 1);
+	float shadow = getShadow(position_FS, normalize(vec3(-400, -200, 0)/*sunDirection*/), N);
+	vec3 accumFog = getFog(position_FS, normalize(vec3(-400, -200, 0)), vec3(0.9, 0.6, 0.3), N);
+
+	colour *= max((1 - shadow), 0.2);
+	//colour = mix(colour, accumFog, 0.3);
+	colour += accumFog;
+
+	outColour = vec4(colour, 1);
 }
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)

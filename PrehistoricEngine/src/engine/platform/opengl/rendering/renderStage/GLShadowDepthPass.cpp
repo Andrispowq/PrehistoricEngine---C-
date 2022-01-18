@@ -84,7 +84,7 @@ namespace Prehistoric
 		uint32_t height = window->getHeight();
 
 		//update stuff
-		std::vector<Matrix4f> lightMatrices = GetLightSpaceMatrices(Vector3f(20, 20, 0).normalise());
+		std::vector<Matrix4f> lightMatrices = GetLightSpaceMatrices(Vector3f(400, 200, 0).normalise());
 
 		_shadowMap = depthTexture.pointer;
 

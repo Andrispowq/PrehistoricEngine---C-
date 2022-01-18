@@ -11,9 +11,6 @@ namespace Prehistoric
 	class AssembledAssetManager;
 	class Renderer;
 
-	constexpr float SHADOW_DISTANCE = 500;
-	constexpr float NEAR_PLANE = 0.1f;
-	constexpr float OFFSET = 15;
 	constexpr float SIZE = 4096;
 
 	class GLShadowDepthPass : public RenderStage

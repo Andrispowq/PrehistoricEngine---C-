@@ -86,7 +86,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 		terrain->UpdateQuadtree();
 		// sceneRoot->AddChild("terrain0", terrain);
 
-		GameObject* slider = new GUISlider (window, manager, 0.0f, 2.0f, Vector3f(0.5f), &EngineConfig::rendererExposure, sizeof(float), true);
+		/*GameObject* slider = new GUISlider(window, manager, 0.0f, 2.0f, Vector3f(0.5f), &EngineConfig::rendererExposure, sizeof(float), true);
 		slider->SetPosition({ 0.5f, 0.5f, 0 });
 		slider->SetScale({ 0.125f, 0.05f, 1 });
 		sceneRoot->AddChild("slider", slider);
@@ -94,7 +94,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 		GameObject* slider2 = new GUISlider(window, manager, 1.0f, 3.4f, Vector3f(0.4f), &EngineConfig::rendererGamma, sizeof(float), true);
 		slider2->SetPosition({ 0.5f, 0.25f, 0 });
 		slider2->SetScale({ 0.125f, 0.05f, 1 });
-		sceneRoot->AddChild("slider2", slider2);
+		sceneRoot->AddChild("slider2", slider2);*/
 
 		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "sphereModel").value();
 		ShaderHandle shader = man->loadShader(ShaderName::PBR).value();

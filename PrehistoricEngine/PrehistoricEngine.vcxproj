@@ -77,7 +77,7 @@
       <PrecompiledHeaderFile>Includes.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_FAST_MATH;PR_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>vendor\GLFW\include;vendor\GLAD\include;vendor\ImGUI;vendor\OpenAL-Soft\include;Dependencies\include\Vulkan;Dependencies\include\stb;Dependencies\include\tinyobjloader;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor\GLFW\include;vendor\GLAD\include;vendor\ImGUI;vendor\OpenAL-Soft\include;Dependencies\include\Vulkan;Dependencies\include\stb;Dependencies\include\tinyobjloader;Dependencies\include\tinygltfloader;Dependencies\include\nlohmann_json;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
@@ -99,7 +99,7 @@
       <PrecompiledHeaderFile>Includes.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_FAST_MATH;PR_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>vendor\GLFW\include;vendor\GLAD\include;vendor\ImGUI;vendor\OpenAL-Soft\include;Dependencies\include\Vulkan;Dependencies\include\stb;Dependencies\include\tinyobjloader;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor\GLFW\include;vendor\GLAD\include;vendor\ImGUI;vendor\OpenAL-Soft\include;Dependencies\include\Vulkan;Dependencies\include\stb;Dependencies\include\tinyobjloader;Dependencies\include\tinygltfloader;Dependencies\include\nlohmann_json;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -124,7 +124,7 @@
       <PrecompiledHeaderFile>Includes.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_FAST_MATH;PR_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>vendor\GLFW\include;vendor\GLAD\include;vendor\ImGUI;vendor\OpenAL-Soft\include;Dependencies\include\Vulkan;Dependencies\include\stb;Dependencies\include\tinyobjloader;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor\GLFW\include;vendor\GLAD\include;vendor\ImGUI;vendor\OpenAL-Soft\include;Dependencies\include\Vulkan;Dependencies\include\stb;Dependencies\include\tinyobjloader;Dependencies\include\tinygltfloader;Dependencies\include\nlohmann_json;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -145,18 +145,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\Includes.hpp" />
-    <ClInclude Include="src\engine\platform\opengl\buffer\GLUniformBufferObject.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLBloomPass.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLHDRPass.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLLightCullingPass.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLMainPass.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLShadowDepthPass.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\shadow\GLShadowDepthPassShader.h" />
     <ClInclude Include="src\engine\Prehistoric.h" />
     <ClInclude Include="src\engine\platform\Platform.h" />
     <ClInclude Include="src\engine\platform\opengl\buffer\GLMeshVertexBuffer.h" />
     <ClInclude Include="src\engine\platform\opengl\buffer\GLPatchVertexBuffer.h" />
     <ClInclude Include="src\engine\platform\opengl\buffer\GLShaderStorageBuffer.h" />
+    <ClInclude Include="src\engine\platform\opengl\buffer\GLUniformBufferObject.h" />
     <ClInclude Include="src\engine\platform\opengl\capabilities\GLCapabilities.h" />
     <ClInclude Include="src\engine\platform\opengl\framework\context\GLContext.h" />
     <ClInclude Include="src\engine\platform\opengl\framework\swapchain\GLSwapchain.h" />
@@ -165,7 +159,12 @@
     <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLComputePipeline.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLGraphicsPipeline.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLPipeline.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLBloomPass.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLDepthPass.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLHDRPass.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLLightCullingPass.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLMainPass.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLShadowDepthPass.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\GLShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereScatteringShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereShader.h" />
@@ -186,6 +185,7 @@
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLBloomCombineShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLGaussianShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLHDRShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\shadow\GLShadowDepthPassShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainWireframeShader.h" />
     <ClInclude Include="src\engine\platform\opengl\texture\GLTexture.h" />

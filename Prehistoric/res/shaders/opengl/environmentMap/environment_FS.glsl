@@ -12,6 +12,5 @@ uniform float threshold;
 void main()
 {
 	vec3 colour = textureLod(environmentMap, normalize(position_FS), lod).rgb;
-
 	outColour = vec4(colour, 1);
 }

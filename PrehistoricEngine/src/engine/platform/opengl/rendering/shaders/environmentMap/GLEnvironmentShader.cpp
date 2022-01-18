@@ -1,6 +1,8 @@
 #include "Includes.hpp"
 #include "GLEnvironmentShader.h"
 
+#include "prehistoric/application/Application.h"
+
 namespace Prehistoric
 {
 	GLEnvironmentShader::GLEnvironmentShader()

@@ -6,6 +6,8 @@ in vec2 texture_FS;
 in float distanceFromLeft;
 
 uniform vec3 colour;
+uniform int texType;
+
 uniform sampler2D image;
 
 void main()

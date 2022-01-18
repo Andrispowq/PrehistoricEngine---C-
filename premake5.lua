@@ -24,6 +24,8 @@ IncludeDir["OpenAL"] = "%{wks.location}/PrehistoricEngine/vendor/OpenAL-Soft/inc
 IncludeDir["Vulkan"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/Vulkan"
 IncludeDir["STB"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/stb"
 IncludeDir["tinyobj"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/tinyobjloader"
+IncludeDir["tinygltf"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/tinygltfloader"
+IncludeDir["nlohmann_json"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/nlohmann_json"
 
 group "Dependencies"
     include "PrehistoricEngine/vendor/GLFW"
@@ -67,6 +69,8 @@ project "PrehistoricEngine"
         "%{IncludeDir.Vulkan}",
         "%{IncludeDir.STB}",
         "%{IncludeDir.tinyobj}",
+        "%{IncludeDir.tinygltf}",
+        "%{IncludeDir.nlohmann_json}",
         "%{prj.location}/src/engine"
     }
 

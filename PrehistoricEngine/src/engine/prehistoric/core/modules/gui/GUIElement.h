@@ -41,12 +41,16 @@ namespace Prehistoric
 		bool hasChanged() const { return statusChanged; }
 		Vector3f getColour() { return colour; }
 
+		Texture* getTexture() const { return texture; }
+
 		void* getData() { return data; }
 		size_t getDataSize() const { return dataSize; }
 		GUIType getType() const { return type; }
 
 		void setVisible(bool visible) { this->visible = visible; }
 		void setColour(Vector3f colour) { this->colour = colour; }
+
+		void setTexture(Texture* texture) { this->texture = texture; };
 
 		void setData(void* data, size_t dataSize = 0) { this->data = data; this->dataSize = dataSize; }
 
@@ -59,6 +63,8 @@ namespace Prehistoric
 		bool visible;
 		bool statusChanged;
 		Vector3f colour;
+
+		Texture* texture = nullptr;
 
 		void* data;
 		size_t dataSize;

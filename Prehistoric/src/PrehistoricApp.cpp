@@ -2,6 +2,9 @@
 
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 
+
+#include "platform/opengl/rendering/GLRenderer.h"
+
 PrehistoricApp::PrehistoricApp()
 	: scene{nullptr}
 {
@@ -67,11 +70,11 @@ PrehistoricApp::PrehistoricApp()
 
 	if (FrameworkConfig::api == OpenGL)
 	{
-		GameObject* slider3 = new GUISlider(window, manager, 0.0f, 4.0f, Vector3f(0.4f), &EnvironmentMapRenderer::instance->lodRenderedMap, sizeof(float), true);
+		/*GameObject* slider3 = new GUISlider(window, manager, 0.0f, 4.0f, Vector3f(0.4f), &EnvironmentMapRenderer::instance->lodRenderedMap, sizeof(float), true);
 		static_cast<GUISlider*>(slider3)->setProgress(0.0);
 		slider3->SetPosition({ 0.5f, -0.5f, 0 });
 		slider3->SetScale({ 0.125f, 0.05f, 1 });
-		sceneRoot->AddChild("slider3", slider3);
+		sceneRoot->AddChild("slider3", slider3);*/
 
 		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/sponza.obj").value();
 		vbo->setFrontFace(FrontFace::CLOCKWISE);

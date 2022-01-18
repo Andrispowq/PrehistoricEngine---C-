@@ -61,6 +61,9 @@
     <Filter Include="platform\opengl\rendering\shaders\postProcessing">
       <UniqueIdentifier>{1663F4C5-020C-5CF5-2BA2-777417AA7636}</UniqueIdentifier>
     </Filter>
+    <Filter Include="platform\opengl\rendering\shaders\shadow">
+      <UniqueIdentifier>{19F551E6-0572-4529-2EEF-453D1ACBE1BC}</UniqueIdentifier>
+    </Filter>
     <Filter Include="platform\opengl\rendering\shaders\terrain">
       <UniqueIdentifier>{086CC6F7-7486-2999-BDA8-392D290251A0}</UniqueIdentifier>
     </Filter>
@@ -293,6 +296,9 @@
     <ClInclude Include="src\engine\platform\opengl\buffer\GLShaderStorageBuffer.h">
       <Filter>platform\opengl\buffer</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\buffer\GLUniformBufferObject.h">
+      <Filter>platform\opengl\buffer</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\capabilities\GLCapabilities.h">
       <Filter>platform\opengl\capabilities</Filter>
     </ClInclude>
@@ -317,7 +323,22 @@
     <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLPipeline.h">
       <Filter>platform\opengl\rendering\pipeline</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLBloomPass.h">
+      <Filter>platform\opengl\rendering\renderStage</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLDepthPass.h">
+      <Filter>platform\opengl\rendering\renderStage</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLHDRPass.h">
+      <Filter>platform\opengl\rendering\renderStage</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLLightCullingPass.h">
+      <Filter>platform\opengl\rendering\renderStage</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLMainPass.h">
+      <Filter>platform\opengl\rendering\renderStage</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLShadowDepthPass.h">
       <Filter>platform\opengl\rendering\renderStage</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\GLShader.h">
@@ -379,6 +400,9 @@
     </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLHDRShader.h">
       <Filter>platform\opengl\rendering\shaders\postProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\shadow\GLShadowDepthPassShader.h">
+      <Filter>platform\opengl\rendering\shaders\shadow</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShader.h">
       <Filter>platform\opengl\rendering\shaders\terrain</Filter>
@@ -497,6 +521,9 @@
     <ClInclude Include="src\engine\prehistoric\common\buffer\ShaderStorageBuffer.h">
       <Filter>prehistoric\common\buffer</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\common\buffer\UniformBufferObject.h">
+      <Filter>prehistoric\common\buffer</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\prehistoric\common\buffer\VertexBuffer.h">
       <Filter>prehistoric\common\buffer</Filter>
     </ClInclude>
@@ -612,6 +639,9 @@
       <Filter>prehistoric\core\layers</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\model\Mesh.h">
+      <Filter>prehistoric\core\model</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\model\Model.h">
       <Filter>prehistoric\core\model</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\model\Transform.h">
@@ -749,15 +779,6 @@
     <ClInclude Include="src\engine\prehistoric\core\util\time\Timer.h">
       <Filter>prehistoric\core\util\time</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\model\Model.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLLightCullingPass.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLMainPass.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLBloomPass.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLHDRPass.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLShadowDepthPass.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\shadow\GLShadowDepthPassShader.h" />
-    <ClInclude Include="src\engine\prehistoric\common\buffer\UniformBufferObject.h" />
-    <ClInclude Include="src\engine\platform\opengl\buffer\GLUniformBufferObject.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -768,6 +789,9 @@
       <Filter>platform\opengl\buffer</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\buffer\GLShaderStorageBuffer.cpp">
+      <Filter>platform\opengl\buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\buffer\GLUniformBufferObject.cpp">
       <Filter>platform\opengl\buffer</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\capabilities\GLCapabilities.cpp">
@@ -794,7 +818,22 @@
     <ClCompile Include="src\engine\platform\opengl\rendering\pipeline\GLPipeline.cpp">
       <Filter>platform\opengl\rendering\pipeline</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLBloomPass.cpp">
+      <Filter>platform\opengl\rendering\renderStage</Filter>
+    </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLDepthPass.cpp">
+      <Filter>platform\opengl\rendering\renderStage</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLHDRPass.cpp">
+      <Filter>platform\opengl\rendering\renderStage</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLLightCullingPass.cpp">
+      <Filter>platform\opengl\rendering\renderStage</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLMainPass.cpp">
+      <Filter>platform\opengl\rendering\renderStage</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLShadowDepthPass.cpp">
       <Filter>platform\opengl\rendering\renderStage</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\GLShader.cpp">
@@ -856,6 +895,9 @@
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLHDRShader.cpp">
       <Filter>platform\opengl\rendering\shaders\postProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\shadow\GLShadowDepthPassShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\shadow</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShader.cpp">
       <Filter>platform\opengl\rendering\shaders\terrain</Filter>
@@ -968,6 +1010,9 @@
     <ClCompile Include="src\engine\prehistoric\common\buffer\ShaderStorageBuffer.cpp">
       <Filter>prehistoric\common\buffer</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\common\buffer\UniformBufferObject.cpp">
+      <Filter>prehistoric\common\buffer</Filter>
+    </ClCompile>
     <ClCompile Include="src\engine\prehistoric\common\buffer\VertexBuffer.cpp">
       <Filter>prehistoric\common\buffer</Filter>
     </ClCompile>
@@ -1062,6 +1107,9 @@
       <Filter>prehistoric\core\layers</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\model\Mesh.cpp">
+      <Filter>prehistoric\core\model</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\model\Model.cpp">
       <Filter>prehistoric\core\model</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\model\Transform.cpp">
@@ -1181,14 +1229,5 @@
     <ClCompile Include="src\engine\prehistoric\core\util\time\Timer.cpp">
       <Filter>prehistoric\core\util\time</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\model\Model.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLLightCullingPass.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLMainPass.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLBloomPass.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLHDRPass.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLShadowDepthPass.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\shadow\GLShadowDepthPassShader.cpp" />
-    <ClCompile Include="src\engine\prehistoric\common\buffer\UniformBufferObject.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\buffer\GLUniformBufferObject.cpp" />
   </ItemGroup>
 </Project>
