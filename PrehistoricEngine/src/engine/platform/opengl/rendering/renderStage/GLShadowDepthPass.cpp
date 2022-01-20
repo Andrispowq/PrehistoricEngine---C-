@@ -83,8 +83,24 @@ namespace Prehistoric
 		uint32_t width = window->getWidth();
 		uint32_t height = window->getHeight();
 
+		Light* sun = nullptr;
+		for (auto light : rend->getLights())
+		{
+			if (light->castShadows())
+			{
+				sun = light;
+				break;
+			}
+		}
+
+		if (sun == nullptr)
+		{
+			return;
+		}
+
 		//update stuff
-		std::vector<Matrix4f> lightMatrices = GetLightSpaceMatrices(Vector3f(400, 200, 0).normalise());
+		Vector3f sunPos = sun->getParent()->getWorldTransform().getPosition();
+		std::vector<Matrix4f> lightMatrices = GetLightSpaceMatrices(sunPos.normalise());
 
 		_shadowMap = depthTexture.pointer;
 

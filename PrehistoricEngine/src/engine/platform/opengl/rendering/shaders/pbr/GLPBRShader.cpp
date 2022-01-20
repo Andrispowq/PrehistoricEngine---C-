@@ -39,6 +39,10 @@ namespace Prehistoric
 		AddUniform("numberOfTilesX");
 		AddUniform("max_reflection_lod");
 
+		AddUniform("sunPosition");
+		AddUniform("sunColour");
+		AddUniform("sunIndex");
+
 		AddUniformBlock("LightSpaceMatrices");
 		AddUniform("cascadeCount");
 		AddUniform("farPlane");
@@ -57,6 +61,27 @@ namespace Prehistoric
 		SetUniform("cameraPosition", camera->getPosition());
 		SetUniformi("highDetailRange", EngineConfig::rendererHighDetailRange);
 
+		EnvironmentMapConfig::irradianceMap->Bind(4);
+		SetUniformi("irradianceMap", 4);
+		EnvironmentMapConfig::prefilterMap->Bind(5);
+		SetUniformi("prefilterMap", 5);
+		EnvironmentMapConfig::brdfLUT->Bind(6);
+		SetUniformi("brdfLUT", 6);
+
+		SetUniformi("numberOfTilesX", FrameworkConfig::windowWidth / 16);
+		SetUniformf("max_reflection_lod", EnvironmentMapConfig::prefilterLevels - 1.0f);
+
+		for (size_t i = 0; i <lights.size(); i++)
+		{
+			Light* light = lights[i];
+			if (light->castShadows())
+			{
+				SetUniform("sunPosition", light->getParent()->getWorldTransform().getPosition());
+				SetUniform("sunColour", light->getColour());
+				SetUniformi("sunIndex", i);
+			}
+		}
+
 		_matrices->BindBase(nullptr, 0);
 		SetUniformBlock("LightSpaceMatrices", 0);
 		SetUniformi("cascadeCount", cascadeDistances.size());
@@ -68,17 +93,6 @@ namespace Prehistoric
 
 		for (uint32_t i = 0; i < cascadeDistances.size(); i++)
 			SetUniformf("cascadePlaneDistances[" + std::to_string(i) + "]", cascadeDistances[i]);
-
-		EnvironmentMapConfig::irradianceMap->Bind(4);
-		SetUniformi("irradianceMap", 4);
-		EnvironmentMapConfig::prefilterMap->Bind(5);
-		SetUniformi("prefilterMap", 5);
-		EnvironmentMapConfig::brdfLUT->Bind(6);
-		SetUniformi("brdfLUT", 6);
-
-		//TODO: This is ugly!!!! 
-		SetUniformi("numberOfTilesX", FrameworkConfig::windowWidth / 16);
-		SetUniformf("max_reflection_lod", EnvironmentMapConfig::prefilterLevels - 1.0f);
 	}
 
 	void GLPBRShader::UpdateMaterialUniforms(Material* material, uint32_t descriptor_index) const

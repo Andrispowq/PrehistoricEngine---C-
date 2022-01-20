@@ -64,6 +64,10 @@ layout(std140, binding = 0) uniform LightSpaceMatrices
 
 uniform float time;
 
+uniform vec3 sunPosition;
+uniform vec3 sunColour;
+uniform int sunIndex;
+
 uniform int cascadeCount;
 uniform float cascadePlaneDistances[16];
 uniform float farPlane;
@@ -74,6 +78,7 @@ float GeometrySchlickGGX(float NdotV, float roughness);
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
 vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness);
 vec3 FresnelSchlick(float cosTheta, vec3 F0);
+
 
 float getShadow(vec3 fragPosWorldSpace, vec3 lightDir, vec3 normal)
 {
@@ -144,6 +149,7 @@ float getShadow(vec3 fragPosWorldSpace, vec3 lightDir, vec3 normal)
 
 	return shadow;
 }
+
 
 const float G_SCATTERING = 0.85;
 const int NB_STEPS = 50;
@@ -271,6 +277,10 @@ void main()
     vec3 F0 = vec3(0.04);
     F0 = mix(F0, albedoColour, metallic);
 
+	vec3 sunDirection = normalize(-sunPosition);
+	float shadow = getShadow(position_FS, sunDirection, N);
+	vec3 accumFog = getFog(position_FS, sunDirection, sunColour, N);
+
     vec3 Lo = vec3(0);
 	uint offset = index * 1024;
     for (uint i = 0; i < 1024 && visibleLightIndicesBuffer.data[offset + i].index != -1; i++)
@@ -287,7 +297,7 @@ void main()
 
 		if (dist > light.intensity_radius.g)
 		{
-			attenuation = 0;
+			attenuation = 1.0;
 		}
 
         vec3 radiance = light.colour.rgb * light.intensity_radius.r * attenuation;
@@ -305,7 +315,15 @@ void main()
         vec3 specular = numerator / max(denominator, 0.001);
 
         float NdotL = max(dot(N, L), 0);
-        Lo += (kD * albedoColour / PI + specular) * radiance * NdotL;
+
+		if (sunIndex == index)
+		{
+			Lo += (kD * albedoColour / PI + specular) * radiance * NdotL * (1 - shadow);
+		}
+		else
+		{
+			Lo += (kD * albedoColour / PI + specular) * radiance * NdotL;
+		}
     }
 
     vec3 F = FresnelSchlickRoughness(max(dot(N, V), 0), F0, roughness);
@@ -330,12 +348,9 @@ void main()
 		colour = vec3(0.0);
 	}
 
-	float shadow = getShadow(position_FS, normalize(vec3(-400, -200, 0)/*sunDirection*/), N);
-	vec3 accumFog = getFog(position_FS, normalize(vec3(-400, -200, 0)), vec3(0.9, 0.6, 0.3), N);
-
 	colour *= max((1 - shadow), 0.2);
 	//colour = mix(colour, accumFog, 0.3);
-	colour += accumFog;
+	//colour += accumFog;
 
 	outColour = vec4(colour, 1);
 }
