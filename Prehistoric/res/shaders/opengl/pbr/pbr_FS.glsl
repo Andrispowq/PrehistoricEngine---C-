@@ -297,7 +297,7 @@ void main()
 
 		if (dist > light.intensity_radius.g)
 		{
-			attenuation = 1.0;
+			attenuation = 0.0;
 		}
 
         vec3 radiance = light.colour.rgb * light.intensity_radius.r * attenuation;
@@ -340,7 +340,7 @@ void main()
     vec2 envBRDF = texture(brdfLUT, vec2(max(dot(N, V), 0.01), roughness)).rg;
     vec3 specular = prefilteredColour * (F * envBRDF.x + envBRDF.y);
 
-    vec3 ambient = (kD * diffuse + specular) * occlusion;
+	vec3 ambient = (kD* diffuse + specular)* occlusion;
     vec3 colour = ambient + Lo + (clamp(albedoColour, vec3(0.05), vec3(1.0)) * max(emission, 0.0) * emissionFactor);
 
 	if (isnan(colour.r))

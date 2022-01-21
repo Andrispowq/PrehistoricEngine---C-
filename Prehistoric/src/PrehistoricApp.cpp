@@ -76,7 +76,7 @@ PrehistoricApp::PrehistoricApp()
 		slider3->SetScale({ 0.125f, 0.05f, 1 });
 		sceneRoot->AddChild("slider3", slider3);*/
 
-		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/myscene.obj").value();
+		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/sponza.obj").value();
 		vbo->setFrontFace(FrontFace::CLOCKWISE);
 		ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
 		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
@@ -91,7 +91,7 @@ PrehistoricApp::PrehistoricApp()
 
 		GameObject* obj = new GameObject;
 		obj->SetPosition({ 0, -50, 0 });
-		obj->SetScale({ 1.1f, 1.1f, 1.1f });
+		obj->SetScale({ 0.1f, 0.1f, 0.1f });
 		obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, material));
 		sceneRoot->AddChild("someobj", obj);
 
