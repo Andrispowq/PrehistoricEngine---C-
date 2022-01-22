@@ -129,13 +129,13 @@ namespace Prehistoric
 
 		GLMainPass* mainPass = rend->getMainPass();
 
-		{
+		/* {
 			PR_PROFILE("Decompose pass");
 			decomposePipeline->BindPipeline(nullptr);
 			static_cast<GLBloomDecomposeShader*>(decomposePipeline->getShader())->UpdateUniforms(mainPass->getColourImage().pointer, 1.0f, size);
 			decomposePipeline->RenderPipeline();
 			decomposePipeline->UnbindPipeline();
-		}
+		}*/
 
 		//GAUSSIAN STAGE
 		{

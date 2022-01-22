@@ -1,6 +1,7 @@
 #version 430
 
 layout(location = 0) out vec4 outColour;
+layout(location = 1) out vec4 outBloom;
 
 in vec3 worldPosition;
 
@@ -193,4 +194,5 @@ void main()
 	}
 	
     outColour = vec4(out_Colour, 0.0);
+    outBloom = vec4(0.0);
 }

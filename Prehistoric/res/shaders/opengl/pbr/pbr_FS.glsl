@@ -1,6 +1,7 @@
 #version 430
 
 layout (location = 0) out vec4 outColour;
+layout (location = 1) out vec4 outBloom;
 
 in vec3 position_FS;
 in vec2 texture_FS;
@@ -341,7 +342,7 @@ void main()
     vec3 specular = prefilteredColour * (F * envBRDF.x + envBRDF.y);
 
 	vec3 ambient = (kD* diffuse + specular)* occlusion;
-    vec3 colour = ambient + Lo + (clamp(albedoColour, vec3(0.05), vec3(1.0)) * max(emission, 0.0) * emissionFactor);
+    vec3 colour = ambient + Lo + clamp(albedoColour, vec3(0.05), vec3(1.0)) * max(emission, 0.0) * emissionFactor;
 
 	if (isnan(colour.r))
 	{
@@ -353,6 +354,7 @@ void main()
 	//colour += accumFog;
 
 	outColour = vec4(colour, 1);
+	outBloom = vec4(clamp(albedoColour, vec3(0.05), vec3(1.0)) * max(emission, 0.0) * emissionFactor, 1);
 }
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)
