@@ -7,3 +7,6 @@
 [submodule "PrehistoricEngine/vendor/OpenAL"]
 	path = PrehistoricEngine/vendor/OpenAL
 	url = https://github.com/Andrispowq/openal-soft
+[submodule "PrehistoricEngine/vendor/SpotifyAPI"]
+	path = PrehistoricEngine/vendor/SpotifyAPI
+	url = https://github.com/Andrispowq/Spotify-API

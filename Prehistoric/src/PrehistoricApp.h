@@ -5,6 +5,8 @@
 
 #include "scene/PrehistoricScene.h"
 
+#include "SpotifyInterface.h"
+
 class PrehistoricApp : public Prehistoric::Application
 {
 public:
@@ -12,6 +14,7 @@ public:
 	~PrehistoricApp();
 private:
 	std::unique_ptr<PrehistoricScene> scene;
+	std::unique_ptr<SpotifyInterface> spotifyIF;
 };
 
 Prehistoric::Application* Prehistoric::CreateApplication()

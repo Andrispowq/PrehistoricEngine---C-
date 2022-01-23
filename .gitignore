@@ -6,6 +6,7 @@ Output/
 
 # Prehistoric Engine files
 **.log
+**/private/
 
 # Github and Visual Studio files
 .git/

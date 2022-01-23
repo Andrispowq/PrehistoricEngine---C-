@@ -1,13 +1,30 @@
 #include "PrehistoricApp.h"
 
 #include "prehistoric/core/resources/AssembledAssetManager.h"
-
-
 #include "platform/opengl/rendering/GLRenderer.h"
 
 PrehistoricApp::PrehistoricApp()
 	: scene{nullptr}
 {
+	spotifyIF = std::make_unique<SpotifyInterface>("res/private/access.json");
+	auto devs = spotifyIF->GetDevices();
+	spotifyIF->SetDevice(devs[0]->GetId());
+	//spotifyIF->PlayTrack("Bad Habits", 38.0f);
+	//spotifyIF->PlayTrack("Love me like you do", 118.0f);
+	//spotifyIF->PlayTrack("Mood (Remix) feat. Justin Bieber, J Balvin & iann dior", 30.0f);
+	spotifyIF->PlayTrack("Flip Reset", 58.0f);
+	//spotifyIF->PlayTrackByID("playlist:37i9dQZF1EQncLwOalG3K7", 0);
+
+	SpotifyAPI api = spotifyIF->GetAPI();
+	std::vector<PlaylistSimple> playlists = api.GetMyPlaylists().GetItems();
+	for (auto playlist : playlists)
+	{
+		if (playlist.GetName() == "Pop Mix")
+		{
+			spotifyIF->PlayTrackByID("playlist:" + playlist.GetId(), 0);
+		}
+	}
+
 	using namespace Prehistoric;
 
 	GameObject* audioRoot = new GameObject();

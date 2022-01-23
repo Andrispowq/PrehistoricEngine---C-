@@ -148,7 +148,7 @@ void main()
 	vec2 ndc = vec2(gl_FragCoord.x / width * 2 - 1, gl_FragCoord.y / height * 2 - 1);
 	vec4 ray_clip = vec4(ndc, -1.0, 1.0);
 	vec4 ray_eye = inverse(m_projection) * ray_clip;
-	ray_eye = vec4(ray_eye.xy, (isCubemap != 0) ? 1.0 : -1.0, 0.0);
+	ray_eye = vec4(ray_eye.xy, -1.0, 0.0);
 	vec3 ray_world = (inverse(m_view) * ray_eye).xyz;
 	ray_world.y += horizontalVerticalShift;
 	
