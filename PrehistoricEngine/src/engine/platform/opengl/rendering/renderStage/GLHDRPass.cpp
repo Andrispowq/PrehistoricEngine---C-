@@ -67,7 +67,7 @@ namespace Prehistoric
 		uint32_t height = window->getHeight();
 
 		hdrPipeline->BindPipeline(nullptr);
-		static_cast<GLHDRShader*>(hdrPipeline->getShader())->UpdateUniforms(rend->getMainPass()->getColourImage().pointer, { (float)width, (float)height });
+		static_cast<GLHDRShader*>(hdrPipeline->getShader())->UpdateUniforms(rend->getVolumetricPostProcessingPass()->getOutputTexture().pointer, { (float)width, (float)height });
 		hdrPipeline->RenderPipeline();
 		hdrPipeline->UnbindPipeline();
 	}

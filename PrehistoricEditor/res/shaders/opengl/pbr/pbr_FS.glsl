@@ -1,7 +1,10 @@
 #version 430
 
 layout (location = 0) out vec4 outColour;
-layout (location = 1) out vec4 outBloom;
+layout (location = 1) out vec4 outPositionMetallic;
+layout (location = 2) out vec4 outAlbedoRoughness;
+layout (location = 3) out vec4 outNormal;
+layout (location = 4) out vec4 outBloom;
 
 in vec3 position_FS;
 in vec2 texture_FS;
@@ -151,73 +154,6 @@ float getShadow(vec3 fragPosWorldSpace, vec3 lightDir, vec3 normal)
 	return shadow;
 }
 
-
-const float G_SCATTERING = 0.85;
-const int NB_STEPS = 50;
-
-vec3 RayleighScattering(float distance, float lightDotView, float intensity, /*float wavelength*/vec3 colour, float ior)
-{
-	vec3 result = vec3(intensity);
-	result *= ((1 + pow(lightDotView, 2)) / (2 * distance));
-	result *= colour;//result *= pow(((2 * PI) / wavelength), 4);
-	result *= pow(((ior * ior - 1) / (ior * ior + 2)), 2);
-	return result;
-}
-
-float MieScattering(float lightDotView)
-{
-	float result = 1.0f - G_SCATTERING * G_SCATTERING;
-	result /= (4.0f * PI * pow(1.0f + G_SCATTERING * G_SCATTERING - (2.0f * G_SCATTERING) * lightDotView, 1.5f));
-	return result;
-}
-
-vec3 ComputeScattering(float lightDotView, float distance)
-{
-	float mie = MieScattering(lightDotView);
-	vec3 rayleigh = RayleighScattering(distance, lightDotView, 1000.0, /*700*/vec3(0.9, 0.6, 0.3), 1.1);
-
-	return vec3(mie)/* + rayleigh*/;
-}
-
-vec3 getFog(vec3 worldPosition, vec3 lightDir, vec3 lightColour, vec3 normal)
-{
-	vec3 startPosition = position_FS;
-	vec3 endPosition = cameraPosition;
-
-	float[4][4] ditherPattern = { { 0.0f, 0.5f, 0.125f, 0.625f},
-		{ 0.75f, 0.22f, 0.875f, 0.375f},
-		{ 0.1875f, 0.6875f, 0.0625f, 0.5625},
-		{ 0.9375f, 0.4375f, 0.8125f, 0.3125} };
-
-	vec3 rayVector = endPosition - startPosition;
-	float rayLength = length(rayVector);
-	float steps = float(NB_STEPS);
-	vec3 rayDirection = rayVector / rayLength;
-	float stepLength = rayLength / steps;
-	vec3 step = rayDirection * stepLength;
-
-	vec3 currentPosition = startPosition;
-	vec3 accumFog = vec3(0.0);
-	for (int i = 0; i < NB_STEPS; i++)
-	{
-		//float ditherValue = ditherPattern[int(time * 4) % 4][int(time * 16) % 4];
-		//ditherValue /= 1000.0;
-		//currentPosition += step * ditherValue;
-
-		float shadow = getShadow(currentPosition, lightDir, normal);
-		if (shadow == 0.0)
-		{
-			accumFog += ComputeScattering(dot(rayDirection, lightDir), length(vec3(400, 200, 0) - currentPosition)) * stepLength * lightColour;
-		}
-
-		currentPosition += step;
-	}
-
-	return accumFog;
-}
-
-
-
 void main()
 {
 	ivec2 location = ivec2(gl_FragCoord.xy);
@@ -280,7 +216,6 @@ void main()
 
 	vec3 sunDirection = normalize(-sunPosition);
 	float shadow = getShadow(position_FS, sunDirection, N);
-	vec3 accumFog = getFog(position_FS, sunDirection, sunColour, N);
 
     vec3 Lo = vec3(0);
 	uint offset = index * 1024;
@@ -349,11 +284,12 @@ void main()
 		colour = vec3(0.0);
 	}
 
-	//colour *= max((1 - shadow), 0.2);
-	//colour = mix(colour, accumFog, 0.3);
-	//colour += accumFog;
+	colour *= max((1 - shadow), 0.2);
 
 	outColour = vec4(colour, 1);
+	outPositionMetallic = vec4(position_FS, metallic);
+	outAlbedoRoughness = vec4(albedoColour, roughness);
+	outNormal = vec4(N, 1);
 	outBloom = vec4(clamp(albedoColour, vec3(0.05), vec3(1.0)) * max(emission, 0.0) * emissionFactor, 1);
 }
 

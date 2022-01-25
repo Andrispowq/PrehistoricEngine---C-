@@ -24,7 +24,8 @@ namespace Prehistoric
 		Gaussian,
 		BloomCombine,
 		BloomDecompose,
-		ShadowDepthPass
+		ShadowDepthPass,
+		VolumetricPostProcessing
 	};
 
 	class ShaderLoader : public Loader

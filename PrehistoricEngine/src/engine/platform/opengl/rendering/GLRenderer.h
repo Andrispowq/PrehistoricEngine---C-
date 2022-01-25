@@ -15,6 +15,7 @@
 #include "platform/opengl/rendering/renderStage/GLLightCullingPass.h"
 #include "platform/opengl/rendering/renderStage/GLMainPass.h"
 #include "platform/opengl/rendering/renderStage/GLBloomPass.h"
+#include "platform/opengl/rendering/renderStage/GLVolumetricPostProcessingPass.h"
 #include "platform/opengl/rendering/renderStage/GLHDRPass.h"
 
 namespace Prehistoric
@@ -37,6 +38,7 @@ namespace Prehistoric
 		GLLightCullingPass* getLightCullingPass() const { return lightCullingPass; }
 		GLMainPass* getMainPass() const { return mainPass; }
 		GLBloomPass* getBloomPass() const { return bloomPass; }
+		GLVolumetricPostProcessingPass* getVolumetricPostProcessingPass() const { return volumetricPostProcessingPass; }
 		GLHDRPass* getHDRPass() const { return hdrPass; }
 
 	protected:
@@ -45,6 +47,7 @@ namespace Prehistoric
 		GLLightCullingPass* lightCullingPass;
 		GLMainPass* mainPass;
 		GLBloomPass* bloomPass;
+		GLVolumetricPostProcessingPass* volumetricPostProcessingPass;
 		GLHDRPass* hdrPass;
 
 		VertexBufferHandle quad;

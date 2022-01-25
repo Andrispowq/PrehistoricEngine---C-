@@ -11,6 +11,7 @@
 #include "platform/opengl/rendering/shaders/terrain/GLTerrainShader.h"
 #include "platform/opengl/rendering/shaders/terrain/GLTerrainWireframeShader.h"
 #include "platform/opengl/rendering/shaders/postProcessing/GLHDRShader.h"
+#include "platform/opengl/rendering/shaders/postProcessing/GLVolumetricPostProcessingShader.h"
 #include "platform/opengl/rendering/shaders/forwardPlus/GLDepthPassShader.h"
 #include "platform/opengl/rendering/shaders/forwardPlus/GLLightCullingPassShader.h"
 
@@ -165,6 +166,9 @@ namespace Prehistoric
 			break;
 		case Prehistoric::ShaderName::ShadowDepthPass:
 			name = "shadow_depth_pass";
+			break;
+		case Prehistoric::ShaderName::VolumetricPostProcessing:
+			name = "volumetric_post_processing";
 			break;
 		default:
 			name = "invalid";

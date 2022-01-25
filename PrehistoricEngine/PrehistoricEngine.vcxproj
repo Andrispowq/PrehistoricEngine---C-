@@ -145,6 +145,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\Includes.hpp" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLVolumetricPostProcessingPass.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLVolumetricPostProcessingShader.h" />
     <ClInclude Include="src\engine\Prehistoric.h" />
     <ClInclude Include="src\engine\platform\Platform.h" />
     <ClInclude Include="src\engine\platform\opengl\buffer\GLMeshVertexBuffer.h" />
@@ -333,6 +335,7 @@
     <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLLightCullingPass.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLMainPass.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLShadowDepthPass.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLVolumetricPostProcessingPass.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\GLShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereScatteringShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereShader.cpp" />
@@ -352,6 +355,7 @@
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLBloomCombineShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLGaussianShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLHDRShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLVolumetricPostProcessingShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\shadow\GLShadowDepthPassShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainWireframeShader.cpp" />

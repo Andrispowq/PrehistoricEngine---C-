@@ -27,6 +27,7 @@ namespace Prehistoric
 		lightCullingPass = new GLLightCullingPass(this);
 		mainPass = new GLMainPass(this);
 		bloomPass = new GLBloomPass(this);
+		volumetricPostProcessingPass = new GLVolumetricPostProcessingPass(this);
 		hdrPass = new GLHDRPass(this);
 
 		uint32_t width = window->getWidth();
@@ -51,6 +52,7 @@ namespace Prehistoric
 		delete lightCullingPass;
 		delete mainPass;
 		delete bloomPass;
+		delete volumetricPostProcessingPass;
 		delete hdrPass;
 
 		AssetManager* man = manager->getAssetManager();
@@ -70,6 +72,7 @@ namespace Prehistoric
 			lightCullingPass->OnResized();
 			mainPass->OnResized();
 			bloomPass->OnResized();
+			volumetricPostProcessingPass->OnResized();
 			hdrPass->OnResized();
 
 			window->getSwapchain()->SetWindowSize(width, height);
@@ -116,6 +119,7 @@ namespace Prehistoric
 			bloomPass->Render();
 		}
 
+		volumetricPostProcessingPass->Render();
 		hdrPass->Render();
 
 		{

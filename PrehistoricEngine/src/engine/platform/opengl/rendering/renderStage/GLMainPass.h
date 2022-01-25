@@ -24,6 +24,9 @@ namespace Prehistoric
 		virtual void Render() override;
 
 		TextureHandle getColourImage() const { return colourImage; }
+		TextureHandle getPositionMetallicImage() const { return positionMetallicImage; }
+		TextureHandle getAlbedoRoughnessImage() const { return albedoRoughnessImage; }
+		TextureHandle getNormalImage() const { return normalImage; }
 		TextureHandle getBloomImage() const { return bloomImage; }
 
 	private:
@@ -31,6 +34,9 @@ namespace Prehistoric
 		std::unique_ptr<GLFramebuffer> colourFBO;
 
 		TextureHandle colourImage;
+		TextureHandle positionMetallicImage;
+		TextureHandle albedoRoughnessImage;
+		TextureHandle normalImage;
 		TextureHandle bloomImage;
 	};
 };

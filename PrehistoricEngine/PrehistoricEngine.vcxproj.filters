@@ -773,6 +773,8 @@
     <ClInclude Include="src\engine\prehistoric\core\util\time\Timer.h">
       <Filter>prehistoric\core\util\time</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLVolumetricPostProcessingPass.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLVolumetricPostProcessingShader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -1220,5 +1222,7 @@
     <ClCompile Include="src\engine\prehistoric\core\util\time\Timer.cpp">
       <Filter>prehistoric\core\util\time</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLVolumetricPostProcessingPass.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLVolumetricPostProcessingShader.cpp" />
   </ItemGroup>
 </Project>
