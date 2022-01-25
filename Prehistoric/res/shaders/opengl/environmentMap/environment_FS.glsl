@@ -17,7 +17,7 @@ void main()
 {
 	vec3 colour = textureLod(environmentMap, normalize(position_FS), lod).rgb;
 	outColour = vec4(colour, 1);
-	outPositionMetallic = vec4(position_FS, 0);
+	outPositionMetallic = vec4(position_FS * 10000, 0);
 	outAlbedoRoughness = vec4(colour, 0);
 	outNormal = vec4(-normalize(position_FS), 0);
 	outBloom = vec4(0.0);

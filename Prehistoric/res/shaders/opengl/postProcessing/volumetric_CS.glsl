@@ -100,7 +100,7 @@ float getShadow(vec3 fragPosWorldSpace, vec3 lightDir, vec3 normal)
 	return shadow;
 }
 
-const float G_SCATTERING = 0.85;
+const float G_SCATTERING = 0.99;// 0.85;
 const int NB_STEPS = 50;
 
 vec3 RayleighScattering(float distance, float lightDotView, float intensity, /*float wavelength*/vec3 colour, float ior)
@@ -155,7 +155,7 @@ vec3 getFog(vec3 worldPosition, vec3 lightDir, vec3 lightColour, vec3 normal)
 		float shadow = getShadow(currentPosition, lightDir, normal);
 		if (shadow == 0.0)
 		{
-			accumFog += ComputeScattering(dot(rayDirection, lightDir), length(sunPosition - currentPosition)) * stepLength * lightColour;
+			accumFog += ComputeScattering(dot(rayDirection, lightDir), length(sunPosition - currentPosition)) * /*stepLength */lightColour;
 		}
 
 		currentPosition += step;
@@ -176,6 +176,6 @@ void main()
     vec3 normal = texture(normalImage, texCoord).rgb;
 
 	vec3 accumFog = getFog(positionMetallic.rgb, -normalize(sunPosition), vec3(0.9, 0.6, 0.3), normal);
-	vec3 total = mix(sceneColour, accumFog, 0.0);
+	vec3 total = mix(sceneColour, accumFog, 0.8);
     imageStore(outColour, x, vec4(total, 1.0));
 }

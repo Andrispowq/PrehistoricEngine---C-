@@ -197,7 +197,7 @@ void main()
 	}
 	
     outColour = vec4(out_Colour, 0.0);
-    outPositionMetallic = vec4(ray_world, 0);
+    outPositionMetallic = vec4(ray_world * 10000, 0);
     outAlbedoRoughness = vec4(0.0);
     outNormal = vec4(-normalize(ray_world), 0);
     outBloom = vec4(0.0);
