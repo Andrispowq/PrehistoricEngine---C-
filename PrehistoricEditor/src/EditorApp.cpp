@@ -21,27 +21,40 @@ EditorApp::EditorApp()
 	Window* window = engineLayer->getRenderingEngine()->getWindow();
 	GameObject* root = engineLayer->getRootObject();
 
-	Camera* cam = engineLayer->getRenderingEngine()->getCamera();//new EditorCamera();
+	Camera* cam = engineLayer->getRenderingEngine()->getCamera();//new EditorCamera(); 
 	//engineLayer->getRenderingEngine()->ChangeCamera(cam);
 
 	spotifyIF = std::make_unique<SpotifyInterface>("res/private/access.json");
 	sIF = spotifyIF.get();
 	auto devs = spotifyIF->GetDevices();
 	spotifyIF->SetDevice(devs[0]->GetId());
-	spotifyIF->PlayTrack("Story of my life", 50.0f);
+	//spotifyIF->PlayTrack("Story of my life", 50.0f);
+
+	SpotifyAPI api = spotifyIF->GetAPI();
+	std::vector<PlaylistSimple> playlists = api.GetMyPlaylists().GetItems();
+	for (auto playlist : playlists)
+	{
+		if (playlist.GetName() == "Pop Mix")
+		{
+			int index = 0;
+
+			std::vector<PlaylistTrack> pl_tracks = api.GetPlaylistTracks(playlist.GetOwner()->GetId(), playlist.GetId()).GetItems();
+			std::shared_ptr<Track> track = pl_tracks[index].GetTrack();
+			std::string artists;
+			for (size_t i = 0; i < track->GetArtists().size(); i++)
+			{
+				artists += track->GetArtists()[i]->GetName();
+				if (i != (track->GetArtists().size() - 1)) artists += ", ";
+			}
+
+			PR_LOG_MESSAGE("Now playing %s: %s\n", artists.c_str(), track->GetName().c_str());
+
+			spotifyIF->PlayTrackByID("playlist:" + playlist.GetId(), index);
+		}
+	}
 
 	cam->setPosition(Vector3f(0, 5, -2));
 	cam->Update(engineLayer->getRenderingEngine()->getWindow(), 0.0f);
-
-	AudioComponent* startupSound;
-	GameObject* start = new GameObject;
-	//start->AddComponent("startup", startupSound = new AudioComponent("res/sounds/_FlipReset.wav", 54.0f, true, false, true));
-	//start->AddComponent(AUDIO_COMPONENT, startupSound = new AudioComponent("res/sounds/_Saviour.wav", 38.0f, true, true));
-	//start->AddComponent(AUDIO_COMPONENT, startupSound = new AudioComponent("res/sounds/_Eternal.wav", 0.0f, true, true));
-	//startupSound->setSpatial(true);
-	//startupSound->PreUpdate(engineLayer);
-
-	engineLayer->getAudioEngine()->Update(0.0f);
 
 	Scene* scene = new Scene("res/world/testLevel.wrld", window, cam, manager);
 	engineLayer->SetScene(scene);

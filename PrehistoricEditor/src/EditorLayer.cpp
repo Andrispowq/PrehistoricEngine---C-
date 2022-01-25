@@ -160,8 +160,8 @@ void EditorLayer::ImGUIRender()
 
 		sIF->PlayTrack(name, float(offset) / 1000.0f);
 
-		memset(songNameBuffer, 0, 256);
-		offset = 0;
+		//memset(songNameBuffer, 0, 256);
+		//offset = 0;
 	}
 
 	ImGui::End();

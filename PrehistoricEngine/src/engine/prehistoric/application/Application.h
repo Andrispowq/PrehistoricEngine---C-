@@ -10,7 +10,7 @@
 
 namespace Prehistoric
 {
-	class PR_API Application
+	class Application
 	{
 	public:
 		Application();

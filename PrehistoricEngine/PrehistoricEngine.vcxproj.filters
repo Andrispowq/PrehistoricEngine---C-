@@ -40,9 +40,6 @@
     <Filter Include="platform\opengl\rendering\shaders\atmosphere">
       <UniqueIdentifier>{4B430792-3756-07EB-E03F-E4D7CC31A438}</UniqueIdentifier>
     </Filter>
-    <Filter Include="platform\opengl\rendering\shaders\basic">
-      <UniqueIdentifier>{55BE7DEE-C14D-3FD9-CA49-20F136587AE5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="platform\opengl\rendering\shaders\environmentMap">
       <UniqueIdentifier>{2645CD03-12EE-3433-3B84-50B2278C4F74}</UniqueIdentifier>
     </Filter>

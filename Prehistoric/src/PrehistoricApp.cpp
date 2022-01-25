@@ -6,6 +6,8 @@
 PrehistoricApp::PrehistoricApp()
 	: scene{nullptr}
 {
+	using namespace Prehistoric;
+
 	spotifyIF = std::make_unique<SpotifyInterface>("res/private/access.json");
 	auto devs = spotifyIF->GetDevices();
 	spotifyIF->SetDevice(devs[0]->GetId());
@@ -39,8 +41,6 @@ PrehistoricApp::PrehistoricApp()
 			spotifyIF->PlayTrackByID("playlist:" + playlist.GetId(), index);
 		}
 	}*/
-
-	using namespace Prehistoric;
 
 	GameObject* audioRoot = new GameObject();
 	engineLayer->getRootObject()->AddChild("audioRoot", audioRoot);

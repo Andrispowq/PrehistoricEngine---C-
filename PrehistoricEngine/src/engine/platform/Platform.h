@@ -46,7 +46,7 @@
 		#define PR_API __declspec(dllexport)
 	#elif defined(PR_LOAD_DLL)
 		#define PR_API __declspec(dllimport)
-	#else	
+	#else
 		#define PR_API
 	#endif
 
