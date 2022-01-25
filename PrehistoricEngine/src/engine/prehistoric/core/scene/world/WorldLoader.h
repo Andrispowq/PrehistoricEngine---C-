@@ -10,7 +10,6 @@
 #include "prehistoric/core/node/component/renderer/RendererComponent.h"
 #include "prehistoric/core/model/obj/OBJLoader.h"
 
-#include "platform/opengl/rendering/shaders/basic/GLBasicShader.h"
 #include "platform/vulkan/rendering/shaders/basic/VKBasicShader.h"
 
 #include "platform/opengl/rendering/shaders/pbr/GLPBRShader.h"

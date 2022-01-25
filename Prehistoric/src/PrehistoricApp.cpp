@@ -11,19 +11,34 @@ PrehistoricApp::PrehistoricApp()
 	spotifyIF->SetDevice(devs[0]->GetId());
 	//spotifyIF->PlayTrack("Bad Habits", 38.0f);
 	//spotifyIF->PlayTrack("Love me like you do", 118.0f);
-	//spotifyIF->PlayTrack("Mood (Remix) feat. Justin Bieber, J Balvin & iann dior", 30.0f);
-	spotifyIF->PlayTrack("Flip Reset", 58.0f);
+	spotifyIF->PlayTrack("Mood (Remix) feat. Justin Bieber, J Balvin & iann dior", 30.0f);
+	//spotifyIF->PlayTrack("Hate Me", 0.0f);
+	//spotifyIF->PlayTrack("Flip Reset", 58.0f);
+	//spotifyIF->PlayTrack("Hangover", 0.0f);
 	//spotifyIF->PlayTrackByID("playlist:37i9dQZF1EQncLwOalG3K7", 0);
 
-	SpotifyAPI api = spotifyIF->GetAPI();
+	/*SpotifyAPI api = spotifyIF->GetAPI();
 	std::vector<PlaylistSimple> playlists = api.GetMyPlaylists().GetItems();
 	for (auto playlist : playlists)
 	{
 		if (playlist.GetName() == "Pop Mix")
 		{
-			spotifyIF->PlayTrackByID("playlist:" + playlist.GetId(), 0);
+			int index = 2;
+
+			std::vector<PlaylistTrack> pl_tracks = api.GetPlaylistTracks(playlist.GetOwner()->GetId(), playlist.GetId()).GetItems();
+			std::shared_ptr<Track> track = pl_tracks[index].GetTrack();
+			std::string artists;
+			for (size_t i = 0; i < track->GetArtists().size(); i++)
+			{
+				artists += track->GetArtists()[i]->GetName();
+				if(i != (track->GetArtists().size() - 1)) artists += ", ";
+			}
+
+			PR_LOG_MESSAGE("Now playing %s: %s\n", artists.c_str(), track->GetName().c_str());
+
+			spotifyIF->PlayTrackByID("playlist:" + playlist.GetId(), index);
 		}
-	}
+	}*/
 
 	using namespace Prehistoric;
 

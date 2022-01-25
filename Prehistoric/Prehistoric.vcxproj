@@ -92,7 +92,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>IF EXIST $(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll\ (xcopy /Q /E /Y /I $(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll  ..\bin\Debug-windows-x86_64\Prehistoric &gt; nul) ELSE (xcopy /Q /Y /I $(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll  ..\bin\Debug-windows-x86_64\Prehistoric &gt; nul)</Command>
+      <Command>IF EXIST "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"\ (xcopy /Q /E /Y /I "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"  ..\bin\Debug-windows-x86_64\Prehistoric &gt; nul) ELSE (xcopy /Q /Y /I "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"  ..\bin\Debug-windows-x86_64\Prehistoric &gt; nul)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -116,7 +116,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
-      <Command>IF EXIST $(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll\ (xcopy /Q /E /Y /I $(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll  ..\bin\Release-windows-x86_64\Prehistoric &gt; nul) ELSE (xcopy /Q /Y /I $(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll  ..\bin\Release-windows-x86_64\Prehistoric &gt; nul)</Command>
+      <Command>IF EXIST "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"\ (xcopy /Q /E /Y /I "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"  ..\bin\Release-windows-x86_64\Prehistoric &gt; nul) ELSE (xcopy /Q /Y /I "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"  ..\bin\Release-windows-x86_64\Prehistoric &gt; nul)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">
@@ -140,7 +140,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
-      <Command>IF EXIST $(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll\ (xcopy /Q /E /Y /I $(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll  ..\bin\Distribution-windows-x86_64\Prehistoric &gt; nul) ELSE (xcopy /Q /Y /I $(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll  ..\bin\Distribution-windows-x86_64\Prehistoric &gt; nul)</Command>
+      <Command>IF EXIST "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"\ (xcopy /Q /E /Y /I "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"  ..\bin\Distribution-windows-x86_64\Prehistoric &gt; nul) ELSE (xcopy /Q /Y /I "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"  ..\bin\Distribution-windows-x86_64\Prehistoric &gt; nul)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

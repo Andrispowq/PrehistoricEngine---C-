@@ -1,6 +1,7 @@
 #version 430
 
 layout (location = 0) out vec4 outColour;
+layout (location = 1) out vec4 outBloom;
 
 struct Material
 {
@@ -196,6 +197,7 @@ void main()
 	}
 
 	outColour = vec4(colour, 1);
+	outBloom = vec4(0.0);
 }
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)

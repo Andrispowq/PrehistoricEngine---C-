@@ -86,7 +86,7 @@ namespace Prehistoric
 		SetUniformBlock("LightSpaceMatrices", 0);
 		SetUniformi("cascadeCount", cascadeDistances.size());
 		SetUniformf("farPlane", EngineConfig::rendererFarPlane);
-		_shadowMap->Bind(3);
+		if(_shadowMap) _shadowMap->Bind(3);
 		SetUniformi("shadowMap", 3);
 
 		SetUniformf("time", Time::getTimeFromStart());

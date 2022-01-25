@@ -58,12 +58,12 @@ namespace Prehistoric
 		//Create the matrices
 		projectionMatrix = Matrix4f::PerspectiveProjection(90, 1, .1f, 100.0f);
 
-		viewMatrices[0] = Matrix4f::View(Vector3f(1, 0, 0), Vector3f(0, -1, 0));
-		viewMatrices[1] = Matrix4f::View(Vector3f(-1, 0, 0), Vector3f(0, -1, 0));
-		viewMatrices[2] = Matrix4f::View(Vector3f(0, -1, 0), Vector3f(0, 0, 1));
-		viewMatrices[3] = Matrix4f::View(Vector3f(0, 1, 0), Vector3f(0, 0, -1));
-		viewMatrices[4] = Matrix4f::View(Vector3f(0, 0, -1), Vector3f(0, -1, 0));
-		viewMatrices[5] = Matrix4f::View(Vector3f(0, 0, 1), Vector3f(0, -1, 0));
+		viewMatrices[0] = Matrix4f::View(Vector3f(-1, 0, 0), Vector3f(0, -1, 0));
+		viewMatrices[1] = Matrix4f::View(Vector3f(1, 0, 0), Vector3f(0, -1, 0));
+		viewMatrices[2] = Matrix4f::View(Vector3f(0, -1, 0), Vector3f(0, 0, -1));
+		viewMatrices[3] = Matrix4f::View(Vector3f(0, 1, 0), Vector3f(0, 0, 1));
+		viewMatrices[4] = Matrix4f::View(Vector3f(0, 0, 1), Vector3f(0, -1, 0));
+		viewMatrices[5] = Matrix4f::View(Vector3f(0, 0, -1), Vector3f(0, -1, 0));
 
 		//Creating the BRDF map
 		size = 512;

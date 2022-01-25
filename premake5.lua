@@ -161,7 +161,7 @@ project "PrehistoricEditor"
         "PrehistoricEngine"
     }    
     
-    postbuildcommands { "{COPY} %{wks.location}/PrehistoricEngine/Dependencies/lib/libcurl/libcurl.dll  ../bin/" .. outputdir .. "/PrehistoricEditor"  }
+    postbuildcommands { "{COPY} \"%{wks.location}/PrehistoricEngine/Dependencies/lib/libcurl/libcurl.dll\"  ../bin/" .. outputdir .. "/PrehistoricEditor"  }
 
     filter "system:windows"
         systemversion "latest"
@@ -228,7 +228,7 @@ project "Prehistoric"
         "PrehistoricEngine"
     }
     
-    postbuildcommands { "{COPY} %{wks.location}/PrehistoricEngine/Dependencies/lib/libcurl/libcurl.dll  ../bin/" .. outputdir .. "/Prehistoric"  }
+    postbuildcommands { "{COPY} \"%{wks.location}/PrehistoricEngine/Dependencies/lib/libcurl/libcurl.dll\"  ../bin/" .. outputdir .. "/Prehistoric"  }
 
     filter "system:windows"
         systemversion "latest"

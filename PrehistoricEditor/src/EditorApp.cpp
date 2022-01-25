@@ -7,6 +7,8 @@
 
 #include "prehistoric/core/node/movement/EditorCamera.h"
 
+SpotifyInterface* sIF;
+
 EditorApp::EditorApp()
 {
 	using namespace Prehistoric;
@@ -21,6 +23,12 @@ EditorApp::EditorApp()
 
 	Camera* cam = engineLayer->getRenderingEngine()->getCamera();//new EditorCamera();
 	//engineLayer->getRenderingEngine()->ChangeCamera(cam);
+
+	spotifyIF = std::make_unique<SpotifyInterface>("res/private/access.json");
+	sIF = spotifyIF.get();
+	auto devs = spotifyIF->GetDevices();
+	spotifyIF->SetDevice(devs[0]->GetId());
+	spotifyIF->PlayTrack("Story of my life", 50.0f);
 
 	cam->setPosition(Vector3f(0, 5, -2));
 	cam->Update(engineLayer->getRenderingEngine()->getWindow(), 0.0f);

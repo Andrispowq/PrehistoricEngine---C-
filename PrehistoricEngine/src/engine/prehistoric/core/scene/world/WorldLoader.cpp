@@ -283,10 +283,6 @@ namespace Prehistoric
 								{
 									name = ShaderName::PBR;
 								}
-								else if (compTokens[1] == "basic")
-								{
-									name = ShaderName::Basic;
-								}
 
 								shader = man->loadShader(name).value();
 								shaders.insert(std::make_pair(compTokens[1], shader));
@@ -373,10 +369,6 @@ namespace Prehistoric
 										if (compTokens[1] == "pbr")
 										{
 											name = ShaderName::PBR;
-										}
-										else if (compTokens[1] == "basic")
-										{
-											name = ShaderName::Basic;
 										}
 
 										shader = man->loadShader(name).value();

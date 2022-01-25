@@ -341,7 +341,7 @@ void main()
     vec2 envBRDF = texture(brdfLUT, vec2(max(dot(N, V), 0.01), roughness)).rg;
     vec3 specular = prefilteredColour * (F * envBRDF.x + envBRDF.y);
 
-	vec3 ambient = (kD* diffuse + specular)* occlusion;
+	vec3 ambient = (kD * diffuse + specular)* occlusion;
     vec3 colour = ambient + Lo + clamp(albedoColour, vec3(0.05), vec3(1.0)) * max(emission, 0.0) * emissionFactor;
 
 	if (isnan(colour.r))
@@ -349,7 +349,7 @@ void main()
 		colour = vec3(0.0);
 	}
 
-	colour *= max((1 - shadow), 0.2);
+	//colour *= max((1 - shadow), 0.2);
 	//colour = mix(colour, accumFog, 0.3);
 	//colour += accumFog;
 

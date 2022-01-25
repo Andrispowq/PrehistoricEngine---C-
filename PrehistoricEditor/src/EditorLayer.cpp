@@ -24,6 +24,11 @@ void EditorLayer::Update(float delta)
 {
 }
 
+#include "SpotifyInterface.h"
+extern SpotifyInterface* sIF;
+char songNameBuffer[256] = { 0 };
+int offset = 0;
+
 void EditorLayer::ImGUIRender()
 {
 	static bool dockspaceOpen = true;
@@ -142,6 +147,22 @@ void EditorLayer::ImGUIRender()
 
 	ImGui::SliderFloat("Exposure", &Prehistoric::EngineConfig::rendererExposure, 0.5f, 4.0f, "Exposure");
 	ImGui::SliderFloat("Gamma", &Prehistoric::EngineConfig::rendererGamma, 1.0f, 5.0f, "Gamma");
+
+	ImGui::InputText("Song to play", songNameBuffer, 256);
+	ImGui::InputInt("Start offset (ms)", &offset);
+	if (ImGui::Button("Play song"))
+	{
+		std::string name = songNameBuffer;
+		if (name.empty())
+		{
+			return;
+		}
+
+		sIF->PlayTrack(name, float(offset) / 1000.0f);
+
+		memset(songNameBuffer, 0, 256);
+		offset = 0;
+	}
 
 	ImGui::End();
 	ImGui::PopStyleVar();

@@ -350,9 +350,6 @@
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereShader.h">
       <Filter>platform\opengl\rendering\shaders\atmosphere</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\basic\GLBasicShader.h">
-      <Filter>platform\opengl\rendering\shaders\basic</Filter>
-    </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLBRDFIntegrateShader.h">
       <Filter>platform\opengl\rendering\shaders\environmentMap</Filter>
     </ClInclude>
@@ -844,9 +841,6 @@
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereShader.cpp">
       <Filter>platform\opengl\rendering\shaders\atmosphere</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\basic\GLBasicShader.cpp">
-      <Filter>platform\opengl\rendering\shaders\basic</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLBRDFIntegrateShader.cpp">
       <Filter>platform\opengl\rendering\shaders\environmentMap</Filter>

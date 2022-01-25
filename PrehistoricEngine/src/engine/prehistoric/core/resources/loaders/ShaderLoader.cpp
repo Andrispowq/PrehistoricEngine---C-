@@ -3,7 +3,6 @@
 
 #include "platform/opengl/rendering/shaders/atmosphere/GLAtmosphereScatteringShader.h"
 #include "platform/opengl/rendering/shaders/atmosphere/GLAtmosphereShader.h"
-#include "platform/opengl/rendering/shaders/basic/GLBasicShader.h"
 #include "platform/opengl/rendering/shaders/gpgpu/GLNormalmapShader.h"
 #include "platform/opengl/rendering/shaders/gpgpu/GLSplatmapShader.h"
 #include "platform/opengl/rendering/shaders/gpgpu/GLTerrainHeightsShader.h"
@@ -32,10 +31,6 @@ namespace Prehistoric
 			if (path == "pbr")
 			{
 				shader = new GLPBRShader();
-			}
-			else if (path == "basic")
-			{
-				shader = new GLBasicShader();
 			}
 			else if (path == "atmosphere_scattering")
 			{

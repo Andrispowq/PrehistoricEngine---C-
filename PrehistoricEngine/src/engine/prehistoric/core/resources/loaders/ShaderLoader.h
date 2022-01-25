@@ -10,7 +10,6 @@ namespace Prehistoric
 	enum class ShaderName
 	{
 		PBR,
-		Basic, 
 		AtmosphereScattering,
 		Atmosphere,
 		TerrainWireframe,

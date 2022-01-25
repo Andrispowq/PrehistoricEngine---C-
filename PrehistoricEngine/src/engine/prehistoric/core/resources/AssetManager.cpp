@@ -3,7 +3,6 @@
 
 #include "platform/opengl/rendering/shaders/atmosphere/GLAtmosphereScatteringShader.h"
 #include "platform/opengl/rendering/shaders/atmosphere/GLAtmosphereShader.h"
-#include "platform/opengl/rendering/shaders/basic/GLBasicShader.h"
 #include "platform/opengl/rendering/shaders/gpgpu/GLNormalmapShader.h"
 #include "platform/opengl/rendering/shaders/gpgpu/GLSplatmapShader.h"
 #include "platform/opengl/rendering/shaders/gpgpu/GLTerrainHeightsShader.h"
@@ -121,9 +120,6 @@ namespace Prehistoric
 		{
 		case Prehistoric::ShaderName::PBR:
 			name = "pbr";
-			break;
-		case Prehistoric::ShaderName::Basic:
-			name = "basic";
 			break;
 		case Prehistoric::ShaderName::AtmosphereScattering:
 			name = "atmosphere_scattering";

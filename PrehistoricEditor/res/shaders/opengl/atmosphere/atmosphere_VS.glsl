@@ -13,7 +13,3 @@ void main()
 	gl_Position = m_projection * m_view * m_transform * vec4(position_VS, 1);
 	position_FS = (m_transform * vec4(position_VS, 1)).xyz;
 }
-
-
-
-
