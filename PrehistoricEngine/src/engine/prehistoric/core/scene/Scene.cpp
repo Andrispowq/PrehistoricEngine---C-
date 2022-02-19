@@ -9,7 +9,15 @@ namespace Prehistoric
 		sceneRoot = new GameObject();
 
 		WorldLoader loader(window, manager);
-		loader.LoadWorld(worldFile, sceneRoot);
+
+		if (Util::Split(worldFile, '.')[1] == "json")
+		{
+			loader.LoadWorldJSON(worldFile, sceneRoot);
+		}
+		else
+		{
+			loader.LoadWorld(worldFile, sceneRoot);
+		}
 
 		name = loader.sceneName;
 

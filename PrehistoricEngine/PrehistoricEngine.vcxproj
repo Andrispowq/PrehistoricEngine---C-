@@ -145,8 +145,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\Includes.hpp" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLVolumetricPostProcessingPass.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLVolumetricPostProcessingShader.h" />
     <ClInclude Include="src\engine\Prehistoric.h" />
     <ClInclude Include="src\engine\platform\Platform.h" />
     <ClInclude Include="src\engine\platform\opengl\buffer\GLMeshVertexBuffer.h" />
@@ -167,6 +165,7 @@
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLLightCullingPass.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLMainPass.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLShadowDepthPass.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLVolumetricPostProcessingPass.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\GLShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereScatteringShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereShader.h" />
@@ -186,8 +185,10 @@
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLBloomCombineShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLGaussianShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLHDRShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLVolumetricPostProcessingShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\shadow\GLShadowDepthPassShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShadowShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainWireframeShader.h" />
     <ClInclude Include="src\engine\platform\opengl\texture\GLTexture.h" />
     <ClInclude Include="src\engine\platform\vulkan\buffer\VKBuffer.h" />
@@ -248,6 +249,7 @@
     <ClInclude Include="src\engine\prehistoric\common\util\InitDevice.h" />
     <ClInclude Include="src\engine\prehistoric\common\util\PlatformUtils.h" />
     <ClInclude Include="src\engine\prehistoric\common\util\RenderUtils.h" />
+    <ClInclude Include="src\engine\prehistoric\core\config\EngineSettings.h" />
     <ClInclude Include="src\engine\prehistoric\core\CoreEngine.h" />
     <ClInclude Include="src\engine\prehistoric\core\ImGUI\ImGUILayer.h" />
     <ClInclude Include="src\engine\prehistoric\core\config\AtmosphereConfig.h" />
@@ -358,6 +360,7 @@
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLVolumetricPostProcessingShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\shadow\GLShadowDepthPassShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShadowShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainWireframeShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\texture\GLTexture.cpp" />
     <ClCompile Include="src\engine\platform\vulkan\buffer\VKBuffer.cpp" />
@@ -414,6 +417,7 @@
     <ClCompile Include="src\engine\prehistoric\common\util\DeviceProperties.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\util\InitDevice.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\util\PlatformUtils.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\config\EngineSettings.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\CoreEngine.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\ImGUI\ImGUIBuild.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\ImGUI\ImGUILayer.cpp" />

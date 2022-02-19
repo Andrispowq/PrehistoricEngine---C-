@@ -1,0 +1,61 @@
+{
+    "framework":
+    {
+        "window":
+        {
+            "name": "Prehistoric Engine",
+            "width": 1280,
+            "height": 720,
+            "fullScreen": false,
+            "resizable":  true,
+            "vSync": false,
+            "numSamples": 8,
+            "maxFPS": 120
+        },
+        "api":
+        {
+            "OpenGL":
+            {
+                "version": 4.5
+            },
+            "Vulkan":
+            {
+                "version": 1.1,
+                "useValidationLayers": true
+            },
+            "active": "OpenGL"
+        }
+    },
+    "engine":
+    {
+        "maxNumberOfLights": 1000,
+        "renderer":
+        {
+            "gamma": 2.2,
+            "exposure": 1.0,
+            "highDetailRange": 200,
+            "nearPlane": 0.1,
+            "farPlane": 10000
+        }
+    },
+    "environmentMap":
+    {
+        "location": "res/textures/environmentMaps/cape_hill_2k.hdr",
+        "environmentMapResolution": 1024,
+        "irradianceMapResolution": 512,
+        "prefilterMapResolution": 1024,
+        "prefilterMapLevels": 5
+    },
+    "terrain":
+    {
+        "scale": [6000, 600, 6000],
+        "tessellation":
+        {
+            "factor": 600,
+            "slope": 1.8,
+            "shift": 0.3
+        },
+        "lodRangeCount": 8,
+        "lodRanges": [0, 0, 50, 100, 192, 386, 874, 1750]
+    }
+}

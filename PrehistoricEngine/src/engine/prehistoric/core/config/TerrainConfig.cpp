@@ -6,25 +6,25 @@
 
 namespace Prehistoric
 {
-	namespace TerrainConfig
+	namespace _TerrainConfig
 	{
-		float TerrainConfig::scaleY;
-		float TerrainConfig::scaleXZ;
+		float _TerrainConfig::scaleY;
+		float _TerrainConfig::scaleXZ;
 
-		int TerrainConfig::tessellationFactor;
-		float TerrainConfig::tessellationSlope;
-		float TerrainConfig::tessellationShift;
+		int _TerrainConfig::tessellationFactor;
+		float _TerrainConfig::tessellationSlope;
+		float _TerrainConfig::tessellationShift;
 
-		std::vector<int> TerrainConfig::lodRanges;
-		std::vector<int> TerrainConfig::lodMorphingAreas;
+		std::vector<int> _TerrainConfig::lodRanges;
+		std::vector<int> _TerrainConfig::lodMorphingAreas;
 
-		std::vector<Material*> TerrainConfig::terrainMaterials;
+		std::vector<Material*> _TerrainConfig::terrainMaterials;
 
-		Texture* TerrainConfig::heightmap;
-		Texture* TerrainConfig::normalmap;
-		Texture* TerrainConfig::splatmap;
+		Texture* _TerrainConfig::heightmap;
+		Texture* _TerrainConfig::normalmap;
+		Texture* _TerrainConfig::splatmap;
 
-		void TerrainConfig::LoadConfig(const std::string& path)
+		void _TerrainConfig::LoadConfig(const std::string& path)
 		{
 			std::ifstream file;
 			file.open(path.c_str());
@@ -98,7 +98,7 @@ namespace Prehistoric
 			}
 		}
 
-		int TerrainConfig::UpdateMorphingArea(int lod)
+		int _TerrainConfig::UpdateMorphingArea(int lod)
 		{
 			return (int)((scaleXZ / TerrainQuadtree::rootNodes) / pow(2, lod));
 		}

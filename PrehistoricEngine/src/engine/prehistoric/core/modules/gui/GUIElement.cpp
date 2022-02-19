@@ -68,7 +68,7 @@ namespace Prehistoric
 		cursor *= 2;
 		cursor -= 1;
 
-		if (start <= cursor && end >= cursor)
+		if ((start <= cursor) && (end >= cursor))
 		{
 			return true;
 		}

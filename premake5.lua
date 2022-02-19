@@ -146,6 +146,7 @@ project "PrehistoricEditor"
         "%{IncludeDir.STB}",
         "%{IncludeDir.tinyobj}",
         "%{IncludeDir.AudioFile}",
+        "%{IncludeDir.nlohmann_json}",
         "%{prj.location}/src",
         "PrehistoricEngine/src/engine"
     }
@@ -213,6 +214,7 @@ project "Prehistoric"
         "%{IncludeDir.Vulkan}",
         "%{IncludeDir.STB}",
         "%{IncludeDir.tinyobj}",
+        "%{IncludeDir.nlohmann_json}",
         "%{prj.location}/src",
         "PrehistoricEngine/src/engine"
     }

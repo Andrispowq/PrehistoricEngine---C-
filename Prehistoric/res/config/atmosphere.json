@@ -1,0 +1,32 @@
+{    
+    "atmosphere":
+    {
+        "sun":
+        {
+            "position": [2, 0.2, -2],
+            "radius": 0.14,
+            "colour": [1, 0.79, 0.43],
+            "intensity": 48
+        },
+        "fog":
+        {
+            "colour": [0.26, 0.34, 0.36],
+            "brightness": 0.5
+        },
+        "planetRadius": 6371000, 
+        "atmosphereRadius": 6471000,
+        "coefficients":
+        {
+            "reyleigh": [0.0000055, 0.000013, 0.0000224],
+            "reyleighHeightScale": 8000,
+            "mie": 0.000021,
+            "mieHeighScale": 1200,
+            "mieDirection": 0.758
+        },
+        "sightRange": 2,
+        "ambient": 0.02,
+        "horizontalVerticalShift": 0.1,
+        "bloomFactor": 0,
+        "scatteringEnabled": 1
+    }
+}

@@ -7,7 +7,7 @@
 namespace Prehistoric
 {
 	TerrainNode::TerrainNode(Factory<TerrainNode>* factory, Window* window, Camera* camera, AssembledAssetManager* manager, TerrainMaps* maps,
-		PipelineHandle pipeline, PipelineHandle wireframePipeline, const Vector2f& location, int lod, const Vector2f& index)
+		PipelineHandle pipeline, PipelineHandle wireframePipeline, PipelineHandle shadowPipeline, const Vector2f& location, int lod, const Vector2f& index)
 		: factory(factory), window(window), camera(camera), manager(manager), maps(maps), location(location), lod(lod), index(index)
 	{
 		this->gap = 1.0f / float(TerrainQuadtree::rootNodes * pow(2, lod));
@@ -23,6 +23,7 @@ namespace Prehistoric
 
 		rendererComponent = new RendererComponent(window, manager, pipeline, manager->storeMaterial(nullptr));
 		wireframeRendererComponent = new RendererComponent(window, manager, wireframePipeline, manager->storeMaterial(nullptr));
+		shadowComponent = new RendererComponent(window, manager, shadowPipeline, manager->storeMaterial(nullptr));
 		
 		AddComponent(RENDERER_COMPONENT, rendererComponent);
 		AddComponent(WIREFRAME_RENDERER_COMPONENT, wireframeRendererComponent);
@@ -46,13 +47,20 @@ namespace Prehistoric
 	{
 		if (leaf)
 		{
-			if (renderer->isWireframeMode())
+			if (renderer->isShadowMode())
 			{
-				wireframeRendererComponent->PreRender(renderer);
+				shadowComponent->PreRender(renderer);
 			}
 			else
 			{
-				rendererComponent->PreRender(renderer);
+				if (renderer->isWireframeMode())
+				{
+					wireframeRendererComponent->PreRender(renderer);
+				}
+				else
+				{
+					rendererComponent->PreRender(renderer);
+				}
 			}
 		}
 
@@ -111,7 +119,7 @@ namespace Prehistoric
 					ss << lod;
 
 					AddChild(ss.str(), new(*factory) TerrainNode(factory, window, camera, manager, maps, rendererComponent->getPipelineHandle(), wireframeRendererComponent->getPipelineHandle(),
-						location + Vector2f(float(i), float(j)) * (gap / 2.f), lod, { float(i), float(j) }));
+						shadowComponent->getPipelineHandle(), location + Vector2f(float(i), float(j)) * (gap / 2.f), lod, { float(i), float(j) }));
 				}
 			}
 		}

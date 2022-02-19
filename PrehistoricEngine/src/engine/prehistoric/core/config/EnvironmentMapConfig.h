@@ -8,7 +8,7 @@
 
 namespace Prehistoric
 {
-    namespace EnvironmentMapConfig
+    namespace _EnvironmentMapConfig
     {
         void LoadConfig(const std::string& path);
 

@@ -49,10 +49,10 @@ namespace Prehistoric
 		SetUniformi("albedoRoughnessImage", 2);
 		normal->Bind(3);
 		SetUniformi("normalImage", 3);
-		_shadowMap->Bind(4);
+		if(_shadowMap) _shadowMap->Bind(4);
 		SetUniformi("shadowMap", 4);
 
-		SetUniform("resolution", Vector2f(FrameworkConfig::windowWidth, FrameworkConfig::windowHeight));
+		SetUniform("resolution", Vector2f((float)FrameworkConfig::windowWidth, (float)FrameworkConfig::windowHeight));
 		SetUniform("cameraPosition", camera->getPosition());
 
 		for (auto light : lights)
@@ -64,7 +64,7 @@ namespace Prehistoric
 			}
 		}
 
-		SetUniformi("cascadeCount", cascadeDistances.size());
+		SetUniformi("cascadeCount", (int)cascadeDistances.size());
 		SetUniformf("farPlane", EngineConfig::rendererFarPlane);
 
 		_matrices->BindBase(nullptr, 0);

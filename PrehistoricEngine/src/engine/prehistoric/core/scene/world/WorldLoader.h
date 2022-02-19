@@ -32,6 +32,10 @@ namespace Prehistoric
 		virtual ~WorldLoader() {}
 
 		void LoadWorld(const std::string& worldFile, GameObject* root);
+		void LoadWorldJSON(const std::string& worldFile, GameObject* root);
+
+	private:
+		//std::vector<nlohmann::json> LoadObjectJSON(GameObject* root, nlohmann::json& objectData);
 
 	public:
 		std::string sceneName;

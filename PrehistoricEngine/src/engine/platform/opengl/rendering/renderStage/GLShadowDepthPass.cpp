@@ -39,7 +39,7 @@ namespace Prehistoric
 		_matrices = matrices;
 
 		AssetManager* man = manager->getAssetManager();
-		depthTexture = man->storeTexture(GLTexture::Storage2DArray(SIZE, SIZE, (int)shadowCascadeLevels.size() + 1, D32_LINEAR, Nearest, ClampToEdge, false));
+		depthTexture = man->storeTexture(GLTexture::Storage2DArray((uint32_t)SIZE, (uint32_t)SIZE, (int)shadowCascadeLevels.size() + 1, D32_LINEAR, Nearest, ClampToEdge, false));
 		man->addReference<Texture>(depthTexture.handle);
 
 		depthShader = man->loadShader(ShaderName::ShadowDepthPass).value();
@@ -66,7 +66,7 @@ namespace Prehistoric
 
 		AssetManager* man = manager->getAssetManager();
 		man->removeReference<Texture>(depthTexture.handle);
-		depthTexture = man->storeTexture(GLTexture::Storage2DArray(SIZE, SIZE, (int)shadowCascadeLevels.size() + 1, D32_LINEAR, Nearest, ClampToEdge, false));
+		depthTexture = man->storeTexture(GLTexture::Storage2DArray((uint32_t)SIZE, (uint32_t)SIZE, (int)shadowCascadeLevels.size() + 1, D32_LINEAR, Nearest, ClampToEdge, false));
 		man->addReference<Texture>(depthTexture.handle);
 
 		framebuffer->Bind();
@@ -120,7 +120,7 @@ namespace Prehistoric
 		framebuffer->SetDrawAttachments(1, arr);
 		framebuffer->Clear(0.0f);
 
-		window->getSwapchain()->SetWindowSize(SIZE, SIZE);
+		window->getSwapchain()->SetWindowSize((uint32_t)SIZE, (uint32_t)SIZE);
 
 		depthShader->Bind(nullptr);
 		dynamic_cast<GLShadowDepthPassShader*>(depthShader.pointer)->UpdateGlobalUniforms(matrices);
@@ -135,16 +135,35 @@ namespace Prehistoric
 			{
 				if (material.first == nullptr)
 				{
-					continue;
-				}
-
-				for (auto renderer_ : material.second)
-				{
-					depthShader->UpdateObjectUniforms(renderer_->getParent());
-
-					for (uint32_t i = 0; i < vbo->getSubmeshCount(); i++)
+					if (material.second.size() < 2)
 					{
-						vbo->Draw(nullptr, i);
+						continue;
+					}
+
+					pl->BindPipeline(nullptr);
+					pl->getShader()->UpdateGlobalUniforms(camera, rend->getLights());
+					pl->getShader()->UpdateMaterialUniforms(material.first, 0);
+
+					for (auto renderer_ : material.second)
+					{
+						renderer_->BatchRender();
+					}
+
+					pl->UnbindPipeline();
+
+					depthShader->Bind(nullptr);
+					dynamic_cast<GLShadowDepthPassShader*>(depthShader.pointer)->UpdateGlobalUniforms(matrices);
+				}
+				else
+				{
+					for (auto renderer_ : material.second)
+					{
+						depthShader->UpdateObjectUniforms(renderer_->getParent());
+
+						for (uint32_t i = 0; i < vbo->getSubmeshCount(); i++)
+						{
+							vbo->Draw(nullptr, i);
+						}
 					}
 				}
 			}
@@ -219,7 +238,7 @@ namespace Prehistoric
 		{
 			centre += v.xyz();
 		}
-		centre /= corners.size();
+		centre /= float(corners.size());
 
 		Vector3f up = Vector3f(0, 1, 0);
 		Vector3f right = lightDir.cross(up).normalise();

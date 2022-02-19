@@ -15,7 +15,7 @@ namespace Prehistoric
 	class Window;
 	class AssetManager;
 
-	namespace TerrainConfig
+	namespace _TerrainConfig
 	{
 		void LoadConfig(const std::string& path);
 		int UpdateMorphingArea(int lod);

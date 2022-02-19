@@ -206,12 +206,17 @@ void main()
 		bumpNormal.xz *= attenuation;
 		normal = tbn * bumpNormal;
 	}
+
+	const float reflectance = 0.5;
+	const float transmittance = 0.0;
+	float ior = reflectance + 1;
 	
 	vec3 N = normalize(normal);
     vec3 V = normalize(cameraPosition - position_FS);
     vec3 R = normalize(reflect(-V, N));
+    vec3 Refr = normalize(refract(-V, N, 1.0 / ior));
 
-    vec3 F0 = vec3(0.04);
+    vec3 F0 = vec3(pow(reflectance, 2) * 0.16);
     F0 = mix(F0, albedoColour, metallic);
 
 	vec3 sunDirection = normalize(-sunPosition);
@@ -269,14 +274,23 @@ void main()
     kD *= 1.0 - metallic;
 
     vec3 irradiance = texture(irradianceMap, N).rgb;
-    vec3 diffuse = irradiance * albedoColour;
+    vec3 diffuse = irradiance * albedoColour * occlusion;
 
     float lod = roughness * max_reflection_lod;
     vec3 prefilteredColour = textureLod(prefilterMap, R, lod).rgb;
     vec2 envBRDF = texture(brdfLUT, vec2(max(dot(N, V), 0.01), roughness)).rg;
     vec3 specular = prefilteredColour * (F * envBRDF.x + envBRDF.y);
 
-	vec3 ambient = (kD * diffuse + specular)* occlusion;
+
+	vec3 irradianceR = texture(irradianceMap, -N).rgb;
+	vec3 diffuseR = irradiance * albedoColour * occlusion;
+
+	vec3 prefilteredColourR = textureLod(prefilterMap, Refr, lod).rgb;
+	vec3 specularR = prefilteredColourR * (F * envBRDF.x + envBRDF.y);
+
+
+
+	vec3 ambient = (kD * diffuse * (1 - transmittance) + kD * specularR * transmittance + specular);
     vec3 colour = ambient + Lo + clamp(albedoColour, vec3(0.05), vec3(1.0)) * max(emission, 0.0) * emissionFactor;
 
 	if (isnan(colour.r))
@@ -290,7 +304,7 @@ void main()
 	outPositionMetallic = vec4(position_FS, metallic);
 	outAlbedoRoughness = vec4(albedoColour, roughness);
 	outNormal = vec4(N, 1);
-	outBloom = vec4(clamp(albedoColour, vec3(0.05), vec3(1.0)) * max(emission, 0.0) * emissionFactor, 1);
+	outBloom = vec4(clamp(albedoColour, vec3(0.05), vec3(1.0)) * max(emission, 0.0) * emissionFactor, 0);
 }
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)

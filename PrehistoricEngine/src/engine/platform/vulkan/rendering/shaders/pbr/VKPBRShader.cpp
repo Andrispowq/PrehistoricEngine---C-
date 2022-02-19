@@ -22,6 +22,13 @@ namespace Prehistoric
 		AddUniform("material", FRAGMENT_SHADER, UniformBuffer, 2, 1, Vector4f::size() * 2 + sizeof(int) + sizeof(float) * 4);
 
 		descriptorPool->finalise(pipelineLayout);
+
+		lightData = new char[Vector4f::size() * 3 * EngineConfig::lightsMaxNumber];
+	}
+
+	VKPBRShader::~VKPBRShader()
+	{
+		delete[] lightData;
 	}
 
 	void VKPBRShader::BindGlobalSets() const
@@ -73,10 +80,7 @@ namespace Prehistoric
 		
 		SetUniform("lightConditions", &lightCond, sizeof(LightCond), 0);
 
-		void* lightData = new char[Vector4f::size() * 3 * EngineConfig::lightsMaxNumber];
-
 		size_t baseOffset = EngineConfig::lightsMaxNumber * Vector4f::size();
-
 		for (uint32_t i = 0; i < EngineConfig::lightsMaxNumber; i++)
 		{
 			size_t currentOffset = Vector4f::size() * i;
@@ -88,26 +92,16 @@ namespace Prehistoric
 				*(Vector4f*)(uintptr_t(lightData) + (baseOffset * 0 + currentOffset)) = Vector4f(light->getParent()->getWorldTransform().getPosition(), 0);
 				*(Vector4f*)(uintptr_t(lightData) + (baseOffset * 1 + currentOffset)) = Vector4f(light->getColour(), 0);
 				*(Vector4f*)(uintptr_t(lightData) + (baseOffset * 2 + currentOffset)) = Vector4f(light->getIntensity(), 1, 1, 0);
-
-				/*SetUniform("lights", Vector4f(light->getParent()->getWorldTransform().getPosition(), 0), baseOffset * 0 + currentOffset, instance_index);
-				SetUniform("lights", Vector4f(light->getColour(), 0), baseOffset * 1 + currentOffset, instance_index);
-				SetUniform("lights", Vector4f(light->getIntensity(), 0), baseOffset * 2 + currentOffset, instance_index);*/
 			}
 			else
 			{
 				*(Vector4f*)(uintptr_t(lightData) + (baseOffset * 0 + currentOffset)) = Vector4f();
 				*(Vector4f*)(uintptr_t(lightData) + (baseOffset * 1 + currentOffset)) = Vector4f();
 				*(Vector4f*)(uintptr_t(lightData) + (baseOffset * 2 + currentOffset)) = Vector4f();
-
-				/*SetUniform("lights", Vector4f(), baseOffset * 0 + currentOffset, instance_index);
-				SetUniform("lights", Vector4f(), baseOffset * 1 + currentOffset, instance_index);
-				SetUniform("lights", Vector4f(), baseOffset * 2 + currentOffset, instance_index);*/
 			}
 		}
 
 		SetUniform("lights", lightData, Vector4f::size() * 3 * EngineConfig::lightsMaxNumber, 0);
-
-		delete[] lightData;
 	}
 
 	void VKPBRShader::UpdateMaterialUniforms(Material* material, uint32_t descriptor_index) const

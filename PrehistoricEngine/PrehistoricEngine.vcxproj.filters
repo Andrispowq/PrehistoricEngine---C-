@@ -338,6 +338,9 @@
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLShadowDepthPass.h">
       <Filter>platform\opengl\rendering\renderStage</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLVolumetricPostProcessingPass.h">
+      <Filter>platform\opengl\rendering\renderStage</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\GLShader.h">
       <Filter>platform\opengl\rendering\shaders</Filter>
     </ClInclude>
@@ -395,10 +398,16 @@
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLHDRShader.h">
       <Filter>platform\opengl\rendering\shaders\postProcessing</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLVolumetricPostProcessingShader.h">
+      <Filter>platform\opengl\rendering\shaders\postProcessing</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\shadow\GLShadowDepthPassShader.h">
       <Filter>platform\opengl\rendering\shaders\shadow</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShader.h">
+      <Filter>platform\opengl\rendering\shaders\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShadowShader.h">
       <Filter>platform\opengl\rendering\shaders\terrain</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainWireframeShader.h">
@@ -773,8 +782,7 @@
     <ClInclude Include="src\engine\prehistoric\core\util\time\Timer.h">
       <Filter>prehistoric\core\util\time</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLVolumetricPostProcessingPass.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLVolumetricPostProcessingShader.h" />
+    <ClInclude Include="src\engine\prehistoric\core\config\EngineSettings.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -830,6 +838,9 @@
       <Filter>platform\opengl\rendering\renderStage</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLShadowDepthPass.cpp">
+      <Filter>platform\opengl\rendering\renderStage</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLVolumetricPostProcessingPass.cpp">
       <Filter>platform\opengl\rendering\renderStage</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\GLShader.cpp">
@@ -889,10 +900,16 @@
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLHDRShader.cpp">
       <Filter>platform\opengl\rendering\shaders\postProcessing</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLVolumetricPostProcessingShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\postProcessing</Filter>
+    </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\shadow\GLShadowDepthPassShader.cpp">
       <Filter>platform\opengl\rendering\shaders\shadow</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShadowShader.cpp">
       <Filter>platform\opengl\rendering\shaders\terrain</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainWireframeShader.cpp">
@@ -1222,7 +1239,6 @@
     <ClCompile Include="src\engine\prehistoric\core\util\time\Timer.cpp">
       <Filter>prehistoric\core\util\time</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLVolumetricPostProcessingPass.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLVolumetricPostProcessingShader.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\config\EngineSettings.cpp" />
   </ItemGroup>
 </Project>

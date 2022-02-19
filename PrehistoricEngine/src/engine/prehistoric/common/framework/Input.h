@@ -6,7 +6,7 @@
 #include "prehistoric/core/config/FrameworkConfig.h"
 #include "Window.h"
 
-#define InputInstance Input::getInstance()
+#define InputInstance ::Prehistoric::Input::getInstance()
 
 #define MAX_NUM_JOYSTICKS 16
 

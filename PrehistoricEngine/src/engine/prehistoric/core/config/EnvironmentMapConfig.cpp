@@ -3,7 +3,7 @@
 
 namespace Prehistoric
 {
-	namespace EnvironmentMapConfig
+	namespace _EnvironmentMapConfig
 	{
 		std::string environmentMapLocation;
 		uint32_t environmentMapResolution;
@@ -16,7 +16,7 @@ namespace Prehistoric
 		Texture* prefilterMap;
 		Texture* brdfLUT;
 
-		void EnvironmentMapConfig::LoadConfig(const std::string& path)
+		void _EnvironmentMapConfig::LoadConfig(const std::string& path)
 		{
 			std::ifstream file;
 			file.open(path.c_str());

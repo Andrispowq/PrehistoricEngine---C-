@@ -27,7 +27,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 
 	if (FrameworkConfig::api == Vulkan)
 	{
-		/*AssetManager* man = manager->getAssetManager();
+		AssetManager* man = manager->getAssetManager();
 
 		VertexBufferHandle quad = man->loadVertexBuffer(std::nullopt, "quadModel").value();
 		VertexBufferHandle sphere = man->loadVertexBuffer(std::nullopt, "sphereModel").value();
@@ -66,7 +66,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 				obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline2, material2));
 				sceneRoot->AddChild(std::string("obj" + std::to_string(x) + std::to_string(y)), obj);
 			}
-		}*/
+		}
 	}
 	else
 	{
@@ -84,7 +84,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 
 		Terrain* terrain = new Terrain(window, camera, manager, "res/config/terrain_0.cfg");
 		terrain->UpdateQuadtree();
-		//sceneRoot->AddChild("terrain0", terrain);
+		sceneRoot->AddChild("terrain0", terrain);
 
 		/*GameObject* slider = new GUISlider(window, manager, 0.0f, 2.0f, Vector3f(0.5f), &EngineConfig::rendererExposure, sizeof(float), true);
 		slider->SetPosition({ 0.5f, 0.5f, 0 });

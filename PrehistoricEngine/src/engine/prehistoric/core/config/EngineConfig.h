@@ -8,7 +8,7 @@
 
 namespace Prehistoric
 {
-    namespace EngineConfig
+    namespace _EngineConfig
     {
         void LoadConfig(const std::string& path);
 

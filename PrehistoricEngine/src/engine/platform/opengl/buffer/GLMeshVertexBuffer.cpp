@@ -24,7 +24,7 @@ namespace Prehistoric
 
 			for (uint32_t& elem : idat)
 			{
-				elem += vertCount;
+				elem += (uint32_t)vertCount;
 			}
 
 			vdata.insert(vdata.end(), vdat.begin(), vdat.end());

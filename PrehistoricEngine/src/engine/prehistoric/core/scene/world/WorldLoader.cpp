@@ -3,10 +3,14 @@
 
 #include "prehistoric/core/config/EnvironmentMapConfig.h"
 
+#include <json.hpp>
+
 namespace Prehistoric
 {
 	void WorldLoader::LoadWorld(const std::string& worldFile, GameObject* root)
 	{
+		PR_PROFILE("Loading world from .wrld file");
+
 		std::ifstream file;
 		file.open(worldFile.c_str());
 
@@ -423,6 +427,267 @@ namespace Prehistoric
 							}
 						}
 					}
+				}
+			}
+		}
+		else
+		{
+			PR_LOG_ERROR("Could not open world file %s!\n", worldFile.c_str());
+		}
+	}
+
+	void WorldLoader::LoadWorldJSON(const std::string& worldFile, GameObject* root)
+	{
+		PR_PROFILE("Loading world from .json file");
+
+		std::ifstream file;
+		file.open(worldFile.c_str(), std::ios::ate);
+
+		AssetManager* man = manager->getAssetManager();
+
+		if (file.is_open())
+		{
+			std::string contents;
+			size_t size = file.tellg();
+			contents.resize(size);
+			file.seekg(0);
+			file.read(&contents[0], size);
+
+			nlohmann::json file_json = nlohmann::json::parse(contents);
+			sceneName = file_json["name"];
+
+			{
+				nlohmann::json directories = file_json["directories"];
+				directoryModels = directories["models"];
+				directoryTextures = directories["textures"];
+			}
+
+			{
+				std::vector<nlohmann::json> models_list = file_json["models"];
+				for (auto& model : models_list)
+				{
+					std::string name = model["name"];
+					std::string directory = model["directory"];
+					int front_face = model["front-face"];
+
+					FrontFace frontFace = FrontFace::DOUBLE_SIDED;
+					if (front_face == 0)
+					{
+						frontFace = FrontFace::CLOCKWISE;
+					}
+					else if (front_face == 1)
+					{
+						frontFace = FrontFace::COUNTER_CLOCKWISE;
+					}
+
+					meshNames.push_back(name);
+					frontFaces.push_back(frontFace);
+					man->loadVertexBuffer(std::nullopt, directoryModels + directory, BatchSettings::QueuedLoad);
+				}
+
+				man->getVertexBufferLoader()->ForceLoadQueue();
+
+				size_t count;
+				VertexBuffer** pointers = (VertexBuffer**)man->getVertexBufferLoader()->GetLoadedPointers(count);
+
+				if (count != models_list.size())
+				{
+					PR_LOG_ERROR("The loaded VertexBuffer count isn't equal to the requested VertexBuffer count!\n");
+				}
+
+				for (int i = 0; i < models_list.size(); i++)
+				{
+					models.insert(std::make_pair(meshNames[i], man->storeVertexBuffer(pointers[i], meshNames[i])));
+					pointers[i]->setFrontFace(frontFaces[i]);
+				}
+
+				man->getVertexBufferLoader()->FlushPointers();
+			}
+
+			{
+				std::vector<nlohmann::json> textures_list = file_json["textures"];
+				for (auto& texture : textures_list)
+				{
+					std::string name = texture["name"];
+					std::string directory = texture["directory"];
+
+					textureNames.push_back(name);
+					man->loadTexture(directoryTextures + directory, Anisotropic, Repeat, BatchSettings::QueuedLoad);
+				}
+
+				man->getTextureLoader()->ForceLoadQueue();
+
+				size_t count;
+				Texture** pointers = (Texture**)man->getTextureLoader()->GetLoadedPointers(count);
+
+				if (count != textures_list.size())
+				{
+					PR_LOG_ERROR("The loaded VertexBuffer count isn't equal to the requested VertexBuffer count!\n");
+				}
+
+				for (int i = 0; i < textures_list.size(); i++)
+				{
+					textures.insert(std::make_pair(textureNames[i], man->storeTexture(pointers[i], textureNames[i])));
+				}
+
+				man->getTextureLoader()->FlushPointers();
+			}
+
+			{
+				std::vector<nlohmann::json> materials_list = file_json["materials"];
+				for (auto& element : materials_list)
+				{
+					std::string name = element["name"];
+					std::vector<nlohmann::json> contents = element["contents"];
+
+					Material* material = new Material(man);
+					for (auto& content : contents)
+					{
+						std::string name = content["name"];
+						std::string type = content["type"];
+
+						if (type == "texture")
+						{
+							std::string value = content["value"];
+							material->addTexture((name + "Map"), textures[value]);
+						}
+						else if (type == "vec4")
+						{
+							std::vector<float> value = content["value"];
+							material->addVector4f(name, Vector4f(value[0], value[1], value[2], value[3]));
+						}
+						else if (type == "vec3")
+						{
+							std::vector<float> value = content["value"];
+							material->addVector3f(name, Vector3f(value[0], value[1], value[2]));
+						}
+						else if (type == "vec2")
+						{
+							std::vector<float> value = content["value"];
+							material->addVector2f(name, Vector2f(value[0], value[1]));
+						}
+						else if (type == "float")
+						{
+							float value = content["value"];
+							material->addFloat(name, value);
+						}
+						else if (type == "int")
+						{
+							int value = content["value"];
+							material->addInt(name, value);
+						}
+					}
+
+					materials.insert(std::make_pair(name, manager->storeMaterial(material)));
+				}
+			}
+
+			{
+				nlohmann::json root_contents = file_json["root"];
+				std::vector<nlohmann::json> root_children = root_contents["children"];
+				for (auto& root_child : root_children)
+				{
+					std::string name = root_child["name"];
+					nlohmann::json transform = root_child["transform"];
+					std::vector<nlohmann::json> components = root_child["components"];
+
+					GameObject* object = new GameObject;
+					object->setName(name);
+
+					if (transform.contains("position"))
+					{
+						std::vector<float> position = transform["position"];
+						object->SetPosition({ position[0], position[1], position[2] });
+					}
+					if (transform.contains("rotation"))
+					{
+						std::vector<float> rotation = transform["rotation"];
+						object->SetRotation({ rotation[0], rotation[1], rotation[2] });
+					}
+					if (transform.contains("scaling"))
+					{
+						std::vector<float> scaling = transform["scaling"];
+						object->SetScale({ scaling[0], scaling[1], scaling[2] });
+					}
+
+					for (auto& component : components)
+					{
+						std::string type = component["type"];
+
+						if (type == "Renderer")
+						{
+							std::string modelName = component["model"];
+							std::string shaderName = component["shader"];
+							std::string materialName = component["material"];
+
+							VertexBufferHandle vbo = models.at(modelName);
+							ShaderHandle shader;
+
+							MaterialHandle material = materials.at(materialName);
+							PipelineHandle pipeline;
+
+							auto shaderIndex = shaders.find(shaderName);
+							if (shaderIndex != shaders.end())
+							{
+								shader = shaderIndex->second;
+							}
+							else
+							{
+								ShaderName name;
+								if (shaderName == "pbr")
+								{
+									name = ShaderName::PBR;
+								}
+
+								shader = manager->getAssetManager()->loadShader(name).value();
+								shaders.insert(std::make_pair(shaderName, shader));
+							}
+
+							auto pipelineIndex = pipelines.find(modelName + "," + shaderName);
+							if (pipelineIndex != pipelines.end())
+							{
+								pipeline = pipelineIndex->second;
+							}
+							else
+							{
+								pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
+
+								if (FrameworkConfig::api == OpenGL)
+								{
+									reinterpret_cast<GLGraphicsPipeline*>(pipeline.pointer)->setBackfaceCulling(true);
+								}
+								else if (FrameworkConfig::api == Vulkan)
+								{
+									reinterpret_cast<VKGraphicsPipeline*>(pipeline.pointer)->setBackfaceCulling(true);
+								}
+
+								pipelines.emplace(std::make_pair(modelName + "," + shaderName, pipeline));
+							}
+
+							RendererComponent* rendererComponent = new RendererComponent(window, manager, pipeline, material);
+							object->AddComponent(RENDERER_COMPONENT, rendererComponent);
+						}
+						else if (type == "Light")
+						{
+							std::vector<float> colour = component["colour"];
+							float intensity = component["intensity"];
+							float range = component["range"];
+
+							Light* light = new Light(Vector3f(colour[0], colour[1], colour[2]), intensity, range, true, false);
+							object->AddComponent(LIGHT_COMPONENT, light);
+						}
+					}
+
+					root->AddChild(name, object);
+
+					/*if (root_child.contains("children"))
+					{
+						return objectData["children"];
+					}
+					else
+					{
+						return {};
+					}*/
 				}
 			}
 		}

@@ -7,6 +7,21 @@
 
 #include "prehistoric/core/node/movement/EditorCamera.h"
 
+//We go around in a circle, from -range to range on the y and z axes
+static void sun_move_function(Prehistoric::GameObject* object, float frameTime)
+{
+	constexpr float range = 32000.0f;
+	constexpr float anglesPerSecond = 0.5f;
+
+	static float angle = 135.0f;
+
+	float x = cos(ToRadians(angle)) * range;
+	float y = sin(ToRadians(angle)) * range;
+	angle -= (anglesPerSecond * frameTime);
+
+	object->SetPosition({ x, y, 0 });
+}
+
 SpotifyInterface* sIF;
 
 EditorApp::EditorApp()
@@ -28,9 +43,10 @@ EditorApp::EditorApp()
 	sIF = spotifyIF.get();
 	auto devs = spotifyIF->GetDevices();
 	spotifyIF->SetDevice(devs[0]->GetId());
+	spotifyIF->PlayTrack("Back to you", 0.0f);
 	//spotifyIF->PlayTrack("Story of my life", 50.0f);
 
-	SpotifyAPI api = spotifyIF->GetAPI();
+	/*SpotifyAPI api = spotifyIF->GetAPI();
 	std::vector<PlaylistSimple> playlists = api.GetMyPlaylists().GetItems();
 	for (auto playlist : playlists)
 	{
@@ -51,12 +67,18 @@ EditorApp::EditorApp()
 
 			spotifyIF->PlayTrackByID("playlist:" + playlist.GetId(), index);
 		}
-	}
+	}*/
 
 	cam->setPosition(Vector3f(0, 5, -2));
 	cam->Update(engineLayer->getRenderingEngine()->getWindow(), 0.0f);
 
+	GameObject* sun = new GameObject();
+	sun->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0.95f, 0.87f), 100.0f, 50000.0f, true, true));
+	sun_move_function(sun, 0.0f);
+	root->AddChild("sun", sun);
+
 	Scene* scene = new Scene("res/world/testLevel.wrld", window, cam, manager);
+	scene->getSceneRoot()->AddChild("sun", sun);
 	engineLayer->SetScene(scene);
 
 	//Load in the environment map

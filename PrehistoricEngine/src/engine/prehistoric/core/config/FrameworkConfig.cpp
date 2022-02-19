@@ -3,24 +3,24 @@
 
 namespace Prehistoric
 {
-	namespace FrameworkConfig
+	namespace _FrameworkConfig
 	{
-		std::string FrameworkConfig::windowName;
-		uint32_t FrameworkConfig::windowWidth;
-		uint32_t FrameworkConfig::windowHeight;
-		bool FrameworkConfig::windowFullScreen;
-		bool FrameworkConfig::windowResizable;
-		bool FrameworkConfig::windowVSync;
-		uint32_t FrameworkConfig::windowNumSamples;
-		uint32_t FrameworkConfig::windowMaxFPS;
+		std::string _FrameworkConfig::windowName;
+		uint32_t _FrameworkConfig::windowWidth;
+		uint32_t _FrameworkConfig::windowHeight;
+		bool _FrameworkConfig::windowFullScreen;
+		bool _FrameworkConfig::windowResizable;
+		bool _FrameworkConfig::windowVSync;
+		uint32_t _FrameworkConfig::windowNumSamples;
+		uint32_t _FrameworkConfig::windowMaxFPS;
 
 		std::map<API, Vector2i> apiVersions;
 
-		API FrameworkConfig::api;
-		Vector2i FrameworkConfig::apiVersion;
-		bool FrameworkConfig::apiVulkanUseValidationLayers;
+		API _FrameworkConfig::api;
+		Vector2i _FrameworkConfig::apiVersion;
+		bool _FrameworkConfig::apiVulkanUseValidationLayers;
 
-		void FrameworkConfig::LoadConfig(const std::string& path)
+		void _FrameworkConfig::LoadConfig(const std::string& path)
 		{
 			std::ifstream file;
 			file.open(path.c_str());
@@ -118,7 +118,7 @@ namespace Prehistoric
 								PR_LOG_RUNTIME_ERROR("ERROR: No API is currently not supported in the engine!\n");
 							}
 
-							FrameworkConfig::api = api;
+							_FrameworkConfig::api = api;
 							apiVersion = apiVersions[api];
 						}
 						else

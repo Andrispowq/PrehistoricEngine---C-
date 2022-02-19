@@ -1307,5 +1307,4 @@ inline std::ostream& operator<<(std::ostream& os, const Matrix4f& e)
 		os << '\n';
 	}
 }
-
 };

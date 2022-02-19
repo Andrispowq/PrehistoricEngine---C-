@@ -9,6 +9,7 @@
 #include "platform/opengl/rendering/shaders/gui/GLGUIShader.h"
 #include "platform/opengl/rendering/shaders/pbr/GLPBRShader.h"
 #include "platform/opengl/rendering/shaders/terrain/GLTerrainShader.h"
+#include "platform/opengl/rendering/shaders/terrain/GLTerrainShadowShader.h"
 #include "platform/opengl/rendering/shaders/terrain/GLTerrainWireframeShader.h"
 #include "platform/opengl/rendering/shaders/forwardPlus/GLDepthPassShader.h"
 #include "platform/opengl/rendering/shaders/forwardPlus/GLLightCullingPassShader.h"
@@ -44,6 +45,10 @@ namespace Prehistoric
 			else if (path == "terrain_wireframe")
 			{
 				shader = new GLTerrainWireframeShader();
+			}
+			else if (path == "terrain_shadow")
+			{
+				shader = new GLTerrainShadowShader();
 			}
 			else if (path == "terrain")
 			{

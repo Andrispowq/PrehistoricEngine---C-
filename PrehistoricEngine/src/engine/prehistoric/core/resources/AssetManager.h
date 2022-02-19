@@ -41,6 +41,17 @@ namespace Prehistoric
 		PBR
 	};
 
+	enum class ResourceType
+	{
+		Texture, VertexBuffer, Shader
+	};
+
+	struct Resource
+	{
+		ResourceType type;
+		size_t handle;
+	};
+
 	/*
 		DOCUMENTATION of AssetManager
 
@@ -156,7 +167,7 @@ namespace Prehistoric
 
 				for (const auto& elem : ID_map)
 				{
-					if (elem.second == handle)
+					if (elem.second.handle == handle)
 					{
 						ID_map.erase(elem.first);
 						return;
@@ -183,7 +194,7 @@ namespace Prehistoric
 
 				for (const auto& elem : ID_map)
 				{
-					if (elem.second == handle)
+					if (elem.second.handle == handle)
 					{
 						ID_map.erase(elem.first);
 						return;
@@ -210,7 +221,7 @@ namespace Prehistoric
 
 				for (const auto& elem : ID_map)
 				{
-					if (elem.second == handle)
+					if (elem.second.handle == handle)
 					{
 						ID_map.erase(elem.first);
 						return;
@@ -262,6 +273,8 @@ namespace Prehistoric
 		VertexBufferLoader* getVertexBufferLoader() const { return vertexBufferLoader; }
 		ShaderLoader* getShaderLoader() const { return shaderLoader; }
 
+		std::unordered_map<std::string, Resource> getIDMap() const { return ID_map; }
+
 	private:
 		Window* window;
 
@@ -275,7 +288,7 @@ namespace Prehistoric
 		ShaderLoader* shaderLoader;
 
 		//Maps for getting the resource ID from the name (only one because there can't be two things with the same name because of the system's naming conventions
-		std::unordered_map<std::string, size_t> ID_map;
+		std::unordered_map<std::string, Resource> ID_map;
 
 		//The IDs that we assign the next asset we add
 		size_t texture_ID = 0;

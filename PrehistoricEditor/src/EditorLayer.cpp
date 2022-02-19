@@ -3,8 +3,11 @@
 #include "prehistoric/application/Application.h"
 
 #include "imgui.h"
+#include "imgui_internal.h"
 
 #include "prehistoric/common/util/PlatformUtils.h"
+
+#include "prehistoric/core/resources/AssembledAssetManager.h"
 
 EditorLayer::EditorLayer()
 	: scenePanel{nullptr}
@@ -170,6 +173,12 @@ void EditorLayer::ImGUIRender()
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 	ImGui::Begin("Viewport");
 
+	ImVec2 pos = ImGui::GetWindowPos();
+	ImVec2 size = ImGui::GetWindowSize();
+
+	viewportStart = { pos.x, pos.y };
+	viewportSize = { size.x, size.y };
+
 	ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 	Prehistoric::Vector2f viewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 
@@ -179,9 +188,74 @@ void EditorLayer::ImGUIRender()
 	ImGui::End();
 	ImGui::PopStyleVar();
 
+	//Asset manager
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+	ImGui::Begin("Asset Manager");
+
+	{
+		using namespace ::Prehistoric;
+		AssembledAssetManager* manager = Prehistoric::Application::Get().getEngineLayer()->getAssetManager();
+		AssetManager* man = manager->getAssetManager();
+
+		std::unordered_map<std::string, Resource> ID_map = man->getIDMap();
+
+		float rows = 3;
+		float coloumns = 7;
+		int index = 0;
+
+		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+		Vector2f viewportSize = { viewportPanelSize.x, viewportPanelSize.y };
+		Vector2f imageSize = viewportSize / Vector2f(coloumns, rows);
+
+		for (auto id : ID_map)
+		{
+			if (id.second.type == ResourceType::Texture)
+			{
+				TextureHandle tex = man->loadTexture(id.first).value();
+				GLTexture* _tex = dynamic_cast<Prehistoric::GLTexture*>(tex.pointer);
+				ImGui::Image((void*)(_tex->getTextureID()), ImVec2{ imageSize.x, imageSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+			}
+		}
+
+		/*for (float y = 0; y < rows; y++)
+		{
+			ImGui::PushMultiItemsWidths(coloumns, ImGui::CalcItemWidth());
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
+
+			for (float x = 0; x < coloumns; x++)
+			{
+				if (index >= textures.size())
+				{
+					break;
+				}
+
+
+				TextureHandle tex = textures[index++];
+				GLTexture* _tex = dynamic_cast<Prehistoric::GLTexture*>(tex.pointer);
+				ImGui::Image((void*)(_tex->getTextureID()), ImVec2{ imageSize.x, imageSize.y }, ImVec2{0, 1}, ImVec2{1, 0});
+			}
+
+			ImGui::PopStyleVar();
+		}*/
+	}
+
+	ImGui::End();
+	ImGui::PopStyleVar();
+
 	ImGui::End();
 }
 
 void EditorLayer::OnEvent(Prehistoric::Event& e)
 {
+	if (e.getCategoryFlags() & (Prehistoric::EventCategoryKeyboard | Prehistoric::EventCategoryJoystick | Prehistoric::EventCategoryMouseButton))
+	{
+		Prehistoric::Vector2f start = viewportStart;
+		Prehistoric::Vector2f end = viewportStart + viewportSize;
+		Prehistoric::Vector2f cursor = InputInstance.getCursorPosition();
+		
+		if (!(cursor >= start && cursor <= end))
+		{
+			e.handled = true;
+		}
+	}
 }

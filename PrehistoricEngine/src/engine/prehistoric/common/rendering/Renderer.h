@@ -54,6 +54,7 @@ namespace Prehistoric
 		inline std::vector<Light*> getLights() const { return lights; }
 
 		inline bool isWireframeMode() const { return wireframeMode; }
+		inline bool isShadowMode() const { return renderingShadow; }
 		inline void setWireframeMode(bool wire) { this->wireframeMode = wire; }
 
 		const std::unordered_map<Pipeline*, std::unordered_map<Material*, std::vector<RenderableComponent*>>>& getModels3D() const{ return models_3d; }
@@ -74,6 +75,7 @@ namespace Prehistoric
 		std::vector<Light*> lights;
 
 		bool wireframeMode;
+		bool renderingShadow = false;
 	};
 };
 

@@ -78,18 +78,18 @@ namespace Prehistoric
 			{
 				SetUniform("sunPosition", light->getParent()->getWorldTransform().getPosition());
 				SetUniform("sunColour", light->getColour());
-				SetUniformi("sunIndex", i);
+				SetUniformi("sunIndex", (int)i);
 			}
 		}
 
 		_matrices->BindBase(nullptr, 0);
 		SetUniformBlock("LightSpaceMatrices", 0);
-		SetUniformi("cascadeCount", cascadeDistances.size());
+		SetUniformi("cascadeCount", (int)cascadeDistances.size());
 		SetUniformf("farPlane", EngineConfig::rendererFarPlane);
 		if(_shadowMap) _shadowMap->Bind(3);
 		SetUniformi("shadowMap", 3);
 
-		SetUniformf("time", Time::getTimeFromStart());
+		SetUniformf("time", (float)Time::getTimeFromStart());
 
 		for (uint32_t i = 0; i < cascadeDistances.size(); i++)
 			SetUniformf("cascadePlaneDistances[" + std::to_string(i) + "]", cascadeDistances[i]);

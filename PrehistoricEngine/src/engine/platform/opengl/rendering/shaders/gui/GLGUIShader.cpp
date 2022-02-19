@@ -16,10 +16,7 @@ namespace Prehistoric
 		AddUniform("m_transform");
 
 		AddUniform("colour");
-		AddUniform("texType");
-
 		AddUniform("image");
-		AddUniform("image_array");
 	}
 
 	void GLGUIShader::UpdateCustomUniforms(Texture* texture, Vector3f colour) const
@@ -30,7 +27,6 @@ namespace Prehistoric
 
 		texture->Bind();
 		SetUniformi("image", 0);
-		SetUniformi("texType", 0);
 	}
 
 	void GLGUIShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const
@@ -42,7 +38,6 @@ namespace Prehistoric
 		{
 			tex->Bind(0);
 			SetUniformi("image", 0);
-			SetUniformi("texType", 0);
 		}
 
 		if (gui->getType() == GUIType::Slider)

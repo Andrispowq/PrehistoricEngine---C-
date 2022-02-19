@@ -3,16 +3,16 @@
 
 namespace Prehistoric
 {
-	namespace EngineConfig
+	namespace _EngineConfig
 	{
-		uint32_t EngineConfig::lightsMaxNumber;
-		float EngineConfig::rendererGamma;
-		float EngineConfig::rendererExposure;
-		int EngineConfig::rendererHighDetailRange;
-		float EngineConfig::rendererNearPlane;
-		float EngineConfig::rendererFarPlane;
+		uint32_t _EngineConfig::lightsMaxNumber;
+		float _EngineConfig::rendererGamma;
+		float _EngineConfig::rendererExposure;
+		int _EngineConfig::rendererHighDetailRange;
+		float _EngineConfig::rendererNearPlane;
+		float _EngineConfig::rendererFarPlane;
 
-		void EngineConfig::LoadConfig(const std::string& path)
+		void _EngineConfig::LoadConfig(const std::string& path)
 		{
 			std::ifstream file;
 			file.open(path.c_str());

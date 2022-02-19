@@ -22,6 +22,9 @@ public:
 
 private:
 	std::unique_ptr<SceneHierarchyPanel> scenePanel;
+
+	Prehistoric::Vector2f viewportStart;
+	Prehistoric::Vector2f viewportSize;
 };
 
 #endif

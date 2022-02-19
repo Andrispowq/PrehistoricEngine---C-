@@ -29,7 +29,7 @@ namespace Prehistoric
 
 			for (uint32_t& elem : idat)
 			{
-				elem += vertCount;
+				elem += (uint32_t)vertCount;
 			}
 
 			vdata.insert(vdata.end(), vdat.begin(), vdat.end());
@@ -98,7 +98,7 @@ namespace Prehistoric
 		RenderingEngine::getStats().vertexCount += vertices[submesh];
 		RenderingEngine::getStats().indexCount += sizes[submesh];
 
-		vkCmdDrawIndexed(((VKCommandBuffer*)commandBuffer)->getCommandBuffer(), (uint32_t)sizes[submesh], 1, index_offsets[submesh], 0, 0);
+		vkCmdDrawIndexed(((VKCommandBuffer*)commandBuffer)->getCommandBuffer(), (uint32_t)sizes[submesh], 1, (uint32_t)index_offsets[submesh], 0, 0);
 	}
 
 	VkVertexInputBindingDescription VKMeshVertexBuffer::getBindingDescription() const

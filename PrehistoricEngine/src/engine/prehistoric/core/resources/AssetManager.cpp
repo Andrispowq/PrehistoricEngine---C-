@@ -52,7 +52,7 @@ namespace Prehistoric
 		if (index != ID_map.end())
 		{
 			TextureHandle handle;
-			handle.handle = index->second;
+			handle.handle = index->second.handle;
 			handle.pointer = textures.at(handle.handle).first.get();
 
 			return handle;
@@ -70,7 +70,7 @@ namespace Prehistoric
 		handle.handle = han;
 
 		textures.insert(std::make_pair(handle.handle, std::make_pair(tex, 0)));
-		ID_map.insert(std::make_pair(location, handle.handle));
+		ID_map.insert(std::make_pair(location, Resource{ ResourceType::Texture, handle.handle }));
 
 		return handle;
 	}
@@ -90,7 +90,7 @@ namespace Prehistoric
 		if (index != ID_map.end())
 		{
 			VertexBufferHandle handle;
-			handle.handle = index->second;
+			handle.handle = index->second.handle;
 			handle.pointer = vertexBuffers.at(handle.handle).first.get();
 
 			return handle;
@@ -109,7 +109,7 @@ namespace Prehistoric
 		handle.handle = han;
 
 		vertexBuffers.insert(std::make_pair(handle.handle, std::make_pair(vb, 0)));
-		ID_map.insert(std::make_pair(name, handle.handle));
+		ID_map.insert(std::make_pair(name, Resource{ ResourceType::VertexBuffer, handle.handle }));
 
 		return handle;
 	}
@@ -130,6 +130,9 @@ namespace Prehistoric
 			break;
 		case Prehistoric::ShaderName::TerrainWireframe:
 			name = "terrain_wireframe";
+			break;
+		case Prehistoric::ShaderName::TerrainShadow:
+			name = "terrain_shadow";
 			break;
 		case Prehistoric::ShaderName::Terrain:
 			name = "terrain";
@@ -179,7 +182,7 @@ namespace Prehistoric
 		if (index != ID_map.end())
 		{
 			ShaderHandle handle;
-			handle.handle = index->second;
+			handle.handle = index->second.handle;
 			handle.pointer = shaders.at(handle.handle).first.get();
 
 			return handle;
@@ -193,7 +196,7 @@ namespace Prehistoric
 		handle.handle = han;
 
 		shaders.insert(std::make_pair(handle.handle, std::make_pair(vb, 0)));
-		ID_map.insert(std::make_pair(name, handle.handle));
+		ID_map.insert(std::make_pair(name, Resource{ ResourceType::Shader, handle.handle }));
 
 		return handle;
 	}
@@ -218,7 +221,7 @@ namespace Prehistoric
 
 		if (!cacheName.empty())
 		{
-			ID_map.insert(std::make_pair(cacheName, handle.handle));
+			ID_map.insert(std::make_pair(cacheName, Resource{ ResourceType::Texture, handle.handle }));
 		}
 
 		return handle;
@@ -244,7 +247,7 @@ namespace Prehistoric
 
 		if (!cacheName.empty())
 		{
-			ID_map.insert(std::make_pair(cacheName, handle.handle));
+			ID_map.insert(std::make_pair(cacheName, Resource{ ResourceType::VertexBuffer, handle.handle }));
 		}
 
 		return handle;

@@ -16,6 +16,8 @@ namespace Prehistoric
 		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vboHandle);
 		ShaderHandle wireframeShader = manager->getAssetManager()->loadShader(ShaderName::TerrainWireframe).value();
 		PipelineHandle wireframePipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, wireframeShader, vboHandle);
+		ShaderHandle shadowShader = manager->getAssetManager()->loadShader(ShaderName::TerrainShadow).value();
+		PipelineHandle shadowPipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shadowShader, vboHandle);
 
 		for (int i = 0; i < rootNodes; i++)
 		{
@@ -27,7 +29,7 @@ namespace Prehistoric
 				ss << ", ";
 				ss << j;
 
-				AddChild(ss.str(), new(factory) TerrainNode(&factory, window, camera, manager, maps, pipeline, wireframePipeline,
+				AddChild(ss.str(), new(factory) TerrainNode(&factory, window, camera, manager, maps, pipeline, wireframePipeline, shadowPipeline,
 					{ i / (float)rootNodes, j / (float)rootNodes }, 0, { float(i), float(j) }));
 			}
 		}

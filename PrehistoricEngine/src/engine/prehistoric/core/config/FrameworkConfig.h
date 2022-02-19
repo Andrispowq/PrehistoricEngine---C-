@@ -23,7 +23,7 @@ namespace Prehistoric
 		OpenGL, Vulkan, Vulkan_RTX, DirectX_11, DirectX_12, DirectX_DXR, NO_API
 	};
 
-	namespace FrameworkConfig
+	namespace _FrameworkConfig
 	{
 		void LoadConfig(const std::string& path);
 

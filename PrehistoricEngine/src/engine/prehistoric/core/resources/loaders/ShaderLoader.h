@@ -13,6 +13,7 @@ namespace Prehistoric
 		AtmosphereScattering,
 		Atmosphere,
 		TerrainWireframe,
+		TerrainShadow,
 		Terrain,
 		Gui,
 		GPGPUNormal,
