@@ -64,8 +64,7 @@ namespace Prehistoric
 	};
 
 	class GameObject;
-	class Camera;
-	class Light;
+	class Renderer;
 
 	class Shader
 	{
@@ -103,7 +102,7 @@ namespace Prehistoric
 		//Global uniforms -> camera and light properties
 		//Texture uniforms -> we batch the drawcalls per material, so we update the textures that are shared here
 		//Object uniforms -> unique, per-object values and material values that are not textures
-		virtual void UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const {}
+		virtual void UpdateGlobalUniforms(Renderer* renderer) const {}
 		virtual void UpdateMaterialUniforms(Material* material, uint32_t descriptor_index = 0) const {}
 		virtual void UpdateObjectUniforms(GameObject* object, uint32_t instance_index = 0) const {}
 

@@ -67,7 +67,7 @@ namespace Prehistoric
 		framebuffer->Clear(0.0f);
 
 		depthShader->Bind(nullptr);
-		depthShader->UpdateGlobalUniforms(camera, rend->getLights());
+		depthShader->UpdateGlobalUniforms(rend);
 
 		for (auto pipeline : rend->getModels3D())
 		{

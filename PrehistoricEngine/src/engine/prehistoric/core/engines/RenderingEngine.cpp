@@ -54,11 +54,11 @@ namespace Prehistoric
 
 	void RenderingEngine::Init(AssembledAssetManager* manager)
 	{
-		if (FrameworkConfig::api == OpenGL)
+		if (__FrameworkConfig.api == OpenGL)
 		{
 			renderer = std::make_unique<GLRenderer>(window.get(), camera.get(), manager);
 		}
-		else if (FrameworkConfig::api == Vulkan)
+		else if (__FrameworkConfig.api == Vulkan)
 		{
 			renderer = std::make_unique<VKRenderer>(window.get(), camera.get(), manager);
 		}
@@ -78,6 +78,9 @@ namespace Prehistoric
 
 	void RenderingEngine::Update(float delta)
 	{
+		__FrameworkConfig.windowWidth = window->getWidth();
+		__FrameworkConfig.windowHeight = window->getHeight();
+
 		if (InputInstance.IsKeyPushed(PR_KEY_ESCAPE))
 		{
 			window->setClosed(true);

@@ -51,7 +51,7 @@ namespace Prehistoric
 		GLFWwindow* glfw_window = static_cast<GLFWwindow*>(window->getWindowHandle());
 
 		// Setup Platform/Renderer bindings
-		if (FrameworkConfig::api == OpenGL)
+		if (__FrameworkConfig.api == OpenGL)
 		{
 			ImGui_ImplGlfw_InitForOpenGL(glfw_window, true);
 			ImGui_ImplOpenGL3_Init("#version 410");
@@ -60,7 +60,7 @@ namespace Prehistoric
 
 	void ImGuiLayer::OnDetach()
 	{
-		if (FrameworkConfig::api == OpenGL)
+		if (__FrameworkConfig.api == OpenGL)
 		{
 			ImGui_ImplOpenGL3_Shutdown();
 			ImGui_ImplGlfw_Shutdown();
@@ -71,7 +71,7 @@ namespace Prehistoric
 
 	void ImGuiLayer::Begin()
 	{
-		if (FrameworkConfig::api == OpenGL)
+		if (__FrameworkConfig.api == OpenGL)
 		{
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui_ImplGlfw_NewFrame();
@@ -90,7 +90,7 @@ namespace Prehistoric
 		// Rendering
 		ImGui::Render();
 
-		if (FrameworkConfig::api == OpenGL)
+		if (__FrameworkConfig.api == OpenGL)
 		{
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		}

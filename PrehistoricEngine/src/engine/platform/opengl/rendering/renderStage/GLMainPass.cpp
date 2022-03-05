@@ -3,6 +3,7 @@
 
 #include "platform/opengl/rendering/GLRenderer.h"
 
+#include "prehistoric/application/Application.h"
 #include "prehistoric/core/modules/environmentMapRenderer/EnvironmentMapRenderer.h"
 
 namespace Prehistoric
@@ -112,7 +113,7 @@ namespace Prehistoric
 		multisampleFBO->SetDrawAttachments(5, arr);
 		multisampleFBO->Clear(0.0f);
 
-		if (FrameworkConfig::api == OpenGL && EnvironmentMapRenderer::instance && EnvironmentMapRenderer::instance->enabled
+		if (__FrameworkConfig.api == OpenGL && EnvironmentMapRenderer::instance && EnvironmentMapRenderer::instance->enabled
 			&& EnvironmentMapRenderer::instance->atmosphere == nullptr)
 		{
 			EnvironmentMapRenderer::instance->RenderCube(camera);
@@ -126,7 +127,7 @@ namespace Prehistoric
 			Pipeline* pl = pipeline.first;
 
 			pl->BindPipeline(nullptr);
-			pl->getShader()->UpdateGlobalUniforms(camera, lights);
+			pl->getShader()->UpdateGlobalUniforms(rend);
 
 			lightCullingPass->getLightBuffer()->BindBase(nullptr, 0);
 			lightCullingPass->getVisibleLightIndicesBuffer()->BindBase(nullptr, 1);
@@ -153,7 +154,7 @@ namespace Prehistoric
 			Pipeline* pl = pipeline.first;
 
 			pl->BindPipeline(nullptr);
-			pl->getShader()->UpdateGlobalUniforms(camera, lights);
+			pl->getShader()->UpdateGlobalUniforms(rend);
 
 			lightCullingPass->getLightBuffer()->BindBase(nullptr, 0);
 			lightCullingPass->getVisibleLightIndicesBuffer()->BindBase(nullptr, 1);

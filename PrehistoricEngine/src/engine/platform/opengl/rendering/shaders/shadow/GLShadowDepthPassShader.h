@@ -7,6 +7,7 @@
 
 #include "prehistoric/core/node/GameObject.h"
 #include "prehistoric/common/buffer/UniformBufferObject.h"
+#include "prehistoric/common/rendering/Renderer.h"
 
 namespace Prehistoric
 {
@@ -18,7 +19,7 @@ namespace Prehistoric
 
 		void UpdateGlobalUniforms(UniformBufferObject* matrices);
 
-		virtual void UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const override;
+		virtual void UpdateGlobalUniforms(Renderer* renderer) const override;
 		virtual void UpdateObjectUniforms(GameObject* object, uint32_t instance_index = 0) const override;
 
 	private:

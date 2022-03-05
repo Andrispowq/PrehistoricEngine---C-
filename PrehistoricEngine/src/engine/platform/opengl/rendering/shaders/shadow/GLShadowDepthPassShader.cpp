@@ -20,7 +20,7 @@ namespace Prehistoric
 		SetUniformBlock("LightSpaceMatrices", 0);
 	}
 
-	void GLShadowDepthPassShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
+	void GLShadowDepthPassShader::UpdateGlobalUniforms(Renderer* renderer) const
 	{
 	}
 

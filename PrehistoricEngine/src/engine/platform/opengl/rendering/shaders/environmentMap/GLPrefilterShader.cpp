@@ -1,7 +1,7 @@
 #include "Includes.hpp"
 #include "GLPrefilterShader.h"
 
-#include "prehistoric/core/config/EnvironmentMapConfig.h"
+#include "prehistoric/application/Application.h"
 
 namespace Prehistoric
 {
@@ -24,6 +24,6 @@ namespace Prehistoric
 
 		SetUniformf("roughness", roughness);
 		SetUniformf("resolution", resolution);
-		SetUniformf("resolution_environmentMap", (float)EnvironmentMapConfig::environmentMapResolution);
+		SetUniformf("resolution_environmentMap", (float)__EnvironmentMapConfig.environmentMapResolution);
 	}
 };

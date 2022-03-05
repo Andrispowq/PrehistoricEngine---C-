@@ -4,6 +4,10 @@
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 #include "prehistoric/core/model/material/Material.h"
 
+#include "prehistoric/application/Application.h"
+
+#include <json.hpp>
+
 namespace Prehistoric
 {
 	TerrainMaps::TerrainMaps(Window* window, AssembledAssetManager* manager, const std::string& terrainConfigFile)
@@ -27,9 +31,9 @@ namespace Prehistoric
 		query->Query(heightmap.pointer);
 		this->heights = query->getHeights();
 
-		TerrainConfig::heightmap = heightmap.pointer;
-		TerrainConfig::normalmap = normalmap.pointer;
-		TerrainConfig::splatmap = splatmap.pointer;
+		__TerrainConfig.heightmap = heightmap.pointer;
+		__TerrainConfig.normalmap = normalmap.pointer;
+		__TerrainConfig.splatmap = splatmap.pointer;
 	}
 
 	TerrainMaps::~TerrainMaps()
@@ -50,76 +54,87 @@ namespace Prehistoric
 
 	void TerrainMaps::LoadConfigFile(const std::string& terrainConfigFile)
 	{
-		std::ifstream file(terrainConfigFile);
-		std::string line;
+		std::ifstream file;
+		file.open(terrainConfigFile.c_str(), std::ios::ate);
 
 		size_t textureCount = 0;
 		AssetManager* man = manager->getAssetManager();
 
 		if (file.is_open())
 		{
-			while (file.good())
+			std::string contents;
+			size_t size = file.tellg();
+			contents.resize(size);
+			file.seekg(0);
+			file.read(&contents[0], size);
+
+			nlohmann::json file_json = nlohmann::json::parse(contents);
+
 			{
-				std::getline(file, line);
-				std::vector<std::string> tokens = Util::Split(line, ' ');
-				std::vector<std::string> nameTokens = Util::Split(tokens[0], '.');
+				heightmapLocation = file_json["heightmap"];
+			}
 
-				if (line.substr(0, 1).c_str()[0] == '#')
+			{
+				nlohmann::json materials_json = file_json["materials"];
+				for (auto& element : materials_json)
 				{
-					continue; //This line is a comment then
-				}
-				//TODO: make the per-terrain data be in the world files, not in the general terrain-file
-				else if (nameTokens[0] == "heightmap")
-				{
-					heightmapLocation = tokens[1];
-				}
-				else if (nameTokens[0] == "materials")
-				{
-					if (nameTokens[1] == "add")
-					{
-						materials.push_back(manager->storeMaterial(new Material(man)));
-					}
-					else
-					{
-						MaterialHandle material = materials[materials.size() - 1];
+					std::string name = element["name"];
+					std::vector<nlohmann::json> contents = element["contents"];
 
-						if (nameTokens[2] == "texture")
+					Material* material = new Material(man);
+					for (auto& content : contents)
+					{
+						std::string name = content["name"];
+						std::string type = content["type"];
+
+						if (type == "texture")
 						{
+							std::string value = content["value"];
+
 							SamplerFilter filter;
-							if (tokens[1] == ALBEDO_MAP)
+							if (name == "albedo")
 								filter = Anisotropic;
 							else
 								filter = Trilinear;
 
-							textureLocations.emplace_back(materials.size() - 1, tokens[1]);
+							textureLocations.emplace_back(materials.size(), name + "Map");
 							textureCount++;
-							man->loadTexture(tokens[2], filter, Repeat, BatchSettings::QueuedLoad);
+							man->loadTexture(value, filter, Repeat, BatchSettings::QueuedLoad);
 						}
-						else if (nameTokens[2] == "vec4")
+						else if (type == "vec4")
 						{
-							material->addVector4f(tokens[1], Vector4f((float)std::atof(tokens[2].c_str()), (float)std::atof(tokens[3].c_str())
-								, (float)std::atof(tokens[4].c_str()), (float)std::atof(tokens[5].c_str())));
+							std::vector<float> value = content["value"];
+							material->addVector4f(name, Vector4f(value[0], value[1], value[2], value[3]));
 						}
-						else if (nameTokens[2] == "vec3")
+						else if (type == "vec3")
 						{
-							material->addVector3f(tokens[1], Vector3f((float)std::atof(tokens[2].c_str()), (float)std::atof(tokens[3].c_str())
-								, (float)std::atof(tokens[4].c_str())));
+							std::vector<float> value = content["value"];
+							material->addVector3f(name, Vector3f(value[0], value[1], value[2]));
 						}
-						else if (nameTokens[2] == "vec2")
+						else if (type == "vec2")
 						{
-							material->addVector2f(tokens[1], Vector2f((float)std::atof(tokens[2].c_str()), (float)std::atof(tokens[3].c_str())));
+							std::vector<float> value = content["value"];
+							material->addVector2f(name, Vector2f(value[0], value[1]));
 						}
-						else if (nameTokens[2] == "float")
+						else if (type == "float")
 						{
-							material->addFloat(tokens[1], (float)std::atof(tokens[2].c_str()));
+							float value = content["value"];
+							material->addFloat(name, value);
 						}
-						else if (nameTokens[2] == "int")
+						else if (type == "int")
 						{
-							material->addInt(tokens[1], std::atoi(tokens[2].c_str()));
+							int value = content["value"];
+							material->addInt(name, value);
 						}
 					}
+
+					materials.push_back(manager->storeMaterial(material));
 				}
 			}
+		}
+		else
+		{
+			PR_LOG_ERROR("Could not open world file %s!\n", terrainConfigFile.c_str());
 		}
 
 		man->getTextureLoader()->ForceLoadQueue();
@@ -143,7 +158,7 @@ namespace Prehistoric
 
 		for (auto elem : materials)
 		{
-			TerrainConfig::terrainMaterials.push_back(elem.pointer);
+			__TerrainConfig.terrainMaterials.push_back(elem.pointer);
 			manager->addReference<Material>(elem.handle);
 		}
 	}

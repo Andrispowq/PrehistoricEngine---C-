@@ -7,6 +7,8 @@
 
 namespace Prehistoric
 {
+	class Renderer;
+
 	class Terrain : public Node
 	{
 	public:

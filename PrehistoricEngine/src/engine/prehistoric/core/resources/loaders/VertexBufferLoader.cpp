@@ -2,6 +2,7 @@
 #include "VertexBufferLoader.h"
 
 #include "prehistoric/core/resources/AssetManager.h"
+#include "prehistoric/application/Application.h"
 
 namespace Prehistoric
 {
@@ -33,7 +34,7 @@ namespace Prehistoric
         case Type::Mesh:
             if (ext->mesh.has_value())
             {
-                if (FrameworkConfig::api == OpenGL)
+                if (__FrameworkConfig.api == OpenGL)
                 {
                     ret = new GLMeshVertexBuffer(window, ext->mesh.value());
                 }
@@ -50,7 +51,7 @@ namespace Prehistoric
                 std::string _obj = path.substr(last_slash + 1, path.length() - last_slash - 1);
 
                 Model model = loader.LoadModel(_path, _obj, "");
-                if (FrameworkConfig::api == OpenGL)
+                if (__FrameworkConfig.api == OpenGL)
                 {
                     ret = new GLMeshVertexBuffer(window, model);
                 }
@@ -110,7 +111,7 @@ namespace Prehistoric
 		{
             VertexBuffer* ret;
 
-            if (FrameworkConfig::api == OpenGL)
+            if (__FrameworkConfig.api == OpenGL)
             {
                 ret = new GLMeshVertexBuffer(window, meshes[i]);
             }

@@ -5,7 +5,6 @@
 #include "prehistoric/common/texture/Texture.h"
 
 #include "prehistoric/core/util/Util.h"
-#include "prehistoric/core/config/FrameworkConfig.h"
 
 #include "prehistoric/core/resources/Loader.h"
 

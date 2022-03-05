@@ -3,6 +3,8 @@
 
 #include "imgui.h"
 
+#include "prehistoric/application/Application.h"
+
 namespace Prehistoric
 {
 	static const Vector3f yAxis(0, 1, 0);
@@ -154,7 +156,7 @@ namespace Prehistoric
 
 			InputInstance.setCursorPositionOnScreen(window, InputInstance.getLockedCursorPosition());
 
-			if (FrameworkConfig::api == OpenGL)
+			if (__FrameworkConfig.api == OpenGL)
 			{
 				ImGui::SetMouseCursor(ImGuiMouseCursor_None);
 			}

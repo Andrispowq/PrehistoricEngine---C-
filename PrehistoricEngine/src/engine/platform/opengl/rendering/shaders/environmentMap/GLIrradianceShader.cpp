@@ -1,7 +1,7 @@
 #include "Includes.hpp"
 #include "GLIrradianceShader.h"
 
-#include "prehistoric/core/config/EnvironmentMapConfig.h"
+#include "prehistoric/application/Application.h"
 
 namespace Prehistoric
 {
@@ -21,7 +21,7 @@ namespace Prehistoric
 		texture->Bind();
 		SetUniformi("environmentMap", 0);
 
-		SetUniformf("resolution", (float)EnvironmentMapConfig::environmentMapResolution);
-		SetUniformf("resolution_irradianceMap", (float)EnvironmentMapConfig::irradianceMapResolution);
+		SetUniformf("resolution", (float)__EnvironmentMapConfig.environmentMapResolution);
+		SetUniformf("resolution_irradianceMap", (float)__EnvironmentMapConfig.irradianceMapResolution);
 	}
 };

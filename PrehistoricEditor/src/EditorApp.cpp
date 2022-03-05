@@ -2,7 +2,7 @@
 
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 
-#include "prehistoric/core/config/FrameworkConfig.h"
+#include "prehistoric/application/Application.h"
 #include "prehistoric/core/modules/environmentMapRenderer/EnvironmentMapRenderer.h" 
 
 #include "prehistoric/core/node/movement/EditorCamera.h"
@@ -82,7 +82,7 @@ EditorApp::EditorApp()
 	engineLayer->SetScene(scene);
 
 	//Load in the environment map
-	if (FrameworkConfig::api == OpenGL)
+	if (__FrameworkConfig.api == OpenGL)
 	{
 		{
 			PR_PROFILE("Environment map generation - BRDF Look-up Table");

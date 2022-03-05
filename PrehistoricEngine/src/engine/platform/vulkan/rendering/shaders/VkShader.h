@@ -55,7 +55,7 @@ namespace Prehistoric
 		virtual void BindTextureSets(uint32_t descriptor_index = 0) const = 0;
 		virtual void BindObjectSets(uint32_t instance_index = 0) const = 0;
 
-		virtual void UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const override {}
+		virtual void UpdateGlobalUniforms(Renderer* renderer) const override {}
 		virtual void UpdateMaterialUniforms(Material* material, uint32_t descriptor_index = 0) const override {}
 		virtual void UpdateObjectUniforms(GameObject* object, uint32_t instance_index = 0) const override {}
 

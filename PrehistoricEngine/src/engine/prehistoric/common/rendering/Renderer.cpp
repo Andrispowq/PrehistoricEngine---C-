@@ -7,6 +7,9 @@
 #include "prehistoric/core/node/component/light/Light.h"
 
 #include "prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/core/config/EngineSettings.h"
+
+#include "prehistoric/application/Application.h"
 
 namespace Prehistoric
 {

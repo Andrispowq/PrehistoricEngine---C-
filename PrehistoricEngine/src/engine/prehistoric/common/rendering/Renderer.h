@@ -10,6 +10,7 @@ namespace Prehistoric
 {
 	class RenderableComponent;
 	class AssembledAssetManager;
+	class Light;
 
 	//The light structure used in the internal Forward+ renderer calculations
 	struct InternalLight

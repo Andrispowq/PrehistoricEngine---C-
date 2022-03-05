@@ -5,6 +5,8 @@
 
 namespace Prehistoric
 {
+	class Renderer;
+
 	class Light : public Component
 	{
 	public:

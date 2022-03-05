@@ -4,8 +4,6 @@
 #include "prehistoric/common/buffer/MeshVertexBuffer.h"
 #include "prehistoric/common/framework/Window.h"
 
-#include "prehistoric/core/config/FrameworkConfig.h"
-
 namespace Prehistoric
 {
 	namespace ModelFabricator

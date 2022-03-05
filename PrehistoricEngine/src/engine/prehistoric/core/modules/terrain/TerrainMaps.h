@@ -1,8 +1,6 @@
 #ifndef TERRAIN_MAPS_H
 #define TERRAIN_MAPS_H
 
-#include "prehistoric/core/config/TerrainConfig.h"
-
 #include "platform/opengl/texture/GLTexture.h"
 #include "platform/vulkan/texture/VKTexture.h"
 

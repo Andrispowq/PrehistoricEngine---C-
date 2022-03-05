@@ -4,12 +4,14 @@
 #include "prehistoric/core/CoreEngine.h"
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 
+#include "prehistoric/application/Application.h"
+
 namespace Prehistoric
 {
 	Atmosphere::Atmosphere(Window* window, AssembledAssetManager* manager)
 		: window(window)
 	{
-		SetScale(Vector3f(EngineConfig::rendererFarPlane / 2.f));
+		SetScale(Vector3f(__EngineConfig.rendererFarPlane / 2.f));
 		
 		AssetManager* man = manager->getAssetManager();
 		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "atmosphere").value();
@@ -17,7 +19,7 @@ namespace Prehistoric
 
 		ShaderHandle shader;
 
-		if (AtmosphereConfig::scatteringEnabled)
+		if (__AtmosphereConfig.scatteringEnabled)
 		{
 			shader = man->loadShader(ShaderName::AtmosphereScattering).value();
 		}

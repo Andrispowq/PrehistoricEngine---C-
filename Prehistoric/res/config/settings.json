@@ -38,6 +38,36 @@
             "farPlane": 10000
         }
     },
+    "atmosphere":
+    {
+        "sun":
+        {
+            "position": [2, 0.2, -2],
+            "radius": 0.14,
+            "colour": [1, 0.79, 0.43],
+            "intensity": 48
+        },
+        "fog":
+        {
+            "colour": [0.26, 0.34, 0.36],
+            "brightness": 0.5
+        },
+        "planetRadius": 6371000, 
+        "atmosphereRadius": 6471000,
+        "coefficients":
+        {
+            "rayleigh": [0.0000055, 0.000013, 0.0000224],
+            "rayleighHeightScale": 8000,
+            "mie": 0.000021,
+            "mieHeightScale": 1200,
+            "mieDirection": 0.758
+        },
+        "sightRange": 2,
+        "ambient": 0.02,
+        "horizontalVerticalShift": 0.1,
+        "bloomFactor": 0,
+        "scatteringEnabled": true
+    },
     "environmentMap":
     {
         "location": "res/textures/environmentMaps/cape_hill_2k.hdr",
@@ -56,6 +86,6 @@
             "shift": 0.3
         },
         "lodRangeCount": 8,
-        "lodRanges": [0, 0, 50, 100, 192, 386, 874, 1750]
+        "lodRanges": [1750, 874, 386, 192, 100, 50, 0, 0]
     }
 }

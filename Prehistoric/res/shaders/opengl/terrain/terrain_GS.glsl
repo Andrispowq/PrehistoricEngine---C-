@@ -8,6 +8,7 @@ struct Material
 	sampler2D albedoMap;
 	sampler2D normalMap;
 	sampler2D mrotMap;
+	sampler2D emissionMap;
 	
 	float heightScale;
 	float horizontalScale;
@@ -22,6 +23,7 @@ out vec3 tangent_FS;
 
 uniform Material materials[3];
 uniform sampler2D splatmap;
+uniform sampler2D normalmap;
 uniform mat4 viewProjection;
 uniform vec3 cameraPosition;
 uniform int highDetailRange;
@@ -70,7 +72,6 @@ void main()
 			float height = gl_in[i].gl_Position.y;
 			
 			vec4 blendValues = texture(splatmap, mapCoord_GS[i]);
-			
 			float[4] blendValueArray = float[](blendValues.r, blendValues.g, blendValues.b, blendValues.a);
 			
 			float scale = 0;

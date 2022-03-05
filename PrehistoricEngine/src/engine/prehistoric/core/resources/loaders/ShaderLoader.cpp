@@ -23,12 +23,14 @@
 #include "platform/vulkan/rendering/shaders/basic/VKBasicShader.h"
 #include "platform/vulkan/rendering/shaders/pbr/VKPBRShader.h"
 
+#include "prehistoric/application/Application.h"
+
 namespace Prehistoric
 {
     void* ShaderLoader::LoadResourceInternal(const std::string& path, Extra* extra)
     {
 		Shader* shader;
-		if (FrameworkConfig::api == OpenGL)
+		if (__FrameworkConfig.api == OpenGL)
 		{
 			if (path == "pbr")
 			{
@@ -103,7 +105,7 @@ namespace Prehistoric
 				shader = new GLVolumetricPostProcessingShader();
 			}
 		}
-		else if (FrameworkConfig::api == Vulkan)
+		else if (__FrameworkConfig.api == Vulkan)
 		{
 			if (path == "pbr")
 			{

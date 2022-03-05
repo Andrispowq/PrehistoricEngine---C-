@@ -4,6 +4,7 @@
 #include "prehistoric/core/node/GameObject.h"
 
 #include "prehistoric/core/modules/atmosphere/Atmosphere.h"
+#include "prehistoric/application/Application.h"
 
 namespace Prehistoric
 {
@@ -48,53 +49,55 @@ namespace Prehistoric
 		SetUniform("m_view", view);
 		SetUniform("m_projection", projection);
 
-		SetUniformf("sunRadius", AtmosphereConfig::sunRadius);
-		SetUniform("sunColour", AtmosphereConfig::sunColour);
-		SetUniformf("sunIntensity", AtmosphereConfig::sunIntensity);
+		SetUniformf("sunRadius", __AtmosphereConfig.sunRadius);
+		SetUniform("sunColour", __AtmosphereConfig.sunColour);
+		SetUniformf("sunIntensity", __AtmosphereConfig.sunIntensity);
 
-		SetUniformf("planetRadius", AtmosphereConfig::planetRadius);
-		SetUniformf("atmosphereRadius", AtmosphereConfig::atmosphereRadius);
+		SetUniformf("planetRadius", __AtmosphereConfig.planetRadius);
+		SetUniformf("atmosphereRadius", __AtmosphereConfig.atmosphereRadius);
 
-		SetUniform("rayleigh", AtmosphereConfig::rayleigh);
-		SetUniformf("rayleighHeightScale", AtmosphereConfig::rayleighHeightScale);
-		SetUniformf("mie", AtmosphereConfig::mie);
-		SetUniformf("mieHeightScale", AtmosphereConfig::mieHeightScale);
-		SetUniformf("mieDirection", AtmosphereConfig::mieDirection);
+		SetUniform("rayleigh", __AtmosphereConfig.rayleigh);
+		SetUniformf("rayleighHeightScale", __AtmosphereConfig.rayleighHeightScale);
+		SetUniformf("mie", __AtmosphereConfig.mie);
+		SetUniformf("mieHeightScale", __AtmosphereConfig.mieHeightScale);
+		SetUniformf("mieDirection", __AtmosphereConfig.mieDirection);
 
-		SetUniformf("horizontalVerticalShift", AtmosphereConfig::horizontalVerticalShift);
-		SetUniformi("width", FrameworkConfig::windowWidth);
-		SetUniformi("height", FrameworkConfig::windowHeight);
+		SetUniformf("horizontalVerticalShift", __AtmosphereConfig.horizontalVerticalShift);
+		SetUniformi("width", __FrameworkConfig.windowWidth);
+		SetUniformi("height", __FrameworkConfig.windowHeight);
 		SetUniformi("isReflection", 0); //TODO: getting if it's a reflection or not from the RenderingEngine
 		SetUniformi("isCubemap", 1);
 
-		SetUniformf("exposure", EngineConfig::rendererExposure);
+		SetUniformf("exposure", __EngineConfig.rendererExposure);
 	}
 
-	void GLAtmosphereScatteringShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
+	void GLAtmosphereScatteringShader::UpdateGlobalUniforms(Renderer* renderer) const
 	{
+		Camera* camera = renderer->getCamera();
+
 		SetUniform("m_view", camera->getViewMatrix());
 		SetUniform("m_projection", camera->getProjectionMatrix());
 
-		SetUniformf("sunRadius", AtmosphereConfig::sunRadius);
-		SetUniform("sunColour", AtmosphereConfig::sunColour);
-		SetUniformf("sunIntensity", AtmosphereConfig::sunIntensity);
+		SetUniformf("sunRadius", __AtmosphereConfig.sunRadius);
+		SetUniform("sunColour", __AtmosphereConfig.sunColour);
+		SetUniformf("sunIntensity", __AtmosphereConfig.sunIntensity);
 
-		SetUniformf("planetRadius", AtmosphereConfig::planetRadius);
-		SetUniformf("atmosphereRadius", AtmosphereConfig::atmosphereRadius);
+		SetUniformf("planetRadius", __AtmosphereConfig.planetRadius);
+		SetUniformf("atmosphereRadius", __AtmosphereConfig.atmosphereRadius);
 
-		SetUniform("rayleigh", AtmosphereConfig::rayleigh);
-		SetUniformf("rayleighHeightScale", AtmosphereConfig::rayleighHeightScale);
-		SetUniformf("mie", AtmosphereConfig::mie);
-		SetUniformf("mieHeightScale", AtmosphereConfig::mieHeightScale);
-		SetUniformf("mieDirection", AtmosphereConfig::mieDirection);
+		SetUniform("rayleigh", __AtmosphereConfig.rayleigh);
+		SetUniformf("rayleighHeightScale", __AtmosphereConfig.rayleighHeightScale);
+		SetUniformf("mie", __AtmosphereConfig.mie);
+		SetUniformf("mieHeightScale", __AtmosphereConfig.mieHeightScale);
+		SetUniformf("mieDirection", __AtmosphereConfig.mieDirection);
 
-		SetUniformf("horizontalVerticalShift", AtmosphereConfig::horizontalVerticalShift);
-		SetUniformi("width", FrameworkConfig::windowWidth);
-		SetUniformi("height", FrameworkConfig::windowHeight);
+		SetUniformf("horizontalVerticalShift", __AtmosphereConfig.horizontalVerticalShift);
+		SetUniformi("width", __FrameworkConfig.windowWidth);
+		SetUniformi("height", __FrameworkConfig.windowHeight);
 		SetUniformi("isReflection", 0); //TODO: getting if it's a reflection or not from the RenderingEngine
 		SetUniformi("isCubemap", 0);
 
-		SetUniformf("exposure", EngineConfig::rendererExposure);
+		SetUniformf("exposure", __EngineConfig.rendererExposure);
 	}
 
 	void GLAtmosphereScatteringShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const

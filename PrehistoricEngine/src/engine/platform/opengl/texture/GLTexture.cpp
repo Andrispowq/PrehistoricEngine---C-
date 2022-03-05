@@ -1,7 +1,7 @@
 #include "Includes.hpp"
 #include "GLTexture.h"
 
-#include "prehistoric/core/config/FrameworkConfig.h"
+#include "prehistoric/application/Application.h"
 #include "prehistoric/core/resources/loaders/TextureLoader.h"
 
 namespace Prehistoric
@@ -158,8 +158,8 @@ namespace Prehistoric
 
 		if (multisample)
 		{
-			//glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, FrameworkConfig::windowNumSamples, getInternalFormat(format), width, height, false);
-			glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, FrameworkConfig::windowNumSamples, getInternalFormat(format), width, height, true);
+			//glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, __FrameworkConfig.windowNumSamples, getInternalFormat(format), width, height, false);
+			glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, __FrameworkConfig.windowNumSamples, getInternalFormat(format), width, height, true);
 		}
 		else
 		{

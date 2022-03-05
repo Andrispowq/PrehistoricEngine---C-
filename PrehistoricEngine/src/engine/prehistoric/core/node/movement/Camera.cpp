@@ -3,6 +3,8 @@
 
 #include "imgui.h"
 
+#include "prehistoric/application/Application.h"
+
 namespace Prehistoric
 {
 	static const Vector3f yAxis(0, 1, 0);
@@ -11,7 +13,7 @@ namespace Prehistoric
 		: position(position), forward({ 0, 0, 1 }), up(yAxis),
 			movAmt(movAmt), rotAmt(rotAmt), mouseSensitivity(mouseSensitivity)
 	{
-		SetProjection(fov, (float)FrameworkConfig::windowWidth, (float)FrameworkConfig::windowHeight);
+		SetProjection(fov, (float)__FrameworkConfig.windowWidth, (float)__FrameworkConfig.windowHeight);
 
 		this->viewMatrix = Matrix4f::View(forward, up) * Matrix4f::Translation(position * -1);
 		this->viewProjectionMatrix = Matrix4f::Zero();
@@ -71,8 +73,8 @@ namespace Prehistoric
 		this->width = width;
 		this->height = height;
 
-		this->projectionMatrix = Matrix4f::PerspectiveProjection(fovY, width / height, EngineConfig::rendererNearPlane, EngineConfig::rendererFarPlane);
-		if (FrameworkConfig::api == Vulkan)
+		this->projectionMatrix = Matrix4f::PerspectiveProjection(fovY, width / height, __EngineConfig.rendererNearPlane, __EngineConfig.rendererFarPlane);
+		if (__FrameworkConfig.api == Vulkan)
 		{
 			projectionMatrix.m[1 * 4 + 1] *= -1;
 		}

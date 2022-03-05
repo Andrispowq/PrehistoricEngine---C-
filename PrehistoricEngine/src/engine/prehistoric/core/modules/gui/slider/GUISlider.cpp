@@ -1,6 +1,8 @@
 #include "Includes.hpp"
 #include "GUISlider.h"
 
+#include "prehistoric/application/Application.h"
+
 namespace Prehistoric
 {
 	VertexBufferHandle GUISlider::slider_vbo = { nullptr, -1 };
@@ -19,12 +21,12 @@ namespace Prehistoric
 			slider_vbo = manager->getAssetManager()->storeVertexBuffer(ModelFabricator::CreateQuad(window));
 			slider_vbo->setFrontFace(FrontFace::DOUBLE_SIDED);
 
-			if (FrameworkConfig::api == OpenGL)
+			if (__FrameworkConfig.api == OpenGL)
 			{
 				shader = manager->getAssetManager()->loadShader(ShaderName::Gui).value();
 				slider_pipeline = manager->storePipeline(new GLGraphicsPipeline(window, manager->getAssetManager(), shader, vbo));
 			}
-			else if (FrameworkConfig::api == Vulkan)
+			else if (__FrameworkConfig.api == Vulkan)
 			{
 				//shader = manager->getAssetManager()->loadShader("gui").value();
 				//pipeline = manager->storePipeline(new VKGraphicsPipeline(window, manager->getAssetManager(), shader, vbo));

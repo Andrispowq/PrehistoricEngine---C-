@@ -28,70 +28,70 @@ namespace Prehistoric
 
     struct FrameworkConfig
     {
-        std::string windowName;
-        uint32_t windowWidth;
-        uint32_t windowHeight;
-        bool windowFullScreen;
-        bool windowResizable;
-        bool windowVSync;
-        uint32_t windowNumSamples;
-        uint32_t windowMaxFPS;
+        std::string windowName = "";
+        uint32_t windowWidth = 0;
+        uint32_t windowHeight = 0;
+        bool windowFullScreen = false;
+        bool windowResizable = false;
+        bool windowVSync = false;
+        uint32_t windowNumSamples = 1;
+        uint32_t windowMaxFPS = 60;
 
-        std::map<API, Vector2i> apiVersions;
+        std::map<API, Vector2i> apiVersions = {};
 
-        API api;
-        Vector2i apiVersion;
-        bool apiVulkanUseValidationLayers;
+        API api = API::OpenGL;
+        Vector2i apiVersion = Vector2i(1, 0);
+        bool apiVulkanUseValidationLayers = false;
     };
 
     struct EngineConfig
     {
-        uint32_t lightsMaxNumber;
-        float rendererGamma;
-        float rendererExposure;
-        int rendererHighDetailRange;
-        float rendererNearPlane;
-        float rendererFarPlane;
+        uint32_t lightsMaxNumber = 10;
+        float rendererGamma = 2.2f;
+        float rendererExposure = 1.0f;
+        int rendererHighDetailRange = 100;
+        float rendererNearPlane = 0.1f;
+        float rendererFarPlane = 100;
     };
 
     struct EnvironmentMapConfig
     {
-        std::string environmentMapLocation;
-        uint32_t environmentMapResolution;
-        uint32_t irradianceMapResolution;
-        uint32_t prefilterMapResolution;
-        uint32_t prefilterLevels;
+        std::string environmentMapLocation = "";
+        uint32_t environmentMapResolution = 0;
+        uint32_t irradianceMapResolution = 0;
+        uint32_t prefilterMapResolution = 0;
+        uint32_t prefilterLevels = 0;
 
-        Texture* environmentMap;
-        Texture* irradianceMap;
-        Texture* prefilterMap;
-        Texture* brdfLUT;
+        Texture* environmentMap = nullptr;
+        Texture* irradianceMap = nullptr;
+        Texture* prefilterMap = nullptr;
+        Texture* brdfLUT = nullptr;
     };
 
     struct AtmosphereConfig
     {
-        Vector3f sunPosition;
-        float sunRadius;
-        Vector3f sunColour;
-        float sunIntensity;
+        Vector3f sunPosition = 0;
+        float sunRadius = 0.0f;
+        Vector3f sunColour = 0;
+        float sunIntensity = 0.0f;
 
-        Vector3f fogColour;
-        float fogBrightness;
+        Vector3f fogColour = 0;
+        float fogBrightness = 0.0f;
 
-        float planetRadius;
-        float atmosphereRadius;
+        float planetRadius = 0.0f;
+        float atmosphereRadius = 0.0f;
 
-        Vector3f rayleigh;
-        float rayleighHeightScale;
-        float mie;
-        float mieHeightScale;
-        float mieDirection;
+        Vector3f rayleigh = 0;
+        float rayleighHeightScale = 0.0f;
+        float mie = 0.0f;
+        float mieHeightScale = 0.0f;
+        float mieDirection = 0.0f;
 
-        float sightRange;
-        float ambient;
-        float horizontalVerticalShift;
-        float bloomFactor;
-        bool scatteringEnabled;
+        float sightRange = 0.0f;
+        float ambient = 0.0f;
+        float horizontalVerticalShift = 0.0f;
+        float bloomFactor = 0.0f;
+        bool scatteringEnabled = false;
     };
 
     struct TerrainConfig
@@ -101,21 +101,21 @@ namespace Prehistoric
             return (int)((scaleXZ / TerrainQuadtree::rootNodes) / pow(2, lod));
         }
 
-        float scaleY;
-        float scaleXZ;
+        float scaleY = 0.0f;
+        float scaleXZ = 0.0f;
 
-        int tessellationFactor;
-        float tessellationSlope;
-        float tessellationShift;
+        int tessellationFactor = 0;
+        float tessellationSlope = 0.0f;
+        float tessellationShift = 0.0f;
 
-        std::vector<int> lodRanges;
-        std::vector<int> lodMorphingAreas;
+        std::vector<int> lodRanges = {};
+        std::vector<int> lodMorphingAreas = {};
 
-        std::vector<Material*> terrainMaterials;
+        std::vector<Material*> terrainMaterials = {};
 
-        Texture* heightmap;
-        Texture* normalmap;
-        Texture* splatmap;
+        Texture* heightmap = nullptr;
+        Texture* normalmap = nullptr;
+        Texture* splatmap = nullptr;
     };
 
     class EngineSettings

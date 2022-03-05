@@ -1,6 +1,8 @@
 #include "Includes.hpp"
 #include "InitDevice.h"
 
+#include "prehistoric/application/Application.h"
+
 namespace Prehistoric
 {
 	InitDevice* InitDevice::instance;
@@ -9,11 +11,11 @@ namespace Prehistoric
 	{
 		if (instance == nullptr)
 		{
-			if (FrameworkConfig::api == OpenGL)
+			if (__FrameworkConfig.api == OpenGL)
 			{
 				PR_LOG_WARNING("CREATE OPENGL DEVICE PROPERTIES!!!!!!!!!");
 			}
-			else if (FrameworkConfig::api == Vulkan)
+			else if (__FrameworkConfig.api == Vulkan)
 			{
 				PR_LOG_WARNING("CREATE VULKAN DEVICE PROPERTIES!!!!!!!!!");
 			}

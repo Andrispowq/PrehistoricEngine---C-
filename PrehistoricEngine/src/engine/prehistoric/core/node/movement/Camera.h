@@ -2,7 +2,6 @@
 #define CAMERA_H
 
 #include "prehistoric/common/framework/CameraInput.h"
-#include "prehistoric/core/config/EngineConfig.h"
 
 namespace Prehistoric
 {

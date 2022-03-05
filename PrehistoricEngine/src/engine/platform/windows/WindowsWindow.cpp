@@ -12,6 +12,8 @@
 #include "prehistoric/core/events/KeyEvent.h"
 #include "prehistoric/core/events/MouseEvent.h"
 
+#include "prehistoric/application/Application.h"
+
 #include <Windows.h>
 
 namespace Prehistoric
@@ -82,7 +84,7 @@ namespace Prehistoric
 		glfwSetErrorCallback(error_callback);
 
 		//Setting window properties and creating the window
-		if (FrameworkConfig::api == OpenGL)
+		if (__FrameworkConfig.api == OpenGL)
 		{
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		}
@@ -91,10 +93,10 @@ namespace Prehistoric
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		}
 
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, FrameworkConfig::apiVersion.x);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, FrameworkConfig::apiVersion.y);
-		glfwWindowHint(GLFW_RESIZABLE, FrameworkConfig::windowResizable);
-		glfwWindowHint(GLFW_SAMPLES, FrameworkConfig::windowNumSamples);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, __FrameworkConfig.apiVersion.x);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, __FrameworkConfig.apiVersion.y);
+		glfwWindowHint(GLFW_RESIZABLE, __FrameworkConfig.windowResizable);
+		glfwWindowHint(GLFW_SAMPLES, __FrameworkConfig.windowNumSamples);
 
 		window = glfwCreateWindow(width, height, title, fullscreen ? glfwGetPrimaryMonitor() : NULL, NULL);
 
@@ -108,12 +110,12 @@ namespace Prehistoric
 		}
 		closed = false;
 
-		if (FrameworkConfig::api == OpenGL)
+		if (__FrameworkConfig.api == OpenGL)
 		{
 			context = std::make_unique<GLContext>(this);
 			swapchain = std::make_unique<GLSwapchain>(this);
 		}
-		else if (FrameworkConfig::api == Vulkan)
+		else if (__FrameworkConfig.api == Vulkan)
 		{
 			context = std::make_unique<VKContext>(this);
 			swapchain = std::make_unique<VKSwapchain>(this);
@@ -136,7 +138,7 @@ namespace Prehistoric
 		delete[] data.ptr.dataUC;
 
 		glfwShowWindow(window);
-		SetVSync(FrameworkConfig::windowVSync); 
+		SetVSync(__FrameworkConfig.windowVSync); 
 
 		glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int height)
 		{

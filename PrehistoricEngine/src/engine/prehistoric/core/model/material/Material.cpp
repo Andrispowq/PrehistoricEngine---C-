@@ -15,6 +15,57 @@ namespace Prehistoric
 		textures.emplace(std::make_pair("DEFAULT_TEX", def));
 	}
 
+	/*Material::Material(AssetManager* manager, nlohmann::json material)
+	{
+		this->manager = manager;
+		this->ID = lastID++;
+
+		TextureHandle def = manager->loadTexture("res/textures/default.png").value();
+		manager->addReference<Texture>(def.handle);
+		textures.emplace(std::make_pair("DEFAULT_TEX", def));
+
+		//Load the material
+		std::string name = material["name"];
+		std::vector<nlohmann::json> contents = material["contents"];
+
+		for (auto& content : contents)
+		{
+			std::string name = content["name"];
+			std::string type = content["type"];
+
+			if (type == "texture")
+			{
+				std::string value = content["value"];
+				addTexture((name + "Map"), manager->loadTexture(value).value());
+			}
+			else if (type == "vec4")
+			{
+				std::vector<float> value = content["value"];
+				addVector4f(name, Vector4f(value[0], value[1], value[2], value[3]));
+			}
+			else if (type == "vec3")
+			{
+				std::vector<float> value = content["value"];
+				addVector3f(name, Vector3f(value[0], value[1], value[2]));
+			}
+			else if (type == "vec2")
+			{
+				std::vector<float> value = content["value"];
+				addVector2f(name, Vector2f(value[0], value[1]));
+			}
+			else if (type == "float")
+			{
+				float value = content["value"];
+				addFloat(name, value);
+			}
+			else if (type == "int")
+			{
+				int value = content["value"];
+				addInt(name, value);
+			}
+		}
+	}*/
+
 	Material::~Material()
 	{
 		for (auto& tex : textures)

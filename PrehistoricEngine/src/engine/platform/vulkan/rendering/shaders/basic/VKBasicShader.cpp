@@ -1,6 +1,8 @@
 #include "Includes.hpp"
 #include "VKBasicShader.h"
 
+#include "prehistoric/application/Application.h"
+
 namespace Prehistoric
 {
 	VKBasicShader::VKBasicShader(Window* window) : VKShader(window->getContext(), window->getSwapchain())
@@ -9,7 +11,7 @@ namespace Prehistoric
 		AddShader(ResourceLoader::LoadShaderVK("vulkan/basic/basic_FS.spv"), FRAGMENT_SHADER);
 
 		AddUniform("camera", VERTEX_SHADER | FRAGMENT_SHADER, UniformBuffer, 0, 0, 2 * sizeof(float) * 16 + Vector3f::size());
-		AddUniform("lights", FRAGMENT_SHADER, UniformBuffer, 0, 1, EngineConfig::lightsMaxNumber * 3 * Vector4f::size());
+		AddUniform("lights", FRAGMENT_SHADER, UniformBuffer, 0, 1, __EngineConfig.lightsMaxNumber * 3 * Vector4f::size());
 		AddUniform("lightConditions", FRAGMENT_SHADER, UniformBuffer, 0, 2, sizeof(float) * 2);
 
 		AddUniform(ALBEDO_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 0, 0);
@@ -45,18 +47,21 @@ namespace Prehistoric
 		}
 	}
 
-	void VKBasicShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
+	void VKBasicShader::UpdateGlobalUniforms(Renderer* renderer) const
 	{
+		Camera* camera = renderer->getCamera();
+		std::vector<Light*> lights = renderer->getLights();
+
 		SetUniform("camera", camera->getViewMatrix(), 16 * sizeof(float) * 0);
 		SetUniform("camera", camera->getProjectionMatrix(), 16 * sizeof(float) * 1);
 		SetUniform("camera", camera->getPosition(), 16 * sizeof(float) * 2);
 
-		SetUniformf("lightConditions", EngineConfig::rendererExposure, sizeof(float) * 0);
-		SetUniformf("lightConditions", EngineConfig::rendererGamma, sizeof(float) * 1);
+		SetUniformf("lightConditions", __EngineConfig.rendererExposure, sizeof(float) * 0);
+		SetUniformf("lightConditions", __EngineConfig.rendererGamma, sizeof(float) * 1);
 
-		size_t baseOffset = EngineConfig::lightsMaxNumber * Vector4f::size();
+		size_t baseOffset = __EngineConfig.lightsMaxNumber * Vector4f::size();
 
-		for (uint32_t i = 0; i < EngineConfig::lightsMaxNumber; i++)
+		for (uint32_t i = 0; i < __EngineConfig.lightsMaxNumber; i++)
 		{
 			size_t currentOffset = Vector4f::size() * i;
 

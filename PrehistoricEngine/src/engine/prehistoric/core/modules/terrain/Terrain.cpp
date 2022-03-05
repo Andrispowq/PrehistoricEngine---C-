@@ -2,6 +2,7 @@
 #include "Terrain.h"
 
 #include "prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/common/rendering/Renderer.h"
 
 namespace Prehistoric
 {

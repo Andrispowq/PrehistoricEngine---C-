@@ -109,8 +109,10 @@ namespace Prehistoric
 		depthPass->Render();
 		
 		//shadow pass
-		shadowDepthPass->Render();
-		
+		renderingShadow = true;
+		//shadowDepthPass->Render();
+		renderingShadow = false;
+
 		lightCullingPass->Render();
 		mainPass->Render();
 

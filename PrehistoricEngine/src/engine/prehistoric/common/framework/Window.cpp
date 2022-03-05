@@ -1,7 +1,9 @@
 #include "Includes.hpp"
 #include "Window.h"
+
+#include "prehistoric/application/Application.h"
+
 #include "prehistoric/common/framework/context/Context.h"
-#include "prehistoric/core/config/FrameworkConfig.h"
 #include "platform/opengl/framework/swapchain/GLSwapChain.h"
 #include "platform/vulkan/framework/swapchain/VkSwapChain.h"
 #include "platform/opengl/framework/context/GLContext.h"
@@ -12,10 +14,10 @@ namespace Prehistoric
 	Window::Window()
 		: swapchain(nullptr), context(nullptr), resized(false)
 	{
-		this->width = FrameworkConfig::windowWidth;
-		this->height = FrameworkConfig::windowHeight;
-		this->title = FrameworkConfig::windowName.c_str();
-		this->fullscreen = FrameworkConfig::windowFullScreen;
+		this->width = __FrameworkConfig.windowWidth;
+		this->height = __FrameworkConfig.windowHeight;
+		this->title = __FrameworkConfig.windowName.c_str();
+		this->fullscreen = __FrameworkConfig.windowFullScreen;
 		this->closed = true;
 	}
 

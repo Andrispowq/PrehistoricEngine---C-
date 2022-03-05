@@ -7,7 +7,6 @@
 #include <GLFW/glfw3.h>
 
 #include "VKDebugMessenger.h"
-#include "prehistoric/core/config/FrameworkConfig.h"
 
 namespace Prehistoric
 {

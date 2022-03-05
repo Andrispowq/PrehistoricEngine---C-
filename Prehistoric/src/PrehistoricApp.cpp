@@ -61,7 +61,7 @@ PrehistoricApp::PrehistoricApp()
 	GameObject* sceneRoot = scene->getSceneRoot();
 	Camera* cam = engineLayer->getRenderingEngine()->getCamera();
 
-	if (FrameworkConfig::api == OpenGL)
+	if (__FrameworkConfig.api == OpenGL)
 	{
 		/*cam->setPosition(Vector3f(-178, 102, -47));
 		cam->RotateY(-80);
@@ -85,7 +85,7 @@ PrehistoricApp::PrehistoricApp()
 	Camera* camera = engineLayer->getRenderingEngine()->getCamera();
 
 	//Load in the environment map
-	if (FrameworkConfig::api == OpenGL)
+	if (__FrameworkConfig.api == OpenGL)
 	{
 		{
 			PR_PROFILE("Environment map generation - BRDF Look-up Table");
@@ -102,7 +102,7 @@ PrehistoricApp::PrehistoricApp()
 		EnvironmentMapRenderer::instance->enabled = true;
 	}
 
-	if (FrameworkConfig::api == OpenGL)
+	if (__FrameworkConfig.api == OpenGL)
 	{
 		/*GameObject* slider3 = new GUISlider(window, manager, 0.0f, 4.0f, Vector3f(0.4f), &EnvironmentMapRenderer::instance->lodRenderedMap, sizeof(float), true);
 		static_cast<GUISlider*>(slider3)->setProgress(0.0);

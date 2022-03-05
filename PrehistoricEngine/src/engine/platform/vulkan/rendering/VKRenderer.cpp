@@ -156,7 +156,7 @@ namespace Prehistoric
 		for (auto pipeline : models_3d)
 		{
 			Pipeline* pl = pipeline.first;
-			pl->getShader()->UpdateGlobalUniforms(camera, lights);
+			pl->getShader()->UpdateGlobalUniforms(this);
 
 			for (auto material : pipeline.second)
 			{
@@ -174,7 +174,7 @@ namespace Prehistoric
 		for (auto pipeline : models_transparency)
 		{
 			Pipeline* pl = pipeline.first;
-			pl->getShader()->UpdateGlobalUniforms(camera, lights);
+			pl->getShader()->UpdateGlobalUniforms(this);
 
 			for (auto material : pipeline.second)
 			{

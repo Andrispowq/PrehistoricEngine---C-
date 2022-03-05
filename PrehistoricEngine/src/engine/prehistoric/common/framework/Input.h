@@ -3,7 +3,6 @@
 
 #include "Includes.hpp"
 
-#include "prehistoric/core/config/FrameworkConfig.h"
 #include "Window.h"
 
 #define InputInstance ::Prehistoric::Input::getInstance()

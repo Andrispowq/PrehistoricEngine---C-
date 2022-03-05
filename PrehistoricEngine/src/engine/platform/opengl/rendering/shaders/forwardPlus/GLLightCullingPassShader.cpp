@@ -1,6 +1,8 @@
 #include "Includes.hpp"
 #include "GLLightCullingPassShader.h"
 
+#include "prehistoric/application/Application.h"
+
 namespace Prehistoric
 {
 	GLLightCullingPassShader::GLLightCullingPassShader()
@@ -15,14 +17,17 @@ namespace Prehistoric
 		AddUniform("lightCount");
 	}
 
-	void GLLightCullingPassShader::UpdateUniforms(Camera* camera, const std::vector<Light*>& lights, Texture* depthMap)
+	void GLLightCullingPassShader::UpdateUniforms(Renderer* renderer, Texture* depthMap)
 	{
+		Camera* camera = renderer->getCamera();
+		const std::vector<Light*>& lights = renderer->getLights();
+
 		depthMap->Bind();
 		SetUniformi("depthMap", 0);
 
 		SetUniform("m_view", camera->getViewMatrix());
 		SetUniform("m_projection", camera->getProjectionMatrix());
-		SetUniform("scrnSize", Vector2f((float)FrameworkConfig::windowWidth, (float)FrameworkConfig::windowHeight));
+		SetUniform("scrnSize", Vector2f((float)__FrameworkConfig.windowWidth, (float)__FrameworkConfig.windowHeight));
 		SetUniformi("lightCount", (int)lights.size());
 	}
 };

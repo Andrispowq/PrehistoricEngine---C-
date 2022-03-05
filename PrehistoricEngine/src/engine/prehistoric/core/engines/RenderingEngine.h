@@ -6,6 +6,7 @@
 #include "prehistoric/core/node/movement/FPSCamera.h"
 #include "prehistoric/core/node/movement/EditorCamera.h"
 #include "prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/core/config/EngineSettings.h"
 
 #include "prehistoric/common/framework/Window.h"
 #include "prehistoric/common/rendering/Renderer.h"

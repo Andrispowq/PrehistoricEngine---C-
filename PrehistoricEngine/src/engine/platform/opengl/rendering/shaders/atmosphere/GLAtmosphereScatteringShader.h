@@ -5,8 +5,7 @@
 
 #include <glad/glad.h>
 
-#include "prehistoric/core/config/AtmosphereConfig.h"
-#include "prehistoric/core/config/FrameworkConfig.h"
+#include "prehistoric/common/rendering/Renderer.h"
 
 namespace Prehistoric
 {
@@ -18,7 +17,7 @@ namespace Prehistoric
 
 		void UpdateUniforms(GameObject* atmosphere, Matrix4f view, Matrix4f projection) const;
 
-		virtual void UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const override;
+		virtual void UpdateGlobalUniforms(Renderer* renderer) const override;
 		virtual void UpdateObjectUniforms(GameObject* object, uint32_t instance_index = 0) const override;
 	};
 };

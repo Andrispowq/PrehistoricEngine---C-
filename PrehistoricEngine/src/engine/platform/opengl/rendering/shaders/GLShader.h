@@ -30,7 +30,7 @@ namespace Prehistoric
 		bool AddShader(const std::vector<char>& code, ShaderType type) override;
 		bool CompileShader() const override;
 
-		virtual void UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const override {}
+		virtual void UpdateGlobalUniforms(Renderer* renderer) const override {}
 		virtual void UpdateMaterialUniforms(Material* material, uint32_t descriptor_index = 0) const override {}
 		virtual void UpdateObjectUniforms(GameObject* object, uint32_t instance_index = 0) const override {}
 

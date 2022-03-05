@@ -11,6 +11,7 @@ struct Material
 	sampler2D albedoMap;
 	sampler2D normalMap;
 	sampler2D mrotMap;
+	sampler2D emissionMap;
 
 	float heightScale;
 	float horizontalScale;
@@ -78,7 +79,7 @@ void main()
 	float height = position_FS.y;
 
 	vec3 N = texture(normalmap, mapCoord_FS).rbg * 2.0 - 1.0;	
-	vec4 blendValues = texture(splatmap, mapCoord_FS);	
+	vec4 blendValues = texture(splatmap, mapCoord_FS);
 	float[4] blendValueArray = float[](blendValues.r, blendValues.g, blendValues.b, blendValues.a);	
 	if(dist < highDetailRange - 50)
 	{
@@ -101,6 +102,7 @@ void main()
 	}
 	
 	vec3 albedoColour = vec3(0);
+	vec3 emissionColour = vec3(0);
 	
 	float metallic;
 	float roughness;
@@ -110,8 +112,9 @@ void main()
 	for(int i = 0; i < 3; i++)
 	{
 		vec2 texCoords = mapCoord_FS * materials[i].horizontalScale;
-	
+
 		albedoColour += pow(texture(materials[i].albedoMap, texCoords).rgb, vec3(2.2)) * blendValueArray[i];
+		emissionColour += pow(texture(materials[i].emissionMap, texCoords).rgb, vec3(2.2)) * blendValueArray[i];
 
 		vec4 mrot_i = materials[i].mrot;
 		vec4 mrotMap = texture(materials[i].mrotMap, texCoords);
@@ -192,7 +195,7 @@ void main()
     vec3 specular = prefilteredColour * (F * envBRDF.x + envBRDF.y);
 
     vec3 ambient = (kD * diffuse + specular) * occlusion;
-    vec3 colour = ambient + Lo;
+    vec3 colour = ambient + Lo + emissionColour * emissionFactor;
 
 	if (isnan(colour.r))
 	{
@@ -203,7 +206,7 @@ void main()
 	outPositionMetallic = vec4(position_FS, metallic);
 	outAlbedoRoughness = vec4(albedoColour, roughness);
 	outNormal = vec4(N, 1);
-	outBloom = vec4(0.0);
+	outBloom = vec4(emissionColour * emissionFactor, 0.0);
 }
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)

@@ -3,12 +3,12 @@
 
 #include "Includes.hpp"
 
-#include "prehistoric/core/model/transform.h"
-#include "prehistoric/common/rendering/Renderer.h"
+#include "prehistoric/core/model/Transform.h"
 
 namespace Prehistoric
 {
     class CoreEngine;
+    class Renderer;
 
     class Node
     {

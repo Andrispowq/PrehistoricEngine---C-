@@ -1,7 +1,7 @@
 #include "Includes.hpp"
 #include "WorldLoader.h"
 
-#include "prehistoric/core/config/EnvironmentMapConfig.h"
+#include "prehistoric/application/Application.h"
 
 #include <json.hpp>
 
@@ -301,11 +301,11 @@ namespace Prehistoric
 							{
 								pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
 								
-								if (FrameworkConfig::api == OpenGL)
+								if (__FrameworkConfig.api == OpenGL)
 								{
 									reinterpret_cast<GLGraphicsPipeline*>(pipeline.pointer)->setBackfaceCulling(true);
 								}
-								else if (FrameworkConfig::api == Vulkan)
+								else if (__FrameworkConfig.api == Vulkan)
 								{
 									reinterpret_cast<VKGraphicsPipeline*>(pipeline.pointer)->setBackfaceCulling(true);
 								}
@@ -388,11 +388,11 @@ namespace Prehistoric
 									{
 										pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
 
-										if (FrameworkConfig::api == OpenGL)
+										if (__FrameworkConfig.api == OpenGL)
 										{
 											reinterpret_cast<GLGraphicsPipeline*>(pipeline.pointer)->setBackfaceCulling(true);
 										}
-										else if (FrameworkConfig::api == Vulkan)
+										else if (__FrameworkConfig.api == Vulkan)
 										{
 											reinterpret_cast<VKGraphicsPipeline*>(pipeline.pointer)->setBackfaceCulling(true);
 										}
@@ -652,11 +652,11 @@ namespace Prehistoric
 							{
 								pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
 
-								if (FrameworkConfig::api == OpenGL)
+								if (__FrameworkConfig.api == OpenGL)
 								{
 									reinterpret_cast<GLGraphicsPipeline*>(pipeline.pointer)->setBackfaceCulling(true);
 								}
-								else if (FrameworkConfig::api == Vulkan)
+								else if (__FrameworkConfig.api == Vulkan)
 								{
 									reinterpret_cast<VKGraphicsPipeline*>(pipeline.pointer)->setBackfaceCulling(true);
 								}

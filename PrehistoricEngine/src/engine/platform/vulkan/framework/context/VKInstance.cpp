@@ -3,6 +3,8 @@
 
 #include "platform/Platform.h"
 
+#include "prehistoric/application/Application.h"
+
 #define VK_LAYER_KHRONOS_VALIDATION_EXTENSION_NAME "VK_LAYER_KHRONOS_validation"
 
 namespace Prehistoric
@@ -12,7 +14,7 @@ namespace Prehistoric
 	{
 		//Check for validation layer support, but we only use it in debug mode
 #if defined(PR_ENABLE_DEBUGGING) && defined(PR_VK_ENABLE_VALIDATION_LAYERS)
-		if (FrameworkConfig::apiVulkanUseValidationLayers)
+		if (__FrameworkConfig.apiVulkanUseValidationLayers)
 		{
 			validationLayers.push_back(VK_LAYER_KHRONOS_VALIDATION_EXTENSION_NAME);
 
@@ -25,11 +27,11 @@ namespace Prehistoric
 
 		VkApplicationInfo appInfo = {};
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-		appInfo.pApplicationName = FrameworkConfig::windowName.c_str();
-		appInfo.applicationVersion = VK_MAKE_VERSION(FrameworkConfig::apiVersion.x, FrameworkConfig::apiVersion.y, 0);
-		appInfo.pEngineName = FrameworkConfig::windowName.c_str();
-		appInfo.engineVersion = VK_MAKE_VERSION(FrameworkConfig::apiVersion.x, FrameworkConfig::apiVersion.y, 0);
-		appInfo.apiVersion = VK_MAKE_VERSION(FrameworkConfig::apiVersion.x, FrameworkConfig::apiVersion.y, 0);
+		appInfo.pApplicationName = __FrameworkConfig.windowName.c_str();
+		appInfo.applicationVersion = VK_MAKE_VERSION(__FrameworkConfig.apiVersion.x, __FrameworkConfig.apiVersion.y, 0);
+		appInfo.pEngineName = __FrameworkConfig.windowName.c_str();
+		appInfo.engineVersion = VK_MAKE_VERSION(__FrameworkConfig.apiVersion.x, __FrameworkConfig.apiVersion.y, 0);
+		appInfo.apiVersion = VK_MAKE_VERSION(__FrameworkConfig.apiVersion.x, __FrameworkConfig.apiVersion.y, 0);
 
 		VkInstanceCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -45,7 +47,7 @@ namespace Prehistoric
 		//This validation layer is only used for the instance creation and destruction
 		VkDebugUtilsMessengerCreateInfoEXT createMessenger;
 #endif
-		if (FrameworkConfig::apiVulkanUseValidationLayers)
+		if (__FrameworkConfig.apiVulkanUseValidationLayers)
 		{
 			createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
 			createInfo.ppEnabledLayerNames = validationLayers.data();
@@ -71,7 +73,7 @@ namespace Prehistoric
 		}
 
 #if defined(PR_ENABLE_DEBUGGING) && defined(PR_VK_ENABLE_VALIDATION_LAYERS)
-		if (FrameworkConfig::apiVulkanUseValidationLayers)
+		if (__FrameworkConfig.apiVulkanUseValidationLayers)
 		{
 			messenger = std::make_unique<VKDebugMessenger>(instance);
 		}
@@ -81,7 +83,7 @@ namespace Prehistoric
 	VKInstance::~VKInstance()
 	{
 #if defined(PR_ENABLE_DEBUGGING) && defined(PR_VK_ENABLE_VALIDATION_LAYERS)
-		if (FrameworkConfig::apiVulkanUseValidationLayers)
+		if (__FrameworkConfig.apiVulkanUseValidationLayers)
 		{
 			delete messenger.release();
 		}
@@ -146,7 +148,7 @@ namespace Prehistoric
 
 		std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
-		if (FrameworkConfig::apiVulkanUseValidationLayers)
+		if (__FrameworkConfig.apiVulkanUseValidationLayers)
 		{
 			//This is required for validation layers
 			extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);

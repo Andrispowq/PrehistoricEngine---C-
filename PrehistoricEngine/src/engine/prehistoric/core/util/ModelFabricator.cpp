@@ -3,6 +3,8 @@
 #include "platform/opengl/buffer/GLMeshVertexBuffer.h"
 #include "platform/vulkan/buffer/VKMeshVertexBuffer.h"
 
+#include "prehistoric/application/Application.h"
+
 namespace Prehistoric
 {
 	namespace ModelFabricator
@@ -24,11 +26,11 @@ namespace Prehistoric
 
 			model.AddMesh(std::move(mesh));
 
-			if (FrameworkConfig::api == OpenGL)
+			if (__FrameworkConfig.api == OpenGL)
 			{
 				vbo = new GLMeshVertexBuffer(window, model);
 			}
-			else if (FrameworkConfig::api == Vulkan)
+			else if (__FrameworkConfig.api == Vulkan)
 			{
 				vbo = new VKMeshVertexBuffer(window, model);
 			}

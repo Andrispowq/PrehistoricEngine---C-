@@ -13,8 +13,9 @@ namespace Prehistoric
 	{
 	public:
 		Material(AssetManager* manager);
+		//Material(AssetManager* manager, nlohmann::json material);
 		~Material();
-
+		
 		void addTexture(const std::string& key, TextureHandle texture);
 		void addVector4f(const std::string& key, Vector4f value);
 		void addVector3f(const std::string& key, Vector3f value);

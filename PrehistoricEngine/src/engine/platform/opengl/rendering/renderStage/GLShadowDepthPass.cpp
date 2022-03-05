@@ -10,6 +10,8 @@
 #include "platform/opengl/rendering/shaders/forwardPlus/GLDepthPassShader.h"
 #include "platform/opengl/buffer/GLUniformBufferObject.h"
 
+#include "prehistoric/application/Application.h"
+
 #ifdef max
 #undef max
 #endif
@@ -31,7 +33,7 @@ namespace Prehistoric
 		uint32_t height = window->getHeight();
 
 		//TODO
-		float farPlane = EngineConfig::rendererFarPlane;
+		float farPlane = __EngineConfig.rendererFarPlane;
 		shadowCascadeLevels = std::vector<float>{ farPlane / 50.0f, farPlane / 25.0f, farPlane / 10.0f, farPlane / 2.0f };
 		cascadeDistances = shadowCascadeLevels;
 
@@ -141,7 +143,7 @@ namespace Prehistoric
 					}
 
 					pl->BindPipeline(nullptr);
-					pl->getShader()->UpdateGlobalUniforms(camera, rend->getLights());
+					pl->getShader()->UpdateGlobalUniforms(rend);
 					pl->getShader()->UpdateMaterialUniforms(material.first, 0);
 
 					for (auto renderer_ : material.second)
@@ -296,7 +298,7 @@ namespace Prehistoric
 		{
 			if (i == 0)
 			{
-				ret.push_back(GetViewProjMatrix(lightDir, EngineConfig::rendererNearPlane, shadowCascadeLevels[i]));
+				ret.push_back(GetViewProjMatrix(lightDir, __EngineConfig.rendererNearPlane, shadowCascadeLevels[i]));
 			}
 			else if (i < shadowCascadeLevels.size())
 			{
@@ -304,7 +306,7 @@ namespace Prehistoric
 			}
 			else
 			{
-				ret.push_back(GetViewProjMatrix(lightDir, shadowCascadeLevels[i - 1], EngineConfig::rendererFarPlane));
+				ret.push_back(GetViewProjMatrix(lightDir, shadowCascadeLevels[i - 1], __EngineConfig.rendererFarPlane));
 			}
 		}
 

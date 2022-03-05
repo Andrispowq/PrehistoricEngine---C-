@@ -1,7 +1,7 @@
 #include "Includes.hpp"
 #include "GLHDRShader.h"
 
-#include "prehistoric/core/config/EnvironmentMapConfig.h"
+#include "prehistoric/application/Application.h"
 #include "platform/opengl/rendering/GLRenderer.h"
 
 #include "prehistoric/core/node/GameObject.h"
@@ -27,7 +27,7 @@ namespace Prehistoric
 
 		SetUniform("resolution", resolution);
 
-		SetUniformf("gamma", EngineConfig::rendererGamma);
-		SetUniformf("exposure", EngineConfig::rendererExposure);
+		SetUniformf("gamma", __EngineConfig.rendererGamma);
+		SetUniformf("exposure", __EngineConfig.rendererExposure);
 	}
 };

@@ -4,8 +4,6 @@
 #include "prehistoric/core/model/Model.h"
 
 #include "prehistoric/core/util/Constants.h"
-#include "prehistoric/core/config/FrameworkConfig.h"
-
 #include "prehistoric/common/framework/Window.h"
 
 namespace Prehistoric

@@ -2,6 +2,8 @@
 #include <glad/glad.h>
 #include "VKPBRShader.h" 
 
+#include "prehistoric/application/Application.h"
+
 namespace Prehistoric
 {
 	VKPBRShader::VKPBRShader(Window* window) : VKShader(window->getContext(), window->getSwapchain())
@@ -11,7 +13,7 @@ namespace Prehistoric
 
 		AddUniform("camera", VERTEX_SHADER | FRAGMENT_SHADER, UniformBuffer, 0, 0, sizeof(float) * 16 * 2 + Vector4f::size());
 		AddUniform("lightConditions", VERTEX_SHADER | FRAGMENT_SHADER, UniformBuffer, 0, 1, sizeof(int) * 2 + sizeof(float) * 2);
-		AddUniform("lights", VERTEX_SHADER | FRAGMENT_SHADER, UniformBuffer, 0, 2, Vector4f::size() * 3 * EngineConfig::lightsMaxNumber);
+		AddUniform("lights", VERTEX_SHADER | FRAGMENT_SHADER, UniformBuffer, 0, 2, Vector4f::size() * 3 * __EngineConfig.lightsMaxNumber);
 
 		AddUniform(ALBEDO_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 0, 0, nullptr);
 		AddUniform(NORMAL_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 1, 0, nullptr);
@@ -23,7 +25,7 @@ namespace Prehistoric
 
 		descriptorPool->finalise(pipelineLayout);
 
-		lightData = new char[Vector4f::size() * 3 * EngineConfig::lightsMaxNumber];
+		lightData = new char[Vector4f::size() * 3 * __EngineConfig.lightsMaxNumber];
 	}
 
 	VKPBRShader::~VKPBRShader()
@@ -55,9 +57,12 @@ namespace Prehistoric
 		}
 	}
 
-	void VKPBRShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
+	void VKPBRShader::UpdateGlobalUniforms(Renderer* renderer) const
 	{
-		//Offset values are copied from shaders
+		Camera* camera = renderer->getCamera();
+		std::vector<Light*> lights = renderer->getLights();
+
+		//Offset values copied from the shader
 		SetUniform("camera", camera->getViewMatrix(), 0);
 		SetUniform("camera", camera->getProjectionMatrix(), 64);
 		SetUniform("camera", camera->getPosition(), 128);
@@ -68,20 +73,20 @@ namespace Prehistoric
 			float gamma, exposure;
 		} lightCond;
 
-		lightCond.highDetailRange = EngineConfig::rendererHighDetailRange;
-		lightCond.lights = (uint32_t)lights.size() >= EngineConfig::lightsMaxNumber ? EngineConfig::lightsMaxNumber : (uint32_t)lights.size();
-		lightCond.gamma = EngineConfig::rendererGamma;
-		lightCond.exposure = EngineConfig::rendererExposure;
+		lightCond.highDetailRange = __EngineConfig.rendererHighDetailRange;
+		lightCond.lights = (uint32_t)lights.size() >= __EngineConfig.lightsMaxNumber ? __EngineConfig.lightsMaxNumber : (uint32_t)lights.size();
+		lightCond.gamma = __EngineConfig.rendererGamma;
+		lightCond.exposure = __EngineConfig.rendererExposure;
 
-		/*SetUniformi("lightConditions", EngineConfig::rendererHighDetailRange, 0, instance_index);
-		SetUniformi("lightConditions", (uint32_t)lights.size() >= EngineConfig::lightsMaxNumber ? EngineConfig::lightsMaxNumber : (uint32_t)lights.size(), 4, instance_index);
-		SetUniformf("lightConditions", EngineConfig::rendererGamma, 8, instance_index);
-		SetUniformf("lightConditions", EngineConfig::rendererExposure, 12, instance_index);*/
+		/*SetUniformi("lightConditions", __EngineConfig.rendererHighDetailRange, 0, instance_index);
+		SetUniformi("lightConditions", (uint32_t)lights.size() >= __EngineConfig.lightsMaxNumber ? __EngineConfig.lightsMaxNumber : (uint32_t)lights.size(), 4, instance_index);
+		SetUniformf("lightConditions", __EngineConfig.rendererGamma, 8, instance_index);
+		SetUniformf("lightConditions", __EngineConfig.rendererExposure, 12, instance_index);*/
 		
 		SetUniform("lightConditions", &lightCond, sizeof(LightCond), 0);
 
-		size_t baseOffset = EngineConfig::lightsMaxNumber * Vector4f::size();
-		for (uint32_t i = 0; i < EngineConfig::lightsMaxNumber; i++)
+		size_t baseOffset = __EngineConfig.lightsMaxNumber * Vector4f::size();
+		for (uint32_t i = 0; i < __EngineConfig.lightsMaxNumber; i++)
 		{
 			size_t currentOffset = Vector4f::size() * i;
 
@@ -101,7 +106,7 @@ namespace Prehistoric
 			}
 		}
 
-		SetUniform("lights", lightData, Vector4f::size() * 3 * EngineConfig::lightsMaxNumber, 0);
+		SetUniform("lights", lightData, Vector4f::size() * 3 * __EngineConfig.lightsMaxNumber, 0);
 	}
 
 	void VKPBRShader::UpdateMaterialUniforms(Material* material, uint32_t descriptor_index) const

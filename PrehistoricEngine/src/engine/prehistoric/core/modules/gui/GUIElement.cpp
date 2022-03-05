@@ -1,6 +1,8 @@
 #include "Includes.hpp"
 #include "GUIElement.h"
 
+#include "prehistoric/application/Application.h"
+
 #include "platform/opengl/rendering/shaders/gui/GLGUIShader.h"
 //#include "platform/vulkan/rendering/shaders/basic/VKGUIShader.h"
 
@@ -19,12 +21,12 @@ namespace Prehistoric
 			vbo = manager->getAssetManager()->storeVertexBuffer(ModelFabricator::CreateQuad(window));
 			vbo->setFrontFace(FrontFace::DOUBLE_SIDED);
 
-			if (FrameworkConfig::api == OpenGL)
+			if (__FrameworkConfig.api == OpenGL)
 			{
 				shader = manager->getAssetManager()->loadShader(ShaderName::Gui).value();
 				pipeline = manager->storePipeline(new GLGraphicsPipeline(window, manager->getAssetManager(), shader, vbo));
 			}
-			else if (FrameworkConfig::api == Vulkan)
+			else if (__FrameworkConfig.api == Vulkan)
 			{
 				//shader = manager->getAssetManager()->loadShader("gui").value();
 				//pipeline = manager->storePipeline(new VKGraphicsPipeline(window, manager->getAssetManager(), shader, vbo));

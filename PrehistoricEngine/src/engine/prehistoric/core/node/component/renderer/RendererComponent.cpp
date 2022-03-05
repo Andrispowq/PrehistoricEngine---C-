@@ -1,5 +1,8 @@
 #include "Includes.hpp"
 #include "RendererComponent.h"
+
+#include "prehistoric/application/Application.h"
+
 #include "prehistoric/common/rendering/pipeline/Pipeline.h"
 #include "prehistoric/core/engines/RenderingEngine.h"
 #include "prehistoric/core/node/GameObject.h"
@@ -16,7 +19,7 @@ namespace Prehistoric
 
 		manager->addReference<Material>(material.handle);
 
-		if (FrameworkConfig::api == Vulkan)
+		if (__FrameworkConfig.api == Vulkan)
 		{
 			static_cast<VKShader*>(pipeline->getShader())->RegisterInstance();
 		}
@@ -48,7 +51,7 @@ namespace Prehistoric
 	void RendererComponent::Render(Renderer* renderer) const
 	{
 		pipeline->BindPipeline(renderer->getDrawCommandBuffer());
-		pipeline->getShader()->UpdateGlobalUniforms(renderer->getCamera(), renderer->getLights());
+		pipeline->getShader()->UpdateGlobalUniforms(renderer);
 		pipeline->getShader()->UpdateMaterialUniforms(material.pointer, 0);
 		pipeline->getShader()->UpdateObjectUniforms(parent);
 

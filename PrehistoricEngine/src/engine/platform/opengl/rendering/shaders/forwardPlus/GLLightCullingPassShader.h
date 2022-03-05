@@ -5,6 +5,8 @@
 
 #include <glad/glad.h>
 
+#include "prehistoric/common/rendering/Renderer.h"
+
 namespace Prehistoric
 {
 	class GLLightCullingPassShader : public GLShader
@@ -13,7 +15,7 @@ namespace Prehistoric
 		GLLightCullingPassShader();
 		virtual ~GLLightCullingPassShader() {}
 
-		void UpdateUniforms(Camera* camera, const std::vector<Light*>& lights, Texture* depthMap);
+		void UpdateUniforms(Renderer* renderer, Texture* depthMap);
 	};
 };
 

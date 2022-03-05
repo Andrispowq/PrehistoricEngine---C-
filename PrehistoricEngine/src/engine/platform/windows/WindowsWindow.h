@@ -7,7 +7,7 @@
 #include <GLFW/glfw3.h>
 
 #include "prehistoric/core/resources/loaders/TextureLoader.h"
-#include "prehistoric/core/config/FrameworkConfig.h"
+#include "prehistoric/application/Application.h"
 #include "platform/Platform.h"
 
 #include "Includes.hpp"

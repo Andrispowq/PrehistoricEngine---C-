@@ -1,8 +1,8 @@
 #include "Includes.hpp"
 #include "GLPBRShader.h"
 
-#include "prehistoric/core/config/EnvironmentMapConfig.h"
 #include "prehistoric/common/buffer/UniformBufferObject.h"
+#include "prehistoric/application/Application.h"
 
 namespace Prehistoric
 {
@@ -54,22 +54,25 @@ namespace Prehistoric
 			AddUniform("cascadePlaneDistances[" + std::to_string(i) + "]");
 	}
 
-	void GLPBRShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
+	void GLPBRShader::UpdateGlobalUniforms(Renderer* renderer) const
 	{
+		Camera* camera = renderer->getCamera();
+		const std::vector<Light*>& lights = renderer->getLights();
+
 		SetUniform("m_view", camera->getViewMatrix());
 		SetUniform("m_projection", camera->getProjectionMatrix());
 		SetUniform("cameraPosition", camera->getPosition());
-		SetUniformi("highDetailRange", EngineConfig::rendererHighDetailRange);
+		SetUniformi("highDetailRange", __EngineConfig.rendererHighDetailRange);
 
-		EnvironmentMapConfig::irradianceMap->Bind(4);
+		__EnvironmentMapConfig.irradianceMap->Bind(4);
 		SetUniformi("irradianceMap", 4);
-		EnvironmentMapConfig::prefilterMap->Bind(5);
+		__EnvironmentMapConfig.prefilterMap->Bind(5);
 		SetUniformi("prefilterMap", 5);
-		EnvironmentMapConfig::brdfLUT->Bind(6);
+		__EnvironmentMapConfig.brdfLUT->Bind(6);
 		SetUniformi("brdfLUT", 6);
 
-		SetUniformi("numberOfTilesX", FrameworkConfig::windowWidth / 16);
-		SetUniformf("max_reflection_lod", EnvironmentMapConfig::prefilterLevels - 1.0f);
+		SetUniformi("numberOfTilesX", __FrameworkConfig.windowWidth / 16);
+		SetUniformf("max_reflection_lod", __EnvironmentMapConfig.prefilterLevels - 1.0f);
 
 		for (size_t i = 0; i <lights.size(); i++)
 		{
@@ -85,7 +88,7 @@ namespace Prehistoric
 		_matrices->BindBase(nullptr, 0);
 		SetUniformBlock("LightSpaceMatrices", 0);
 		SetUniformi("cascadeCount", (int)cascadeDistances.size());
-		SetUniformf("farPlane", EngineConfig::rendererFarPlane);
+		SetUniformf("farPlane", __EngineConfig.rendererFarPlane);
 		if(_shadowMap) _shadowMap->Bind(3);
 		SetUniformi("shadowMap", 3);
 

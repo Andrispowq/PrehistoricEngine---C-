@@ -7,6 +7,8 @@
 
 #include "platform/opengl/rendering/shaders/GLShader.h"
 
+#include "prehistoric/common/rendering/Renderer.h"
+
 namespace Prehistoric
 {
 	class GLTerrainShadowShader : public GLShader
@@ -15,7 +17,7 @@ namespace Prehistoric
 		GLTerrainShadowShader();
 		virtual ~GLTerrainShadowShader() {}
 
-		virtual void UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const override;
+		virtual void UpdateGlobalUniforms(Renderer* renderer) const override;
 		virtual void UpdateMaterialUniforms(Material* material, uint32_t descriptor_index = 0) const override;
 		virtual void UpdateObjectUniforms(GameObject* object, uint32_t instance_index = 0) const override;
 

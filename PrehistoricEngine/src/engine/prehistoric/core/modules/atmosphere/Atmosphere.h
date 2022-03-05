@@ -3,8 +3,6 @@
 
 #include "prehistoric/core/node/GameObject.h"
 
-#include "prehistoric/core/config/AtmosphereConfig.h"
-
 #include "prehistoric/core/model/obj/OBJLoader.h"
 
 #include "platform/opengl/rendering/shaders/atmosphere/GLAtmosphereScatteringShader.h"

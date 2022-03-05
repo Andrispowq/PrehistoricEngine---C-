@@ -130,7 +130,7 @@ void EditorLayer::ImGUIRender()
 		std::optional<std::string> path = Prehistoric::FileDialogues::Get()->OpenFile("Environment Map (*.hdr)\0*.hdr\0");
 		if (path)
 		{
-			Prehistoric::EnvironmentMapConfig::environmentMapLocation = *path;
+			__EnvironmentMapConfig.environmentMapLocation = *path;
 			Prehistoric::EnvironmentMapRenderer::instance->GenerateEnvironmentMap();
 		}
 	}
@@ -140,16 +140,16 @@ void EditorLayer::ImGUIRender()
 		Prehistoric::EnvironmentMapRenderer::instance->GenerateEnvironmentMap();
 	}
 
-	float max = (float)Prehistoric::EnvironmentMapConfig::prefilterLevels;
+	float max = (float)__EnvironmentMapConfig.prefilterLevels;
 	ImGui::SliderFloat("Environment map LOD", &Prehistoric::EnvironmentMapRenderer::instance->lodRenderedMap, 0.0f, max - 1.0f, "Environment map LOD");
 
-	ImGui::InputInt("Environment map resolution", (int*)&Prehistoric::EnvironmentMapConfig::environmentMapResolution);
-	ImGui::InputInt("Irradiance map resolution", (int*)&Prehistoric::EnvironmentMapConfig::irradianceMapResolution);
-	ImGui::InputInt("Prefilter map resolution", (int*)&Prehistoric::EnvironmentMapConfig::prefilterMapResolution);
-	ImGui::InputInt("Prefilter map mip levels", (int*)&Prehistoric::EnvironmentMapConfig::prefilterLevels);
+	ImGui::InputInt("Environment map resolution", (int*)&__EnvironmentMapConfig.environmentMapResolution);
+	ImGui::InputInt("Irradiance map resolution", (int*)&__EnvironmentMapConfig.irradianceMapResolution);
+	ImGui::InputInt("Prefilter map resolution", (int*)&__EnvironmentMapConfig.prefilterMapResolution);
+	ImGui::InputInt("Prefilter map mip levels", (int*)&__EnvironmentMapConfig.prefilterLevels);
 
-	ImGui::SliderFloat("Exposure", &Prehistoric::EngineConfig::rendererExposure, 0.5f, 4.0f, "Exposure");
-	ImGui::SliderFloat("Gamma", &Prehistoric::EngineConfig::rendererGamma, 1.0f, 5.0f, "Gamma");
+	ImGui::SliderFloat("Exposure", &__EngineConfig.rendererExposure, 0.5f, 4.0f, "Exposure");
+	ImGui::SliderFloat("Gamma", &__EngineConfig.rendererGamma, 1.0f, 5.0f, "Gamma");
 
 	ImGui::InputText("Song to play", songNameBuffer, 256);
 	ImGui::InputInt("Start offset (ms)", &offset);

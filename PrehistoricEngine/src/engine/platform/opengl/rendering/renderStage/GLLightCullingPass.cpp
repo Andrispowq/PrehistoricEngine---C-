@@ -8,6 +8,8 @@
 #include "prehistoric/core/node/component/light/Light.h"
 #include "prehistoric/core/node/GameObject.h"
 
+#include "prehistoric/application/Application.h"
+
 namespace Prehistoric
 {
 	GLLightCullingPass::GLLightCullingPass(Renderer* renderer)
@@ -26,7 +28,7 @@ namespace Prehistoric
 		lightCullingPipeline = manager->storePipeline(new GLComputePipeline(window, man, lightCullingShader));
 		manager->addReference<Pipeline>(lightCullingPipeline.handle);
 
-		lightBuffer = std::make_unique<GLShaderStorageBuffer>(window, nullptr, EngineConfig::lightsMaxNumber * sizeof(InternalLight));
+		lightBuffer = std::make_unique<GLShaderStorageBuffer>(window, nullptr, __EngineConfig.lightsMaxNumber * sizeof(InternalLight));
 		visibleLightIndicesBuffer = std::make_unique<GLShaderStorageBuffer>(window, nullptr, numberOfTiles * sizeof(VisibleIndex) * 1024);
 
 		static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
@@ -68,7 +70,7 @@ namespace Prehistoric
 		lightBuffer->Bind(nullptr);
 		lightBuffer->MapBuffer();
 		InternalLight* light = (InternalLight*)lightBuffer->getMappedData();
-		memset(light, 0, EngineConfig::lightsMaxNumber * sizeof(InternalLight));
+		memset(light, 0, __EngineConfig.lightsMaxNumber * sizeof(InternalLight));
 
 		for (size_t i = 0; i < rend->getLights().size(); i++)
 		{
@@ -91,7 +93,7 @@ namespace Prehistoric
 
 		//Render
 		lightCullingPipeline->BindPipeline(nullptr);
-		static_cast<GLLightCullingPassShader*>(lightCullingPipeline->getShader())->UpdateUniforms(camera, rend->getLights(), rend->getDepthPass()->getDepthTexture().pointer);
+		static_cast<GLLightCullingPassShader*>(lightCullingPipeline->getShader())->UpdateUniforms(rend, rend->getDepthPass()->getDepthTexture().pointer);
 		lightCullingPipeline->RenderPipeline();
 		lightCullingPipeline->UnbindPipeline();
 	}

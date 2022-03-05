@@ -4,6 +4,7 @@
 #include "Includes.hpp"
 
 #include "prehistoric/core/node/component/Component.h"
+#include "prehistoric/core/node/Node.h"
 
 namespace Prehistoric
 {

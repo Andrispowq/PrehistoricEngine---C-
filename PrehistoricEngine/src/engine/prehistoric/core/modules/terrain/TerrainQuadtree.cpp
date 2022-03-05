@@ -2,6 +2,7 @@
 #include "TerrainQuadtree.h"
 
 #include "prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/application/Application.h"
 
 namespace Prehistoric
 {
@@ -34,8 +35,8 @@ namespace Prehistoric
 			}
 		}
 
-		worldTransform.setScaling({ TerrainConfig::scaleXZ, TerrainConfig::scaleY, TerrainConfig::scaleXZ });
-		worldTransform.setPosition({ -TerrainConfig::scaleXZ / 2.0f, 0, -TerrainConfig::scaleXZ / 2.0f });
+		worldTransform.setScaling({ __TerrainConfig.scaleXZ, __TerrainConfig.scaleY, __TerrainConfig.scaleXZ });
+		worldTransform.setPosition({ -__TerrainConfig.scaleXZ / 2.0f, 0, -__TerrainConfig.scaleXZ / 2.0f });
 	}
 
 	TerrainQuadtree::~TerrainQuadtree()

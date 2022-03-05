@@ -10,12 +10,6 @@
 
 #include "prehistoric/core/node/GameObject.h"
 
-#include "prehistoric/core/config/EngineConfig.h"
-#include "prehistoric/core/config/FrameworkConfig.h"
-#include "prehistoric/core/config/TerrainConfig.h"
-#include "prehistoric/core/config/AtmosphereConfig.h"
-#include "prehistoric/core/config/EnvironmentMapConfig.h"
-
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 
 namespace Prehistoric
@@ -25,7 +19,7 @@ namespace Prehistoric
 	class CoreEngine : public Layer
 	{
 	public:
-		CoreEngine(const std::string& configPath = "res/config", const std::string& worldFile = "res/world/testLevel.wrld");
+		CoreEngine(const std::string& configPath = "res/config/settings.json", const std::string& worldFile = "res/world/testLevel.wrld");
 		~CoreEngine();
 
 		virtual void OnEnable() override {}
@@ -49,11 +43,13 @@ namespace Prehistoric
 		*/
 		void SetScene(Scene* scene);
 
-		inline RenderingEngine* getRenderingEngine() const { return renderingEngine.get(); }
-		inline AudioEngine* getAudioEngine() const { return audioEngine.get(); }
+		inline RenderingEngine* getRenderingEngine() { return renderingEngine.get(); }
+		inline AudioEngine* getAudioEngine() { return audioEngine.get(); }
 
 		inline GameObject* getRootObject() const { return root.get(); }
 		inline AssembledAssetManager* getAssetManager() const { return manager.get(); }
+
+		inline EngineSettings* getEngineSettings() { return &engineSettings; }
 
 		inline float getFrameTime() const { return (float)frameTime; }
 
@@ -72,6 +68,9 @@ namespace Prehistoric
 		//Engines
 		std::unique_ptr<RenderingEngine> renderingEngine;
 		std::unique_ptr<AudioEngine> audioEngine;
+
+		//Settings
+		EngineSettings engineSettings;
 
 		//Our currently loaded scene, can be changed at any time
 		GameObject* sceneRoot;

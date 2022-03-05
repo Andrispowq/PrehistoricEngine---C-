@@ -1,7 +1,7 @@
 #include "Includes.hpp"
 #include "GLVolumetricPostProcessingShader.h"
 
-#include "prehistoric/core/config/EnvironmentMapConfig.h"
+#include "prehistoric/application/Application.h"
 #include "prehistoric/common/buffer/UniformBufferObject.h"
 
 #include "prehistoric/core/node/GameObject.h"
@@ -52,7 +52,7 @@ namespace Prehistoric
 		if(_shadowMap) _shadowMap->Bind(4);
 		SetUniformi("shadowMap", 4);
 
-		SetUniform("resolution", Vector2f((float)FrameworkConfig::windowWidth, (float)FrameworkConfig::windowHeight));
+		SetUniform("resolution", Vector2f((float)__FrameworkConfig.windowWidth, (float)__FrameworkConfig.windowHeight));
 		SetUniform("cameraPosition", camera->getPosition());
 
 		for (auto light : lights)
@@ -65,7 +65,7 @@ namespace Prehistoric
 		}
 
 		SetUniformi("cascadeCount", (int)cascadeDistances.size());
-		SetUniformf("farPlane", EngineConfig::rendererFarPlane);
+		SetUniformf("farPlane", __EngineConfig.rendererFarPlane);
 
 		_matrices->BindBase(nullptr, 0);
 		SetUniform("m_view", camera->getViewMatrix());
