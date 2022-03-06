@@ -200,43 +200,35 @@ void EditorLayer::ImGUIRender()
 		std::unordered_map<std::string, Resource> ID_map = man->getIDMap();
 
 		float rows = 3;
-		float coloumns = 7;
+		float coloumns = 6;
 		int index = 0;
 
 		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 		Vector2f viewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 		Vector2f imageSize = viewportSize / Vector2f(coloumns, rows);
 
-		for (auto id : ID_map)
+		int flags = ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders;
+		if (ImGui::BeginTable("Asset Manager", coloumns, flags))
 		{
-			if (id.second.type == ResourceType::Texture)
+			for (size_t i = 0; i < coloumns; i++)
 			{
-				TextureHandle tex = man->loadTexture(id.first).value();
-				GLTexture* _tex = dynamic_cast<Prehistoric::GLTexture*>(tex.pointer);
-				ImGui::Image((void*)(_tex->getTextureID()), ImVec2{ imageSize.x, imageSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+				ImGui::TableSetupColumn("");
 			}
-		}
+			ImGui::TableHeadersRow();
 
-		/*for (float y = 0; y < rows; y++)
-		{
-			ImGui::PushMultiItemsWidths(coloumns, ImGui::CalcItemWidth());
-			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
-
-			for (float x = 0; x < coloumns; x++)
+			for (auto id : ID_map)
 			{
-				if (index >= textures.size())
+				if (id.second.type == ResourceType::Texture)
 				{
-					break;
+					TextureHandle tex = man->loadTexture(id.first).value();
+					GLTexture* _tex = dynamic_cast<Prehistoric::GLTexture*>(tex.pointer);
+					ImGui::TableNextColumn();
+					ImGui::Image((void*)(_tex->getTextureID()), ImVec2{ imageSize.x, imageSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 				}
-
-
-				TextureHandle tex = textures[index++];
-				GLTexture* _tex = dynamic_cast<Prehistoric::GLTexture*>(tex.pointer);
-				ImGui::Image((void*)(_tex->getTextureID()), ImVec2{ imageSize.x, imageSize.y }, ImVec2{0, 1}, ImVec2{1, 0});
 			}
 
-			ImGui::PopStyleVar();
-		}*/
+			ImGui::EndTable();
+		}
 	}
 
 	ImGui::End();
@@ -253,7 +245,7 @@ void EditorLayer::OnEvent(Prehistoric::Event& e)
 		Prehistoric::Vector2f end = viewportStart + viewportSize;
 		Prehistoric::Vector2f cursor = InputInstance.getCursorPosition();
 		
-		if (!(cursor >= start && cursor <= end))
+		if (!(cursor >= start && cursor <= end) && (InputInstance.getKeysHolding().size() == 0))
 		{
 			e.handled = true;
 		}

@@ -7,3 +7,6 @@
 [submodule "PrehistoricEngine/vendor/SpotifyAPI"]
 	path = PrehistoricEngine/vendor/SpotifyAPI
 	url = https://github.com/Andrispowq/Spotify-API
+[submodule "PrehistoricEngine/vendor/ImGUI"]
+	path = PrehistoricEngine/vendor/ImGUI
+	url = https://github.com/Andrispowq/imgui

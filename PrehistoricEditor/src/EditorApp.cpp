@@ -25,6 +25,7 @@ static void sun_move_function(Prehistoric::GameObject* object, float frameTime)
 SpotifyInterface* sIF;
 
 EditorApp::EditorApp()
+	: scene{ nullptr }
 {
 	using namespace Prehistoric;
 
@@ -42,8 +43,8 @@ EditorApp::EditorApp()
 	spotifyIF = std::make_unique<SpotifyInterface>("res/private/access.json");
 	sIF = spotifyIF.get();
 	auto devs = spotifyIF->GetDevices();
-	spotifyIF->SetDevice(devs[0]->GetId());
-	spotifyIF->PlayTrack("Back to you", 0.0f);
+	spotifyIF->SetDevice(devs[0]->GetId(), true);
+	//spotifyIF->PlayTrack("Back to you", 0.0f);
 	//spotifyIF->PlayTrack("Story of my life", 50.0f);
 
 	/*SpotifyAPI api = spotifyIF->GetAPI();
@@ -75,11 +76,10 @@ EditorApp::EditorApp()
 	GameObject* sun = new GameObject();
 	sun->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0.95f, 0.87f), 100.0f, 50000.0f, true, true));
 	sun_move_function(sun, 0.0f);
-	root->AddChild("sun", sun);
 
-	Scene* scene = new Scene("res/world/testLevel.wrld", window, cam, manager);
+	scene = std::make_unique<Scene>("res/world/testLevel.wrld", window, cam, manager);
 	scene->getSceneRoot()->AddChild("sun", sun);
-	engineLayer->SetScene(scene);
+	engineLayer->SetScene(scene.get());
 
 	//Load in the environment map
 	if (__FrameworkConfig.api == OpenGL)

@@ -4,8 +4,9 @@
 #include "Prehistoric.h"
 
 #include "EditorLayer.h"
-
 #include "SpotifyInterface.h"
+
+#include "prehistoric/core/scene/Scene.h"
 
 class EditorApp : public Prehistoric::Application
 {
@@ -15,6 +16,7 @@ public:
 private:
 	EditorLayer* editor;
 	std::unique_ptr<SpotifyInterface> spotifyIF;
+	std::unique_ptr<Prehistoric::Scene> scene;
 };
 
 Prehistoric::Application* Prehistoric::CreateApplication()

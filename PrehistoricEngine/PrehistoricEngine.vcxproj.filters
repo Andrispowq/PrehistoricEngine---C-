@@ -596,6 +596,9 @@
     <ClInclude Include="src\engine\prehistoric\core\ImGUI\ImGUILayer.h">
       <Filter>prehistoric\core\ImGUI</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\config\EngineSettings.h">
+      <Filter>prehistoric\core\config</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\engines\AudioEngine.h">
       <Filter>prehistoric\core\engines</Filter>
     </ClInclude>
@@ -767,7 +770,6 @@
     <ClInclude Include="src\engine\prehistoric\core\util\time\Timer.h">
       <Filter>prehistoric\core\util\time</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\config\EngineSettings.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -1074,6 +1076,9 @@
     <ClCompile Include="src\engine\prehistoric\core\ImGUI\ImGUILayer.cpp">
       <Filter>prehistoric\core\ImGUI</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\config\EngineSettings.cpp">
+      <Filter>prehistoric\core\config</Filter>
+    </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\engines\AudioEngine.cpp">
       <Filter>prehistoric\core\engines</Filter>
     </ClCompile>
@@ -1209,6 +1214,5 @@
     <ClCompile Include="src\engine\prehistoric\core\util\time\Timer.cpp">
       <Filter>prehistoric\core\util\time</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\config\EngineSettings.cpp" />
   </ItemGroup>
 </Project>

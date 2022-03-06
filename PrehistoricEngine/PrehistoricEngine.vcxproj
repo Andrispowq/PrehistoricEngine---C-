@@ -249,9 +249,9 @@
     <ClInclude Include="src\engine\prehistoric\common\util\InitDevice.h" />
     <ClInclude Include="src\engine\prehistoric\common\util\PlatformUtils.h" />
     <ClInclude Include="src\engine\prehistoric\common\util\RenderUtils.h" />
-    <ClInclude Include="src\engine\prehistoric\core\config\EngineSettings.h" />
     <ClInclude Include="src\engine\prehistoric\core\CoreEngine.h" />
     <ClInclude Include="src\engine\prehistoric\core\ImGUI\ImGUILayer.h" />
+    <ClInclude Include="src\engine\prehistoric\core\config\EngineSettings.h" />
     <ClInclude Include="src\engine\prehistoric\core\engines\AudioEngine.h" />
     <ClInclude Include="src\engine\prehistoric\core\engines\Engine.h" />
     <ClInclude Include="src\engine\prehistoric\core\engines\RenderingEngine.h" />
@@ -412,10 +412,10 @@
     <ClCompile Include="src\engine\prehistoric\common\util\DeviceProperties.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\util\InitDevice.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\util\PlatformUtils.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\config\EngineSettings.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\CoreEngine.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\ImGUI\ImGUIBuild.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\ImGUI\ImGUILayer.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\config\EngineSettings.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\engines\AudioEngine.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\engines\RenderingEngine.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\layers\Layer.cpp" />
