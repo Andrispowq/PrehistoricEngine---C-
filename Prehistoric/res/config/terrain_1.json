@@ -39,42 +39,6 @@
             ]
         },
         {
-            "name": "snow",
-            "contents":
-            [
-                {
-                    "name": "albedo",
-                    "type": "texture",
-                    "value": "res/textures/terrain/New/icefield_DIF.png"
-                },
-                {
-                    "name": "normal",
-                    "type": "texture",
-                    "value": "res/textures/terrain/New/icefield_NRM.png"
-                },
-                {
-                    "name": "mrot",
-                    "type": "texture",
-                    "value": "res/textures/terrain/New/icefield_MROT.png"
-                },
-                {
-                    "name": "mrot",
-                    "type": "vec4",
-                    "value": [0.2, 0.7, -1, 0]
-                },
-                {
-                    "name": "heightScale",
-                    "type": "float",
-                    "value": 1.2
-                },
-                {
-                    "name": "horizontalScale",
-                    "type": "float",
-                    "value": 200.0
-                }
-            ]
-        },
-        {
             "name": "rock",
             "contents":
             [
@@ -102,6 +66,42 @@
                     "name": "heightScale",
                     "type": "float",
                     "value": 2.0
+                },
+                {
+                    "name": "horizontalScale",
+                    "type": "float",
+                    "value": 200.0
+                }
+            ]
+        },
+        {
+            "name": "snow",
+            "contents":
+            [
+                {
+                    "name": "albedo",
+                    "type": "texture",
+                    "value": "res/textures/terrain/New/icefield_DIF.png"
+                },
+                {
+                    "name": "normal",
+                    "type": "texture",
+                    "value": "res/textures/terrain/New/icefield_NRM.png"
+                },
+                {
+                    "name": "mrot",
+                    "type": "texture",
+                    "value": "res/textures/terrain/New/icefield_MROT.png"
+                },
+                {
+                    "name": "mrot",
+                    "type": "vec4",
+                    "value": [0.2, 0.7, -1, 0]
+                },
+                {
+                    "name": "heightScale",
+                    "type": "float",
+                    "value": 1.2
                 },
                 {
                     "name": "horizontalScale",

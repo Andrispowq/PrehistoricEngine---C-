@@ -81,7 +81,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 		Atmosphere* atm = new Atmosphere(window, manager);
 		atm->setSun(sun->GetComponent<Light>());
 		root->AddChild("atmosphere", atm);
-
+ 
 		Terrain* terrain = new Terrain(window, camera, manager, "res/config/terrain_1.json");
 		terrain->UpdateQuadtree();
 		sceneRoot->AddChild("terrain0", terrain);
