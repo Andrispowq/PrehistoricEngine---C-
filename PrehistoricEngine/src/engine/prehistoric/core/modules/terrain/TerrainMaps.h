@@ -22,6 +22,8 @@ namespace Prehistoric
 
 		float* getHeights() const { return heights; }
 
+		Vector3f getPosition() const { return position; }
+
 		std::vector<MaterialHandle> getMaterials() const { return materials; }
 	private:
 		void LoadConfigFile(const std::string& terrainConfigFile);
@@ -38,6 +40,8 @@ namespace Prehistoric
 		NormalMapRenderer* normalmapRendererComponent;
 		SplatMapRenderer* splatmapRendererComponent;
 		TerrainHeightsQuery* query;
+
+		Vector3f position;
 
 		std::string heightmapLocation;
 		std::vector<MaterialHandle> materials;

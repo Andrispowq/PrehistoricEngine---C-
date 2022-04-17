@@ -26,10 +26,6 @@ namespace Prehistoric
 
 		std::vector<GameObject*> getAllChildren() const;
 
-		inline std::string getName() const { return name; }
-		inline std::string& getName() { return name; }
-		inline void setName(const std::string& name) { this->name = name; }
-
 		template<typename T> 
 		T* GetComponent() const;
 
@@ -43,7 +39,6 @@ namespace Prehistoric
 	protected:
 		std::unordered_map<std::string, std::unique_ptr<Component>> components;
 		UpdateFunction updateFunction;
-		std::string name;
 	};
 
 	template<typename T>

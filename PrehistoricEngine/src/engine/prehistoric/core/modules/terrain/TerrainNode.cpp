@@ -9,7 +9,8 @@
 namespace Prehistoric
 {
 	TerrainNode::TerrainNode(Factory<TerrainNode>* factory, Window* window, Camera* camera, AssembledAssetManager* manager, TerrainMaps* maps,
-		PipelineHandle pipeline, PipelineHandle wireframePipeline, PipelineHandle shadowPipeline, const Vector2f& location, int lod, const Vector2f& index)
+		PipelineHandle pipeline, PipelineHandle wireframePipeline, PipelineHandle shadowPipeline, 
+		const Vector2f& location, int lod, const Vector2f& index)
 		: factory(factory), window(window), camera(camera), manager(manager), maps(maps), location(location), lod(lod), index(index)
 	{
 		this->gap = 1.0f / float(TerrainQuadtree::rootNodes * pow(2, lod));
@@ -21,11 +22,16 @@ namespace Prehistoric
 		localTransform.setPosition(localPosition);
 
 		worldTransform.setScaling({ __TerrainConfig.scaleXZ, __TerrainConfig.scaleY, __TerrainConfig.scaleXZ });
-		worldTransform.setPosition({ -__TerrainConfig.scaleXZ / 2.0f, 0, -__TerrainConfig.scaleXZ / 2.0f });
+		worldTransform.setPosition(Vector3f{ -__TerrainConfig.scaleXZ / 2.0f, 0, -__TerrainConfig.scaleXZ / 2.0f } + maps->getPosition());
 
-		rendererComponent = new RendererComponent(window, manager, pipeline, manager->storeMaterial(nullptr));
-		wireframeRendererComponent = new RendererComponent(window, manager, wireframePipeline, manager->storeMaterial(nullptr));
-		shadowComponent = new RendererComponent(window, manager, shadowPipeline, manager->storeMaterial(nullptr));
+		//Definitely not something that should be done, but let's just do it here silently
+		MaterialHandle material;
+		material.pointer = (Material*)maps;
+		material.handle = 0;
+
+		rendererComponent = new RendererComponent(window, manager, pipeline, material);
+		wireframeRendererComponent = new RendererComponent(window, manager, wireframePipeline, material);
+		shadowComponent = new RendererComponent(window, manager, shadowPipeline, material);
 		
 		AddComponent(RENDERER_COMPONENT, rendererComponent);
 		AddComponent(WIREFRAME_RENDERER_COMPONENT, wireframeRendererComponent);

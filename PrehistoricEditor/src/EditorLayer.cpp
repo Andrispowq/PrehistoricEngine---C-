@@ -244,7 +244,7 @@ void EditorLayer::OnEvent(Prehistoric::Event& e)
 		Prehistoric::Vector2f start = viewportStart;
 		Prehistoric::Vector2f end = viewportStart + viewportSize;
 		Prehistoric::Vector2f cursor = InputInstance.getCursorPosition();
-		
+
 		if (!(cursor >= start && cursor <= end) && (InputInstance.getKeysHolding().size() == 0))
 		{
 			e.handled = true;

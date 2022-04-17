@@ -283,14 +283,14 @@ void main()
 
 
 	vec3 irradianceR = texture(irradianceMap, -N).rgb;
-	vec3 diffuseR = irradiance * albedoColour * occlusion;
+	vec3 diffuseR = irradianceR * albedoColour * occlusion;
 
 	vec3 prefilteredColourR = textureLod(prefilterMap, Refr, lod).rgb;
 	vec3 specularR = prefilteredColourR * (F * envBRDF.x + envBRDF.y);
 
 
 
-	vec3 ambient = (kD * diffuse * (1 - transmittance) + kD * specularR * transmittance + specular);
+	vec3 ambient = (kD * diffuse * (1 - transmittance) + kD * diffuseR * transmittance + specular * (1 - transmittance) + specularR * transmittance);
     vec3 colour = ambient + Lo + clamp(albedoColour, vec3(0.05), vec3(1.0)) * max(emission, 0.0) * emissionFactor;
 
 	if (isnan(colour.r))
@@ -300,7 +300,7 @@ void main()
 
 	colour *= max((1 - shadow), 0.2);
 
-	outColour = vec4(colour, 1);
+	outColour = vec4(colour, (1 - transmittance));
 	outPositionMetallic = vec4(position_FS, metallic);
 	outAlbedoRoughness = vec4(albedoColour, roughness);
 	outNormal = vec4(N, 1);

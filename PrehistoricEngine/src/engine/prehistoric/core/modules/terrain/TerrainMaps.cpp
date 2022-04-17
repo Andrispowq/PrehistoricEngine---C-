@@ -30,10 +30,6 @@ namespace Prehistoric
 		this->query = new TerrainHeightsQuery(window, manager, heightmap->getWidth());
 		query->Query(heightmap.pointer);
 		this->heights = query->getHeights();
-
-		__TerrainConfig.heightmap = heightmap.pointer;
-		__TerrainConfig.normalmap = normalmap.pointer;
-		__TerrainConfig.splatmap = splatmap.pointer;
 	}
 
 	TerrainMaps::~TerrainMaps()
@@ -72,6 +68,8 @@ namespace Prehistoric
 
 			{
 				heightmapLocation = file_json["heightmap"];
+				std::vector<float> position_list = file_json["location"];
+				position = Vector3f(position_list[0], position_list[1], position_list[2]);
 			}
 
 			{
@@ -158,7 +156,6 @@ namespace Prehistoric
 
 		for (auto elem : materials)
 		{
-			__TerrainConfig.terrainMaterials.push_back(elem.pointer);
 			manager->addReference<Material>(elem.handle);
 		}
 	}

@@ -110,12 +110,6 @@ namespace Prehistoric
 
         std::vector<int> lodRanges = {};
         std::vector<int> lodMorphingAreas = {};
-
-        std::vector<Material*> terrainMaterials = {};
-
-        Texture* heightmap = nullptr;
-        Texture* normalmap = nullptr;
-        Texture* splatmap = nullptr;
     };
 
     class EngineSettings

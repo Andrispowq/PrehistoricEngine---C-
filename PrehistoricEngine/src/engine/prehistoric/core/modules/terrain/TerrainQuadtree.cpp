@@ -36,7 +36,7 @@ namespace Prehistoric
 		}
 
 		worldTransform.setScaling({ __TerrainConfig.scaleXZ, __TerrainConfig.scaleY, __TerrainConfig.scaleXZ });
-		worldTransform.setPosition({ -__TerrainConfig.scaleXZ / 2.0f, 0, -__TerrainConfig.scaleXZ / 2.0f });
+		worldTransform.setPosition(Vector3f{ -__TerrainConfig.scaleXZ / 2.0f, 0, -__TerrainConfig.scaleXZ / 2.0f } + maps->getPosition());
 	}
 
 	TerrainQuadtree::~TerrainQuadtree()

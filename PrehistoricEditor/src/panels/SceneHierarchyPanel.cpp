@@ -19,6 +19,8 @@ void SceneHierarchyPanel::SetContext(Prehistoric::GameObject* root)
 	this->root = root;
 }
 
+static int index = 0;
+
 void SceneHierarchyPanel::ImGuiRender()
 {
 	ImGui::Begin("Scene Hierarchy");
@@ -99,7 +101,7 @@ static void DrawComponent(const std::string& name, Prehistoric::GameObject* obje
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4, 4 });
 		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 		ImGui::Separator();
-		bool open = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
+ 		bool open = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
 		ImGui::PopStyleVar();
 		ImGui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);
 		if (ImGui::Button("+", ImVec2{ lineHeight, lineHeight }))
@@ -110,10 +112,10 @@ static void DrawComponent(const std::string& name, Prehistoric::GameObject* obje
 		bool removeComponent = false;
 		if (ImGui::BeginPopup("ComponentSettings"))
 		{
-			if (ImGui::MenuItem("Remove component"))
-				removeComponent = true;
+if (ImGui::MenuItem("Remove component"))
+removeComponent = true;
 
-			ImGui::EndPopup();
+ImGui::EndPopup();
 		}
 
 		if (open)
@@ -195,6 +197,7 @@ static void DrawVec3Control(const std::string& label, Prehistoric::Vector3f& val
 
 void SceneHierarchyPanel::DrawComponents(Prehistoric::GameObject* object)
 {
+	auto oldTag = object->getName();
 	auto& tag = object->getName();
 
 	char buffer[256];
@@ -226,10 +229,21 @@ void SceneHierarchyPanel::DrawComponents(Prehistoric::GameObject* object)
 		{
 			if (!selectionContext->GetComponent<Prehistoric::RendererComponent>())
 			{
-				Prehistoric::Window* window = Prehistoric::Application::Get().getEngineLayer()->getRenderingEngine()->getWindow();
-				Prehistoric::AssembledAssetManager* manager = Prehistoric::Application::Get().getEngineLayer()->getAssetManager();
+				using namespace Prehistoric;
 
-				selectionContext->AddComponent(RENDERER_COMPONENT, new Prehistoric::RendererComponent(window, manager));
+				Window* window = Prehistoric::Application::Get().getEngineLayer()->getRenderingEngine()->getWindow();
+				AssembledAssetManager* manager = Prehistoric::Application::Get().getEngineLayer()->getAssetManager();
+				AssetManager* man = manager->getAssetManager();
+
+				VertexBufferHandle vertexBuffer = man->loadVertexBuffer(std::nullopt, "res/models/cube.obj").value();
+				ShaderHandle shader = man->loadShader(Prehistoric::ShaderName::PBR).value();
+				PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vertexBuffer);
+
+				MaterialHandle material = manager->storeMaterial(new Material(man));
+				material->addVector3f(COLOUR, { 1 });
+				material->addVector4f(MROT, { 0.0f, 0.1f, 1.0f, 0.0f });
+
+				selectionContext->AddComponent(RENDERER_COMPONENT, new Prehistoric::RendererComponent(window, manager, pipeline, material));
 			}
 			else
 			{

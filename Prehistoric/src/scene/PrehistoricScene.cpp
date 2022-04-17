@@ -23,8 +23,6 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 {
 	using namespace Prehistoric;
 
-	GameObject* root = sceneRoot;
-
 	if (__FrameworkConfig.api == Vulkan)
 	{
 		AssetManager* man = manager->getAssetManager();
@@ -76,15 +74,19 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 		//sun->setUpdateFunction(sun_move_function);
 		sun->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0.95f, 0.87f), 100.0f, 50000.0f, true, true));
 		sun_move_function(sun, 0.0f);
-		root->AddChild("sun", sun);
+		sceneRoot->AddChild("sun", sun);
 
 		Atmosphere* atm = new Atmosphere(window, manager);
 		atm->setSun(sun->GetComponent<Light>());
-		root->AddChild("atmosphere", atm);
+		sceneRoot->AddChild("atmosphere", atm);
  
-		Terrain* terrain = new Terrain(window, camera, manager, "res/config/terrain_1.json");
-		terrain->UpdateQuadtree();
-		sceneRoot->AddChild("terrain0", terrain);
+		/*Terrain* terrain1 = new Terrain(window, camera, manager, "res/config/terrain_1.json");
+		terrain1->UpdateQuadtree();
+		sceneRoot->AddChild("terrain1", terrain1);*/
+
+		/*Terrain* terrain0 = new Terrain(window, camera, manager, "res/config/terrain_0.json");
+		terrain0->UpdateQuadtree();
+		sceneRoot->AddChild("terrain0", terrain0);*/
 
 		/*GameObject* slider = new GUISlider(window, manager, 0.0f, 2.0f, Vector3f(0.5f), &__EngineConfig.rendererExposure, sizeof(float), true);
 		slider->SetPosition({ 0.5f, 0.5f, 0 });

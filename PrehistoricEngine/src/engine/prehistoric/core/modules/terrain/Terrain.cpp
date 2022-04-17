@@ -22,7 +22,7 @@ namespace Prehistoric
 	{
 		if (camera->isChanged())
 		{
-			((TerrainQuadtree*)children.at("Quadtree").get())->UpdateQuadtree();
+			((TerrainQuadtree*)getChild("Quadtree"))->UpdateQuadtree();
 		}
 	}
 };
