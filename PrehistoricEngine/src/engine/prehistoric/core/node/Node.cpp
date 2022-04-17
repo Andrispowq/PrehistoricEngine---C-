@@ -63,6 +63,20 @@ namespace Prehistoric
         }
     }
 
+    std::unordered_map<GUID, Node*> Node::getChildrenByID() const
+    {
+        std::unordered_map<GUID, Node*> map;
+        map.reserve(children.size());
+
+        for (const auto& elem : children)
+        {
+            map.insert(std::make_pair(elem.first, elem.second.get()));
+        }
+
+        return map;
+
+    }
+
     std::unordered_map<std::string, Node*> Node::getChildren() const
     {
         std::unordered_map<std::string, Node*> map;

@@ -99,7 +99,7 @@ EditorApp::EditorApp()
 		EnvironmentMapRenderer::instance->enabled = true;
 	}
 
-	editor = new EditorLayer();
+	editor = new EditorLayer(scene->getSceneRoot());
 	PushLayer(editor);
 }
 

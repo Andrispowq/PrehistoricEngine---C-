@@ -10,12 +10,14 @@ public:
 	SceneHierarchyPanel(Prehistoric::GameObject* root);
 
 	void SetContext(Prehistoric::GameObject* root);
+	void InvalidateSelectionContext() { selectionContext = nullptr; }
 
 	void ImGuiRender();
 
 private:
 	void DrawGameObjectNode(Prehistoric::GameObject* object);
 	void DrawComponents(Prehistoric::GameObject* object);
+
 private:
 	Prehistoric::GameObject* root;
 	Prehistoric::GameObject* selectionContext = nullptr;

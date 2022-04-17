@@ -19,8 +19,6 @@ void SceneHierarchyPanel::SetContext(Prehistoric::GameObject* root)
 	this->root = root;
 }
 
-static int index = 0;
-
 void SceneHierarchyPanel::ImGuiRender()
 {
 	ImGui::Begin("Scene Hierarchy");
@@ -112,10 +110,10 @@ static void DrawComponent(const std::string& name, Prehistoric::GameObject* obje
 		bool removeComponent = false;
 		if (ImGui::BeginPopup("ComponentSettings"))
 		{
-if (ImGui::MenuItem("Remove component"))
-removeComponent = true;
-
-ImGui::EndPopup();
+			if (ImGui::MenuItem("Remove component"))
+				removeComponent = true;
+			
+			ImGui::EndPopup();
 		}
 
 		if (open)

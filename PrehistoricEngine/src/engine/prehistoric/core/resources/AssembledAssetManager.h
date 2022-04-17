@@ -68,6 +68,15 @@ namespace Prehistoric
 			if (refCount == 0)
 			{
 				pipelines.erase(handle);
+
+				for (const auto& elem : pipelineHashMap)
+				{
+					if (elem.second == handle)
+					{
+						pipelineHashMap.erase(elem.first);
+						return;
+					}
+				}
 			}
 		}
 
@@ -86,6 +95,15 @@ namespace Prehistoric
 			if (refCount == 0)
 			{
 				materials.erase(handle);
+
+				for (const auto& elem : materialHashMap)
+				{
+					if (elem.second == handle)
+					{
+						materialHashMap.erase(elem.first);
+						return;
+					}
+				}
 			}
 		}
 

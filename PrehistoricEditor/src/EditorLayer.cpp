@@ -9,10 +9,10 @@
 
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 
-EditorLayer::EditorLayer()
-	: scenePanel{nullptr}
+EditorLayer::EditorLayer(Prehistoric::GameObject* root)
+	: scenePanel{nullptr}, root{root}
 {
-	scenePanel = std::make_unique<SceneHierarchyPanel>(Prehistoric::Application::Get().getEngineLayer()->getRootObject());
+	scenePanel = std::make_unique<SceneHierarchyPanel>(root);
 }
 
 void EditorLayer::OnAttach()
@@ -91,7 +91,15 @@ void EditorLayer::ImGUIRender()
 			// which we can't undo at the moment without finer window depth/z control.
 			//ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen_persistant);1
 			if (ImGui::MenuItem("New", "Ctrl+N"))
-				PR_LOG_MESSAGE("Clicked New!\n");
+			{
+				std::unordered_map<Prehistoric::GUID, Prehistoric::Node*> children = root->getChildrenByID();
+				for (auto& elem : children)
+				{
+					root->RemoveChild(elem.second);
+				}
+
+				scenePanel->InvalidateSelectionContext();
+			}
 
 			if (ImGui::MenuItem("Open...", "Ctrl+O"))
 				PR_LOG_MESSAGE("Clicked Open!\n");
@@ -99,7 +107,10 @@ void EditorLayer::ImGUIRender()
 			if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
 				PR_LOG_MESSAGE("Clicked Save as!\n");
 
-			if (ImGui::MenuItem("Exit")) Prehistoric::Application::Get().Stop();
+			if (ImGui::MenuItem("Exit"))
+			{
+				Prehistoric::Application::Get().Stop();
+			}
 
 			ImGui::EndMenu();
 		}

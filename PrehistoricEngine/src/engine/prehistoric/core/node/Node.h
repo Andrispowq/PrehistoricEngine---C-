@@ -44,6 +44,7 @@ namespace Prehistoric
         inline std::string& getName() { return name; }
         inline void setName(const std::string& name) { this->name = name; }
 
+        std::unordered_map<GUID, Node*> getChildrenByID() const;
         std::unordered_map<std::string, Node*> getChildren() const;
 
         Node(const Node&) = default;

@@ -9,7 +9,7 @@
 class EditorLayer : public Prehistoric::Layer
 {
 public:
-	EditorLayer();
+	EditorLayer(Prehistoric::GameObject* root);
 	virtual ~EditorLayer() = default;
 
 	virtual void OnAttach() override;
@@ -25,6 +25,8 @@ private:
 
 	Prehistoric::Vector2f viewportStart;
 	Prehistoric::Vector2f viewportSize;
+
+	Prehistoric::GameObject* root;
 };
 
 #endif
