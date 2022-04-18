@@ -6,13 +6,15 @@
 #include "imgui_internal.h"
 
 #include "prehistoric/common/util/PlatformUtils.h"
-
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 
-EditorLayer::EditorLayer(Prehistoric::GameObject* root)
-	: scenePanel{nullptr}, root{root}
+EditorLayer::EditorLayer(Prehistoric::Scene* scene)
+	: scenePanel{nullptr}, root{nullptr}
 {
-	scenePanel = std::make_unique<SceneHierarchyPanel>(root);
+	this->scene = std::unique_ptr<Prehistoric::Scene>(scene);
+	this->root = scene->getSceneRoot();
+
+	this->scenePanel = std::make_unique<SceneHierarchyPanel>(root);
 }
 
 void EditorLayer::OnAttach()
@@ -90,27 +92,10 @@ void EditorLayer::ImGUIRender()
 			// Disabling fullscreen would allow the window to be moved to the front of other windows, 
 			// which we can't undo at the moment without finer window depth/z control.
 			//ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen_persistant);1
-			if (ImGui::MenuItem("New", "Ctrl+N"))
-			{
-				std::unordered_map<Prehistoric::GUID, Prehistoric::Node*> children = root->getChildrenByID();
-				for (auto& elem : children)
-				{
-					root->RemoveChild(elem.second);
-				}
-
-				scenePanel->InvalidateSelectionContext();
-			}
-
-			if (ImGui::MenuItem("Open...", "Ctrl+O"))
-				PR_LOG_MESSAGE("Clicked Open!\n");
-
-			if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
-				PR_LOG_MESSAGE("Clicked Save as!\n");
-
-			if (ImGui::MenuItem("Exit"))
-			{
-				Prehistoric::Application::Get().Stop();
-			}
+			if (ImGui::MenuItem("New", "Ctrl+N")) NewButton();
+			if (ImGui::MenuItem("Open...", "Ctrl+O")) OpenButton();
+			if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S")) SaveButton();
+			if (ImGui::MenuItem("Exit")) QuitButton();
 
 			ImGui::EndMenu();
 		}
@@ -261,4 +246,50 @@ void EditorLayer::OnEvent(Prehistoric::Event& e)
 			e.handled = true;
 		}
 	}
+}
+
+void EditorLayer::NewButton()
+{
+	std::unordered_map<Prehistoric::GUID, Prehistoric::Node*> children = root->getChildrenByID();
+	for (auto& elem : children)
+	{
+		root->RemoveChild(elem.second);
+	}
+
+	scenePanel->InvalidateSelectionContext();
+}
+
+void EditorLayer::OpenButton()
+{
+	std::optional<std::string> scene_string = Prehistoric::FileDialogues::Get()->OpenFile(".json");
+	if (scene_string.has_value())
+	{
+		std::string val = scene_string.value();
+
+		Prehistoric::CoreEngine* coreEngine = Prehistoric::Application::Get().getEngineLayer();
+		Prehistoric::RenderingEngine* renderingEngine = coreEngine->getRenderingEngine();
+
+		Prehistoric::Window* window = renderingEngine->getWindow();
+		Prehistoric::Camera* camera = renderingEngine->getCamera();
+		Prehistoric::AssembledAssetManager* manager = coreEngine->getAssetManager();
+
+		scene.reset(scene.release());
+		scene = std::make_unique<Prehistoric::Scene>(val, window, camera, manager);
+
+		coreEngine->SetScene(scene.get());
+
+		root = scene->getSceneRoot();
+		scenePanel->SetContext(root);
+		scenePanel->InvalidateSelectionContext();
+	}
+}
+
+void EditorLayer::SaveButton()
+{
+	PR_LOG_MESSAGE("Clicked Save!\n");
+}
+
+void EditorLayer::QuitButton()
+{
+	Prehistoric::Application::Get().Stop();
 }

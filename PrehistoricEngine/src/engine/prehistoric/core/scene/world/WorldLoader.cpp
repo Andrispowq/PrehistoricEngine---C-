@@ -80,6 +80,8 @@ namespace Prehistoric
 							models.insert(std::make_pair(meshNames[i], man->storeVertexBuffer(pointers[i], meshNames[i])));
 							pointers[i]->setFrontFace(frontFaces[i]);
 						}
+
+						man->getVertexBufferLoader()->FlushPointers();
 					}
 				}
 				if (nameTokens[0] == "textures")

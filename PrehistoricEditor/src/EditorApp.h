@@ -13,10 +13,12 @@ class EditorApp : public Prehistoric::Application
 public:
 	EditorApp();
 	~EditorApp();
+
 private:
 	EditorLayer* editor;
 	std::unique_ptr<SpotifyInterface> spotifyIF;
-	std::unique_ptr<Prehistoric::Scene> scene;
+
+	friend class EditorLayer;
 };
 
 Prehistoric::Application* Prehistoric::CreateApplication()
