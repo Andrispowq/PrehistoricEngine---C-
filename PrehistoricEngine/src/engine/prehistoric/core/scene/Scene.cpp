@@ -57,4 +57,14 @@ namespace Prehistoric
 			root->RemoveChild(sceneRoot);
 		}
 	}
+
+	void Scene::AddGameObject(const std::string& key, GameObject* object)
+	{
+		sceneRoot->AddChild(key, object);
+	}
+
+	void Scene::RemoveGameObject(GameObject* object)
+	{
+		sceneRoot->RemoveChild(object);
+	}
 };

@@ -63,6 +63,18 @@ namespace Prehistoric
         }
     }
 
+    void Node::RemoveChild(const std::string& name)
+    {
+        for (auto& entry : children)
+        {
+            if (entry.second->name == name)
+            {
+                children.erase(entry.first);
+                return;
+            }
+        }
+    }
+
     std::unordered_map<GUID, Node*> Node::getChildrenByID() const
     {
         std::unordered_map<GUID, Node*> map;

@@ -39,6 +39,7 @@ namespace Prehistoric
 		bool exists(const std::string& key) const { return textures.find(key) != textures.end(); }
 
 		size_t getID() const { return ID; }
+		std::string getName() const { return name; }
 
 		std::unordered_map<std::string, TextureHandle>& getTextures() { return textures; }
 		std::unordered_map<std::string, Vector4f>& getVector4fs() { return vector4s; }
@@ -46,7 +47,12 @@ namespace Prehistoric
 		std::unordered_map<std::string, Vector2f>& getVector2fs() { return vector2s; }
 		std::unordered_map<std::string, float>& getFloats() { return floats; }
 		std::unordered_map<std::string, int>& getInts() { return ints; }
+
+		void setName(const std::string& name) { this->name = name; }
+
 	private:
+		std::string name;
+
 		AssetManager* manager;
 		uint64_t hash = 0;
 		uint64_t texHash = 0;

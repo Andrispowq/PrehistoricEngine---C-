@@ -63,4 +63,17 @@ namespace Prehistoric
 
 		return _children;
 	}
+
+	std::unordered_map<std::string, Component*> GameObject::getComponents() const
+	{
+		std::unordered_map<std::string, Component*> map;
+		map.reserve(components.size());
+
+		for (const auto& elem : components)
+		{
+			map.insert(std::make_pair(elem.first, elem.second.get()));
+		}
+
+		return map;
+	}
 };

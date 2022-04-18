@@ -25,6 +25,7 @@ namespace Prehistoric
 		Component* GetComponent(const std::string& name) const;
 
 		std::vector<GameObject*> getAllChildren() const;
+		std::unordered_map<std::string, Component*> getComponents() const;
 
 		template<typename T> 
 		T* GetComponent() const;

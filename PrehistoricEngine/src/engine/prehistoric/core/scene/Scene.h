@@ -30,10 +30,14 @@ namespace Prehistoric
 		Scene(const std::string& worldFile, Window* window, Camera* camera, AssembledAssetManager* manager);
 		virtual ~Scene();
 
+		void AddGameObject(const std::string& name, GameObject* object);
+		void RemoveGameObject(GameObject* object);
+
 		std::string getName() const { return name; }
 		GameObject* getSceneRoot() const { return sceneRoot; }
+
 	protected:
-		std::string name = "";
+		std::string name = "UnnamedScene";
 		
 		GameObject* sceneRoot;
 		Window* window;

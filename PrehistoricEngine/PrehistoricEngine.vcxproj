@@ -299,6 +299,7 @@
     <ClInclude Include="src\engine\prehistoric\core\resources\loaders\VertexBufferLoader.h" />
     <ClInclude Include="src\engine\prehistoric\core\scene\Scene.h" />
     <ClInclude Include="src\engine\prehistoric\core\scene\world\WorldLoader.h" />
+    <ClInclude Include="src\engine\prehistoric\core\scene\world\WorldSerialiser.h" />
     <ClInclude Include="src\engine\prehistoric\core\util\Constants.h" />
     <ClInclude Include="src\engine\prehistoric\core\util\guid\GUID.h" />
     <ClInclude Include="src\engine\prehistoric\core\util\ModelFabricator.h" />
@@ -456,6 +457,7 @@
     <ClCompile Include="src\engine\prehistoric\core\resources\loaders\VertexBufferLoader.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\scene\Scene.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\scene\world\WorldLoader.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\scene\world\WorldSerialiser.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\util\guid\GUID.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\util\ModelFabricator.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\util\Util.cpp" />

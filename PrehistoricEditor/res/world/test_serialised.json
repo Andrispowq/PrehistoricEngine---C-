@@ -1,0 +1,680 @@
+{
+    "directories": {
+        "models": "",
+        "textures": ""
+    },
+    "materials": [
+        {
+            "contents": [
+                {
+                    "name": "albedoMapMap",
+                    "type": "texture",
+                    "value": "res/textures/oakFloor/oakFloor_DIF.png"
+                },
+                {
+                    "name": "DEFAULT_TEX",
+                    "type": "texture",
+                    "value": "res/textures/default.png"
+                },
+                {
+                    "name": "DEFAULT_TEXMap",
+                    "type": "texture"
+                },
+                {
+                    "name": "normalMapMap",
+                    "type": "texture",
+                    "value": "res/textures/oakFloor/oakFloor_NRM.png"
+                },
+                {
+                    "name": "mrotMapMap",
+                    "type": "texture",
+                    "value": "res/textures/oakFloor/oakFloor_MROT.png"
+                },
+                {
+                    "name": "mrot",
+                    "type": "vec4",
+                    "value": [
+                        -1.0,
+                        -1.0,
+                        -1.0,
+                        0.0
+                    ]
+                },
+                {
+                    "name": "emission",
+                    "type": "float",
+                    "value": 0.0
+                }
+            ],
+            "name": "emission"
+        },
+        {
+            "contents": [
+                {
+                    "name": "DEFAULT_TEX",
+                    "type": "texture",
+                    "value": "res/textures/default.png"
+                },
+                {
+                    "name": "mrot",
+                    "type": "vec4",
+                    "value": [
+                        0.0,
+                        0.10000000149011612,
+                        1.0,
+                        0.0
+                    ]
+                },
+                {
+                    "name": "colour",
+                    "type": "vec3",
+                    "value": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "name": "UnnamedMaterial1"
+        },
+        {
+            "contents": [
+                {
+                    "name": "DEFAULT_TEX",
+                    "type": "texture",
+                    "value": "res/textures/default.png"
+                },
+                {
+                    "name": "DEFAULT_TEXMap",
+                    "type": "texture"
+                },
+                {
+                    "name": "mrot",
+                    "type": "vec4",
+                    "value": [
+                        1.0,
+                        0.5,
+                        1.0,
+                        -1.0
+                    ]
+                },
+                {
+                    "name": "colour",
+                    "type": "vec3",
+                    "value": [
+                        0.7799999713897705,
+                        0.5600000023841858,
+                        0.44999998807907104
+                    ]
+                }
+            ],
+            "name": "colour"
+        },
+        {
+            "contents": [
+                {
+                    "name": "DEFAULT_TEX",
+                    "type": "texture",
+                    "value": "res/textures/default.png"
+                },
+                {
+                    "name": "mrot",
+                    "type": "vec4",
+                    "value": [
+                        0.0,
+                        0.10000000149011612,
+                        1.0,
+                        0.0
+                    ]
+                },
+                {
+                    "name": "colour",
+                    "type": "vec3",
+                    "value": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "name": "UnnamedMaterial0"
+        }
+    ],
+    "models": [
+        {
+            "directory": "res/models/quad.obj",
+            "front-face": 1,
+            "name": "res/models/quad.obj"
+        },
+        {
+            "directory": "res/models/cube.obj",
+            "front-face": 2,
+            "name": "res/models/cube.obj"
+        },
+        {
+            "directory": "res/models/sphere.obj",
+            "front-face": 0,
+            "name": "res/models/sphere.obj"
+        }
+    ],
+    "name": "newWorld",
+    "root": {
+        "children": [
+            {
+                "components": [
+                    {
+                        "material": "emission",
+                        "model": "res/models/quad.obj",
+                        "shader": "pbr",
+                        "type": "Renderer"
+                    }
+                ],
+                "name": "cube2",
+                "transform": {
+                    "position": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
+                    "rotation": [
+                        0.0,
+                        90.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            {
+                "components": [
+                    {
+                        "material": "emission",
+                        "model": "res/models/quad.obj",
+                        "shader": "pbr",
+                        "type": "Renderer"
+                    }
+                ],
+                "name": "cube0",
+                "transform": {
+                    "position": [
+                        0.0,
+                        1.0,
+                        0.0
+                    ],
+                    "rotation": [
+                        -90.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            {
+                "components": [
+                    {
+                        "material": "emission",
+                        "model": "res/models/quad.obj",
+                        "shader": "pbr",
+                        "type": "Renderer"
+                    }
+                ],
+                "name": "otherQuad",
+                "transform": {
+                    "position": [
+                        -10.0,
+                        0.0,
+                        0.0
+                    ],
+                    "rotation": [
+                        -90.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            {
+                "components": [
+                    {
+                        "material": "emission",
+                        "model": "res/models/quad.obj",
+                        "shader": "pbr",
+                        "type": "Renderer"
+                    }
+                ],
+                "name": "cube4",
+                "transform": {
+                    "position": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            {
+                "components": [
+                    {
+                        "material": "emission",
+                        "shader": "pbr",
+                        "type": "Renderer"
+                    }
+                ],
+                "name": "metalPlane",
+                "transform": {
+                    "position": [
+                        0.0,
+                        -25.0,
+                        0.0
+                    ],
+                    "rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        40.0,
+                        0.5,
+                        40.0
+                    ]
+                }
+            },
+            {
+                "components": [
+                    {
+                        "material": "emission",
+                        "model": "res/models/sphere.obj",
+                        "shader": "pbr",
+                        "type": "Renderer"
+                    }
+                ],
+                "name": "sphere",
+                "transform": {
+                    "position": [
+                        -5.0,
+                        1.0,
+                        -3.0
+                    ],
+                    "rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            {
+                "components": [
+                    {
+                        "material": "emission",
+                        "model": "res/models/quad.obj",
+                        "shader": "pbr",
+                        "type": "Renderer"
+                    }
+                ],
+                "name": "cube1",
+                "transform": {
+                    "position": [
+                        0.0,
+                        -1.0,
+                        0.0
+                    ],
+                    "rotation": [
+                        90.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            {
+                "components": [
+                    {
+                        "material": "emission",
+                        "shader": "pbr",
+                        "type": "Renderer"
+                    }
+                ],
+                "name": "sabre_metal_part",
+                "transform": {
+                    "position": [
+                        4.0,
+                        -2.0,
+                        -3.0
+                    ],
+                    "rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        0.029999999329447746,
+                        0.5,
+                        0.029999999329447746
+                    ]
+                }
+            },
+            {
+                "components": [
+                    {
+                        "material": "emission",
+                        "model": "res/models/quad.obj",
+                        "shader": "pbr",
+                        "type": "Renderer"
+                    }
+                ],
+                "name": "cube3",
+                "transform": {
+                    "position": [
+                        -1.0,
+                        0.0,
+                        0.0
+                    ],
+                    "rotation": [
+                        0.0,
+                        -90.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            {
+                "components": [
+                    {
+                        "material": "colour",
+                        "model": "res/models/sphere.obj",
+                        "shader": "pbr",
+                        "type": "Renderer"
+                    }
+                ],
+                "name": "sphere1",
+                "transform": {
+                    "position": [
+                        -30.0,
+                        20.0,
+                        20.0
+                    ],
+                    "rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            {
+                "components": [
+                    {
+                        "material": "emission",
+                        "model": "res/models/quad.obj",
+                        "shader": "pbr",
+                        "type": "Renderer"
+                    }
+                ],
+                "name": "cube5",
+                "transform": {
+                    "position": [
+                        0.0,
+                        0.0,
+                        -1.0
+                    ],
+                    "rotation": [
+                        0.0,
+                        180.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            {
+                "components": [
+                    {
+                        "colour": [
+                            0.0,
+                            1.0,
+                            0.0
+                        ],
+                        "intensity": 1000.0,
+                        "range": 150.0,
+                        "type": "Light"
+                    },
+                    {
+                        "material": "emission",
+                        "model": "res/models/sphere.obj",
+                        "shader": "pbr",
+                        "type": "Renderer"
+                    }
+                ],
+                "name": "light0",
+                "transform": {
+                    "position": [
+                        2.0,
+                        3.0,
+                        5.0
+                    ],
+                    "rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        0.5,
+                        0.5,
+                        0.5
+                    ]
+                }
+            },
+            {
+                "components": [
+                    {
+                        "colour": [
+                            1.0,
+                            0.0,
+                            0.0
+                        ],
+                        "intensity": 500.0,
+                        "range": 100.0,
+                        "type": "Light"
+                    },
+                    {
+                        "material": "emission",
+                        "shader": "pbr",
+                        "type": "Renderer"
+                    }
+                ],
+                "name": "sabre",
+                "transform": {
+                    "position": [
+                        4.0,
+                        0.25,
+                        -3.0
+                    ],
+                    "rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        0.029999999329447746,
+                        1.75,
+                        0.029999999329447746
+                    ]
+                }
+            },
+            {
+                "components": [
+                    {
+                        "material": "colour",
+                        "model": "res/models/sphere.obj",
+                        "shader": "pbr",
+                        "type": "Renderer"
+                    }
+                ],
+                "name": "sphere2",
+                "transform": {
+                    "position": [
+                        20.0,
+                        10.0,
+                        -30.0
+                    ],
+                    "rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            {
+                "components": [
+                    {
+                        "colour": [
+                            1.0,
+                            0.949999988079071,
+                            0.8700000047683716
+                        ],
+                        "intensity": 100.0,
+                        "range": 50000.0,
+                        "type": "Light"
+                    }
+                ],
+                "name": "sun",
+                "transform": {
+                    "position": [
+                        -22627.416015625,
+                        22627.416015625,
+                        0.0
+                    ],
+                    "rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            {
+                "components": [
+                    {
+                        "material": "",
+                        "model": "res/models/cube.obj",
+                        "shader": "pbr",
+                        "type": "Renderer"
+                    }
+                ],
+                "name": "Empty Entity",
+                "transform": {
+                    "position": [
+                        0.0,
+                        11.199999809265137,
+                        0.0
+                    ],
+                    "rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            {
+                "components": [
+                    {
+                        "material": "",
+                        "model": "res/models/cube.obj",
+                        "shader": "pbr",
+                        "type": "Renderer"
+                    }
+                ],
+                "name": "Empty Entity",
+                "transform": {
+                    "position": [
+                        0.0,
+                        21.399999618530273,
+                        0.0
+                    ],
+                    "rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            }
+        ]
+    },
+    "textures": [
+        {
+            "directory": "res/textures/oakFloor/oakFloor_NRM.png",
+            "name": "res/textures/oakFloor/oakFloor_NRM.png"
+        },
+        {
+            "directory": "res/textures/oakFloor/oakFloor_DIF.png",
+            "name": "res/textures/oakFloor/oakFloor_DIF.png"
+        },
+        {
+            "directory": "res/textures/default.png",
+            "name": "res/textures/default.png"
+        },
+        {
+            "directory": "res/textures/oakFloor/oakFloor_MROT.png",
+            "name": "res/textures/oakFloor/oakFloor_MROT.png"
+        }
+    ]
+}

@@ -8,6 +8,8 @@
 #include "prehistoric/common/util/PlatformUtils.h"
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 
+#include "Prehistoric/core/scene/world/WorldSerialiser.h"
+
 EditorLayer::EditorLayer(Prehistoric::Scene* scene)
 	: scenePanel{nullptr}, root{nullptr}
 {
@@ -286,7 +288,15 @@ void EditorLayer::OpenButton()
 
 void EditorLayer::SaveButton()
 {
-	PR_LOG_MESSAGE("Clicked Save!\n");
+	Prehistoric::CoreEngine* coreEngine = Prehistoric::Application::Get().getEngineLayer();
+	Prehistoric::RenderingEngine* renderingEngine = coreEngine->getRenderingEngine();
+
+	Prehistoric::Window* window = renderingEngine->getWindow();
+	Prehistoric::Camera* camera = renderingEngine->getCamera();
+	Prehistoric::AssembledAssetManager* manager = coreEngine->getAssetManager();
+
+	Prehistoric::WorldSerialiser serialiser(window, manager);
+	serialiser.SerialiseWorldJSON("res/world/test_serialised.json", scene.get());
 }
 
 void EditorLayer::QuitButton()

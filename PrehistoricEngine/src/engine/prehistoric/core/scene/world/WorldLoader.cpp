@@ -59,6 +59,7 @@ namespace Prehistoric
 					{
 						meshIndex++;
 						meshNames.push_back(tokens[1]);
+						meshDirectories.push_back(tokens[2]);
 						frontFaces.push_back(tokens[3] == "clockwise" ? FrontFace::CLOCKWISE :
 							(tokens[3] == "counter-clockwise" ? FrontFace::COUNTER_CLOCKWISE : FrontFace::DOUBLE_SIDED));
 						man->loadVertexBuffer(std::nullopt, directoryModels + tokens[2], BatchSettings::QueuedLoad);
@@ -77,7 +78,7 @@ namespace Prehistoric
 
 						for (int i = 0; i < meshIndex; i++)
 						{
-							models.insert(std::make_pair(meshNames[i], man->storeVertexBuffer(pointers[i], meshNames[i])));
+							models.insert(std::make_pair(meshNames[i], man->storeVertexBuffer(pointers[i], directoryModels + meshDirectories[i])));
 							pointers[i]->setFrontFace(frontFaces[i]);
 						}
 
@@ -90,6 +91,7 @@ namespace Prehistoric
 					{
 						texIndex++;
 						textureNames.push_back(tokens[1]);
+						textureDirectories.push_back(tokens[2]);
 						man->loadTexture(directoryTextures + tokens[2], Anisotropic, Repeat, BatchSettings::QueuedLoad);
 					}
 					else if (nameTokens[1] == "dispatch")
@@ -110,7 +112,7 @@ namespace Prehistoric
 
 						for (int i = 0; i < texIndex; i++)
 						{
-							textures.insert(std::make_pair(textureNames[i], man->storeTexture(pointers[i], textureNames[i])));
+							textures.insert(std::make_pair(textureNames[i], man->storeTexture(pointers[i], directoryTextures + textureDirectories[i])));
 						}
 
 						man->getTextureLoader()->FlushPointers();
@@ -123,6 +125,7 @@ namespace Prehistoric
 					if (nameTokens[1] == "add")
 					{
 						MaterialHandle material = manager->storeMaterial(new Material(man));
+						material->setName(tokens[1]);
 						materials.insert(std::make_pair(tokens[1], material));
 					}
 					else
@@ -483,6 +486,7 @@ namespace Prehistoric
 					}
 
 					meshNames.push_back(name);
+					meshDirectories.push_back(directory);
 					frontFaces.push_back(frontFace);
 					man->loadVertexBuffer(std::nullopt, directoryModels + directory, BatchSettings::QueuedLoad);
 				}
@@ -499,7 +503,7 @@ namespace Prehistoric
 
 				for (int i = 0; i < models_list.size(); i++)
 				{
-					models.insert(std::make_pair(meshNames[i], man->storeVertexBuffer(pointers[i], meshNames[i])));
+					models.insert(std::make_pair(meshNames[i], man->storeVertexBuffer(pointers[i], directoryModels + meshDirectories[i])));
 					pointers[i]->setFrontFace(frontFaces[i]);
 				}
 
@@ -514,6 +518,7 @@ namespace Prehistoric
 					std::string directory = texture["directory"];
 
 					textureNames.push_back(name);
+					textureDirectories.push_back(directory);
 					man->loadTexture(directoryTextures + directory, Anisotropic, Repeat, BatchSettings::QueuedLoad);
 				}
 
@@ -529,7 +534,7 @@ namespace Prehistoric
 
 				for (int i = 0; i < textures_list.size(); i++)
 				{
-					textures.insert(std::make_pair(textureNames[i], man->storeTexture(pointers[i], textureNames[i])));
+					textures.insert(std::make_pair(textureNames[i], man->storeTexture(pointers[i], directoryTextures + textureDirectories[i])));
 				}
 
 				man->getTextureLoader()->FlushPointers();
@@ -547,6 +552,8 @@ namespace Prehistoric
 					{
 						std::string name = content["name"];
 						std::string type = content["type"];
+
+						material->setName(name);
 
 						if (type == "texture")
 						{
@@ -681,15 +688,6 @@ namespace Prehistoric
 					}
 
 					root->AddChild(name, object);
-
-					/*if (root_child.contains("children"))
-					{
-						return objectData["children"];
-					}
-					else
-					{
-						return {};
-					}*/
 				}
 			}
 		}

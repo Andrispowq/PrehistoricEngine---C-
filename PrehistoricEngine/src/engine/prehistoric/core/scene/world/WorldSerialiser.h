@@ -1,5 +1,5 @@
-#ifndef WORLD_LOADER_H
-#define WORLD_LOADER_H
+#ifndef WORLD_SERIALISER_H
+#define WORLD_SERIALISER_H
 
 #include <fstream>
 
@@ -19,20 +19,24 @@
 #include "platform/vulkan/rendering/pipeline/VKGraphicsPipeline.h"
 
 #include "prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/core/scene/Scene.h"
 
 #include "Includes.hpp"
 
 namespace Prehistoric
 {
-	class WorldLoader
+	class WorldSerialiser
 	{
 	public:
-		WorldLoader(Window* window, AssembledAssetManager* manager) 
+		WorldSerialiser(Window* window, AssembledAssetManager* manager)
 			: window(window), manager(manager) {}
-		virtual ~WorldLoader() {}
+		virtual ~WorldSerialiser() {}
 
-		void LoadWorld(const std::string& worldFile, GameObject* root);
-		void LoadWorldJSON(const std::string& worldFile, GameObject* root);
+		void SerialiseWorld(const std::string& worldFile, Scene* scene);
+		void SerialiseWorldJSON(const std::string& worldFile, Scene* scene);
+
+	private:
+		void ListResources(GameObject* root);
 
 	public:
 		std::string sceneName;
@@ -41,17 +45,10 @@ namespace Prehistoric
 		std::string directoryTextures;
 
 		//Rendering stuff
-		std::unordered_map<std::string, TextureHandle> textures;
-		std::vector<std::string> textureNames;
-		std::vector<std::string> textureDirectories;
-		std::unordered_map<std::string, MaterialHandle> materials;
-
 		std::unordered_map<std::string, VertexBufferHandle> models;
-		std::vector<std::string> meshNames;
-		std::vector<std::string> meshDirectories;
-		std::vector<FrontFace> frontFaces;
-		std::unordered_map<std::string, ShaderHandle> shaders;
-		std::unordered_map<std::string, PipelineHandle> pipelines;
+
+		std::unordered_map<std::string, TextureHandle> textures;
+		std::unordered_map<std::string, MaterialHandle> materials;
 
 	private:
 		Window* window;

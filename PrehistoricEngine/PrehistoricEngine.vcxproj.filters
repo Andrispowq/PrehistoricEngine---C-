@@ -771,6 +771,7 @@
       <Filter>prehistoric\core\util\time</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\util\guid\GUID.h" />
+    <ClInclude Include="src\engine\prehistoric\core\scene\world\WorldSerialiser.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -1216,5 +1217,6 @@
       <Filter>prehistoric\core\util\time</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\util\guid\GUID.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\scene\world\WorldSerialiser.cpp" />
   </ItemGroup>
 </Project>
