@@ -14,7 +14,7 @@ namespace Prehistoric
 		SetScale(Vector3f(__EngineConfig.rendererFarPlane / 2.f));
 		
 		AssetManager* man = manager->getAssetManager();
-		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "atmosphere").value();
+		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/sphere.obj").value();
 		vbo->setFrontFace(FrontFace::DOUBLE_SIDED);
 
 		ShaderHandle shader;

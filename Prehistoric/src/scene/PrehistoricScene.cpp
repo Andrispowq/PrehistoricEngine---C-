@@ -27,8 +27,8 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 	{
 		AssetManager* man = manager->getAssetManager();
 
-		VertexBufferHandle quad = man->loadVertexBuffer(std::nullopt, "quadModel").value();
-		VertexBufferHandle sphere = man->loadVertexBuffer(std::nullopt, "sphereModel").value();
+		VertexBufferHandle quad = man->loadVertexBuffer(std::nullopt, "res/models/quad.obj").value();
+		VertexBufferHandle sphere = man->loadVertexBuffer(std::nullopt, "res/models/sphere.obj").value();
 		ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
 
 		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, quad);
@@ -98,7 +98,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 		slider2->SetScale({ 0.125f, 0.05f, 1 });
 		sceneRoot->AddChild("slider2", slider2);*/
 
-		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "sphereModel").value();
+		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/sphere.obj").value();
 		ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
 		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
 

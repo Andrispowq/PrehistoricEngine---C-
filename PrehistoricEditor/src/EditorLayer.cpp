@@ -263,7 +263,7 @@ void EditorLayer::NewButton()
 
 void EditorLayer::OpenButton()
 {
-	std::optional<std::string> scene_string = Prehistoric::FileDialogues::Get()->OpenFile(".json");
+	std::optional<std::string> scene_string = Prehistoric::FileDialogues::Get()->OpenFile("World file(*.json)\0*.json\0");
 	if (scene_string.has_value())
 	{
 		std::string val = scene_string.value();
@@ -295,8 +295,33 @@ void EditorLayer::SaveButton()
 	Prehistoric::Camera* camera = renderingEngine->getCamera();
 	Prehistoric::AssembledAssetManager* manager = coreEngine->getAssetManager();
 
+	std::optional<std::string> new_file_sel = Prehistoric::FileDialogues::Get()->SaveFile("World file(*.json)\0*.json\0");
+	if (!new_file_sel.has_value())
+	{
+		time_t rawtime;
+		struct tm* timeinfo;
+
+		time(&rawtime);
+		timeinfo = localtime(&rawtime);
+
+		uint16_t day = timeinfo->tm_mday;
+		uint16_t mon = timeinfo->tm_mon + 1;
+		uint16_t year = timeinfo->tm_year + 1900;
+
+		uint16_t sec = timeinfo->tm_sec;
+		uint16_t min = timeinfo->tm_min;
+		uint16_t hour = timeinfo->tm_hour;
+
+		uint64_t milliseconds = Prehistoric::Time::getTimeFromStartNanoseconds() / 1000;
+
+		std::string time = std::to_string(year) + "/" + std::to_string(mon) + "/" + std::to_string(day) + "/";
+		time += (std::to_string(hour) + ":" + std::to_string(min) + ":" + std::to_string(sec) + "::" + std::to_string(milliseconds));
+
+		new_file_sel = "res/world/__world_save_" + time + ".json";
+	}
+
 	Prehistoric::WorldSerialiser serialiser(window, manager);
-	serialiser.SerialiseWorldJSON("res/world/test_serialised.json", scene.get());
+	serialiser.SerialiseWorldJSON(new_file_sel.value(), scene.get());
 }
 
 void EditorLayer::QuitButton()

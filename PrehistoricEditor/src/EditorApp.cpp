@@ -105,4 +105,6 @@ EditorApp::EditorApp()
 
 EditorApp::~EditorApp()
 {
+	layerStack.PopLayer(editor);
+	delete editor;
 }
