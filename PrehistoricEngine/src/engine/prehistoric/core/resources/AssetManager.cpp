@@ -35,6 +35,17 @@ namespace Prehistoric
 
 	std::optional<TextureHandle> AssetManager::loadTexture(const std::string& location, SamplerFilter filter, TextureWrapMode wrapMode, BatchSettings settings)
 	{
+		//If we can find it, we don't have to add it to the load queue
+		auto index = ID_map.find(location);
+		if (index != ID_map.end())
+		{
+			TextureHandle handle;
+			handle.handle = index->second.handle;
+			handle.pointer = textures.at(handle.handle).first.get();
+
+			return handle;
+		}
+
 		if (settings == BatchSettings::QueuedLoad)
 		{
 			/*
@@ -46,16 +57,6 @@ namespace Prehistoric
 
 			textureLoader->LoadResource(false, location, extra);
 			return std::nullopt;
-		}
-
-		auto index = ID_map.find(location);
-		if (index != ID_map.end())
-		{
-			TextureHandle handle;
-			handle.handle = index->second.handle;
-			handle.pointer = textures.at(handle.handle).first.get();
-
-			return handle;
 		}
 
 		TextureLoaderExtra extra;
@@ -77,15 +78,6 @@ namespace Prehistoric
 
 	std::optional<VertexBufferHandle> AssetManager::loadVertexBuffer(std::optional<Model> mesh, const std::string& name, BatchSettings settings)
 	{
-		if (settings == BatchSettings::QueuedLoad)
-		{
-			/*
-				We don't know when the commands will be dispatched, so we can't use a stack variable here
-			*/
-			vertexBufferLoader->LoadResource(false, name, nullptr);
-			return std::nullopt;
-		}
-
 		auto index = ID_map.find(name);
 		if (index != ID_map.end())
 		{
@@ -94,6 +86,15 @@ namespace Prehistoric
 			handle.pointer = vertexBuffers.at(handle.handle).first.get();
 
 			return handle;
+		}
+
+		if (settings == BatchSettings::QueuedLoad)
+		{
+			/*
+				We don't know when the commands will be dispatched, so we can't use a stack variable here
+			*/
+			vertexBufferLoader->LoadResource(false, name, nullptr);
+			return std::nullopt;
 		}
 
 		VertexBufferLoaderExtra extra;

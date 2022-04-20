@@ -57,12 +57,23 @@ namespace Prehistoric
 				{
 					if (nameTokens[1] == "load")
 					{
-						meshIndex++;
-						meshNames.push_back(tokens[1]);
-						meshDirectories.push_back(tokens[2]);
-						frontFaces.push_back(tokens[3] == "clockwise" ? FrontFace::CLOCKWISE :
-							(tokens[3] == "counter-clockwise" ? FrontFace::COUNTER_CLOCKWISE : FrontFace::DOUBLE_SIDED));
-						man->loadVertexBuffer(std::nullopt, directoryModels + tokens[2], BatchSettings::QueuedLoad);
+						std::string meshName = tokens[1];
+						std::string directory = tokens[2];
+
+						// In case we already loaded this, don't add it to the queue
+						std::optional<VertexBufferHandle> handle = man->loadVertexBuffer(std::nullopt, directoryModels + directory, BatchSettings::QueuedLoad);
+						if (handle.has_value())
+						{
+							models.insert(std::make_pair(meshName, handle.value()));
+						}
+						else
+						{
+							meshIndex++;
+							meshNames.push_back(meshName);
+							meshDirectories.push_back(directory);
+							frontFaces.push_back(tokens[3] == "clockwise" ? FrontFace::CLOCKWISE :
+								(tokens[3] == "counter-clockwise" ? FrontFace::COUNTER_CLOCKWISE : FrontFace::DOUBLE_SIDED));
+						}
 					}
 					else if (nameTokens[1] == "dispatch")
 					{
@@ -89,10 +100,21 @@ namespace Prehistoric
 				{
 					if (nameTokens[1] == "load")
 					{
-						texIndex++;
-						textureNames.push_back(tokens[1]);
-						textureDirectories.push_back(tokens[2]);
-						man->loadTexture(directoryTextures + tokens[2], Anisotropic, Repeat, BatchSettings::QueuedLoad);
+						std::string texName = tokens[1];
+						std::string directory = tokens[2];
+
+						// In case we already loaded this, don't add it to the queue
+						std::optional<TextureHandle> handle = man->loadTexture(directoryTextures + directory, Anisotropic, Repeat, BatchSettings::QueuedLoad);
+						if (handle.has_value())
+						{
+							textures.insert(std::make_pair(texName, handle.value()));
+						}
+						else
+						{
+							texIndex++;
+							textureNames.push_back(texName);
+							textureDirectories.push_back(directory);
+						}
 					}
 					else if (nameTokens[1] == "dispatch")
 					{
@@ -485,10 +507,18 @@ namespace Prehistoric
 						frontFace = FrontFace::COUNTER_CLOCKWISE;
 					}
 
-					meshNames.push_back(name);
-					meshDirectories.push_back(directory);
-					frontFaces.push_back(frontFace);
-					man->loadVertexBuffer(std::nullopt, directoryModels + directory, BatchSettings::QueuedLoad);
+					// In case we already loaded this, don't add it to the queue
+					std::optional<VertexBufferHandle> handle = man->loadVertexBuffer(std::nullopt, directoryModels + directory, BatchSettings::QueuedLoad);
+					if (handle.has_value())
+					{
+						models.insert(std::make_pair(name, handle.value()));
+					}
+					else
+					{
+						meshNames.push_back(name);
+						meshDirectories.push_back(directory);
+						frontFaces.push_back(frontFace);
+					}
 				}
 
 				man->getVertexBufferLoader()->ForceLoadQueue();
@@ -496,12 +526,12 @@ namespace Prehistoric
 				size_t count;
 				VertexBuffer** pointers = (VertexBuffer**)man->getVertexBufferLoader()->GetLoadedPointers(count);
 
-				if (count != models_list.size())
+				if (count != meshNames.size())
 				{
 					PR_LOG_ERROR("The loaded VertexBuffer count isn't equal to the requested VertexBuffer count!\n");
 				}
 
-				for (int i = 0; i < models_list.size(); i++)
+				for (int i = 0; i < meshNames.size(); i++)
 				{
 					models.insert(std::make_pair(meshNames[i], man->storeVertexBuffer(pointers[i], directoryModels + meshDirectories[i])));
 					pointers[i]->setFrontFace(frontFaces[i]);
@@ -517,9 +547,17 @@ namespace Prehistoric
 					std::string name = texture["name"];
 					std::string directory = texture["directory"];
 
-					textureNames.push_back(name);
-					textureDirectories.push_back(directory);
-					man->loadTexture(directoryTextures + directory, Anisotropic, Repeat, BatchSettings::QueuedLoad);
+					// In case we already loaded this, don't add it to the queue
+					std::optional<TextureHandle> handle = man->loadTexture(directoryTextures + directory, Anisotropic, Repeat, BatchSettings::QueuedLoad);
+					if (handle.has_value())
+					{
+						textures.insert(std::make_pair(name, handle.value()));
+					}
+					else
+					{
+						textureNames.push_back(name);
+						textureDirectories.push_back(directory);
+					}
 				}
 
 				man->getTextureLoader()->ForceLoadQueue();
@@ -527,12 +565,12 @@ namespace Prehistoric
 				size_t count;
 				Texture** pointers = (Texture**)man->getTextureLoader()->GetLoadedPointers(count);
 
-				if (count != textures_list.size())
+				if (count != textureNames.size())
 				{
 					PR_LOG_ERROR("The loaded VertexBuffer count isn't equal to the requested VertexBuffer count!\n");
 				}
 
-				for (int i = 0; i < textures_list.size(); i++)
+				for (int i = 0; i < textureNames.size(); i++)
 				{
 					textures.insert(std::make_pair(textureNames[i], man->storeTexture(pointers[i], directoryTextures + textureDirectories[i])));
 				}
@@ -544,16 +582,16 @@ namespace Prehistoric
 				std::vector<nlohmann::json> materials_list = file_json["materials"];
 				for (auto& element : materials_list)
 				{
-					std::string name = element["name"];
+					std::string nameMat = element["name"];
 					std::vector<nlohmann::json> contents = element["contents"];
 
 					Material* material = new Material(man);
+					material->setName(nameMat);
+
 					for (auto& content : contents)
 					{
 						std::string name = content["name"];
 						std::string type = content["type"];
-
-						material->setName(name);
 
 						if (type == "texture")
 						{
@@ -587,7 +625,7 @@ namespace Prehistoric
 						}
 					}
 
-					materials.insert(std::make_pair(name, manager->storeMaterial(material)));
+					materials.insert(std::make_pair(nameMat, manager->storeMaterial(material)));
 				}
 			}
 

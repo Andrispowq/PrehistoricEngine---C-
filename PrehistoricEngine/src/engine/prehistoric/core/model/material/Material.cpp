@@ -1,6 +1,8 @@
 #include "Includes.hpp"
 #include "Material.h"
 
+#include "prehistoric/core/util/guid/GUID.h"
+
 namespace Prehistoric
 {
 	size_t Material::lastID = 0;
@@ -113,32 +115,30 @@ namespace Prehistoric
 		int counter = 0;
 		for (auto tex : textures)
 		{
-			hash += tex.second.handle << counter;
-			counter++;
+			texHash = ((texHash << 63) | (texHash >> 1)) + (tex.second.handle << counter++);
 			counter %= 64;
 		}
 
 		for (auto fl : vector4s)
 		{
 			float f = fl.second.x + fl.second.y * 10 + fl.second.z * 100 * fl.second.w * 1000;
-			hash += *(uint64_t*)(&f) << counter;
-			counter++;
-			counter %= 64;
+			hash += *(uint64_t*)(&f);
 		}
 
 		for (auto fl : vector3s)
 		{
 			float f = fl.second.x + fl.second.y * 10 + fl.second.z * 100;
-			hash += *(uint64_t*)(&f) << counter;
-			counter++;
-			counter %= 64;
+			hash += *(uint64_t*)(&f);
 		}
 
 		for (auto fl : floats)
 		{
-			hash += *(uint64_t*)(&fl) << counter;
-			counter++;
-			counter %= 64;
+			hash += *(uint64_t*)(&fl.second);
+		}
+
+		for (auto in : ints)
+		{
+			hash += in.second;
 		}
 
 		return hash;
@@ -152,8 +152,7 @@ namespace Prehistoric
 		int counter = 0;
 		for (auto tex : textures)
 		{
-			texHash += tex.second.handle << counter;
-			counter++;
+			texHash = ((texHash << 63) | (texHash >> 1)) + (tex.second.handle << counter++);
 			counter %= 64;
 		}
 

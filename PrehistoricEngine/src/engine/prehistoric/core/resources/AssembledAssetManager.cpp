@@ -116,11 +116,11 @@ namespace Prehistoric
 		else
 			hash = material->GetHash();
 
-		auto idx = materialHashMap.find(hash);
+		/*auto idx = materialHashMap.find(hash);
 		if (idx != materialHashMap.end())
 		{
 			return { material, idx->second };
-		}
+		}*/
 
 		size_t han = material_ID++;
 

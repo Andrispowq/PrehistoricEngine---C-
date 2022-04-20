@@ -221,7 +221,14 @@ namespace Prehistoric
 								comp_json["shader"] = "pbr";
 							}
 
-							comp_json["material"] = rendComp->getMaterial()->getName();
+							std::string materialName = rendComp->getMaterial()->getName();
+							static int index = 0;
+							if (materialName == "")
+							{
+								materialName = ("UnnamedMaterial" + std::to_string(index++));
+							}
+
+							comp_json["material"] = materialName;
 						}
 						else if (comp->getComponentType() == ComponentType::LightComponent)
 						{
@@ -274,6 +281,11 @@ namespace Prehistoric
 		std::vector<std::string> textureLocation;
 		for (auto child : children)
 		{
+			if (child->getName() == "otherQuad")
+			{
+				int i = 10;
+			}
+
 			if (child->HasComponent<RendererComponent>())
 			{
 				RendererComponent* renderer = child->GetComponent<RendererComponent>();
@@ -301,8 +313,12 @@ namespace Prehistoric
 					{
 						if (elem.second.handle == vbo.handle)
 						{
-							models.insert(std::make_pair(elem.first, vbo));
-							break;
+							auto idx = models.find(elem.first);
+							if (idx == models.end())
+							{
+								models.insert(std::make_pair(elem.first, vbo));
+								goto found;
+							}
 						}
 
 						break;
@@ -312,15 +328,7 @@ namespace Prehistoric
 					}
 				}
 
-				//Store material
-				std::string matName = material->getName();
-				static int index = 0;
-				if (matName == "")
-				{
-					matName = ("UnnamedMaterial" + std::to_string(index++));
-				}
-
-				materials.insert(std::make_pair(matName, material));
+			found:
 
 				//Store textures
 				for (auto tex : matTextures)
@@ -333,8 +341,12 @@ namespace Prehistoric
 						{
 							if (elem.second.handle == tex.second.handle)
 							{
-								textures.insert(std::make_pair(elem.first, tex.second));
-								break;
+								auto idx = textures.find(elem.first);
+								if (idx == textures.end())
+								{
+									textures.insert(std::make_pair(elem.first, tex.second));
+									goto found2;
+								}
 							}
 
 							break;
@@ -343,7 +355,22 @@ namespace Prehistoric
 							break;
 						}
 					}
+				found2:;
 				}
+
+				//Store material
+				std::string matName = material->getName();
+				static int index = 0;
+				if (matName == "")
+				{
+					matName = ("UnnamedMaterial" + std::to_string(index++));
+				}
+
+				auto idx = materials.find(matName);
+				if (idx == materials.end())
+				{
+					materials.insert(std::make_pair(matName, material));
+				}				
 			}
 		}
 	}

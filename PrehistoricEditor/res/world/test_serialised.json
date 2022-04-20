@@ -7,26 +7,62 @@
         {
             "contents": [
                 {
-                    "name": "albedoMapMap",
+                    "name": "DEFAULT_TEX",
                     "type": "texture",
-                    "value": "res/textures/oakFloor/oakFloor_DIF.png"
+                    "value": "res/textures/default.png"
                 },
+                {
+                    "name": "albedoMap",
+                    "type": "texture",
+                    "value": "res/textures/metalFloor/metalFloor_DIF.png"
+                },
+                {
+                    "name": "normalMap",
+                    "type": "texture",
+                    "value": "res/textures/metalFloor/metalFloor_NRM.png"
+                },
+                {
+                    "name": "mrotMap",
+                    "type": "texture",
+                    "value": "res/textures/metalFloor/metalFloor_MROT.png"
+                },
+                {
+                    "name": "mrot",
+                    "type": "vec4",
+                    "value": [
+                        -1.0,
+                        -1.0,
+                        -1.0,
+                        0.0
+                    ]
+                },
+                {
+                    "name": "emission",
+                    "type": "float",
+                    "value": 0.0
+                }
+            ],
+            "name": "mat_metal"
+        },
+        {
+            "contents": [
                 {
                     "name": "DEFAULT_TEX",
                     "type": "texture",
                     "value": "res/textures/default.png"
                 },
                 {
-                    "name": "DEFAULT_TEXMap",
-                    "type": "texture"
+                    "name": "albedoMap",
+                    "type": "texture",
+                    "value": "res/textures/oakFloor/oakFloor_DIF.png"
                 },
                 {
-                    "name": "normalMapMap",
+                    "name": "normalMap",
                     "type": "texture",
                     "value": "res/textures/oakFloor/oakFloor_NRM.png"
                 },
                 {
-                    "name": "mrotMapMap",
+                    "name": "mrotMap",
                     "type": "texture",
                     "value": "res/textures/oakFloor/oakFloor_MROT.png"
                 },
@@ -46,7 +82,80 @@
                     "value": 0.0
                 }
             ],
-            "name": "emission"
+            "name": "mat_quad"
+        },
+        {
+            "contents": [
+                {
+                    "name": "DEFAULT_TEX",
+                    "type": "texture",
+                    "value": "res/textures/default.png"
+                },
+                {
+                    "name": "mrot",
+                    "type": "vec4",
+                    "value": [
+                        1.0,
+                        0.30000001192092896,
+                        1.0,
+                        -1.0
+                    ]
+                },
+                {
+                    "name": "colour",
+                    "type": "vec3",
+                    "value": [
+                        0.5600000023841858,
+                        0.5699999928474426,
+                        0.5799999833106995
+                    ]
+                },
+                {
+                    "name": "emission",
+                    "type": "float",
+                    "value": 0.0
+                }
+            ],
+            "name": "mat_iron"
+        },
+        {
+            "contents": [
+                {
+                    "name": "DEFAULT_TEX",
+                    "type": "texture",
+                    "value": "res/textures/default.png"
+                },
+                {
+                    "name": "normalMap",
+                    "type": "texture",
+                    "value": "res/textures/metalFloor/metalFloor_NRM.png"
+                },
+                {
+                    "name": "mrot",
+                    "type": "vec4",
+                    "value": [
+                        1.0,
+                        0.10000000149011612,
+                        1.0,
+                        -1.0
+                    ]
+                },
+                {
+                    "name": "colour",
+                    "type": "vec3",
+                    "value": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                },
+                {
+                    "name": "emission",
+                    "type": "float",
+                    "value": 0.0
+                }
+            ],
+            "name": "mat_sphere"
         },
         {
             "contents": [
@@ -60,22 +169,22 @@
                     "type": "vec4",
                     "value": [
                         0.0,
-                        0.10000000149011612,
+                        0.30000001192092896,
                         1.0,
-                        0.0
+                        -1.0
                     ]
                 },
                 {
                     "name": "colour",
                     "type": "vec3",
                     "value": [
-                        1.0,
-                        1.0,
-                        1.0
+                        0.7799999713897705,
+                        0.5600000023841858,
+                        0.44999998807907104
                     ]
                 }
             ],
-            "name": "UnnamedMaterial1"
+            "name": "mat_sphere2"
         },
         {
             "contents": [
@@ -83,10 +192,6 @@
                     "name": "DEFAULT_TEX",
                     "type": "texture",
                     "value": "res/textures/default.png"
-                },
-                {
-                    "name": "DEFAULT_TEXMap",
-                    "type": "texture"
                 },
                 {
                     "name": "mrot",
@@ -108,7 +213,7 @@
                     ]
                 }
             ],
-            "name": "colour"
+            "name": "mat_sphere1"
         },
         {
             "contents": [
@@ -121,8 +226,76 @@
                     "name": "mrot",
                     "type": "vec4",
                     "value": [
-                        0.0,
+                        0.4000000059604645,
+                        0.30000001192092896,
+                        1.0,
+                        -1.0
+                    ]
+                },
+                {
+                    "name": "colour",
+                    "type": "vec3",
+                    "value": [
                         0.10000000149011612,
+                        1.0,
+                        0.10000000149011612
+                    ]
+                },
+                {
+                    "name": "emission",
+                    "type": "float",
+                    "value": 5.0
+                }
+            ],
+            "name": "mat_light0"
+        },
+        {
+            "contents": [
+                {
+                    "name": "DEFAULT_TEX",
+                    "type": "texture",
+                    "value": "res/textures/default.png"
+                },
+                {
+                    "name": "mrot",
+                    "type": "vec4",
+                    "value": [
+                        0.4000000059604645,
+                        0.30000001192092896,
+                        1.0,
+                        -1.0
+                    ]
+                },
+                {
+                    "name": "colour",
+                    "type": "vec3",
+                    "value": [
+                        1.0,
+                        0.10000000149011612,
+                        0.10000000149011612
+                    ]
+                },
+                {
+                    "name": "emission",
+                    "type": "float",
+                    "value": 20.0
+                }
+            ],
+            "name": "mat_light1"
+        },
+        {
+            "contents": [
+                {
+                    "name": "DEFAULT_TEX",
+                    "type": "texture",
+                    "value": "res/textures/default.png"
+                },
+                {
+                    "name": "mrot",
+                    "type": "vec4",
+                    "value": [
+                        1.0,
+                        0.10196078568696976,
                         1.0,
                         0.0
                     ]
@@ -147,14 +320,14 @@
             "name": "res/models/quad.obj"
         },
         {
-            "directory": "res/models/cube.obj",
-            "front-face": 2,
-            "name": "res/models/cube.obj"
-        },
-        {
             "directory": "res/models/sphere.obj",
             "front-face": 0,
             "name": "res/models/sphere.obj"
+        },
+        {
+            "directory": "res/models/cube.obj",
+            "front-face": 2,
+            "name": "res/models/cube.obj"
         }
     ],
     "name": "newWorld",
@@ -163,174 +336,7 @@
             {
                 "components": [
                     {
-                        "material": "emission",
-                        "model": "res/models/quad.obj",
-                        "shader": "pbr",
-                        "type": "Renderer"
-                    }
-                ],
-                "name": "cube2",
-                "transform": {
-                    "position": [
-                        1.0,
-                        0.0,
-                        0.0
-                    ],
-                    "rotation": [
-                        0.0,
-                        90.0,
-                        0.0
-                    ],
-                    "scaling": [
-                        1.0,
-                        1.0,
-                        1.0
-                    ]
-                }
-            },
-            {
-                "components": [
-                    {
-                        "material": "emission",
-                        "model": "res/models/quad.obj",
-                        "shader": "pbr",
-                        "type": "Renderer"
-                    }
-                ],
-                "name": "cube0",
-                "transform": {
-                    "position": [
-                        0.0,
-                        1.0,
-                        0.0
-                    ],
-                    "rotation": [
-                        -90.0,
-                        0.0,
-                        0.0
-                    ],
-                    "scaling": [
-                        1.0,
-                        1.0,
-                        1.0
-                    ]
-                }
-            },
-            {
-                "components": [
-                    {
-                        "material": "emission",
-                        "model": "res/models/quad.obj",
-                        "shader": "pbr",
-                        "type": "Renderer"
-                    }
-                ],
-                "name": "otherQuad",
-                "transform": {
-                    "position": [
-                        -10.0,
-                        0.0,
-                        0.0
-                    ],
-                    "rotation": [
-                        -90.0,
-                        0.0,
-                        0.0
-                    ],
-                    "scaling": [
-                        1.0,
-                        1.0,
-                        1.0
-                    ]
-                }
-            },
-            {
-                "components": [
-                    {
-                        "material": "emission",
-                        "model": "res/models/quad.obj",
-                        "shader": "pbr",
-                        "type": "Renderer"
-                    }
-                ],
-                "name": "cube4",
-                "transform": {
-                    "position": [
-                        0.0,
-                        0.0,
-                        1.0
-                    ],
-                    "rotation": [
-                        0.0,
-                        0.0,
-                        0.0
-                    ],
-                    "scaling": [
-                        1.0,
-                        1.0,
-                        1.0
-                    ]
-                }
-            },
-            {
-                "components": [
-                    {
-                        "material": "emission",
-                        "shader": "pbr",
-                        "type": "Renderer"
-                    }
-                ],
-                "name": "metalPlane",
-                "transform": {
-                    "position": [
-                        0.0,
-                        -25.0,
-                        0.0
-                    ],
-                    "rotation": [
-                        0.0,
-                        0.0,
-                        0.0
-                    ],
-                    "scaling": [
-                        40.0,
-                        0.5,
-                        40.0
-                    ]
-                }
-            },
-            {
-                "components": [
-                    {
-                        "material": "emission",
-                        "model": "res/models/sphere.obj",
-                        "shader": "pbr",
-                        "type": "Renderer"
-                    }
-                ],
-                "name": "sphere",
-                "transform": {
-                    "position": [
-                        -5.0,
-                        1.0,
-                        -3.0
-                    ],
-                    "rotation": [
-                        0.0,
-                        0.0,
-                        0.0
-                    ],
-                    "scaling": [
-                        1.0,
-                        1.0,
-                        1.0
-                    ]
-                }
-            },
-            {
-                "components": [
-                    {
-                        "material": "emission",
+                        "material": "mat_quad",
                         "model": "res/models/quad.obj",
                         "shader": "pbr",
                         "type": "Renderer"
@@ -358,17 +364,46 @@
             {
                 "components": [
                     {
-                        "material": "emission",
+                        "material": "mat_quad",
+                        "model": "res/models/quad.obj",
                         "shader": "pbr",
                         "type": "Renderer"
                     }
                 ],
-                "name": "sabre_metal_part",
+                "name": "cube0",
                 "transform": {
                     "position": [
-                        4.0,
-                        -2.0,
-                        -3.0
+                        0.0,
+                        1.0,
+                        0.0
+                    ],
+                    "rotation": [
+                        -90.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            {
+                "components": [
+                    {
+                        "material": "mat_quad",
+                        "model": "res/models/quad.obj",
+                        "shader": "pbr",
+                        "type": "Renderer"
+                    }
+                ],
+                "name": "cube4",
+                "transform": {
+                    "position": [
+                        0.0,
+                        0.0,
+                        1.0
                     ],
                     "rotation": [
                         0.0,
@@ -376,16 +411,16 @@
                         0.0
                     ],
                     "scaling": [
-                        0.029999999329447746,
-                        0.5,
-                        0.029999999329447746
+                        1.0,
+                        1.0,
+                        1.0
                     ]
                 }
             },
             {
                 "components": [
                     {
-                        "material": "emission",
+                        "material": "mat_quad",
                         "model": "res/models/quad.obj",
                         "shader": "pbr",
                         "type": "Renderer"
@@ -413,22 +448,22 @@
             {
                 "components": [
                     {
-                        "material": "colour",
-                        "model": "res/models/sphere.obj",
+                        "material": "mat_quad",
+                        "model": "res/models/quad.obj",
                         "shader": "pbr",
                         "type": "Renderer"
                     }
                 ],
-                "name": "sphere1",
+                "name": "cube2",
                 "transform": {
                     "position": [
-                        -30.0,
-                        20.0,
-                        20.0
+                        1.0,
+                        0.0,
+                        0.0
                     ],
                     "rotation": [
                         0.0,
-                        0.0,
+                        90.0,
                         0.0
                     ],
                     "scaling": [
@@ -441,7 +476,7 @@
             {
                 "components": [
                     {
-                        "material": "emission",
+                        "material": "mat_quad",
                         "model": "res/models/quad.obj",
                         "shader": "pbr",
                         "type": "Renderer"
@@ -469,6 +504,118 @@
             {
                 "components": [
                     {
+                        "material": "mat_metal",
+                        "model": "res/models/quad.obj",
+                        "shader": "pbr",
+                        "type": "Renderer"
+                    }
+                ],
+                "name": "otherQuad",
+                "transform": {
+                    "position": [
+                        -10.0,
+                        0.0,
+                        0.0
+                    ],
+                    "rotation": [
+                        -90.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            {
+                "components": [
+                    {
+                        "material": "mat_iron",
+                        "model": "res/models/cube.obj",
+                        "shader": "pbr",
+                        "type": "Renderer"
+                    }
+                ],
+                "name": "metalPlane",
+                "transform": {
+                    "position": [
+                        0.0,
+                        -25.0,
+                        0.0
+                    ],
+                    "rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        40.0,
+                        0.5,
+                        40.0
+                    ]
+                }
+            },
+            {
+                "components": [
+                    {
+                        "material": "mat_sphere",
+                        "model": "res/models/sphere.obj",
+                        "shader": "pbr",
+                        "type": "Renderer"
+                    }
+                ],
+                "name": "sphere",
+                "transform": {
+                    "position": [
+                        -5.0,
+                        1.0,
+                        -3.0
+                    ],
+                    "rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            {
+                "components": [
+                    {
+                        "material": "mat_iron",
+                        "model": "res/models/cube.obj",
+                        "shader": "pbr",
+                        "type": "Renderer"
+                    }
+                ],
+                "name": "sabre_metal_part",
+                "transform": {
+                    "position": [
+                        4.0,
+                        -2.0,
+                        -3.0
+                    ],
+                    "rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        0.029999999329447746,
+                        0.5,
+                        0.029999999329447746
+                    ]
+                }
+            },
+            {
+                "components": [
+                    {
                         "colour": [
                             0.0,
                             1.0,
@@ -479,7 +626,7 @@
                         "type": "Light"
                     },
                     {
-                        "material": "emission",
+                        "material": "mat_light0",
                         "model": "res/models/sphere.obj",
                         "shader": "pbr",
                         "type": "Renderer"
@@ -517,7 +664,8 @@
                         "type": "Light"
                     },
                     {
-                        "material": "emission",
+                        "material": "mat_light1",
+                        "model": "res/models/cube.obj",
                         "shader": "pbr",
                         "type": "Renderer"
                     }
@@ -544,7 +692,35 @@
             {
                 "components": [
                     {
-                        "material": "colour",
+                        "material": "mat_sphere1",
+                        "model": "res/models/sphere.obj",
+                        "shader": "pbr",
+                        "type": "Renderer"
+                    }
+                ],
+                "name": "sphere1",
+                "transform": {
+                    "position": [
+                        -30.0,
+                        20.0,
+                        20.0
+                    ],
+                    "rotation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            },
+            {
+                "components": [
+                    {
+                        "material": "mat_sphere2",
                         "model": "res/models/sphere.obj",
                         "shader": "pbr",
                         "type": "Renderer"
@@ -604,46 +780,18 @@
             {
                 "components": [
                     {
-                        "material": "",
+                        "material": "UnnamedMaterial0",
                         "model": "res/models/cube.obj",
                         "shader": "pbr",
                         "type": "Renderer"
                     }
                 ],
-                "name": "Empty Entity",
+                "name": "asd",
                 "transform": {
                     "position": [
                         0.0,
-                        11.199999809265137,
-                        0.0
-                    ],
-                    "rotation": [
-                        0.0,
-                        0.0,
-                        0.0
-                    ],
-                    "scaling": [
-                        1.0,
-                        1.0,
-                        1.0
-                    ]
-                }
-            },
-            {
-                "components": [
-                    {
-                        "material": "",
-                        "model": "res/models/cube.obj",
-                        "shader": "pbr",
-                        "type": "Renderer"
-                    }
-                ],
-                "name": "Empty Entity",
-                "transform": {
-                    "position": [
-                        0.0,
-                        21.399999618530273,
-                        0.0
+                        10.0,
+                        10.0
                     ],
                     "rotation": [
                         0.0,
@@ -661,6 +809,10 @@
     },
     "textures": [
         {
+            "directory": "res/textures/default.png",
+            "name": "res/textures/default.png"
+        },
+        {
             "directory": "res/textures/oakFloor/oakFloor_NRM.png",
             "name": "res/textures/oakFloor/oakFloor_NRM.png"
         },
@@ -669,12 +821,20 @@
             "name": "res/textures/oakFloor/oakFloor_DIF.png"
         },
         {
-            "directory": "res/textures/default.png",
-            "name": "res/textures/default.png"
-        },
-        {
             "directory": "res/textures/oakFloor/oakFloor_MROT.png",
             "name": "res/textures/oakFloor/oakFloor_MROT.png"
+        },
+        {
+            "directory": "res/textures/metalFloor/metalFloor_NRM.png",
+            "name": "res/textures/metalFloor/metalFloor_NRM.png"
+        },
+        {
+            "directory": "res/textures/metalFloor/metalFloor_DIF.png",
+            "name": "res/textures/metalFloor/metalFloor_DIF.png"
+        },
+        {
+            "directory": "res/textures/metalFloor/metalFloor_MROT.png",
+            "name": "res/textures/metalFloor/metalFloor_MROT.png"
         }
     ]
 }
