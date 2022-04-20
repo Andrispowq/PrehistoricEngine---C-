@@ -302,9 +302,7 @@ namespace Prehistoric
 				std::unordered_map<std::string, Resource> ID_map = manager->getAssetManager()->getIDMap();
 				for (auto& elem : ID_map)
 				{
-					switch (elem.second.type)
-					{
-					case ResourceType::VertexBuffer:
+					if (elem.second.type == ResourceType::VertexBuffer)
 					{
 						if (elem.second.handle == vbo.handle)
 						{
@@ -312,27 +310,18 @@ namespace Prehistoric
 							if (idx == models.end())
 							{
 								models.insert(std::make_pair(elem.first, vbo));
-								goto found;
+								break;
 							}
 						}
-
-						break;
-					}
-					default:
-						break;
 					}
 				}
-
-			found:
 
 				//Store textures
 				for (auto tex : matTextures)
 				{
 					for (auto& elem : ID_map)
 					{
-						switch (elem.second.type)
-						{
-						case ResourceType::Texture:
+						if (elem.second.type == ResourceType::Texture)
 						{
 							if (elem.second.handle == tex.second.handle)
 							{
@@ -340,17 +329,11 @@ namespace Prehistoric
 								if (idx == textures.end())
 								{
 									textures.insert(std::make_pair(elem.first, tex.second));
-									goto found2;
+									break;
 								}
 							}
-
-							break;
-						}
-						default:
-							break;
 						}
 					}
-				found2:;
 				}
 
 				//Store material
