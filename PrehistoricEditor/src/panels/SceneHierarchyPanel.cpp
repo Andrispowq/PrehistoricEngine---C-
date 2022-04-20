@@ -214,14 +214,20 @@ void SceneHierarchyPanel::DrawComponents(Prehistoric::GameObject* object)
 
 	if (ImGui::BeginPopup("AddComponent"))
 	{
-		/*if (ImGui::MenuItem("Camera"))
+		if (ImGui::MenuItem("LightComponent"))
 		{
-			if (!selectionContext.HasComponent<CameraComponent>())
-				m_SelectionContext.AddComponent<CameraComponent>();
+			if (!selectionContext->GetComponent<Prehistoric::Light>())
+			{
+				using namespace Prehistoric;
+				selectionContext->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1), 1.0f, 10.0f, true, false));
+			}
 			else
-				HZ_CORE_WARN("This entity already has the Camera Component!");
+			{
+				PR_LOG_ERROR("This entity already has the Light Component!");
+			}
+
 			ImGui::CloseCurrentPopup();
-		}*/
+		}
 
 		if (ImGui::MenuItem("RendererComponent"))
 		{
@@ -229,19 +235,20 @@ void SceneHierarchyPanel::DrawComponents(Prehistoric::GameObject* object)
 			{
 				using namespace Prehistoric;
 
-				Window* window = Prehistoric::Application::Get().getEngineLayer()->getRenderingEngine()->getWindow();
-				AssembledAssetManager* manager = Prehistoric::Application::Get().getEngineLayer()->getAssetManager();
+				Window* window = Application::Get().getEngineLayer()->getRenderingEngine()->getWindow();
+				AssembledAssetManager* manager = Application::Get().getEngineLayer()->getAssetManager();
 				AssetManager* man = manager->getAssetManager();
 
 				VertexBufferHandle vertexBuffer = man->loadVertexBuffer(std::nullopt, "res/models/cube.obj").value();
-				ShaderHandle shader = man->loadShader(Prehistoric::ShaderName::PBR).value();
+				ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
 				PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vertexBuffer);
 
 				MaterialHandle material = manager->storeMaterial(new Material(man));
 				material->addVector3f(COLOUR, { 1 });
 				material->addVector4f(MROT, { 0.0f, 0.1f, 1.0f, 0.0f });
+				material->addFloat(EMISSION, 0.0f);
 
-				selectionContext->AddComponent(RENDERER_COMPONENT, new Prehistoric::RendererComponent(window, manager, pipeline, material));
+				selectionContext->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, material));
 			}
 			else
 			{

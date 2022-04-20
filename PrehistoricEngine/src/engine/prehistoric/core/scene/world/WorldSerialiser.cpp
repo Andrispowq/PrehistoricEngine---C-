@@ -281,11 +281,6 @@ namespace Prehistoric
 		std::vector<std::string> textureLocation;
 		for (auto child : children)
 		{
-			if (child->getName() == "otherQuad")
-			{
-				int i = 10;
-			}
-
 			if (child->HasComponent<RendererComponent>())
 			{
 				RendererComponent* renderer = child->GetComponent<RendererComponent>();
