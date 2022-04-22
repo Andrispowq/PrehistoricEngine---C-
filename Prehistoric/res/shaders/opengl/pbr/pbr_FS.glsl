@@ -300,7 +300,7 @@ void main()
 
 	colour *= max((1 - shadow), 0.2);
 
-	outColour = vec4(colour, (1 - transmittance));
+	outColour = vec4(colour, 1);
 	outPositionMetallic = vec4(position_FS, metallic);
 	outAlbedoRoughness = vec4(albedoColour, roughness);
 	outNormal = vec4(N, 1);

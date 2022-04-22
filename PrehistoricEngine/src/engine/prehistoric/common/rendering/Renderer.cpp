@@ -29,7 +29,7 @@ namespace Prehistoric
 		
 		uint64_t h0 = 0;
 		if (material != nullptr)
-			h0 = material->GetTextureHash();
+			h0 = material->GetHash();
 
 		auto index = map.find(pipeline);
 		if (index == map.end())
@@ -47,7 +47,7 @@ namespace Prehistoric
 				Material* curr_mat = mat.first;
 				uint64_t h1 = 0;
 				if (curr_mat != nullptr)
-					h1 = curr_mat->GetTextureHash();
+					h1 = curr_mat->GetHash();
 
 				if (h0 == h1)
 				{

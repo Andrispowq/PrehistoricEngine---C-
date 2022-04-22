@@ -24,7 +24,6 @@ namespace Prehistoric
 		void addInt(const std::string& key, int value);
 
 		uint64_t GetHash();
-		uint64_t GetTextureHash();
 
 		Texture* getTexture(const std::string& key) const;
 
@@ -55,7 +54,6 @@ namespace Prehistoric
 
 		AssetManager* manager;
 		uint64_t hash = 0;
-		uint64_t texHash = 0;
 		size_t ID;
 		static size_t lastID;
 

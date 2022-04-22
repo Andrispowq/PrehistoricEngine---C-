@@ -80,83 +80,89 @@ namespace Prehistoric
 	{
 		manager->addReference<Texture>(texture.handle);
 		textures.emplace(std::make_pair(key, texture));
+		hash = 0;
 	}
 
 	void Material::addVector4f(const std::string& key, Vector4f value)
 	{
 		vector4s.emplace(std::make_pair(key, value));
+		hash = 0;
 	}
 
 	void Material::addVector3f(const std::string& key, Vector3f value)
 	{
 		vector3s.emplace(std::make_pair(key, value));
+		hash = 0;
 	}
 
 	void Material::addVector2f(const std::string& key, Vector2f value)
 	{
 		vector2s.emplace(std::make_pair(key, value));
+		hash = 0;
 	}
 
 	void Material::addFloat(const std::string& key, float value)
 	{
 		floats.emplace(std::make_pair(key, value));
+		hash = 0;
 	}
 
 	void Material::addInt(const std::string& key, int value)
 	{
 		ints.emplace(std::make_pair(key, value));
+		hash = 0;
 	}
 
 	uint64_t Material::GetHash()
 	{
-		if (hash)
+		if (hash != 0)
 			return hash;
 
 		int counter = 0;
 		for (auto tex : textures)
 		{
-			texHash = ((texHash << 63) | (texHash >> 1)) + (tex.second.handle << counter++);
+			hash = ((hash << 63) | (hash >> 1)) + (tex.second.handle << counter++);
 			counter %= 64;
 		}
 
 		for (auto fl : vector4s)
 		{
-			float f = fl.second.x + fl.second.y * 10 + fl.second.z * 100 * fl.second.w * 1000;
-			hash += *(uint64_t*)(&f);
+			uint64_t val = 0;
+			val = ((val << 63) | (val >> 1)) + (*(uint64_t*)(&fl.second.x) << 0);
+			val = ((val << 63) | (val >> 1)) + (*(uint64_t*)(&fl.second.y) << 16);
+			val = ((val << 63) | (val >> 1)) + (*(uint64_t*)(&fl.second.z) << 32);
+			val = ((val << 63) | (val >> 1)) + (*(uint64_t*)(&fl.second.w) << 48);
+			hash = ((hash << 63) | (hash >> 1)) + val;
 		}
 
 		for (auto fl : vector3s)
 		{
-			float f = fl.second.x + fl.second.y * 10 + fl.second.z * 100;
-			hash += *(uint64_t*)(&f);
+			uint64_t val = 0;
+			val = ((val << 63) | (val >> 1)) + (*(uint64_t*)(&fl.second.x) << 0);
+			val = ((val << 63) | (val >> 1)) + (*(uint64_t*)(&fl.second.y) << 16);
+			val = ((val << 63) | (val >> 1)) + (*(uint64_t*)(&fl.second.z) << 32);
+			hash = ((hash << 63) | (hash >> 1)) + val;
+		}
+
+		for (auto fl : vector2s)
+		{
+			uint64_t val = 0;
+			val = ((val << 63) | (val >> 1)) + (*(uint64_t*)(&fl.second.x) << 0);
+			val = ((val << 63) | (val >> 1)) + (*(uint64_t*)(&fl.second.y) << 16);
+			hash = ((hash << 63) | (hash >> 1)) + val;
 		}
 
 		for (auto fl : floats)
 		{
-			hash += *(uint64_t*)(&fl.second);
+			hash = ((hash << 63) | (hash >> 1)) + *(uint64_t*)(&fl.second);
 		}
 
 		for (auto in : ints)
 		{
-			hash += in.second;
+			hash = ((hash << 63) | (hash >> 1)) + in.second;
 		}
 
 		return hash;
-	}
-
-	uint64_t Material::GetTextureHash()
-	{
-		if (texHash)
-			return texHash;
-
-		int counter = 0;
-		for (auto tex : textures)
-		{
-			texHash = ((texHash << 63) | (texHash >> 1)) + (tex.second.handle << counter++);
-			counter %= 64;
-		}
-
-		return texHash;
 	}
 
 	Texture* Material::getTexture(const std::string& key) const
