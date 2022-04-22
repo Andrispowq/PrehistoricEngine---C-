@@ -12,8 +12,8 @@ namespace Prehistoric
 		AddShader(ResourceLoader::LoadShaderVK("vulkan/pbr/pbr_FS.spv"), FRAGMENT_SHADER);
 
 		AddUniform("camera", VERTEX_SHADER | FRAGMENT_SHADER, UniformBuffer, 0, 0, sizeof(float) * 16 * 2 + Vector4f::size());
-		AddUniform("lightConditions", VERTEX_SHADER | FRAGMENT_SHADER, UniformBuffer, 0, 1, sizeof(int) * 2 + sizeof(float) * 2);
-		AddUniform("lights", VERTEX_SHADER | FRAGMENT_SHADER, UniformBuffer, 0, 2, Vector4f::size() * 3 * __EngineConfig.lightsMaxNumber);
+		AddUniform("lightConditions", FRAGMENT_SHADER, UniformBuffer, 0, 1, sizeof(int) * 2 + sizeof(float) * 2);
+		AddUniform("lights", FRAGMENT_SHADER, UniformBuffer, 0, 2, Vector4f::size() * 3 * __EngineConfig.lightsMaxNumber);
 
 		AddUniform(ALBEDO_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 0, 0, nullptr);
 		AddUniform(NORMAL_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 1, 0, nullptr);
@@ -77,11 +77,6 @@ namespace Prehistoric
 		lightCond.lights = (uint32_t)lights.size() >= __EngineConfig.lightsMaxNumber ? __EngineConfig.lightsMaxNumber : (uint32_t)lights.size();
 		lightCond.gamma = __EngineConfig.rendererGamma;
 		lightCond.exposure = __EngineConfig.rendererExposure;
-
-		/*SetUniformi("lightConditions", __EngineConfig.rendererHighDetailRange, 0, instance_index);
-		SetUniformi("lightConditions", (uint32_t)lights.size() >= __EngineConfig.lightsMaxNumber ? __EngineConfig.lightsMaxNumber : (uint32_t)lights.size(), 4, instance_index);
-		SetUniformf("lightConditions", __EngineConfig.rendererGamma, 8, instance_index);
-		SetUniformf("lightConditions", __EngineConfig.rendererExposure, 12, instance_index);*/
 		
 		SetUniform("lightConditions", &lightCond, sizeof(LightCond), 0);
 
