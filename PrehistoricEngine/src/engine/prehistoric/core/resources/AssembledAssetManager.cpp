@@ -1,6 +1,8 @@
 #include "Includes.hpp"
 #include "AssembledAssetManager.h"
 
+#include "prehistoric/application/Application.h"
+
 #include "platform/opengl/rendering/pipeline/GLGraphicsPipeline.h"
 #include "platform/opengl/rendering/pipeline/GLComputePipeline.h"
 
@@ -22,11 +24,11 @@ namespace Prehistoric
 	PipelineHandle AssembledAssetManager::createPipeline(PipelineTypeHashFlags type, ShaderHandle shaderHandle, VertexBufferHandle vboHandle)
 	{
 		uint64_t hash;
-		if (FrameworkConfig::api == OpenGL)
+		if (__FrameworkConfig.api == OpenGL)
 		{
 			hash = Pipeline::GetHash(APIHashFlags::GL, type, shaderHandle.handle, vboHandle.handle);
 		}
-		else if (FrameworkConfig::api == Vulkan)
+		else if (__FrameworkConfig.api == Vulkan)
 		{
 			hash = Pipeline::GetHash(APIHashFlags::VK, type, shaderHandle.handle, vboHandle.handle);
 		}
@@ -42,17 +44,17 @@ namespace Prehistoric
 		switch (type)
 		{
 		case Prehistoric::PipelineTypeHashFlags::Graphics:
-			if (FrameworkConfig::api == OpenGL)
+			if (__FrameworkConfig.api == OpenGL)
 			{
 				pipe = new GLGraphicsPipeline(window, manager.get(), shaderHandle, vboHandle);
 			}
-			else if(FrameworkConfig::api == Vulkan)
+			else if(__FrameworkConfig.api == Vulkan)
 			{
 				pipe = new VKGraphicsPipeline(window, manager.get(), shaderHandle, vboHandle);
 			}
 			break;
 		case Prehistoric::PipelineTypeHashFlags::Compute:
-			if (FrameworkConfig::api == OpenGL)
+			if (__FrameworkConfig.api == OpenGL)
 			{
 				pipe = new GLComputePipeline(window, manager.get(), shaderHandle);
 			}
@@ -114,11 +116,11 @@ namespace Prehistoric
 		else
 			hash = material->GetHash();
 
-		auto idx = materialHashMap.find(hash);
+		/*auto idx = materialHashMap.find(hash);
 		if (idx != materialHashMap.end())
 		{
 			return { material, idx->second };
-		}
+		}*/
 
 		size_t han = material_ID++;
 

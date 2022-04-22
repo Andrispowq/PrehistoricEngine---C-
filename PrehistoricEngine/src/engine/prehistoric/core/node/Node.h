@@ -3,12 +3,13 @@
 
 #include "Includes.hpp"
 
-#include "prehistoric/core/model/transform.h"
-#include "prehistoric/common/rendering/Renderer.h"
+#include "prehistoric/core/model/Transform.h"
+#include "prehistoric/core/util/guid/GUID.h"
 
 namespace Prehistoric
 {
     class CoreEngine;
+    class Renderer;
 
     class Node
     {
@@ -19,13 +20,15 @@ namespace Prehistoric
         virtual void PreUpdate(CoreEngine* engine);
         virtual void PreRender(Renderer* renderer);
 
-        Node* AddChild(const std::string& key, Node* child);
-
         inline const Transform& getWorldTransform() const { return worldTransform; }
         inline Transform& getWorldTransform() { return worldTransform; }
+        inline Node* getParent() { return parent; }
 
-        inline Node* getChild(const std::string& key) const { return children.at(key).get(); }
-        void deleteChild(Node* node);
+        Node* getChild(const std::string& name) const;
+
+        Node* AddChild(const std::string& name, Node* child);
+        void RemoveChild(Node* node);
+        void RemoveChild(const std::string& name);
 
         inline void Move(const Vector3f& d) { worldTransform.setPosition(worldTransform.getPosition() + d); }
         inline void Rotate(const Vector3f& d) { worldTransform.setRotation(worldTransform.getRotation() + d); }
@@ -38,12 +41,19 @@ namespace Prehistoric
         inline bool isEnabled() const { return enabled; }
         inline void setEnabled(bool enabled) { this->enabled = enabled; }
 
+        inline std::string getName() const { return name; }
+        inline std::string& getName() { return name; }
+        inline void setName(const std::string& name) { this->name = name; }
+
+        std::unordered_map<GUID, Node*> getChildrenByID() const;
         std::unordered_map<std::string, Node*> getChildren() const;
 
         Node(const Node&) = default;
     protected:
-        std::unordered_map<std::string, std::unique_ptr<Node>> children;
+        std::unordered_map<GUID, std::unique_ptr<Node>> children;
         Node* parent;
+
+        std::string name;
 
         Transform worldTransform;
         bool enabled;

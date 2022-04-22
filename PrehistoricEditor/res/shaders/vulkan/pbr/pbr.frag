@@ -35,7 +35,7 @@ layout(set = 0, binding = 2, std140) uniform Lights
 	layout(offset = max_lights * 2 * 16) vec4 intensity[max_lights];
 } lights;
 
-layout(set = 1, binding = 0, std140) uniform Material
+layout(set = 2, binding = 1, std140) uniform Material
 {
 	layout(offset = 00) vec4 mrot;
 	layout(offset = 16) vec3 colour;
@@ -43,10 +43,10 @@ layout(set = 1, binding = 0, std140) uniform Material
 	layout(offset = 48) int usesNormalMap;
 } material;
 
-layout (set = 1, binding = 1) uniform sampler2D albedoMap;
-layout (set = 1, binding = 2) uniform sampler2D normalMap;
-layout (set = 1, binding = 3) uniform sampler2D mrotMap;
-layout (set = 1, binding = 4) uniform sampler2D emissionMap;
+layout (set = 1, binding = 0) uniform sampler2D albedoMap;
+layout (set = 1, binding = 1) uniform sampler2D normalMap;
+layout (set = 1, binding = 2) uniform sampler2D mrotMap;
+layout (set = 1, binding = 3) uniform sampler2D emissionMap;
 
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 float GeometrySchlickGGX(float NdotV, float roughness);
@@ -157,7 +157,6 @@ void main()
 	vec3 ambient = (kD * diffuse + specular) * occlusion;*/
 	
 	vec3 ambient = vec3(0.04) * albedoColour;
-
 	vec3 colour = ambient + Lo + max(emission * emissionFactor, 0.0);
 	
 	colour = 1.0 - exp(-colour * exposure);

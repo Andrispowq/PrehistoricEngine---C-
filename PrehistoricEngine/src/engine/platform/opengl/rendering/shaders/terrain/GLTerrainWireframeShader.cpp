@@ -4,6 +4,8 @@
 #include "prehistoric/core/modules/terrain/TerrainNode.h"
 #include "prehistoric/core/model/material/Material.h"
 
+#include "prehistoric/application/Application.h"
+
 namespace Prehistoric
 {
 	GLTerrainWireframeShader::GLTerrainWireframeShader()
@@ -56,34 +58,39 @@ namespace Prehistoric
 		AddUniform("highDetailRange");
 	}
 
-	void GLTerrainWireframeShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
+	void GLTerrainWireframeShader::UpdateGlobalUniforms(Renderer* renderer) const
 	{
+		Camera* camera = renderer->getCamera();
+		const std::vector<Light*>& lights = renderer->getLights();
+
 		SetUniform("viewProjection", camera->getViewProjectionMatrix());
 		SetUniform("cameraPosition", camera->getPosition());
 
-		SetUniformi("highDetailRange", EngineConfig::rendererHighDetailRange);
+		SetUniformi("highDetailRange", __EngineConfig.rendererHighDetailRange);
 
 		//Some other stuff that is terrain-related
-		SetUniformf("scaleY", TerrainConfig::scaleY);
+		SetUniformf("scaleY", __TerrainConfig.scaleY);
 
-		SetUniformi("tessellationFactor", TerrainConfig::tessellationFactor);
-		SetUniformf("tessellationSlope", TerrainConfig::tessellationSlope);
-		SetUniformf("tessellationShift", TerrainConfig::tessellationShift);
+		SetUniformi("tessellationFactor", __TerrainConfig.tessellationFactor);
+		SetUniformf("tessellationSlope", __TerrainConfig.tessellationSlope);
+		SetUniformf("tessellationShift", __TerrainConfig.tessellationShift);
 
 		for (unsigned int i = 0; i < 8; i++)
 		{
 			std::string uName = "lodMorphArea[" + std::to_string(i) + "]";
 
-			SetUniformi(uName, TerrainConfig::lodMorphingAreas[i]);
+			SetUniformi(uName, __TerrainConfig.lodMorphingAreas[i]);
 		}
 	}
 
-	void GLTerrainWireframeShader::UpdateTextureUniforms(Material* material, uint32_t descriptor_index) const
+	void GLTerrainWireframeShader::UpdateMaterialUniforms(Material* material, uint32_t descriptor_index) const
 	{
-		TerrainConfig::heightmap->Bind(0);
-		SetUniformi("heightmap", 0);
-		TerrainConfig::splatmap->Bind(1);
-		SetUniformi("splatmap", 1);
+		TerrainMaps* maps = (TerrainMaps*)material;
+
+		maps->getHeightmap()->Bind(3);
+		SetUniformi("heightmap", 3);
+		maps->getSplatmap()->Bind(4);
+		SetUniformi("splatmap", 4);
 
 		uint32_t texUnit = 2;
 
@@ -91,7 +98,7 @@ namespace Prehistoric
 		{
 			std::string uniformName = "materials[" + std::to_string(i) + "].";
 
-			Material* material = TerrainConfig::terrainMaterials[i];
+			MaterialHandle material = maps->getMaterials()[i];
 
 			material->getTexture(MROT_MAP)->Bind(texUnit);
 			SetUniformi(uniformName + MROT_MAP, texUnit);

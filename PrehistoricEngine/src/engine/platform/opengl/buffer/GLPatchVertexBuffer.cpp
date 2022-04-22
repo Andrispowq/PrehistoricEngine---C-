@@ -9,6 +9,7 @@ namespace Prehistoric
 		: PatchVertexBuffer(window, vertices)
 	{
 		size = (uint32_t)vertices.size();
+		submeshCount = 1;
 
 		glGenVertexArrays(1, &vao);
 		glGenBuffers(1, &vbo);
@@ -47,7 +48,7 @@ namespace Prehistoric
 		glEnableVertexAttribArray(0);
 	}
 
-	void GLPatchVertexBuffer::Draw(CommandBuffer* commandBuffer) const
+	void GLPatchVertexBuffer::Draw(CommandBuffer* commandBuffer, uint32_t submesh) const
 	{
 		RenderingEngine::getStats().drawcalls += 1;
 		RenderingEngine::getStats().vertexCount += vertexCount;

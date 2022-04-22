@@ -10,18 +10,23 @@ namespace Prehistoric
 	enum class ShaderName
 	{
 		PBR,
-		Basic, 
 		AtmosphereScattering,
 		Atmosphere,
 		TerrainWireframe,
+		TerrainShadow,
 		Terrain,
 		Gui,
 		GPGPUNormal,
 		GPGPUSplat,
 		GPGPUHeightQuery,
-		Deferred,
-		AlphaCoverage,
-		FXAA
+		HDR,
+		DepthPass,
+		LightCullingPass,
+		Gaussian,
+		BloomCombine,
+		BloomDecompose,
+		ShadowDepthPass,
+		VolumetricPostProcessing
 	};
 
 	class ShaderLoader : public Loader

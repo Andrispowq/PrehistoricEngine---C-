@@ -3,6 +3,8 @@
 
 #include "platform/opengl/texture/GLTexture.h"
 
+#include "prehistoric/application/Application.h"
+
 namespace Prehistoric
 {
 	GLFramebuffer::GLFramebuffer(Window* window)
@@ -38,7 +40,7 @@ namespace Prehistoric
 	void GLFramebuffer::Clear(const Vector4f& colour)
 	{
 		glClearColor(colour.r, colour.g, colour.b, colour.a);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	}
 
 	void GLFramebuffer::SetDrawAttachments(uint32_t n, uint32_t* attachments)
@@ -59,7 +61,7 @@ namespace Prehistoric
 
 		if (multisample)
 		{
-			glRenderbufferStorageMultisample(GL_RENDERBUFFER, FrameworkConfig::windowNumSamples, GL_DEPTH_COMPONENT24, width, height);
+			glRenderbufferStorageMultisample(GL_RENDERBUFFER, __FrameworkConfig.windowNumSamples, GL_DEPTH_COMPONENT24, width, height);
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthAttachment);
 		}
 		else
@@ -72,10 +74,26 @@ namespace Prehistoric
 	void GLFramebuffer::addColourAttachment2D(Texture* texture, uint32_t attachment, uint32_t mipLevel)
 	{
 		GLTexture* tex = (GLTexture*)texture;
+		GLenum type = GL_COLOR_ATTACHMENT0 + attachment;
+		if (tex->isDepth())
+		{
+			type = GL_DEPTH_ATTACHMENT;
+		}
+
+		if (tex->getType() == TEXTURE_ARRAY_2D)
+		{
+			glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, tex->getTextureID(), 0);
+			return;
+		}
+
 		if (tex->isMultisample())
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment, GL_TEXTURE_2D_MULTISAMPLE, tex->getTextureID(), mipLevel);
+		{
+			glFramebufferTexture2D(GL_FRAMEBUFFER, type, GL_TEXTURE_2D_MULTISAMPLE, tex->getTextureID(), mipLevel);
+		}
 		else
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment, GL_TEXTURE_2D, tex->getTextureID(), mipLevel);
+		{
+			glFramebufferTexture2D(GL_FRAMEBUFFER, type, GL_TEXTURE_2D, tex->getTextureID(), mipLevel);
+		}
 	}
 
 	void GLFramebuffer::addColourAttachmentMultisample2D(uint32_t attachment)
@@ -83,7 +101,7 @@ namespace Prehistoric
 		uint32_t id;
 		glGenRenderbuffers(1, &id);
 		glBindRenderbuffer(GL_RENDERBUFFER, id);
-		glRenderbufferStorageMultisample(GL_RENDERBUFFER, FrameworkConfig::windowNumSamples, GL_RGBA16, width, height);
+		glRenderbufferStorageMultisample(GL_RENDERBUFFER, __FrameworkConfig.windowNumSamples, GL_RGBA16F, width, height);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment, GL_RENDERBUFFER, id);
 
 		multisampleAttachments.push_back(std::make_pair(attachment, id));
@@ -103,9 +121,10 @@ namespace Prehistoric
 		}
 	}
 
-	void GLFramebuffer::Blit(Framebuffer* destination, uint32_t width, uint32_t height, uint32_t source_attachment, uint32_t dest_attachment)
+	void GLFramebuffer::Blit(Framebuffer* destination, uint32_t width, uint32_t height, uint32_t source_attachment, uint32_t dest_attachment,
+		uint32_t dest_width, uint32_t dest_height)
 	{
-		if (destination == 0)
+		if (destination == nullptr)
 		{
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 		}
@@ -117,8 +136,7 @@ namespace Prehistoric
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, id);
 		glReadBuffer(GL_COLOR_ATTACHMENT0 + source_attachment);
 		glDrawBuffer(GL_COLOR_ATTACHMENT0 + dest_attachment);
-		glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
-			GL_NEAREST);
+		glBlitFramebuffer(0, 0, width, height, 0, 0, (dest_width == 0) ? width : dest_width, (dest_height == 0) ? height : dest_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	}

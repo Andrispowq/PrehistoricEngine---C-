@@ -1,16 +1,27 @@
 #include "Includes.hpp"
 #include "VertexBufferLoader.h"
 
+#include "prehistoric/core/resources/AssetManager.h"
+#include "prehistoric/application/Application.h"
+
 namespace Prehistoric
 {
-    static Mesh meshes[NUM_THREADS];
+    static Model meshes[NUM_THREADS];
+
+    static OBJLoader loader;
 
     static void load_meshes(size_t start, size_t count, std::string locations[])
     {
         for (size_t i = start; i < (start + count); i++)
         {
-            meshes[i] = OBJLoader::LoadMesh(locations[i], "", "");
+            meshes[i] = std::move(loader.LoadModel(locations[i], "", "")); //TODO
         }
+    }
+
+    VertexBufferLoader::VertexBufferLoader(Window* window, AssetManager* manager)
+        : Loader(window), manager(manager)
+    {
+        loader = OBJLoader(window, manager);
     }
 
     void* VertexBufferLoader::LoadResourceInternal(const std::string& path, Extra* extra)
@@ -23,7 +34,7 @@ namespace Prehistoric
         case Type::Mesh:
             if (ext->mesh.has_value())
             {
-                if (FrameworkConfig::api == OpenGL)
+                if (__FrameworkConfig.api == OpenGL)
                 {
                     ret = new GLMeshVertexBuffer(window, ext->mesh.value());
                 }
@@ -34,14 +45,19 @@ namespace Prehistoric
             }
             else
             {
-                Mesh mesh = OBJLoader::LoadMesh(path, "", "");
-                if (FrameworkConfig::api == OpenGL)
+                size_t last_slash = path.find_last_of('/');
+
+                std::string _path = path.substr(0, last_slash);
+                std::string _obj = path.substr(last_slash + 1, path.length() - last_slash - 1);
+
+                Model model = loader.LoadModel(_path, _obj, "");
+                if (__FrameworkConfig.api == OpenGL)
                 {
-                    ret = new GLMeshVertexBuffer(window, mesh);
+                    ret = new GLMeshVertexBuffer(window, model);
                 }
                 else
                 {
-                    ret = new VKMeshVertexBuffer(window, mesh);
+                    ret = new VKMeshVertexBuffer(window, model);
                 }
             }
 
@@ -95,7 +111,7 @@ namespace Prehistoric
 		{
             VertexBuffer* ret;
 
-            if (FrameworkConfig::api == OpenGL)
+            if (__FrameworkConfig.api == OpenGL)
             {
                 ret = new GLMeshVertexBuffer(window, meshes[i]);
             }
@@ -111,9 +127,8 @@ namespace Prehistoric
 		threads.clear();
 	}
 
-    Mesh VertexBufferLoader::LoadMesh(const std::string& path)
+    Model VertexBufferLoader::LoadModel(const std::string& path)
     {
-        Mesh mesh = OBJLoader::LoadMesh(path, "", "");
-        return mesh;
+        return loader.LoadModel(path, "", "");
     }
 };

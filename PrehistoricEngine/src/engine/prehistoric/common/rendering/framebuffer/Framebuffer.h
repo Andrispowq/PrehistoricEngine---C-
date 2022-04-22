@@ -14,7 +14,7 @@ namespace Prehistoric
 	class Framebuffer
 	{
 	public:
-		Framebuffer(Window* window) : window(window) {}
+		Framebuffer(Window* window) : window(window), width(0), height(0) {}
 		virtual ~Framebuffer() {}
 
 		virtual void Bind() = 0;
@@ -30,7 +30,7 @@ namespace Prehistoric
 
 		virtual void addColourAttachment3D(Texture* texture, uint32_t face, uint32_t attachment = 0, uint32_t mipLevel = 0) = 0;
 
-		virtual void Blit(Framebuffer* destination, uint32_t width, uint32_t height, uint32_t source_attachment = 0, uint32_t dest_attachment = 0) = 0;
+		virtual void Blit(Framebuffer* destination, uint32_t width, uint32_t height, uint32_t source_attachment = 0, uint32_t dest_attachment = 0, uint32_t dest_width = 0, uint32_t dest_height = 0) = 0;
 
 	protected:
 		Window* window;

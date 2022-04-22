@@ -12,7 +12,7 @@ void main()
 {
 	mat4 rotView = mat4(mat3(m_view));
 	vec4 clipPos = m_projection * rotView * vec4(position_VS, 1.0);
-	gl_Position = clipPos.xyww;//m_projection * m_view * m_transform * vec4(position_VS, 1);
+	gl_Position = clipPos.xyww;/*m_projection * m_view * m_transform * vec4(position_VS, 1);*/
 	
 	position_FS = position_VS;
 }

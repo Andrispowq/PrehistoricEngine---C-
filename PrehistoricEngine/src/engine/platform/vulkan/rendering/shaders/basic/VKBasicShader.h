@@ -18,8 +18,12 @@ namespace Prehistoric
 		VKBasicShader(Window* window);
 		virtual ~VKBasicShader() {}
 
-		virtual void UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const override;
-		virtual void UpdateTextureUniforms(Material* material, uint32_t descriptor_index = 0) const override;
+		virtual void BindGlobalSets() const;
+		virtual void BindTextureSets(uint32_t descriptor_index = 0) const;
+		virtual void BindObjectSets(uint32_t instance_index = 0) const;
+
+		virtual void UpdateGlobalUniforms(Renderer* renderer) const override;
+		virtual void UpdateMaterialUniforms(Material* material, uint32_t descriptor_index = 0) const override;
 		virtual void UpdateObjectUniforms(GameObject* object, uint32_t instance_index = 0) const override;
 	};
 };

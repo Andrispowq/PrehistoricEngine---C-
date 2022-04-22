@@ -8,9 +8,17 @@
 #include "prehistoric/core/CoreEngine.h"
 #include "prehistoric/core/ImGUI/ImGUILayer.h"
 
+#define __EngineSettings ::Prehistoric::Application::Get().getEngineLayer()->getEngineSettings()
+
+#define __FrameworkConfig __EngineSettings->frameworkConfig
+#define __EngineConfig __EngineSettings->engineConfig
+#define __TerrainConfig __EngineSettings->terrainConfig
+#define __AtmosphereConfig __EngineSettings->atmosphereConfig
+#define __EnvironmentMapConfig __EngineSettings->environmentMapConfig
+
 namespace Prehistoric
 {
-	class PR_API Application
+	class Application
 	{
 	public:
 		Application();
@@ -31,6 +39,7 @@ namespace Prehistoric
 		double getFrameTime() const { return last_frameTime; }
 
 		static Application& Get() { return *instance; }
+
 	protected:
 		LayerStack layerStack;
 		bool running = false;

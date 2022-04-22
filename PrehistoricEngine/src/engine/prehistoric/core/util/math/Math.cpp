@@ -52,7 +52,7 @@ Vector3f Vector3f::reflect(const Vector3f& normal) const
 
 Vector3f Vector3f::refract(const Vector3f& normal, const float& eta) const
 {
-	float k = 1 - std::pow(eta, 2) * (1 - std::pow(this->dot(normal), 2));
+	float k = (float)(1 - std::pow(eta, 2) * (1 - std::pow(this->dot(normal), 2)));
 
 	if (k < 0)
 		return Vector3f(0);
@@ -491,6 +491,53 @@ std::array<float, 4> Matrix4f::operator[](int index) const
 	return arr;
 }
 
+Matrix4f Matrix4f::Invert() const
+{
+	float s0 = Get(0, 0) * Get(1, 1) - Get(1, 0) * Get(0, 1);
+	float s1 = Get(0, 0) * Get(1, 2) - Get(1, 0) * Get(0, 2);
+	float s2 = Get(0, 0) * Get(1, 3) - Get(1, 0) * Get(0, 3);
+	float s3 = Get(0, 1) * Get(1, 2) - Get(1, 1) * Get(0, 2);
+	float s4 = Get(0, 1) * Get(1, 3) - Get(1, 1) * Get(0, 3);
+	float s5 = Get(0, 2) * Get(1, 3) - Get(1, 2) * Get(0, 3);
+
+	float c5 = Get(2, 2) * Get(3, 3) - Get(3, 2) * Get(2, 3);
+	float c4 = Get(2, 1) * Get(3, 3) - Get(3, 1) * Get(2, 3);
+	float c3 = Get(2, 1) * Get(3, 2) - Get(3, 1) * Get(2, 2);
+	float c2 = Get(2, 0) * Get(3, 3) - Get(3, 0) * Get(2, 3);
+	float c1 = Get(2, 0) * Get(3, 2) - Get(3, 0) * Get(2, 2);
+	float c0 = Get(2, 0) * Get(3, 1) - Get(3, 0) * Get(2, 1);
+
+	float div = (s0 * c5 - s1 * c4 + s2 * c3 + s3 * c2 - s4 * c1 + s5 * c0);
+	if (div == 0)
+		PR_LOG_ERROR("Matrix is not invertible!\n");
+
+	float invdet = 1.0f / div;
+
+	Matrix4f invM = Matrix4f::Identity();
+
+	invM.Set(0, 0, (Get(1, 1) * c5 - Get(1, 2) * c4 + Get(1, 3) * c3) * invdet);
+	invM.Set(0, 1, (-Get(0, 1) * c5 + Get(0, 2) * c4 - Get(0, 3) * c3) * invdet);
+	invM.Set(0, 2, (Get(3, 1) * s5 - Get(3, 2) * s4 + Get(3, 3) * s3) * invdet);
+	invM.Set(0, 3, (-Get(2, 1) * s5 + Get(2, 2) * s4 - Get(2, 3) * s3) * invdet);
+
+	invM.Set(1, 0, (-Get(1, 0) * c5 + Get(1, 2) * c2 - Get(1, 3) * c1) * invdet);
+	invM.Set(1, 1, (Get(0, 0) * c5 - Get(0, 2) * c2 + Get(0, 3) * c1) * invdet);
+	invM.Set(1, 2, (-Get(3, 0) * s5 + Get(3, 2) * s2 - Get(3, 3) * s1) * invdet);
+	invM.Set(1, 3, (Get(2, 0) * s5 - Get(2, 2) * s2 + Get(2, 3) * s1) * invdet);
+
+	invM.Set(2, 0, (Get(1, 0) * c4 - Get(1, 1) * c2 + Get(1, 3) * c0) * invdet);
+	invM.Set(2, 1, (-Get(0, 0) * c4 + Get(0, 1) * c2 - Get(0, 3) * c0) * invdet);
+	invM.Set(2, 2, (Get(3, 0) * s4 - Get(3, 1) * s2 + Get(3, 3) * s0) * invdet);
+	invM.Set(2, 3, (-Get(2, 0) * s4 + Get(2, 1) * s2 - Get(2, 3) * s0) * invdet);
+
+	invM.Set(3, 0, (-Get(1, 0) * c3 + Get(1, 1) * c1 - Get(1, 2) * c0) * invdet);
+	invM.Set(3, 1, (Get(0, 0) * c3 - Get(0, 1) * c1 + Get(0, 2) * c0) * invdet);
+	invM.Set(3, 2, (-Get(3, 0) * s3 + Get(3, 1) * s1 - Get(3, 2) * s0) * invdet);
+	invM.Set(3, 3, (Get(2, 0) * s3 - Get(2, 1) * s1 + Get(2, 2) * s0) * invdet);
+
+	return invM;
+}
+
 Matrix4f Matrix4f::Identity()
 {
 	Matrix4f res;
@@ -565,7 +612,7 @@ Matrix4f Matrix4f::Rotation(const Vector3f& rotation)
 	rz.m[0 * 4 + 1] = sinZ;
 	rz.m[1 * 4 + 1] = cosZ;
 
-	return ry * rx * rz;
+	return rx * ry * rz;
 }
 
 Matrix4f Matrix4f::Scaling(const Vector3f& scale)
@@ -597,17 +644,31 @@ Matrix4f Matrix4f::PerspectiveProjection(const float& fov, const float& aspectRa
 
 	res.m[0 * 4 + 0] = 1 / (tanFOV * aspectRatio);
 	res.m[1 * 4 + 1] = 1 / tanFOV;
-	res.m[2 * 4 + 2] = (farPlane + nearPlane) / frustumLength;
+	res.m[2 * 4 + 2] = -(farPlane + nearPlane) / frustumLength; //
 	res.m[3 * 4 + 2] = -(2 * farPlane * nearPlane) / frustumLength;
-	res.m[2 * 4 + 3] = 1;
+	res.m[2 * 4 + 3] = -1; //
 	res.m[3 * 4 + 3] = 0;
+
+	/*float range = tan(ToRadians(fov / 2)) * nearPlane;
+	float left = -range * aspectRatio;
+	float right = range * aspectRatio;
+	float bottom = -range;
+	float top = range;
+
+	Matrix4f res = Matrix4f::Identity();
+	res.m[0 * 4 + 0] = (2 * nearPlane) / (right - left);
+	res.m[1 * 4 + 1] = (2 * nearPlane) / (top - bottom);
+	res.m[2 * 4 + 2] = -(farPlane + nearPlane) / (farPlane - nearPlane);
+	res.m[2 * 4 + 3] = -1;
+	res.m[3 * 4 + 2] = -(2 * farPlane * nearPlane) / (farPlane - nearPlane);
+	res.m[3 * 4 + 3] = 0;*/
 
 	return res;
 }
 
 Matrix4f Matrix4f::View(const Vector3f& forward, const Vector3f& up)
 {
-	Vector3f right = up.cross(forward);
+	Vector3f right = forward.cross(up);
 
 	Matrix4f mat = Matrix4f::Identity();
 
@@ -626,6 +687,20 @@ Matrix4f Matrix4f::View(const Vector3f& forward, const Vector3f& up)
 	return mat;
 }
 
+Matrix4f Matrix4f::OrthographicProjection(float l, float r, float b, float t, float n, float f)
+{
+	Matrix4f res = Matrix4f::Identity();
+
+	res.m[0 * 4 + 0] = 2.f / (r - l);
+	res.m[1 * 4 + 1] = 2.f / (t - b);
+	res.m[2 * 4 + 2] = -2.f / (f - n);
+	res.m[3 * 4 + 0] = -(r + l) / (r - l);
+	res.m[3 * 4 + 1] = -(t + b) / (t - b);
+	res.m[3 * 4 + 2] = -(f + n) / (f - n);
+
+	return res;
+}
+
 /*
 	The parameter <i> is the index of the row, so to get the first row, the parameter MUST be 0
 */
@@ -639,6 +714,16 @@ std::array<float, 4> const Matrix4f::getRow(int i) const
 	}
 
 	return arr;
+}
+
+inline float Matrix4f::Get(int x, int y) const
+{
+	return m[x * 4 + y];
+}
+
+inline void Matrix4f::Set(int x, int y, float val)
+{
+	m[x * 4 + y] = val;
 }
 
 void Matrix4f::clear()
@@ -928,6 +1013,53 @@ std::array<float, 4> Matrix4f::operator[](int index) const
 	return arr;
 }
 
+inline Matrix4f Matrix4f::Invert() const
+{
+	float s0 = Get(0, 0) * Get(1, 1) - Get(1, 0) * Get(0, 1);
+	float s1 = Get(0, 0) * Get(1, 2) - Get(1, 0) * Get(0, 2);
+	float s2 = Get(0, 0) * Get(1, 3) - Get(1, 0) * Get(0, 3);
+	float s3 = Get(0, 1) * Get(1, 2) - Get(1, 1) * Get(0, 2);
+	float s4 = Get(0, 1) * Get(1, 3) - Get(1, 1) * Get(0, 3);
+	float s5 = Get(0, 2) * Get(1, 3) - Get(1, 2) * Get(0, 3);
+
+	float c5 = Get(2, 2) * Get(3, 3) - Get(3, 2) * Get(2, 3);
+	float c4 = Get(2, 1) * Get(3, 3) - Get(3, 1) * Get(2, 3);
+	float c3 = Get(2, 1) * Get(3, 2) - Get(3, 1) * Get(2, 2);
+	float c2 = Get(2, 0) * Get(3, 3) - Get(3, 0) * Get(2, 3);
+	float c1 = Get(2, 0) * Get(3, 2) - Get(3, 0) * Get(2, 2);
+	float c0 = Get(2, 0) * Get(3, 1) - Get(3, 0) * Get(2, 1);
+
+	float div = (s0 * c5 - s1 * c4 + s2 * c3 + s3 * c2 - s4 * c1 + s5 * c0);
+	if (div == 0)
+		PR_LOG_ERROR("Matrix is not invertible!\n");
+
+	float invdet = 1.0f / div;
+
+	Matrix4f invM = Matrix4f::Identity();
+
+	invM.Set(0, 0, (Get(1, 1) * c5 - Get(1, 2) * c4 + Get(1, 3) * c3) * invdet);
+	invM.Set(0, 1, (-Get(0, 1) * c5 + Get(0, 2) * c4 - Get(0, 3) * c3) * invdet);
+	invM.Set(0, 2, (Get(3, 1) * s5 - Get(3, 2) * s4 + Get(3, 3) * s3) * invdet);
+	invM.Set(0, 3, (-Get(2, 1) * s5 + Get(2, 2) * s4 - Get(2, 3) * s3) * invdet);
+
+	invM.Set(1, 0, (-Get(1, 0) * c5 + Get(1, 2) * c2 - Get(1, 3) * c1) * invdet);
+	invM.Set(1, 1, (Get(0, 0) * c5 - Get(0, 2) * c2 + Get(0, 3) * c1) * invdet);
+	invM.Set(1, 2, (-Get(3, 0) * s5 + Get(3, 2) * s2 - Get(3, 3) * s1) * invdet);
+	invM.Set(1, 3, (Get(2, 0) * s5 - Get(2, 2) * s2 + Get(2, 3) * s1) * invdet);
+
+	invM.Set(2, 0, (Get(1, 0) * c4 - Get(1, 1) * c2 + Get(1, 3) * c0) * invdet);
+	invM.Set(2, 1, (-Get(0, 0) * c4 + Get(0, 1) * c2 - Get(0, 3) * c0) * invdet);
+	invM.Set(2, 2, (Get(3, 0) * s4 - Get(3, 1) * s2 + Get(3, 3) * s0) * invdet);
+	invM.Set(2, 3, (-Get(2, 0) * s4 + Get(2, 1) * s2 - Get(2, 3) * s0) * invdet);
+
+	invM.Set(3, 0, (-Get(1, 0) * c3 + Get(1, 1) * c1 - Get(1, 2) * c0) * invdet);
+	invM.Set(3, 1, (Get(0, 0) * c3 - Get(0, 1) * c1 + Get(0, 2) * c0) * invdet);
+	invM.Set(3, 2, (-Get(3, 0) * s3 + Get(3, 1) * s1 - Get(3, 2) * s0) * invdet);
+	invM.Set(3, 3, (Get(2, 0) * s3 - Get(2, 1) * s1 + Get(2, 2) * s0) * invdet);
+
+	return invM;
+}
+
 Matrix4f Matrix4f::Identity()
 {
 	Matrix4f res;
@@ -1034,9 +1166,9 @@ Matrix4f Matrix4f::PerspectiveProjection(const float& fov, const float& aspectRa
 
 	res.m[0 * 4 + 0] = 1 / (tanFOV * aspectRatio);
 	res.m[1 * 4 + 1] = 1 / tanFOV;
-	res.m[2 * 4 + 2] = (farPlane + nearPlane) / frustumLength;
+	res.m[2 * 4 + 2] = -(farPlane + nearPlane) / frustumLength; //
 	res.m[3 * 4 + 2] = -(2 * farPlane * nearPlane) / frustumLength;
-	res.m[2 * 4 + 3] = 1;
+	res.m[2 * 4 + 3] = -1; //
 	res.m[3 * 4 + 3] = 0;
 
 	return res;
@@ -1063,6 +1195,30 @@ Matrix4f Matrix4f::View(const Vector3f& forward, const Vector3f& up)
 	return mat;
 }
 
+Matrix4f Matrix4f::OrthographicProjection(float l, float r, float b, float t, float n, float f)
+{
+	Matrix4f res;
+
+	res.m[0 * 4 + 0] = 2.0f / (r - l);
+	res.m[0 * 4 + 1] = 0;
+	res.m[0 * 4 + 2] = 0;
+	res.m[0 * 4 + 3] = -(r + l) / (r - l);
+	res.m[1 * 4 + 0] = 0;
+	res.m[1 * 4 + 1] = 2.0f / (t - b);
+	res.m[1 * 4 + 2] = 0;
+	res.m[1 * 4 + 3] = -(t + b) / (t - b);
+	res.m[2 * 4 + 0] = 0;
+	res.m[2 * 4 + 1] = 0;
+	res.m[2 * 4 + 2] = 2.0f / (f - n);
+	res.m[2 * 4 + 3] = -(f + n) / (f - n);
+	res.m[3 * 4 + 0] = 0;
+	res.m[3 * 4 + 1] = 0;
+	res.m[3 * 4 + 2] = 0;
+	res.m[3 * 4 + 3] = 1;
+
+	return res;
+}
+
 /*
 	The parameter <i> is the index of the row, so to get the first row, the parameter MUST be 0
 */
@@ -1076,6 +1232,16 @@ std::array<float, 4> const Matrix4f::getRow(int i) const
 	}
 
 	return arr;
+}
+
+inline float Matrix4f::Get(int x, int y) const
+{
+	return m[x * 4 + y];
+}
+
+inline void Matrix4f::Set(int x, int y, float val)
+{
+	m[x * 4 + y] = val;
 }
 
 void Matrix4f::clear()
@@ -1141,5 +1307,4 @@ inline std::ostream& operator<<(std::ostream& os, const Matrix4f& e)
 		os << '\n';
 	}
 }
-
 };

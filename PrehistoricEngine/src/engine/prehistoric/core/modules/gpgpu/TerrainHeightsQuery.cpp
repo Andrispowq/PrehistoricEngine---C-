@@ -1,6 +1,8 @@
 #include "Includes.hpp"
 #include "TerrainHeightsQuery.h"
 
+#include "prehistoric/application/Application.h"
+
 namespace Prehistoric
 {
 	TerrainHeightsQuery::TerrainHeightsQuery(Window* window, AssembledAssetManager* manager, uint32_t N)
@@ -13,12 +15,12 @@ namespace Prehistoric
 		AssetManager* man = manager->getAssetManager();
 
 		//TODO: Create the Vulkan equivalent of the GLComputePipeline
-		if (FrameworkConfig::api == OpenGL)
+		if (__FrameworkConfig.api == OpenGL)
 		{
 			pipeline = manager->storePipeline(new GLComputePipeline(window, man, man->loadShader(ShaderName::GPGPUHeightQuery).value()));
 			manager->addReference<Pipeline>(pipeline.handle);
 		}
-		else if (FrameworkConfig::api == Vulkan)
+		else if (__FrameworkConfig.api == Vulkan)
 		{
 			//pipeline = manager->storePipeline(new VKComputePipeline(window, man, man->loadShader("gpgpu_terrain_heights").value()));
 			//manager->addReference<Pipeline>(pipeline.handle);
@@ -26,25 +28,22 @@ namespace Prehistoric
 
 		heights = new float[N * N];
 
-		Layout layout;
-		layout.addLayoutMember(LayoutType::FLOAT, LayoutTypeInfo::UNSIZED_ARRAY, N * N);
-
-		if (FrameworkConfig::api == OpenGL)
+		if (__FrameworkConfig.api == OpenGL)
 		{
-			buffer = new GLShaderStorageBuffer(window, heights, layout);
+			buffer = new GLShaderStorageBuffer(window, heights, N * N * sizeof(float));
 		}
-		else if (FrameworkConfig::api == Vulkan)
+		else if (__FrameworkConfig.api == Vulkan)
 		{
 			//buffer = new VKShaderStorageBuffer();
 		}
 
-		if (FrameworkConfig::api == OpenGL)
+		if (__FrameworkConfig.api == OpenGL)
 		{
 			GLComputePipeline* glPipe = reinterpret_cast<GLComputePipeline*>(pipeline.pointer);
 			glPipe->setInvocationSize({ N / 16, N / 16, 1 });
 			glPipe->addSSBOBinding(0, buffer, WRITE_ONLY);
 		}
-		else if (FrameworkConfig::api == Vulkan)
+		else if (__FrameworkConfig.api == Vulkan)
 		{
 			/*VKComputePipeline* vkPipe = reinterpret_cast<VKComputePipeline*>(pipeline);
 			vkPipe->setInvocationSize({ float(N / 16), float(N / 16), 1.0f });
@@ -63,11 +62,11 @@ namespace Prehistoric
 	{
 		pipeline->BindPipeline(nullptr);
 
-		if (FrameworkConfig::api == OpenGL)
+		if (__FrameworkConfig.api == OpenGL)
 		{
 			reinterpret_cast<GLTerrainHeightsShader*>(pipeline->getShader())->UpdateUniforms(heightmap, N);
 		}
-		else if (FrameworkConfig::api == Vulkan)
+		else if (__FrameworkConfig.api == Vulkan)
 		{
 			//reinterpret_cast<VKTerrainHeightsShader*>(pipeline->getShader())->UpdateUnifroms(heightmap, N);
 		}
@@ -75,7 +74,7 @@ namespace Prehistoric
 		pipeline->RenderPipeline();
 		pipeline->UnbindPipeline();
 
-		buffer->Bind(nullptr, 0);
+		buffer->Bind(nullptr);
 		buffer->MapBuffer();
 		memcpy(heights, buffer->getMappedData(), N * N * sizeof(float));
 		buffer->UnmapBuffer();

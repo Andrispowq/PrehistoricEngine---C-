@@ -6,8 +6,6 @@
 #include "prehistoric/common/framework/swapchain/Swapchain.h"
 #include "prehistoric/common/framework/context/Context.h"
 
-#include "prehistoric/core/config/FrameworkConfig.h"
-
 #include "prehistoric/core/events/Event.h"
 
 namespace Prehistoric
@@ -42,8 +40,8 @@ namespace Prehistoric
 		Swapchain* getSwapchain() const { return swapchain.get(); }
 		Context* getContext() const { return context.get(); }
 
-		void setWidth(uint32_t width) { this->width = width; FrameworkConfig::windowWidth = width; }
-		void setHeight(uint32_t height) { this->height = height; FrameworkConfig::windowHeight = height; }
+		void setWidth(uint32_t width) { this->width = width; }
+		void setHeight(uint32_t height) { this->height = height; }
 		void setClosed(const bool& closed) { this->closed = closed; }
 		void setClearColour(const Vector4f& clearColour) { swapchain->setClearColour(clearColour); }
 

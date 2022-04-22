@@ -3,7 +3,7 @@
 
 #include <AL/alext.h>
 
-//#include "AudioFile.h"
+#include "prehistoric/application/Application.h"
 
 namespace Prehistoric
 {
@@ -68,6 +68,20 @@ namespace Prehistoric
 
     void AudioEngine::Update(float delta)
     {
+        Camera* camera = Application::Get().getEngineLayer()->getRenderingEngine()->getCamera();
+
+        Vector3f pos = camera->getPosition();
+        Vector3f fwd = camera->getForward();
+        Vector3f up = camera->getUp();
+
+        float f_pos[] = { pos.x, pos.y, pos.z };
+        float f_vel[] = { 0, 0, 0 };
+        float f_ori[] = { fwd.x,fwd.y,-fwd.z, up.x,up.y,up.z };
+
+        alListenerfv(AL_POSITION, f_pos);
+        alListenerfv(AL_VELOCITY, f_vel);
+        alListenerfv(AL_ORIENTATION, f_ori);
+
        for (auto comp : audioComponents)
        {
            uint32_t id = comp->getSourceID();

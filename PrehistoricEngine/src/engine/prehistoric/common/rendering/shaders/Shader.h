@@ -64,8 +64,7 @@ namespace Prehistoric
 	};
 
 	class GameObject;
-	class Camera;
-	class Light;
+	class Renderer;
 
 	class Shader
 	{
@@ -91,6 +90,8 @@ namespace Prehistoric
 		virtual void SetUniform(const std::string& name, const Vector4f& value, size_t offset = 0, uint32_t instance_index = 0) const = 0;
 		virtual void SetUniform(const std::string& name, const Matrix4f& value, size_t offset = 0, uint32_t instance_index = 0) const = 0;
 
+		virtual void SetUniformBlock(const std::string& name, int value, size_t offset = 0, uint32_t instance_index = 0) const = 0;
+
 		virtual void SetTexture(const std::string& name, Texture* value, uint32_t instance_index = 0) const = 0;
 
 		//General SetUniform method for Uniform Buffer Objects, like uploading view and projection matrix to the same uniform binding
@@ -101,8 +102,8 @@ namespace Prehistoric
 		//Global uniforms -> camera and light properties
 		//Texture uniforms -> we batch the drawcalls per material, so we update the textures that are shared here
 		//Object uniforms -> unique, per-object values and material values that are not textures
-		virtual void UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const {}
-		virtual void UpdateTextureUniforms(Material* material, uint32_t descriptor_index = 0) const {}
+		virtual void UpdateGlobalUniforms(Renderer* renderer) const {}
+		virtual void UpdateMaterialUniforms(Material* material, uint32_t descriptor_index = 0) const {}
 		virtual void UpdateObjectUniforms(GameObject* object, uint32_t instance_index = 0) const {}
 
 		Shader(const Shader&) = delete;

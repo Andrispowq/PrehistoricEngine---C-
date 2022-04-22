@@ -14,7 +14,7 @@ namespace Prehistoric
 		virtual ~GLPatchVertexBuffer() override;
 
 		void Bind(CommandBuffer* commandBuffer) const override;
-		void Draw(CommandBuffer* commandBuffer) const override;
+		void Draw(CommandBuffer* commandBuffer, uint32_t submesh) const override;
 		void Unbind() const override;
 	private:
 		GLuint vao;

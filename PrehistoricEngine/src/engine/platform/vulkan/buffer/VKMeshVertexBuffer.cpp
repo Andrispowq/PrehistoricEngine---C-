@@ -7,33 +7,61 @@
 
 namespace Prehistoric
 {
-	VKMeshVertexBuffer::VKMeshVertexBuffer(Window* window, const Mesh& mesh)
-		: MeshVertexBuffer(window, mesh), vertexBuffer(nullptr), indexBuffer(nullptr)
+	VKMeshVertexBuffer::VKMeshVertexBuffer(Window* window, const Model& model)
+		: MeshVertexBuffer(window, model)
 	{
 		this->device = reinterpret_cast<VKDevice*>(window->getContext()->getDevices());
-
 		this->swapchain = (VKSwapchain*)window->getSwapchain();
 
-		this->size = (uint32_t)mesh.getIndices().size();
+		std::vector<float> vdata;
+		std::vector<uint32_t> idata;
+
+		vertices.resize(submeshCount);
+		index_offsets.resize(submeshCount);
+		sizes.resize(submeshCount);
+
+		size_t vertCount = 0;
+		size_t index = 0;
+		for (auto& mesh : model.getMeshes())
+		{
+			std::vector<float> vdat = mesh.GetVertexData();
+			std::vector<uint32_t> idat = mesh.GetIndexData();
+
+			for (uint32_t& elem : idat)
+			{
+				elem += (uint32_t)vertCount;
+			}
+
+			vdata.insert(vdata.end(), vdat.begin(), vdat.end());
+			idata.insert(idata.end(), idat.begin(), idat.end());
+
+			size_t verts = mesh.getVertices().size();
+			size_t inds = mesh.getIndices().size();
+
+			vertices[index] = verts;
+			index_offsets[index] = size;
+			sizes[index] = inds;
+
+			size += (uint32_t)inds;
+			vertCount += verts;
+			index++;
+		}
 
 		//Building mesh data
-		VkDeviceSize vBufferSize = mesh.getVertices().size() * Vertex::getSize();
-		VkDeviceSize iBufferSize = mesh.getIndices().size() * sizeof(uint32_t);
+		VkDeviceSize vBufferSize = vertCount * Vertex::getSize();
+		VkDeviceSize iBufferSize = size * sizeof(uint32_t);
 
-		this->vertexBuffer = std::make_unique<VKBuffer>(device, vBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+		vertexBuffer = std::make_unique<VKBuffer>(device, vBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		this->indexBuffer = std::make_unique<VKBuffer>(device, iBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 
+		indexBuffer = std::make_unique<VKBuffer>(device, iBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-		std::vector<float> vData = mesh.GetVertexData();
-		std::vector<uint32_t> iData = mesh.GetIndexData();
 
 		//Creation of the vertex buffer
 		std::unique_ptr<VKBuffer> stagingBuffer = std::make_unique<VKBuffer>(device, vBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
 		stagingBuffer->MapMemory();
-		stagingBuffer->Store(vData.data());
+		stagingBuffer->Store(vdata.data());
 		stagingBuffer->UnmapMemory();
 
 		vertexBuffer->Copy(stagingBuffer.get());
@@ -43,7 +71,7 @@ namespace Prehistoric
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
 		stagingBuffer->MapMemory();
-		stagingBuffer->Store(iData.data());
+		stagingBuffer->Store(idata.data());
 		stagingBuffer->UnmapMemory();
 
 		indexBuffer->Copy(stagingBuffer.get());
@@ -59,13 +87,18 @@ namespace Prehistoric
 		vkCmdBindIndexBuffer(buffer->getCommandBuffer(), indexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32);
 	}
 
-	void VKMeshVertexBuffer::Draw(CommandBuffer* commandBuffer) const
+	void VKMeshVertexBuffer::Draw(CommandBuffer* commandBuffer, uint32_t submesh) const
 	{
-		RenderingEngine::getStats().drawcalls += 1;
-		RenderingEngine::getStats().vertexCount += vertices;
-		RenderingEngine::getStats().indexCount += indices;
+		if (submesh >= submeshCount)
+		{
+			return;
+		}
 
-		vkCmdDrawIndexed(((VKCommandBuffer*)commandBuffer)->getCommandBuffer(), size, 1, 0, 0, 0);
+		RenderingEngine::getStats().drawcalls += 1;
+		RenderingEngine::getStats().vertexCount += vertices[submesh];
+		RenderingEngine::getStats().indexCount += sizes[submesh];
+
+		vkCmdDrawIndexed(((VKCommandBuffer*)commandBuffer)->getCommandBuffer(), (uint32_t)sizes[submesh], 1, (uint32_t)index_offsets[submesh], 0, 0);
 	}
 
 	VkVertexInputBindingDescription VKMeshVertexBuffer::getBindingDescription() const

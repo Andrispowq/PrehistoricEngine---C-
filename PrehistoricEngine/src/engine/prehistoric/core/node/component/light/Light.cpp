@@ -6,8 +6,8 @@
 
 namespace Prehistoric
 {
-	Light::Light(const Vector3f& colour, const Vector3f& intensity)
-		: colour(colour), intensity(intensity), toBeRegistered(true)
+	Light::Light(const Vector3f& colour, float intensity, float radius, bool illuminate, bool castShadow)
+		: colour(colour), intensity(intensity), radius(radius), illuminate(illuminate), castShadow(castShadow)
 	{
 		type = ComponentType::LightComponent;
 	}
@@ -20,7 +20,7 @@ namespace Prehistoric
 	{
 		bool shouldRegister = parent->isEnabled();
 
-		if (toBeRegistered)
+		if (shouldRegister)
 		{
 			renderer->RegisterLight(this);
 		}

@@ -13,8 +13,9 @@ namespace Prehistoric
 	{
 	public:
 		Material(AssetManager* manager);
+		//Material(AssetManager* manager, nlohmann::json material);
 		~Material();
-
+		
 		void addTexture(const std::string& key, TextureHandle texture);
 		void addVector4f(const std::string& key, Vector4f value);
 		void addVector3f(const std::string& key, Vector3f value);
@@ -23,7 +24,6 @@ namespace Prehistoric
 		void addInt(const std::string& key, int value);
 
 		uint64_t GetHash();
-		uint64_t GetTextureHash();
 
 		Texture* getTexture(const std::string& key) const;
 
@@ -37,16 +37,25 @@ namespace Prehistoric
 		Texture* getDefault() const;
 		bool exists(const std::string& key) const { return textures.find(key) != textures.end(); }
 
+		size_t getID() const { return ID; }
+		std::string getName() const { return name; }
+
 		std::unordered_map<std::string, TextureHandle>& getTextures() { return textures; }
 		std::unordered_map<std::string, Vector4f>& getVector4fs() { return vector4s; }
 		std::unordered_map<std::string, Vector3f>& getVector3fs() { return vector3s; }
 		std::unordered_map<std::string, Vector2f>& getVector2fs() { return vector2s; }
 		std::unordered_map<std::string, float>& getFloats() { return floats; }
 		std::unordered_map<std::string, int>& getInts() { return ints; }
+
+		void setName(const std::string& name) { this->name = name; }
+
 	private:
+		std::string name;
+
 		AssetManager* manager;
 		uint64_t hash = 0;
-		uint64_t texHash = 0;
+		size_t ID;
+		static size_t lastID;
 
 		std::unordered_map<std::string, TextureHandle> textures;
 		std::unordered_map<std::string, Vector4f> vector4s;

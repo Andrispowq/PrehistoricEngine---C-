@@ -4,6 +4,7 @@
 #include "Includes.hpp"
 
 #include "prehistoric/core/node/component/Component.h"
+#include "prehistoric/core/node/Node.h"
 
 namespace Prehistoric
 {
@@ -24,10 +25,7 @@ namespace Prehistoric
 		Component* GetComponent(const std::string& name) const;
 
 		std::vector<GameObject*> getAllChildren() const;
-
-		inline std::string getName() const { return name; }
-		inline std::string& getName() { return name; }
-		inline void setName(const std::string& name) { this->name = name; }
+		std::unordered_map<std::string, Component*> getComponents() const;
 
 		template<typename T> 
 		T* GetComponent() const;
@@ -42,7 +40,6 @@ namespace Prehistoric
 	protected:
 		std::unordered_map<std::string, std::unique_ptr<Component>> components;
 		UpdateFunction updateFunction;
-		std::string name;
 	};
 
 	template<typename T>

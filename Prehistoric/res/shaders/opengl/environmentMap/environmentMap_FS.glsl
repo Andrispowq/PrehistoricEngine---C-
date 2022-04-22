@@ -1,6 +1,6 @@
 #version 430
 
-layout (location = 0) out vec4 out_colour;
+layout (location = 0) out vec4 outColour;
 
 layout (location = 0) in vec3 position_FS;
 
@@ -21,7 +21,6 @@ vec2 SampleSphericalMap(vec3 v)
 void main()
 {		
     vec2 uv = SampleSphericalMap(normalize(position_FS));
-    vec3 color = texture(equirectangularMap, uv).rgb;
-    
-    out_colour = vec4(color, 1.0);
+    vec3 colour = texture(equirectangularMap, uv).rgb;
+    outColour = vec4(colour, 1.0);
 }

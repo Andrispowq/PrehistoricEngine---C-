@@ -17,9 +17,10 @@ namespace Prehistoric
         setGain(1.0f);
         setPitch(1.0f);
         setLoop(isLoop);
-        set3D(is_3D);
-        setStereo(is_Stereo);
-        setLoop(is_Loop);
+        set3D(is3D);
+        setStereo(isStereo);
+        setLoop(isLoop);
+        setSpatial(true);
         setBufferIndex(audioBuffer);
     }
 
@@ -33,9 +34,10 @@ namespace Prehistoric
         setGain(1.0f);
         setPitch(1.0f);
         setLoop(isLoop);
-        set3D(is_3D);
-        setStereo(is_Stereo);
-        setLoop(is_Loop);
+        set3D(is3D);
+        setStereo(isStereo);
+        setLoop(isLoop);
+        setSpatial(true);
         setBufferIndex(AudioEngine::loadBuffer(audio));
     }
 

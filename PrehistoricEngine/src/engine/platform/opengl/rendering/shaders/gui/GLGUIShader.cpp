@@ -24,6 +24,7 @@ namespace Prehistoric
 		SetUniform("m_transform", Matrix4f::Identity());
 
 		SetUniform("colour", colour);
+
 		texture->Bind();
 		SetUniformi("image", 0);
 	}
@@ -31,6 +32,13 @@ namespace Prehistoric
 	void GLGUIShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const
 	{
 		GUIElement* gui = reinterpret_cast<GUIElement*>(object);
+
+		Texture* tex = gui->getTexture();
+		if (tex)
+		{
+			tex->Bind(0);
+			SetUniformi("image", 0);
+		}
 
 		if (gui->getType() == GUIType::Slider)
 		{

@@ -3,8 +3,6 @@
 
 #include "prehistoric/core/node/GameObject.h"
 
-#include "prehistoric/core/config/AtmosphereConfig.h"
-
 #include "prehistoric/core/model/obj/OBJLoader.h"
 
 #include "platform/opengl/rendering/shaders/atmosphere/GLAtmosphereScatteringShader.h"
@@ -27,7 +25,7 @@ namespace Prehistoric
 		virtual ~Atmosphere() {}
 
 		inline Light* getSun() const { return sun; }
-		inline void setSun(Light* sun) { this->sun = sun; sun->SetToBeRegistered(false); }
+		inline void setSun(Light* sun) { this->sun = sun; sun->setIlluminate(false); }
 
 		Atmosphere(const Atmosphere&) = default;
 

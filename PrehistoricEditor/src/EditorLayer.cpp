@@ -3,13 +3,20 @@
 #include "prehistoric/application/Application.h"
 
 #include "imgui.h"
+#include "imgui_internal.h"
 
 #include "prehistoric/common/util/PlatformUtils.h"
+#include "prehistoric/core/resources/AssembledAssetManager.h"
 
-EditorLayer::EditorLayer()
-	: scenePanel{nullptr}
+#include "Prehistoric/core/scene/world/WorldSerialiser.h"
+
+EditorLayer::EditorLayer(Prehistoric::Scene* scene)
+	: scenePanel{nullptr}, root{nullptr}
 {
-	scenePanel = std::make_unique<SceneHierarchyPanel>(Prehistoric::Application::Get().getEngineLayer()->getRootObject());
+	this->scene = std::unique_ptr<Prehistoric::Scene>(scene);
+	this->root = scene->getSceneRoot();
+
+	this->scenePanel = std::make_unique<SceneHierarchyPanel>(root);
 }
 
 void EditorLayer::OnAttach()
@@ -23,6 +30,11 @@ void EditorLayer::OnDetach()
 void EditorLayer::Update(float delta)
 {
 }
+
+#include "SpotifyInterface.h"
+extern SpotifyInterface* sIF;
+char songNameBuffer[256] = { 0 };
+int offset = 0;
 
 void EditorLayer::ImGUIRender()
 {
@@ -82,16 +94,10 @@ void EditorLayer::ImGUIRender()
 			// Disabling fullscreen would allow the window to be moved to the front of other windows, 
 			// which we can't undo at the moment without finer window depth/z control.
 			//ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen_persistant);1
-			if (ImGui::MenuItem("New", "Ctrl+N"))
-				PR_LOG_MESSAGE("Clicked New!\n");
-
-			if (ImGui::MenuItem("Open...", "Ctrl+O"))
-				PR_LOG_MESSAGE("Clicked Open!\n");
-
-			if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
-				PR_LOG_MESSAGE("Clicked Save as!\n");
-
-			if (ImGui::MenuItem("Exit")) Prehistoric::Application::Get().Stop();
+			if (ImGui::MenuItem("New", "Ctrl+N")) NewButton();
+			if (ImGui::MenuItem("Open...", "Ctrl+O")) OpenButton();
+			if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S")) SaveButton();
+			if (ImGui::MenuItem("Exit")) QuitButton();
 
 			ImGui::EndMenu();
 		}
@@ -122,7 +128,7 @@ void EditorLayer::ImGUIRender()
 		std::optional<std::string> path = Prehistoric::FileDialogues::Get()->OpenFile("Environment Map (*.hdr)\0*.hdr\0");
 		if (path)
 		{
-			Prehistoric::EnvironmentMapConfig::environmentMapLocation = *path;
+			__EnvironmentMapConfig.environmentMapLocation = *path;
 			Prehistoric::EnvironmentMapRenderer::instance->GenerateEnvironmentMap();
 		}
 	}
@@ -132,22 +138,44 @@ void EditorLayer::ImGUIRender()
 		Prehistoric::EnvironmentMapRenderer::instance->GenerateEnvironmentMap();
 	}
 
-	float max = (float)Prehistoric::EnvironmentMapConfig::prefilterLevels;
+	float max = (float)__EnvironmentMapConfig.prefilterLevels;
 	ImGui::SliderFloat("Environment map LOD", &Prehistoric::EnvironmentMapRenderer::instance->lodRenderedMap, 0.0f, max - 1.0f, "Environment map LOD");
 
-	ImGui::InputInt("Environment map resolution", (int*)&Prehistoric::EnvironmentMapConfig::environmentMapResolution);
-	ImGui::InputInt("Irradiance map resolution", (int*)&Prehistoric::EnvironmentMapConfig::irradianceMapResolution);
-	ImGui::InputInt("Prefilter map resolution", (int*)&Prehistoric::EnvironmentMapConfig::prefilterMapResolution);
-	ImGui::InputInt("Prefilter map mip levels", (int*)&Prehistoric::EnvironmentMapConfig::prefilterLevels);
+	ImGui::InputInt("Environment map resolution", (int*)&__EnvironmentMapConfig.environmentMapResolution);
+	ImGui::InputInt("Irradiance map resolution", (int*)&__EnvironmentMapConfig.irradianceMapResolution);
+	ImGui::InputInt("Prefilter map resolution", (int*)&__EnvironmentMapConfig.prefilterMapResolution);
+	ImGui::InputInt("Prefilter map mip levels", (int*)&__EnvironmentMapConfig.prefilterLevels);
 
-	ImGui::SliderFloat("Exposure", &Prehistoric::EngineConfig::rendererExposure, 0.5f, 4.0f, "Exposure");
-	ImGui::SliderFloat("Gamma", &Prehistoric::EngineConfig::rendererGamma, 1.0f, 5.0f, "Gamma");
+	ImGui::SliderFloat("Exposure", &__EngineConfig.rendererExposure, 0.5f, 4.0f, "Exposure");
+	ImGui::SliderFloat("Gamma", &__EngineConfig.rendererGamma, 1.0f, 5.0f, "Gamma");
+
+	ImGui::InputText("Song to play", songNameBuffer, 256);
+	ImGui::InputInt("Start offset (ms)", &offset);
+	if (ImGui::Button("Play song"))
+	{
+		std::string name = songNameBuffer;
+		if (name.empty())
+		{
+			return;
+		}
+
+		sIF->PlayTrack(name, float(offset) / 1000.0f);
+
+		//memset(songNameBuffer, 0, 256);
+		//offset = 0;
+	}
 
 	ImGui::End();
 	ImGui::PopStyleVar();
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 	ImGui::Begin("Viewport");
+
+	ImVec2 pos = ImGui::GetWindowPos();
+	ImVec2 size = ImGui::GetWindowSize();
+
+	viewportStart = { pos.x, pos.y };
+	viewportSize = { size.x, size.y };
 
 	ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 	Prehistoric::Vector2f viewportSize = { viewportPanelSize.x, viewportPanelSize.y };
@@ -158,9 +186,145 @@ void EditorLayer::ImGUIRender()
 	ImGui::End();
 	ImGui::PopStyleVar();
 
+	//Asset manager
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+	ImGui::Begin("Asset Manager");
+
+	{
+		using namespace ::Prehistoric;
+		AssembledAssetManager* manager = Prehistoric::Application::Get().getEngineLayer()->getAssetManager();
+		AssetManager* man = manager->getAssetManager();
+
+		std::unordered_map<std::string, Resource> ID_map = man->getIDMap();
+
+		float rows = 3;
+		float coloumns = 6;
+		int index = 0;
+
+		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+		Vector2f viewportSize = { viewportPanelSize.x, viewportPanelSize.y };
+		Vector2f imageSize = viewportSize / Vector2f(coloumns, rows);
+
+		int flags = ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders;
+		if (ImGui::BeginTable("Asset Manager", coloumns, flags))
+		{
+			for (size_t i = 0; i < coloumns; i++)
+			{
+				ImGui::TableSetupColumn("");
+			}
+			ImGui::TableHeadersRow();
+
+			for (auto id : ID_map)
+			{
+				if (id.second.type == ResourceType::Texture)
+				{
+					TextureHandle tex = man->loadTexture(id.first).value();
+					GLTexture* _tex = dynamic_cast<Prehistoric::GLTexture*>(tex.pointer);
+					ImGui::TableNextColumn();
+					ImGui::Image((void*)(_tex->getTextureID()), ImVec2{ imageSize.x, imageSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+				}
+			}
+
+			ImGui::EndTable();
+		}
+	}
+
+	ImGui::End();
+	ImGui::PopStyleVar();
+
 	ImGui::End();
 }
 
 void EditorLayer::OnEvent(Prehistoric::Event& e)
 {
+	if (e.getCategoryFlags() & (Prehistoric::EventCategoryKeyboard | Prehistoric::EventCategoryJoystick | Prehistoric::EventCategoryMouseButton))
+	{
+		Prehistoric::Vector2f start = viewportStart;
+		Prehistoric::Vector2f end = viewportStart + viewportSize;
+		Prehistoric::Vector2f cursor = InputInstance.getCursorPosition();
+
+		if (!(cursor >= start && cursor <= end) && (InputInstance.getKeysHolding().size() == 0))
+		{
+			e.handled = true;
+		}
+	}
+}
+
+void EditorLayer::NewButton()
+{
+	std::unordered_map<Prehistoric::GUID, Prehistoric::Node*> children = root->getChildrenByID();
+	for (auto& elem : children)
+	{
+		root->RemoveChild(elem.second);
+	}
+
+	scenePanel->InvalidateSelectionContext();
+}
+
+void EditorLayer::OpenButton()
+{
+	std::optional<std::string> scene_string = Prehistoric::FileDialogues::Get()->OpenFile("World file(*.json)\0*.json\0");
+	if (scene_string.has_value())
+	{
+		std::string val = scene_string.value();
+
+		Prehistoric::CoreEngine* coreEngine = Prehistoric::Application::Get().getEngineLayer();
+		Prehistoric::RenderingEngine* renderingEngine = coreEngine->getRenderingEngine();
+
+		Prehistoric::Window* window = renderingEngine->getWindow();
+		Prehistoric::Camera* camera = renderingEngine->getCamera();
+		Prehistoric::AssembledAssetManager* manager = coreEngine->getAssetManager();
+
+		scene.reset(scene.release());
+		scene = std::make_unique<Prehistoric::Scene>(val, window, camera, manager);
+
+		coreEngine->SetScene(scene.get());
+
+		root = scene->getSceneRoot();
+		scenePanel->SetContext(root);
+		scenePanel->InvalidateSelectionContext();
+	}
+}
+
+void EditorLayer::SaveButton()
+{
+	Prehistoric::CoreEngine* coreEngine = Prehistoric::Application::Get().getEngineLayer();
+	Prehistoric::RenderingEngine* renderingEngine = coreEngine->getRenderingEngine();
+
+	Prehistoric::Window* window = renderingEngine->getWindow();
+	Prehistoric::Camera* camera = renderingEngine->getCamera();
+	Prehistoric::AssembledAssetManager* manager = coreEngine->getAssetManager();
+
+	std::optional<std::string> new_file_sel = Prehistoric::FileDialogues::Get()->SaveFile("World file(*.json)\0*.json\0");
+	if (!new_file_sel.has_value())
+	{
+		time_t rawtime;
+		struct tm* timeinfo;
+
+		time(&rawtime);
+		timeinfo = localtime(&rawtime);
+
+		uint16_t day = timeinfo->tm_mday;
+		uint16_t mon = timeinfo->tm_mon + 1;
+		uint16_t year = timeinfo->tm_year + 1900;
+
+		uint16_t sec = timeinfo->tm_sec;
+		uint16_t min = timeinfo->tm_min;
+		uint16_t hour = timeinfo->tm_hour;
+
+		uint64_t milliseconds = Prehistoric::Time::getTimeFromStartNanoseconds() / 1000;
+
+		std::string time = std::to_string(year) + "/" + std::to_string(mon) + "/" + std::to_string(day) + "/";
+		time += (std::to_string(hour) + ":" + std::to_string(min) + ":" + std::to_string(sec) + "::" + std::to_string(milliseconds));
+
+		new_file_sel = "res/world/__world_save_" + time + ".json";
+	}
+
+	Prehistoric::WorldSerialiser serialiser(window, manager);
+	serialiser.SerialiseWorldJSON(new_file_sel.value(), scene.get());
+}
+
+void EditorLayer::QuitButton()
+{
+	Prehistoric::Application::Get().Stop();
 }

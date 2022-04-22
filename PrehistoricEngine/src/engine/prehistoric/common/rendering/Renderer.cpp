@@ -7,6 +7,9 @@
 #include "prehistoric/core/node/component/light/Light.h"
 
 #include "prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/core/config/EngineSettings.h"
+
+#include "prehistoric/application/Application.h"
 
 namespace Prehistoric
 {
@@ -26,7 +29,7 @@ namespace Prehistoric
 		
 		uint64_t h0 = 0;
 		if (material != nullptr)
-			h0 = material->GetTextureHash();
+			h0 = material->GetHash();
 
 		auto index = map.find(pipeline);
 		if (index == map.end())
@@ -44,7 +47,7 @@ namespace Prehistoric
 				Material* curr_mat = mat.first;
 				uint64_t h1 = 0;
 				if (curr_mat != nullptr)
-					h1 = curr_mat->GetTextureHash();
+					h1 = curr_mat->GetHash();
 
 				if (h0 == h1)
 				{
@@ -95,9 +98,12 @@ namespace Prehistoric
 		if (pipeIdx != map.end())
 		{
 			auto& renderables = pipeIdx->second;
-			auto rendIdx = std::find(renderables.begin(), renderables.end(), renderable);
-
-			renderables.erase(rendIdx);
+			renderables.push_back(renderable);
+		}
+		else
+		{
+			std::vector<RenderableComponent*> renderers = { renderable };
+			map.insert(std::make_pair(pipeline, renderers));
 		}
 	}
 
@@ -105,16 +111,13 @@ namespace Prehistoric
 	{
 		Pipeline* pipeline = renderable->getPipeline();
 		auto pipeIdx = map.find(pipeline);
-
+	
 		if (pipeIdx != map.end())
 		{
 			auto& renderables = pipeIdx->second;
-			renderables.push_back(renderable);
-		}
-		else
-		{
-			std::vector<RenderableComponent*> renderers = { renderable };
-			map.insert(std::make_pair(pipeline, renderers));
+			auto rendIdx = std::find(renderables.begin(), renderables.end(), renderable);
+	
+			renderables.erase(rendIdx);
 		}
 	}
 

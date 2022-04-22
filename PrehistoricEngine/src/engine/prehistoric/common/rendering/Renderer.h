@@ -10,6 +10,20 @@ namespace Prehistoric
 {
 	class RenderableComponent;
 	class AssembledAssetManager;
+	class Light;
+
+	//The light structure used in the internal Forward+ renderer calculations
+	struct InternalLight
+	{
+		Vector4f position;
+		Vector4f colour;
+		Vector4f intensity_radius;
+	};
+
+	struct VisibleIndex
+	{
+		int index;
+	};
 
 	class Renderer
 	{
@@ -34,10 +48,19 @@ namespace Prehistoric
 		Window* getWindow() const { return window; }
 		Camera* getCamera() const { return camera; }
 
+		AssembledAssetManager* getAssetManager() const { return manager; }
+
+		void setCamera(Camera* camera) { this->camera = camera; }
+
 		inline std::vector<Light*> getLights() const { return lights; }
 
 		inline bool isWireframeMode() const { return wireframeMode; }
+		inline bool isShadowMode() const { return renderingShadow; }
 		inline void setWireframeMode(bool wire) { this->wireframeMode = wire; }
+
+		const std::unordered_map<Pipeline*, std::unordered_map<Material*, std::vector<RenderableComponent*>>>& getModels3D() const{ return models_3d; }
+		const std::unordered_map<Pipeline*, std::unordered_map<Material*, std::vector<RenderableComponent*>>>& getModelsTransparency() const{ return models_transparency; }
+		const std::unordered_map<Pipeline*, std::vector<RenderableComponent*>>& getModels2D() const{ return models_2d; }
 
 	protected:
 		AssembledAssetManager* manager;
@@ -53,6 +76,7 @@ namespace Prehistoric
 		std::vector<Light*> lights;
 
 		bool wireframeMode;
+		bool renderingShadow = false;
 	};
 };
 

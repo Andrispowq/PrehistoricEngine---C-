@@ -1,16 +1,16 @@
 #version 430
 
-layout(location = 0) out vec4 positionMetallic;
-layout(location = 1) out vec4 albedoRoughness;
-layout(location = 2) out vec4 normalLit;
-layout(location = 3) out vec4 emissionExtra;
-
-in vec3 position_FS;
+layout(location = 0) out vec4 outColour;
+layout(location = 1) out vec4 outPositionMetallic;
+layout(location = 2) out vec4 outAlbedoRoughness;
+layout(location = 3) out vec4 outNormal;
+layout(location = 4) out vec4 outBloom;
 
 void main()
 {
-	positionMetallic = vec4(position_FS, 0.0);
-	albedoRoughness = vec4(vec3(0.1, 1.0, 0.1), 0.0);
-	normalLit = vec4(vec3(0.0), 0.0);
-	emissionExtra = vec4(vec3(0.0), 0.0);
+	outColour = vec4(vec3(0.1, 1.0, 0.1), 0.0);
+	outPositionMetallic = vec4(0.0);
+	outAlbedoRoughness = vec4(0.0);
+	outNormal = vec4(0.0);
+	outBloom = vec4(0.0);
 }

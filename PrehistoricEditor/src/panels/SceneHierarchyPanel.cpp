@@ -4,6 +4,7 @@
 #include "imgui_internal.h"
 
 #include "prehistoric/core/node/component/renderer/RendererComponent.h"
+#include "prehistoric/core/node/component/light/Light.h"
 #include "prehistoric/application/Application.h"
 
 #include "platform/opengl/rendering/pipeline/GLGraphicsPipeline.h"
@@ -80,7 +81,7 @@ void SceneHierarchyPanel::DrawGameObjectNode(Prehistoric::GameObject* object)
 
 	if (entityDeleted)
 	{
-		root->deleteChild(object);
+		root->RemoveChild(object);
 		if (selectionContext == object)
 			selectionContext = nullptr;
 	}
@@ -98,7 +99,7 @@ static void DrawComponent(const std::string& name, Prehistoric::GameObject* obje
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4, 4 });
 		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 		ImGui::Separator();
-		bool open = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
+ 		bool open = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
 		ImGui::PopStyleVar();
 		ImGui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);
 		if (ImGui::Button("+", ImVec2{ lineHeight, lineHeight }))
@@ -111,7 +112,7 @@ static void DrawComponent(const std::string& name, Prehistoric::GameObject* obje
 		{
 			if (ImGui::MenuItem("Remove component"))
 				removeComponent = true;
-
+			
 			ImGui::EndPopup();
 		}
 
@@ -194,6 +195,7 @@ static void DrawVec3Control(const std::string& label, Prehistoric::Vector3f& val
 
 void SceneHierarchyPanel::DrawComponents(Prehistoric::GameObject* object)
 {
+	auto oldTag = object->getName();
 	auto& tag = object->getName();
 
 	char buffer[256];
@@ -212,23 +214,41 @@ void SceneHierarchyPanel::DrawComponents(Prehistoric::GameObject* object)
 
 	if (ImGui::BeginPopup("AddComponent"))
 	{
-		/*if (ImGui::MenuItem("Camera"))
+		if (ImGui::MenuItem("LightComponent"))
 		{
-			if (!selectionContext.HasComponent<CameraComponent>())
-				m_SelectionContext.AddComponent<CameraComponent>();
+			if (!selectionContext->GetComponent<Prehistoric::Light>())
+			{
+				using namespace Prehistoric;
+				selectionContext->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1), 1.0f, 10.0f, true, false));
+			}
 			else
-				HZ_CORE_WARN("This entity already has the Camera Component!");
+			{
+				PR_LOG_ERROR("This entity already has the Light Component!");
+			}
+
 			ImGui::CloseCurrentPopup();
-		}*/
+		}
 
 		if (ImGui::MenuItem("RendererComponent"))
 		{
 			if (!selectionContext->GetComponent<Prehistoric::RendererComponent>())
 			{
-				Prehistoric::Window* window = Prehistoric::Application::Get().getEngineLayer()->getRenderingEngine()->getWindow();
-				Prehistoric::AssembledAssetManager* manager = Prehistoric::Application::Get().getEngineLayer()->getAssetManager();
+				using namespace Prehistoric;
 
-				selectionContext->AddComponent(RENDERER_COMPONENT, new Prehistoric::RendererComponent(window, manager));
+				Window* window = Application::Get().getEngineLayer()->getRenderingEngine()->getWindow();
+				AssembledAssetManager* manager = Application::Get().getEngineLayer()->getAssetManager();
+				AssetManager* man = manager->getAssetManager();
+
+				VertexBufferHandle vertexBuffer = man->loadVertexBuffer(std::nullopt, "res/models/cube.obj").value();
+				ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
+				PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vertexBuffer);
+
+				MaterialHandle material = manager->storeMaterial(new Material(man));
+				material->addVector3f(COLOUR, { 1 });
+				material->addVector4f(MROT, { 0.0f, 0.1f, 1.0f, 0.0f });
+				material->addFloat(EMISSION, 0.0f);
+
+				selectionContext->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, material));
 			}
 			else
 			{
@@ -280,6 +300,37 @@ void SceneHierarchyPanel::DrawComponents(Prehistoric::GameObject* object)
 			float vals[] = { vec3.second.x, vec3.second.y, vec3.second.z };
 			ImGui::ColorEdit3(vec3.first.c_str(), vals);
 			vec3.second = Prehistoric::Vector3f(vals[0], vals[1], vals[2]);
+		}
+
+		for (auto& fl : mat->getFloats())
+		{
+			float val[] = { fl.second };
+			ImGui::InputFloat(fl.first.c_str(), val, 0.5f, 10.0f);
+			//ImGui::SliderFloat(fl.first.c_str(), val, 0.0f, 20.0f, fl.first.c_str());
+			fl.second = val[0];
+		}
+	});
+
+	DrawComponent<Prehistoric::Light>("Light", object, [](Prehistoric::Component* comp)
+	{
+		Prehistoric::Light* light = (Prehistoric::Light*)comp;
+
+		{
+			float vals[] = { light->getColour().x, light->getColour().y, light->getColour().z };
+			ImGui::ColorEdit3("Colour", vals);
+			light->setColour({ vals[0], vals[1], vals[2] });
+		}
+
+		{
+			float intensity = light->getIntensity();
+			ImGui::InputFloat("Intensity", &intensity, 0.5f, 10.0f);
+			light->setIntensity({ intensity });
+		}
+
+		{
+			float radius = light->getRadius();
+			ImGui::InputFloat("Radius", &radius, 10.0f, 200.0f);
+			light->setRadius({ radius });
 		}
 	});
 

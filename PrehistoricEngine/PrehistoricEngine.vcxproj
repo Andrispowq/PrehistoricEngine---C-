@@ -77,7 +77,7 @@
       <PrecompiledHeaderFile>Includes.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_FAST_MATH;PR_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>vendor\GLFW\include;vendor\GLAD\include;vendor\ImGUI;vendor\OpenAL-Soft\include;Dependencies\include\Vulkan;Dependencies\include\stb;Dependencies\include\tinyobjloader;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor\GLFW\include;vendor\GLAD\include;vendor\ImGUI;vendor\OpenAL-Soft\include;vendor\SpotifyAPI\SpotifyAPI\src;Dependencies\include\Vulkan;Dependencies\include\stb;Dependencies\include\tinyobjloader;Dependencies\include\tinygltfloader;Dependencies\include\nlohmann_json;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
@@ -99,7 +99,7 @@
       <PrecompiledHeaderFile>Includes.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_FAST_MATH;PR_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>vendor\GLFW\include;vendor\GLAD\include;vendor\ImGUI;vendor\OpenAL-Soft\include;Dependencies\include\Vulkan;Dependencies\include\stb;Dependencies\include\tinyobjloader;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor\GLFW\include;vendor\GLAD\include;vendor\ImGUI;vendor\OpenAL-Soft\include;vendor\SpotifyAPI\SpotifyAPI\src;Dependencies\include\Vulkan;Dependencies\include\stb;Dependencies\include\tinyobjloader;Dependencies\include\tinygltfloader;Dependencies\include\nlohmann_json;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -124,7 +124,7 @@
       <PrecompiledHeaderFile>Includes.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_FAST_MATH;PR_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>vendor\GLFW\include;vendor\GLAD\include;vendor\ImGUI;vendor\OpenAL-Soft\include;Dependencies\include\Vulkan;Dependencies\include\stb;Dependencies\include\tinyobjloader;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor\GLFW\include;vendor\GLAD\include;vendor\ImGUI;vendor\OpenAL-Soft\include;vendor\SpotifyAPI\SpotifyAPI\src;Dependencies\include\Vulkan;Dependencies\include\stb;Dependencies\include\tinyobjloader;Dependencies\include\tinygltfloader;Dependencies\include\nlohmann_json;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -150,6 +150,7 @@
     <ClInclude Include="src\engine\platform\opengl\buffer\GLMeshVertexBuffer.h" />
     <ClInclude Include="src\engine\platform\opengl\buffer\GLPatchVertexBuffer.h" />
     <ClInclude Include="src\engine\platform\opengl\buffer\GLShaderStorageBuffer.h" />
+    <ClInclude Include="src\engine\platform\opengl\buffer\GLUniformBufferObject.h" />
     <ClInclude Include="src\engine\platform\opengl\capabilities\GLCapabilities.h" />
     <ClInclude Include="src\engine\platform\opengl\framework\context\GLContext.h" />
     <ClInclude Include="src\engine\platform\opengl\framework\swapchain\GLSwapchain.h" />
@@ -158,24 +159,36 @@
     <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLComputePipeline.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLGraphicsPipeline.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLPipeline.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLBloomPass.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLDepthPass.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLHDRPass.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLLightCullingPass.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLMainPass.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLShadowDepthPass.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLVolumetricPostProcessingPass.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\GLShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereScatteringShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereShader.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\basic\GLBasicShader.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\deferred\GLAlphaCoverageShader.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\deferred\GLDeferredShader.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\deferred\GLFXAAShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLBRDFIntegrateShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLEnvironmentMapShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLEnvironmentShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLIrradianceShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLPrefilterShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\forwardPlus\GLDepthPassShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\forwardPlus\GLLightCullingPassShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\gpgpu\GLNormalmapShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\gpgpu\GLSplatmapShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\gpgpu\GLTerrainHeightsShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\gui\GLGUIShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\pbr\GLPBRShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLBLoomDecomposeShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLBloomCombineShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLGaussianShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLHDRShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLVolumetricPostProcessingShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\shadow\GLShadowDepthPassShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShadowShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainWireframeShader.h" />
     <ClInclude Include="src\engine\platform\opengl\texture\GLTexture.h" />
     <ClInclude Include="src\engine\platform\vulkan\buffer\VKBuffer.h" />
@@ -214,6 +227,7 @@
     <ClInclude Include="src\engine\prehistoric\common\buffer\MeshVertexBuffer.h" />
     <ClInclude Include="src\engine\prehistoric\common\buffer\PatchVertexBuffer.h" />
     <ClInclude Include="src\engine\prehistoric\common\buffer\ShaderStorageBuffer.h" />
+    <ClInclude Include="src\engine\prehistoric\common\buffer\UniformBufferObject.h" />
     <ClInclude Include="src\engine\prehistoric\common\buffer\VertexBuffer.h" />
     <ClInclude Include="src\engine\prehistoric\common\capabilities\Capabilities.h" />
     <ClInclude Include="src\engine\prehistoric\common\framework\CameraInput.h" />
@@ -228,6 +242,7 @@
     <ClInclude Include="src\engine\prehistoric\common\rendering\pipeline\GraphicsPipeline.h" />
     <ClInclude Include="src\engine\prehistoric\common\rendering\pipeline\Pipeline.h" />
     <ClInclude Include="src\engine\prehistoric\common\rendering\pipeline\RayTracingPipeline.h" />
+    <ClInclude Include="src\engine\prehistoric\common\rendering\renderStage\RenderStage.h" />
     <ClInclude Include="src\engine\prehistoric\common\rendering\shaders\Shader.h" />
     <ClInclude Include="src\engine\prehistoric\common\texture\Texture.h" />
     <ClInclude Include="src\engine\prehistoric\common\util\DeviceProperties.h" />
@@ -236,11 +251,7 @@
     <ClInclude Include="src\engine\prehistoric\common\util\RenderUtils.h" />
     <ClInclude Include="src\engine\prehistoric\core\CoreEngine.h" />
     <ClInclude Include="src\engine\prehistoric\core\ImGUI\ImGUILayer.h" />
-    <ClInclude Include="src\engine\prehistoric\core\config\AtmosphereConfig.h" />
-    <ClInclude Include="src\engine\prehistoric\core\config\EngineConfig.h" />
-    <ClInclude Include="src\engine\prehistoric\core\config\EnvironmentMapConfig.h" />
-    <ClInclude Include="src\engine\prehistoric\core\config\FrameworkConfig.h" />
-    <ClInclude Include="src\engine\prehistoric\core\config\TerrainConfig.h" />
+    <ClInclude Include="src\engine\prehistoric\core\config\EngineSettings.h" />
     <ClInclude Include="src\engine\prehistoric\core\engines\AudioEngine.h" />
     <ClInclude Include="src\engine\prehistoric\core\engines\Engine.h" />
     <ClInclude Include="src\engine\prehistoric\core\engines\RenderingEngine.h" />
@@ -252,11 +263,11 @@
     <ClInclude Include="src\engine\prehistoric\core\layers\Layer.h" />
     <ClInclude Include="src\engine\prehistoric\core\layers\LayerStack.h" />
     <ClInclude Include="src\engine\prehistoric\core\model\Mesh.h" />
+    <ClInclude Include="src\engine\prehistoric\core\model\Model.h" />
     <ClInclude Include="src\engine\prehistoric\core\model\Transform.h" />
     <ClInclude Include="src\engine\prehistoric\core\model\Vertex.h" />
     <ClInclude Include="src\engine\prehistoric\core\model\material\Material.h" />
     <ClInclude Include="src\engine\prehistoric\core\model\obj\OBJLoader.h" />
-    <ClInclude Include="src\engine\prehistoric\core\model\obj\Shape.h" />
     <ClInclude Include="src\engine\prehistoric\core\modules\atmosphere\Atmosphere.h" />
     <ClInclude Include="src\engine\prehistoric\core\modules\environmentMapRenderer\EnvironmentMapRenderer.h" />
     <ClInclude Include="src\engine\prehistoric\core\modules\gpgpu\NormalMapRenderer.h" />
@@ -277,6 +288,8 @@
     <ClInclude Include="src\engine\prehistoric\core\node\component\renderer\RenderableComponent.h" />
     <ClInclude Include="src\engine\prehistoric\core\node\component\renderer\RendererComponent.h" />
     <ClInclude Include="src\engine\prehistoric\core\node\movement\Camera.h" />
+    <ClInclude Include="src\engine\prehistoric\core\node\movement\EditorCamera.h" />
+    <ClInclude Include="src\engine\prehistoric\core\node\movement\FPSCamera.h" />
     <ClInclude Include="src\engine\prehistoric\core\resources\AssembledAssetManager.h" />
     <ClInclude Include="src\engine\prehistoric\core\resources\AssetManager.h" />
     <ClInclude Include="src\engine\prehistoric\core\resources\Factory.h" />
@@ -286,7 +299,9 @@
     <ClInclude Include="src\engine\prehistoric\core\resources\loaders\VertexBufferLoader.h" />
     <ClInclude Include="src\engine\prehistoric\core\scene\Scene.h" />
     <ClInclude Include="src\engine\prehistoric\core\scene\world\WorldLoader.h" />
+    <ClInclude Include="src\engine\prehistoric\core\scene\world\WorldSerialiser.h" />
     <ClInclude Include="src\engine\prehistoric\core\util\Constants.h" />
+    <ClInclude Include="src\engine\prehistoric\core\util\guid\GUID.h" />
     <ClInclude Include="src\engine\prehistoric\core\util\ModelFabricator.h" />
     <ClInclude Include="src\engine\prehistoric\core\util\Util.h" />
     <ClInclude Include="src\engine\prehistoric\core\util\codes\InputCode.h" />
@@ -304,6 +319,7 @@
     <ClCompile Include="src\engine\platform\opengl\buffer\GLMeshVertexBuffer.cpp" />
     <ClCompile Include="src\engine\platform\opengl\buffer\GLPatchVertexBuffer.cpp" />
     <ClCompile Include="src\engine\platform\opengl\buffer\GLShaderStorageBuffer.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\buffer\GLUniformBufferObject.cpp" />
     <ClCompile Include="src\engine\platform\opengl\capabilities\GLCapabilities.cpp" />
     <ClCompile Include="src\engine\platform\opengl\framework\context\GLContext.cpp" />
     <ClCompile Include="src\engine\platform\opengl\framework\swapchain\GLSwapchain.cpp" />
@@ -312,24 +328,36 @@
     <ClCompile Include="src\engine\platform\opengl\rendering\pipeline\GLComputePipeline.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\pipeline\GLGraphicsPipeline.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\pipeline\GLPipeline.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLBloomPass.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLDepthPass.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLHDRPass.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLLightCullingPass.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLMainPass.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLShadowDepthPass.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLVolumetricPostProcessingPass.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\GLShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereScatteringShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\atmosphere\GLAtmosphereShader.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\basic\GLBasicShader.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\deferred\GLAlphaCoverageShader.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\deferred\GLDeferredShader.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\deferred\GLFXAAShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLBRDFIntegrateShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLEnvironmentMapShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLEnvironmentShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLIrradianceShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLPrefilterShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\forwardPlus\GLDepthPassShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\forwardPlus\GLLightCullingPassShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\gpgpu\GLNormalmapShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\gpgpu\GLSplatmapShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\gpgpu\GLTerrainHeightsShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\gui\GLGUIShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\pbr\GLPBRShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLBLoomDecomposeShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLBloomCombineShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLGaussianShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLHDRShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLVolumetricPostProcessingShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\shadow\GLShadowDepthPassShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShadowShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainWireframeShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\texture\GLTexture.cpp" />
     <ClCompile Include="src\engine\platform\vulkan\buffer\VKBuffer.cpp" />
@@ -366,6 +394,7 @@
     <ClCompile Include="src\engine\prehistoric\common\buffer\MeshVertexBuffer.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\buffer\PatchVertexBuffer.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\buffer\ShaderStorageBuffer.cpp" />
+    <ClCompile Include="src\engine\prehistoric\common\buffer\UniformBufferObject.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\buffer\VertexBuffer.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\capabilities\Capabilities.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\framework\Input.cpp" />
@@ -379,6 +408,7 @@
     <ClCompile Include="src\engine\prehistoric\common\rendering\pipeline\GraphicsPipeline.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\rendering\pipeline\Pipeline.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\rendering\pipeline\RayTracingPipeline.cpp" />
+    <ClCompile Include="src\engine\prehistoric\common\rendering\renderStage\RenderStage.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\rendering\shaders\Shader.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\texture\Texture.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\util\DeviceProperties.cpp" />
@@ -387,16 +417,13 @@
     <ClCompile Include="src\engine\prehistoric\core\CoreEngine.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\ImGUI\ImGUIBuild.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\ImGUI\ImGUILayer.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\config\AtmosphereConfig.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\config\EngineConfig.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\config\EnvironmentMapConfig.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\config\FrameworkConfig.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\config\TerrainConfig.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\config\EngineSettings.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\engines\AudioEngine.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\engines\RenderingEngine.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\layers\Layer.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\layers\LayerStack.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\model\Mesh.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\model\Model.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\model\Transform.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\model\Vertex.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\model\material\Material.cpp" />
@@ -420,6 +447,8 @@
     <ClCompile Include="src\engine\prehistoric\core\node\component\renderer\RenderableComponent.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\node\component\renderer\RendererComponent.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\node\movement\Camera.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\node\movement\EditorCamera.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\node\movement\FPSCamera.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\resources\AssembledAssetManager.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\resources\AssetManager.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\resources\Loader.cpp" />
@@ -428,6 +457,8 @@
     <ClCompile Include="src\engine\prehistoric\core\resources\loaders\VertexBufferLoader.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\scene\Scene.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\scene\world\WorldLoader.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\scene\world\WorldSerialiser.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\util\guid\GUID.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\util\ModelFabricator.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\util\Util.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\util\log\Log.cpp" />
@@ -447,6 +478,9 @@
     </ProjectReference>
     <ProjectReference Include="vendor\OpenAL-Soft\OpenAL.vcxproj">
       <Project>{C4854AC8-B027-759E-99E2-88F28523FCEE}</Project>
+    </ProjectReference>
+    <ProjectReference Include="vendor\SpotifyAPI\SpotifyAPI\SpotifyAPI.vcxproj">
+      <Project>{CD18E2C9-B9D0-2317-22D8-FC720EAFBE07}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

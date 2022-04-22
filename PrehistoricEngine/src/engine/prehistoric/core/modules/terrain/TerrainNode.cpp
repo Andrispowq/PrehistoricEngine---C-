@@ -4,10 +4,13 @@
 #include "TerrainQuadtree.h"
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 
+#include "prehistoric/application/Application.h"
+
 namespace Prehistoric
 {
 	TerrainNode::TerrainNode(Factory<TerrainNode>* factory, Window* window, Camera* camera, AssembledAssetManager* manager, TerrainMaps* maps,
-		PipelineHandle pipeline, PipelineHandle wireframePipeline, const Vector2f& location, int lod, const Vector2f& index)
+		PipelineHandle pipeline, PipelineHandle wireframePipeline, PipelineHandle shadowPipeline, 
+		const Vector2f& location, int lod, const Vector2f& index)
 		: factory(factory), window(window), camera(camera), manager(manager), maps(maps), location(location), lod(lod), index(index)
 	{
 		this->gap = 1.0f / float(TerrainQuadtree::rootNodes * pow(2, lod));
@@ -18,11 +21,17 @@ namespace Prehistoric
 		localTransform.setScaling(localScaling);
 		localTransform.setPosition(localPosition);
 
-		worldTransform.setScaling({ TerrainConfig::scaleXZ, TerrainConfig::scaleY, TerrainConfig::scaleXZ });
-		worldTransform.setPosition({ -TerrainConfig::scaleXZ / 2.0f, 0, -TerrainConfig::scaleXZ / 2.0f });
+		worldTransform.setScaling({ __TerrainConfig.scaleXZ, __TerrainConfig.scaleY, __TerrainConfig.scaleXZ });
+		worldTransform.setPosition(Vector3f{ -__TerrainConfig.scaleXZ / 2.0f, 0, -__TerrainConfig.scaleXZ / 2.0f } + maps->getPosition());
 
-		rendererComponent = new RendererComponent(window, manager, pipeline, manager->storeMaterial(nullptr));
-		wireframeRendererComponent = new RendererComponent(window, manager, wireframePipeline, manager->storeMaterial(nullptr));
+		//Definitely not something that should be done, but let's just do it here silently
+		MaterialHandle material;
+		material.pointer = (Material*)maps;
+		material.handle = 0;
+
+		rendererComponent = new RendererComponent(window, manager, pipeline, material);
+		wireframeRendererComponent = new RendererComponent(window, manager, wireframePipeline, material);
+		shadowComponent = new RendererComponent(window, manager, shadowPipeline, material);
 		
 		AddComponent(RENDERER_COMPONENT, rendererComponent);
 		AddComponent(WIREFRAME_RENDERER_COMPONENT, wireframeRendererComponent);
@@ -46,13 +55,20 @@ namespace Prehistoric
 	{
 		if (leaf)
 		{
-			if (renderer->isWireframeMode())
+			if (renderer->isShadowMode())
 			{
-				wireframeRendererComponent->PreRender(renderer);
+				shadowComponent->PreRender(renderer);
 			}
 			else
 			{
-				rendererComponent->PreRender(renderer);
+				if (renderer->isWireframeMode())
+				{
+					wireframeRendererComponent->PreRender(renderer);
+				}
+				else
+				{
+					rendererComponent->PreRender(renderer);
+				}
 			}
 		}
 
@@ -79,7 +95,7 @@ namespace Prehistoric
 	{
 		float distance = (camera->getPosition() - worldPosition).length();
 
-		if (distance < TerrainConfig::lodRanges[lod])
+		if (distance < __TerrainConfig.lodRanges[lod])
 		{
 			AddChildNodes(lod + 1);
 		}
@@ -111,7 +127,7 @@ namespace Prehistoric
 					ss << lod;
 
 					AddChild(ss.str(), new(*factory) TerrainNode(factory, window, camera, manager, maps, rendererComponent->getPipelineHandle(), wireframeRendererComponent->getPipelineHandle(),
-						location + Vector2f(float(i), float(j)) * (gap / 2.f), lod, { float(i), float(j) }));
+						shadowComponent->getPipelineHandle(), location + Vector2f(float(i), float(j)) * (gap / 2.f), lod, { float(i), float(j) }));
 				}
 			}
 		}
@@ -137,7 +153,7 @@ namespace Prehistoric
 
 	void TerrainNode::ComputeWorldPosition()
 	{
-		Vector2f loc = (location + gap / 2.0f) * TerrainConfig::scaleXZ - TerrainConfig::scaleXZ / 2.0f;
+		Vector2f loc = (location + gap / 2.0f) * __TerrainConfig.scaleXZ - __TerrainConfig.scaleXZ / 2.0f;
 		float height = getTerrainHeight(loc);
 		this->worldPosition = { loc.x, height, loc.y };
 	}
@@ -147,8 +163,8 @@ namespace Prehistoric
 		float height = 0;
 
 		Vector2f position = location;
-		position += TerrainConfig::scaleXZ / 2.0f;
-		position /= TerrainConfig::scaleXZ;
+		position += __TerrainConfig.scaleXZ / 2.0f;
+		position /= __TerrainConfig.scaleXZ;
 
 		Texture* heightmap = maps->getHeightmap();
 		uint32_t width = heightmap->getWidth();
@@ -184,7 +200,7 @@ namespace Prehistoric
 		}
 
 		height = h0 + (dU * percentU) + (dV * percentV);
-		height *= TerrainConfig::scaleY;
+		height *= __TerrainConfig.scaleY;
 
 		return height;
 	}

@@ -5,7 +5,7 @@
 #include "prehistoric/core/modules/terrain/Terrain.h"
 #include "prehistoric/core/model/material/Material.h"
 
-#include "prehistoric/core/config/EnvironmentMapConfig.h"
+#include "prehistoric/application/Application.h"
 
 namespace Prehistoric
 {
@@ -54,53 +54,76 @@ namespace Prehistoric
 			AddUniform(uniformName + ALBEDO_MAP);
 			AddUniform(uniformName + NORMAL_MAP);
 			AddUniform(uniformName + MROT_MAP);
+			AddUniform(uniformName + EMISSION_MAP);
 
 			AddUniform(uniformName + HEIGHT_SCALE);
 			AddUniform(uniformName + HORIZONTAL_SCALE);
 			AddUniform(uniformName + MROT);
 		}
 
+		AddUniform("irradianceMap");
+		AddUniform("prefilterMap");
+		AddUniform("brdfLUT");
+
 		AddUniform("highDetailRange");
+		AddUniform("numberOfTilesX");
+		AddUniform("max_reflection_lod");
 	}
 
-	void GLTerrainShader::UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const
+	void GLTerrainShader::UpdateGlobalUniforms(Renderer* renderer) const
 	{
+		Camera* camera = renderer->getCamera();
+		const std::vector<Light*>& lights = renderer->getLights();
+
 		SetUniform("viewProjection", camera->getViewProjectionMatrix());
 		SetUniform("cameraPosition", camera->getPosition());
 
-		SetUniformi("highDetailRange", EngineConfig::rendererHighDetailRange);
+		SetUniformi("highDetailRange", __EngineConfig.rendererHighDetailRange);
+
+		__EnvironmentMapConfig.irradianceMap->Bind(0);
+		SetUniformi("irradianceMap", 0);
+		__EnvironmentMapConfig.prefilterMap->Bind(1);
+		SetUniformi("prefilterMap", 1);
+		__EnvironmentMapConfig.brdfLUT->Bind(2);
+		SetUniformi("brdfLUT", 2);
+
+		//TODO: This is ugly!!!! 
+		SetUniformi("numberOfTilesX", __FrameworkConfig.windowWidth / 16);
+		SetUniformf("max_reflection_lod", __EnvironmentMapConfig.prefilterLevels - 1.0f);
 
 		//Some other stuff that is terrain-related
-		SetUniformf("scaleY", TerrainConfig::scaleY);
+		SetUniformf("scaleY", __TerrainConfig.scaleY);
 
-		SetUniformi("tessellationFactor", TerrainConfig::tessellationFactor);
-		SetUniformf("tessellationSlope", TerrainConfig::tessellationSlope);
-		SetUniformf("tessellationShift", TerrainConfig::tessellationShift);
+		SetUniformi("tessellationFactor", __TerrainConfig.tessellationFactor);
+		SetUniformf("tessellationSlope", __TerrainConfig.tessellationSlope);
+		SetUniformf("tessellationShift", __TerrainConfig.tessellationShift);
 
 		for (unsigned int i = 0; i < 8; i++)
 		{
 			std::string uName = "lodMorphArea[" + std::to_string(i) + "]";
 
-			SetUniformi(uName, TerrainConfig::lodMorphingAreas[i]);
+			SetUniformi(uName, __TerrainConfig.lodMorphingAreas[i]);
 		}
 	}
 
-	void GLTerrainShader::UpdateTextureUniforms(Material* material, uint32_t descriptor_index) const
+	void GLTerrainShader::UpdateMaterialUniforms(Material* material, uint32_t descriptor_index) const
 	{
-		TerrainConfig::heightmap->Bind(0);
-		SetUniformi("heightmap", 0);
-		TerrainConfig::normalmap->Bind(1);
-		SetUniformi("normalmap", 1);
-		TerrainConfig::splatmap->Bind(2);
-		SetUniformi("splatmap", 2);
+		TerrainMaps* maps = (TerrainMaps*)material;
 
-		uint32_t texUnit = 3;
+		maps->getHeightmap()->Bind(3);
+		SetUniformi("heightmap", 3);
+		maps->getNormalmap()->Bind(4);
+		SetUniformi("normalmap", 4);
+		maps->getSplatmap()->Bind(5);
+		SetUniformi("splatmap", 5);
+
+		uint32_t texUnit = 6;
 
 		for (unsigned int i = 0; i < 3; i++)
 		{
 			std::string uniformName = "materials[" + std::to_string(i) + "].";
 
-			Material* material = TerrainConfig::terrainMaterials[i];
+			MaterialHandle material = maps->getMaterials()[i];
 
 			material->getTexture(ALBEDO_MAP)->Bind(texUnit);
 			SetUniformi(uniformName + ALBEDO_MAP, texUnit);
@@ -112,6 +135,10 @@ namespace Prehistoric
 
 			material->getTexture(MROT_MAP)->Bind(texUnit);
 			SetUniformi(uniformName + MROT_MAP, texUnit);
+			texUnit++;
+
+			material->getTexture(EMISSION_MAP)->Bind(texUnit);
+			SetUniformi(uniformName + EMISSION_MAP, texUnit);
 			texUnit++;
 
 			SetUniformf(uniformName + HEIGHT_SCALE, material->getFloat(HEIGHT_SCALE));

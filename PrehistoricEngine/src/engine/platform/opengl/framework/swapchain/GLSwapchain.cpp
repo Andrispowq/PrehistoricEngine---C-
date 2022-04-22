@@ -1,6 +1,7 @@
 #include "Includes.hpp"
 #include "GLSwapChain.h"
-#include "prehistoric/core/config/FrameworkConfig.h"
+
+#include "prehistoric/application/Application.h"
 #include "prehistoric/common/framework/Window.h"
 
 namespace Prehistoric
@@ -41,7 +42,7 @@ namespace Prehistoric
 	void GLSwapchain::SetWindowSize(uint32_t width, uint32_t height)
 	{
 		glViewport(0, 0, width, height);
-		FrameworkConfig::windowWidth = width;
-		FrameworkConfig::windowHeight = height;
+		__FrameworkConfig.windowWidth = width;
+		__FrameworkConfig.windowHeight = height;
 	}
 };

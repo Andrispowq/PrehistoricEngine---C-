@@ -93,9 +93,56 @@ namespace Prehistoric
 			case JOYSTICK_BUTTON_PRESSED:
 				return (float)InputInstance.IsJoystickButtonPushed(data.code, data.joystickNumber);
 			case JOYSTICK_AXIS_MOVED_NEGATIVE:
-				return clamp(-InputInstance.getJoystickAxisOffset(data.code, data.joystickNumber), -1.0f, 0.0f);
+			{
+				float ret = 0;
+
+				if (data.code == PR_GAMEPAD_AXIS_LEFT_Y || data.code == PR_GAMEPAD_AXIS_RIGHT_Y)
+				{
+					ret =  -clamp(-InputInstance.getJoystickAxisOffset(data.code, data.joystickNumber), -1.0f, 0.0f);
+				}
+				else if (data.code == PR_GAMEPAD_AXIS_LEFT_X || data.code == PR_GAMEPAD_AXIS_RIGHT_X)
+				{
+					ret = -clamp(InputInstance.getJoystickAxisOffset(data.code, data.joystickNumber), -1.0f, 0.0f);
+				}
+				else
+				{
+					ret = InputInstance.getJoystickAxisOffset(data.code, data.joystickNumber);
+				}
+
+				if (ret < 0.1f && ret > -0.1f)
+				{
+					return 0;
+				}
+				else
+				{
+					return ret;
+				}
+			}
 			case JOYSTICK_AXIS_MOVED_POSITIVE:
-				return clamp(-InputInstance.getJoystickAxisOffset(data.code, data.joystickNumber), 0.0f, 1.0f);
+			{
+				float ret = 0;
+				if (data.code == PR_GAMEPAD_AXIS_LEFT_Y || data.code == PR_GAMEPAD_AXIS_RIGHT_Y)
+				{
+					ret = clamp(-InputInstance.getJoystickAxisOffset(data.code, data.joystickNumber), 0.0f, 1.0f);
+				}
+				else if (data.code == PR_GAMEPAD_AXIS_LEFT_X || data.code == PR_GAMEPAD_AXIS_RIGHT_X)
+				{
+					ret = clamp(InputInstance.getJoystickAxisOffset(data.code, data.joystickNumber), 0.0f, 1.0f);
+				}
+				else
+				{
+					ret = InputInstance.getJoystickAxisOffset(data.code, data.joystickNumber);
+				}
+
+				if (ret < 0.1f && ret > -0.1f)
+				{
+					return 0;
+				}
+				else
+				{
+					return ret;
+				}
+			}
 
 			default:
 				return 0;

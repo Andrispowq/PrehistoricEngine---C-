@@ -7,6 +7,8 @@
 #include "platform/opengl/texture/GLTexture.h"
 #include "platform/vulkan/texture/VKTexture.h"
 
+#include "prehistoric/application/Application.h"
+
 namespace Prehistoric
 {
 	static ImageData images[NUM_THREADS];
@@ -27,7 +29,7 @@ namespace Prehistoric
 
 			int width, height, channels;
 			unsigned char* data;
-			if (FrameworkConfig::api == OpenGL)
+			if (__FrameworkConfig.api == OpenGL)
 			{
 				data = stbi_load_from_memory(arr, (int)size, &width, &height, &channels, 0);
 			}
@@ -53,7 +55,7 @@ namespace Prehistoric
 	TextureLoader::TextureLoader(Window* window)
 		: Loader(window)
 	{
-		if (FrameworkConfig::api == OpenGL)
+		if (__FrameworkConfig.api == OpenGL)
 			stbi_set_flip_vertically_on_load(1);
 	}
 
@@ -68,13 +70,13 @@ namespace Prehistoric
 			data.channels = 4; //We use compute shaders with HDR textures, and it currently only works with RGBA textures
 		}
 
-		if (FrameworkConfig::api == OpenGL)
+		if (__FrameworkConfig.api == OpenGL)
 		{
 			texture = new GLTexture(data.width, data.height);
 			texture->Bind();
 			texture->UploadTextureData(data);
 		}
-		else if (FrameworkConfig::api == Vulkan)
+		else if (__FrameworkConfig.api == Vulkan)
 		{
 			texture = new VKTexture((VKDevice*)window->getContext()->getDevices(), data.width, data.height);
 			texture->Bind();
@@ -146,13 +148,13 @@ namespace Prehistoric
 				data_.channels = 4; //We use compute shaders with HDR textures, and it currently only works with RGBA textures
 			}
 
-			if (FrameworkConfig::api == OpenGL)
+			if (__FrameworkConfig.api == OpenGL)
 			{
 				texture = new GLTexture(data_.width, data_.height);
 				texture->Bind();
 				texture->UploadTextureData(data_);
 			}
-			else if (FrameworkConfig::api == Vulkan)
+			else if (__FrameworkConfig.api ==  Vulkan)
 			{
 				texture = new VKTexture((VKDevice*)window->getContext()->getDevices(), data_.width, data_.height);
 				texture->Bind();
@@ -184,13 +186,13 @@ namespace Prehistoric
 			data.channels = 4; //We use compute shaders with HDR textures, and it currently only works with RGBA textures
 		}
 
-		if (FrameworkConfig::api == OpenGL)
+		if (__FrameworkConfig.api == OpenGL)
 		{
 			texture = new GLTexture(data.width, data.height);
 			texture->Bind();
 			texture->UploadTextureData(data);
 		}
-		else if (FrameworkConfig::api == Vulkan)
+		else if (__FrameworkConfig.api == Vulkan)
 		{
 			texture = new VKTexture((VKDevice*)window->getContext()->getDevices(), data.width, data.height);
 			texture->Bind();
@@ -238,7 +240,7 @@ namespace Prehistoric
 		else
 		{
 			unsigned char* data;
-			if (FrameworkConfig::api == OpenGL)
+			if (__FrameworkConfig.api == OpenGL)
 			{
 				data = stbi_load_from_memory(buffer, (int)size, &width, &height, &channels, 0);
 			}

@@ -15,6 +15,7 @@ namespace Prehistoric
 		instance = this;
 
 		engineLayer = new CoreEngine();
+		engineLayer->LoadEngines();
 		engineLayer->getRenderingEngine()->getWindow()->setEventCallback(std::bind(&Application::OnEvent, this, std::placeholders::_1));
 
 		//Input initialisation
@@ -22,20 +23,20 @@ namespace Prehistoric
 
 		PushLayer(engineLayer);
 		
-		if (FrameworkConfig::api == OpenGL)
+		if (__FrameworkConfig.api == OpenGL)
 		{
 			imGUILayer = new ImGuiLayer();
 			PushOverlay(imGUILayer);
 			imGUILayer->SetDarkThemeColors();
 		}
 
-		frameTime = 1.0 / FrameworkConfig::windowMaxFPS;
-		last_fps = FrameworkConfig::windowMaxFPS;
+		frameTime = 1.0 / __FrameworkConfig.windowMaxFPS;
+		last_fps = __FrameworkConfig.windowMaxFPS;
 	}
 
 	Application::~Application()
 	{
-		if (FrameworkConfig::api == OpenGL)
+		if (__FrameworkConfig.api == OpenGL)
 		{
 			//Making sure that the ImGUI layer is deleted before the core engine, therefore deleting the GLFWwindow which is needed by ImGUI
 			layerStack.PopOverlay(imGUILayer);
@@ -119,7 +120,7 @@ namespace Prehistoric
 					(*it)->Render();
 				}
 
-				if (FrameworkConfig::api == OpenGL)
+				if (__FrameworkConfig.api == OpenGL)
 				{
 					imGUILayer->Begin();
 					for (auto it = layerStack.rbegin(); it != layerStack.rend(); ++it)

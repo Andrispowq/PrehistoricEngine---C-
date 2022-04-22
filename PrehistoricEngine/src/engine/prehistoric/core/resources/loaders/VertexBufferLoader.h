@@ -25,18 +25,23 @@ namespace Prehistoric
 	struct VertexBufferLoaderExtra : public Extra
 	{
 		Type type = Type::Mesh;
-		std::optional<Mesh> mesh;
+		std::optional<Model> mesh;
 	};
+
+	class AssetManager;
 
 	class VertexBufferLoader : public Loader
 	{
 	public:
-		VertexBufferLoader(Window* window) : Loader(window) {}
+		VertexBufferLoader(Window* window, AssetManager* manager);
 
 		virtual void* LoadResourceInternal(const std::string& path, Extra* extra) override;
 		virtual void LoadResources() override;
 
-		static Mesh LoadMesh(const std::string& path);
+		static Model LoadModel(const std::string& path);
+
+	private:
+		AssetManager* manager;
 	};
 };
 

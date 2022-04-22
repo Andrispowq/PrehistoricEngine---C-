@@ -3,8 +3,10 @@
 
 #include "Engine.h"
 
-#include "prehistoric/core/node/movement/Camera.h"
+#include "prehistoric/core/node/movement/FPSCamera.h"
+#include "prehistoric/core/node/movement/EditorCamera.h"
 #include "prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/core/config/EngineSettings.h"
 
 #include "prehistoric/common/framework/Window.h"
 #include "prehistoric/common/rendering/Renderer.h"
@@ -31,6 +33,8 @@ namespace Prehistoric
 
 		virtual void Update(float delta) override;
 		void Render();
+
+		void ChangeCamera(Camera* camera);
 
 		inline Window* getWindow() const { return window.get(); }
 		inline Camera* getCamera() const { return camera.get(); }

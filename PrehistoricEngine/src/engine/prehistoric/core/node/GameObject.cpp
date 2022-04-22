@@ -7,6 +7,9 @@ namespace Prehistoric
 {
 	void GameObject::PreUpdate(CoreEngine* engine)
 	{
+		if (!enabled)
+			return;
+
 		for (auto& kv : components)
 		{
 			kv.second->PreUpdate(engine);
@@ -20,6 +23,9 @@ namespace Prehistoric
 
 	void GameObject::PreRender(Renderer* renderer)
 	{
+		if (!enabled)
+			return;
+
 		for (auto& kv : components)
 		{
 			kv.second->PreRender(renderer);
@@ -56,5 +62,18 @@ namespace Prehistoric
 		}
 
 		return _children;
+	}
+
+	std::unordered_map<std::string, Component*> GameObject::getComponents() const
+	{
+		std::unordered_map<std::string, Component*> map;
+		map.reserve(components.size());
+
+		for (const auto& elem : components)
+		{
+			map.insert(std::make_pair(elem.first, elem.second.get()));
+		}
+
+		return map;
 	}
 };

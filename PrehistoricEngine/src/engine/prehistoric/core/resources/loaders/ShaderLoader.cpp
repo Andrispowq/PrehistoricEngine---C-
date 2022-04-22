@@ -3,35 +3,38 @@
 
 #include "platform/opengl/rendering/shaders/atmosphere/GLAtmosphereScatteringShader.h"
 #include "platform/opengl/rendering/shaders/atmosphere/GLAtmosphereShader.h"
-#include "platform/opengl/rendering/shaders/basic/GLBasicShader.h"
 #include "platform/opengl/rendering/shaders/gpgpu/GLNormalmapShader.h"
 #include "platform/opengl/rendering/shaders/gpgpu/GLSplatmapShader.h"
 #include "platform/opengl/rendering/shaders/gpgpu/GLTerrainHeightsShader.h"
 #include "platform/opengl/rendering/shaders/gui/GLGUIShader.h"
 #include "platform/opengl/rendering/shaders/pbr/GLPBRShader.h"
 #include "platform/opengl/rendering/shaders/terrain/GLTerrainShader.h"
+#include "platform/opengl/rendering/shaders/terrain/GLTerrainShadowShader.h"
 #include "platform/opengl/rendering/shaders/terrain/GLTerrainWireframeShader.h"
-#include "platform/opengl/rendering/shaders/deferred/GLDeferredShader.h"
-#include "platform/opengl/rendering/shaders/deferred/GLAlphaCoverageShader.h"
-#include "platform/opengl/rendering/shaders/deferred/GLFXAAShader.h"
+#include "platform/opengl/rendering/shaders/forwardPlus/GLDepthPassShader.h"
+#include "platform/opengl/rendering/shaders/forwardPlus/GLLightCullingPassShader.h"
+#include "platform/opengl/rendering/shaders/postProcessing/GLGaussianShader.h"
+#include "platform/opengl/rendering/shaders/postProcessing/GLBloomCombineShader.h"
+#include "platform/opengl/rendering/shaders/postProcessing/GLHDRShader.h"
+#include "platform/opengl/rendering/shaders/postProcessing/GLBloomDecomposeShader.h"
+#include "platform/opengl/rendering/shaders/postProcessing/GLVolumetricPostProcessingShader.h"
+#include "platform/opengl/rendering/shaders/shadow/GLShadowDepthPassShader.h"
 
 #include "platform/vulkan/rendering/shaders/basic/VKBasicShader.h"
 #include "platform/vulkan/rendering/shaders/pbr/VKPBRShader.h"
+
+#include "prehistoric/application/Application.h"
 
 namespace Prehistoric
 {
     void* ShaderLoader::LoadResourceInternal(const std::string& path, Extra* extra)
     {
 		Shader* shader;
-		if (FrameworkConfig::api == OpenGL)
+		if (__FrameworkConfig.api == OpenGL)
 		{
 			if (path == "pbr")
 			{
 				shader = new GLPBRShader();
-			}
-			else if (path == "basic")
-			{
-				shader = new GLBasicShader();
 			}
 			else if (path == "atmosphere_scattering")
 			{
@@ -44,6 +47,10 @@ namespace Prehistoric
 			else if (path == "terrain_wireframe")
 			{
 				shader = new GLTerrainWireframeShader();
+			}
+			else if (path == "terrain_shadow")
+			{
+				shader = new GLTerrainShadowShader();
 			}
 			else if (path == "terrain")
 			{
@@ -65,20 +72,40 @@ namespace Prehistoric
 			{
 				shader = new GLTerrainHeightsShader();
 			}
-			else if (path == "deferred")
+			else if (path == "hdr")
 			{
-				shader = new GLDeferredShader();
+				shader = new GLHDRShader();
 			}
-			else if (path == "alpha_coverage")
+			else if (path == "depth_pass")
 			{
-				shader = new GLAlphaCoverageShader();
+				shader = new GLDepthPassShader();
 			}
-			else if (path == "fxaa")
+			else if (path == "light_culling")
 			{
-				shader = new GLFXAAShader();
+				shader = new GLLightCullingPassShader();
+			}
+			else if (path == "gaussian")
+			{
+				shader = new GLGaussianShader();
+			}
+			else if (path == "bloom_combine")
+			{
+				shader = new GLBloomCombineShader();
+			}
+			else if (path == "bloom_decompose")
+			{
+				shader = new GLBloomDecomposeShader();
+			}
+			else if (path == "shadow_depth_pass")
+			{
+				shader = new GLShadowDepthPassShader();
+			}
+			else if (path == "volumetric_post_processing")
+			{
+				shader = new GLVolumetricPostProcessingShader();
 			}
 		}
-		else if (FrameworkConfig::api == Vulkan)
+		else if (__FrameworkConfig.api == Vulkan)
 		{
 			if (path == "pbr")
 			{

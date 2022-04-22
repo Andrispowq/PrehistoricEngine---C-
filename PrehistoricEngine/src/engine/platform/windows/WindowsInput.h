@@ -16,7 +16,7 @@ namespace Prehistoric
 	class WindowsInput : public Input
 	{
 	public:
-		virtual bool Init(Window* window) const override;
+		virtual bool Init(Window* window) override;
 		virtual bool Update() override;
 
 		virtual void OnEvent(Event& event) override;

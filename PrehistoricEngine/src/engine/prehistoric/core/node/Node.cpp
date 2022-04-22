@@ -31,18 +31,27 @@ namespace Prehistoric
     Node* Node::AddChild(const std::string& key, Node* child)
     {
         child->parent = this;
+        child->setName(key);
 
-        GameObject* obj;
-        if (obj = dynamic_cast<GameObject*>(child))
-        {
-            obj->setName(key);
-        }
+        GUID guid = GenerateGUID(key);
 
-        children.insert(std::make_pair(key, child));
+        children.insert(std::make_pair(guid, child));
         return this;
     }
 
-    void Node::deleteChild(Node* node)
+    Node* Node::getChild(const std::string& key) const
+    {
+        for (auto& entry : children)
+        {
+            if (entry.second->name == name)
+            {
+                return entry.second.get();
+            }
+        }
+        return nullptr;
+    }
+
+    void Node::RemoveChild(Node* node)
     {
         for (auto& entry : children)
         {
@@ -54,6 +63,32 @@ namespace Prehistoric
         }
     }
 
+    void Node::RemoveChild(const std::string& name)
+    {
+        for (auto& entry : children)
+        {
+            if (entry.second->name == name)
+            {
+                children.erase(entry.first);
+                return;
+            }
+        }
+    }
+
+    std::unordered_map<GUID, Node*> Node::getChildrenByID() const
+    {
+        std::unordered_map<GUID, Node*> map;
+        map.reserve(children.size());
+
+        for (const auto& elem : children)
+        {
+            map.insert(std::make_pair(elem.first, elem.second.get()));
+        }
+
+        return map;
+
+    }
+
     std::unordered_map<std::string, Node*> Node::getChildren() const
     {
         std::unordered_map<std::string, Node*> map;
@@ -61,7 +96,7 @@ namespace Prehistoric
 
         for (const auto& elem : children)
         {
-            map.insert(std::make_pair(elem.first, elem.second.get()));
+            map.insert(std::make_pair(elem.second->name, elem.second.get()));
         }
 
         return map;

@@ -3,10 +3,9 @@
 
 #include "Includes.hpp"
 
-#include "prehistoric/core/config/FrameworkConfig.h"
 #include "Window.h"
 
-#define InputInstance Input::getInstance()
+#define InputInstance ::Prehistoric::Input::getInstance()
 
 #define MAX_NUM_JOYSTICKS 16
 
@@ -18,7 +17,7 @@ namespace Prehistoric
 		static Input& getInstance();
 		static void DeleteInstance();
 
-		virtual bool Init(Window* window) const = 0;
+		virtual bool Init(Window* window) = 0;
 		virtual bool Update() = 0;
 
 		virtual void OnEvent(Event& event) = 0;

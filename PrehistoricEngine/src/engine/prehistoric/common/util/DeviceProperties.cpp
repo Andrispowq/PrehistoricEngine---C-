@@ -1,6 +1,7 @@
 #include "Includes.hpp"
 #include "DeviceProperties.h"
-#include "prehistoric/core/config/FrameworkConfig.h"
+
+#include "prehistoric/application/Application.h"
 
 namespace Prehistoric
 {

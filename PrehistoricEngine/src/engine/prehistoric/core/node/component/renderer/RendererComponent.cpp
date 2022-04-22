@@ -1,5 +1,8 @@
 #include "Includes.hpp"
 #include "RendererComponent.h"
+
+#include "prehistoric/application/Application.h"
+
 #include "prehistoric/common/rendering/pipeline/Pipeline.h"
 #include "prehistoric/core/engines/RenderingEngine.h"
 #include "prehistoric/core/node/GameObject.h"
@@ -9,8 +12,6 @@
 
 namespace Prehistoric
 {
-	size_t RendererComponent::nextInstanceID = 0;
-
 	RendererComponent::RendererComponent(Window* window, AssembledAssetManager* manager, PipelineHandle pipeline, MaterialHandle material)
 		: RenderableComponent(window, manager, pipeline), material(material)
 	{
@@ -18,10 +19,9 @@ namespace Prehistoric
 
 		manager->addReference<Material>(material.handle);
 
-		if (FrameworkConfig::api == Vulkan)
+		if (__FrameworkConfig.api == Vulkan)
 		{
 			static_cast<VKShader*>(pipeline->getShader())->RegisterInstance();
-			instanceID = nextInstanceID++;
 		}
 	}
 
@@ -51,8 +51,8 @@ namespace Prehistoric
 	void RendererComponent::Render(Renderer* renderer) const
 	{
 		pipeline->BindPipeline(renderer->getDrawCommandBuffer());
-		pipeline->getShader()->UpdateGlobalUniforms(renderer->getCamera(), renderer->getLights());
-		pipeline->getShader()->UpdateTextureUniforms(material.pointer, 0);
+		pipeline->getShader()->UpdateGlobalUniforms(renderer);
+		pipeline->getShader()->UpdateMaterialUniforms(material.pointer, 0);
 		pipeline->getShader()->UpdateObjectUniforms(parent);
 
 		pipeline->RenderPipeline();
@@ -61,7 +61,7 @@ namespace Prehistoric
 
 	void RendererComponent::BatchRender(uint32_t instance_index) const
 	{
-		pipeline->getShader()->UpdateObjectUniforms(parent, (uint32_t)instanceID);
+		pipeline->getShader()->UpdateObjectUniforms(parent);
 		pipeline->RenderPipeline();
 	}
 };

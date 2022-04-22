@@ -19,6 +19,11 @@
 
 #define HANDLE_OF(type) typedef struct type##_handle_t { type* pointer = nullptr; size_t handle = -1; type* operator->() { return pointer;}; type* const operator->() const { return pointer;} } type##Handle
 
+typedef uint64_t UUID_t;
+
+#define SHIFT(val,am) ((UUID_t)val << am)
+#define UUID(type,subtype,id) (SHIFT(type,56) | SHIFT(subtype,48) | id)
+
 namespace Prehistoric
 {
 	HANDLE_OF(Texture);
@@ -36,6 +41,17 @@ namespace Prehistoric
 		PBR
 	};
 
+	enum class ResourceType
+	{
+		Texture, VertexBuffer, Shader
+	};
+
+	struct Resource
+	{
+		ResourceType type;
+		size_t handle;
+	};
+
 	/*
 		DOCUMENTATION of AssetManager
 
@@ -50,7 +66,7 @@ namespace Prehistoric
 
 		where 'pointer' is a pointer to the resource for ease of access, and 'handle' is the actual handle which helps with ref counting, creation and deletion.
 		The handle is not a transparent reference, it's an opaque handle, which is never updated, but the system will unload resources only when there are no
-		references left, this should not be a problem, since by reloading a resource, every reference to it will have been decayed
+		references left, this should not be a problem, since by reloading a resource, every reference to it will have decayed
 	
 		FUNCTIONS
 
@@ -70,7 +86,7 @@ namespace Prehistoric
 			The return type is an optional THandle struct, which will contain the loaded resource when using the Load option, will contain
 			the resource that was queued for loading last when using the Dispatch mode, or will be a nullopt, when using the QueuedLoad mode
 
-		std::vector<THandle>&& getLoadedHandles() -> this function returns all of the loaded resources of type T, except for the last one, which is returned on loadT
+		std::vector<THandle>&& getLoadedHandles() -> this function returns all of the loaded resources of type T
 
 		THandle storeT(T* t) -> this function stores one resource of type T in the registry, and returns the appropriate handle
 
@@ -86,7 +102,7 @@ namespace Prehistoric
 		~AssetManager() {}
 
 		std::optional<TextureHandle> loadTexture(const std::string& location, SamplerFilter filter = Bilinear, TextureWrapMode wrapMode = ClampToEdge, BatchSettings settings = BatchSettings::Load);
-		std::optional<VertexBufferHandle> loadVertexBuffer(std::optional<Mesh> mesh, const std::string& name, BatchSettings settings = BatchSettings::Load);
+		std::optional<VertexBufferHandle> loadVertexBuffer(std::optional<Model> mesh, const std::string& name, BatchSettings settings = BatchSettings::Load);
 		std::optional<ShaderHandle> loadShader(ShaderName type, BatchSettings settings = BatchSettings::Load);
 
 		TextureHandle storeTexture(Texture* texture, const std::string& cacheName = "");
@@ -151,7 +167,7 @@ namespace Prehistoric
 
 				for (const auto& elem : ID_map)
 				{
-					if (elem.second == handle)
+					if (elem.second.handle == handle)
 					{
 						ID_map.erase(elem.first);
 						return;
@@ -178,7 +194,7 @@ namespace Prehistoric
 
 				for (const auto& elem : ID_map)
 				{
-					if (elem.second == handle)
+					if (elem.second.handle == handle)
 					{
 						ID_map.erase(elem.first);
 						return;
@@ -205,7 +221,7 @@ namespace Prehistoric
 
 				for (const auto& elem : ID_map)
 				{
-					if (elem.second == handle)
+					if (elem.second.handle == handle)
 					{
 						ID_map.erase(elem.first);
 						return;
@@ -257,6 +273,8 @@ namespace Prehistoric
 		VertexBufferLoader* getVertexBufferLoader() const { return vertexBufferLoader; }
 		ShaderLoader* getShaderLoader() const { return shaderLoader; }
 
+		std::unordered_map<std::string, Resource> getIDMap() const { return ID_map; }
+
 	private:
 		Window* window;
 
@@ -270,7 +288,7 @@ namespace Prehistoric
 		ShaderLoader* shaderLoader;
 
 		//Maps for getting the resource ID from the name (only one because there can't be two things with the same name because of the system's naming conventions
-		std::unordered_map<std::string, size_t> ID_map;
+		std::unordered_map<std::string, Resource> ID_map;
 
 		//The IDs that we assign the next asset we add
 		size_t texture_ID = 0;

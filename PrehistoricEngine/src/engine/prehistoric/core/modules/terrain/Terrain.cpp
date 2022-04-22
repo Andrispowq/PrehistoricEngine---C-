@@ -2,6 +2,7 @@
 #include "Terrain.h"
 
 #include "prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/common/rendering/Renderer.h"
 
 namespace Prehistoric
 {
@@ -21,7 +22,7 @@ namespace Prehistoric
 	{
 		if (camera->isChanged())
 		{
-			((TerrainQuadtree*)children.at("Quadtree").get())->UpdateQuadtree();
+			((TerrainQuadtree*)getChild("Quadtree"))->UpdateQuadtree();
 		}
 	}
 };

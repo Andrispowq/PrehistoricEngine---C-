@@ -11,7 +11,6 @@ namespace Prehistoric
 		Log::Init();
 
 		LoadConfigurationFiles(configPath);
-		LoadEngines();
 	}
 
 	CoreEngine::~CoreEngine()
@@ -35,11 +34,7 @@ namespace Prehistoric
 
 	void CoreEngine::LoadConfigurationFiles(const std::string& path)
 	{
-		FrameworkConfig::LoadConfig(path + "/framework.cfg");
-		EngineConfig::LoadConfig(path + "/engine.cfg");
-		AtmosphereConfig::LoadConfig(path + "/atmosphere.cfg");
-		EnvironmentMapConfig::LoadConfig(path + "/environment_map.cfg");
-		TerrainConfig::LoadConfig(path + "/terrain.cfg");
+		engineSettings.LoadConfig(path);
 	}
 
 	void CoreEngine::LoadEngines()

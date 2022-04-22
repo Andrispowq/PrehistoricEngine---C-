@@ -3,15 +3,14 @@
 
 namespace Prehistoric
 {
-	MeshVertexBuffer::MeshVertexBuffer(Window* window, const Mesh& mesh)
-		: VertexBuffer(window), mesh(mesh)
+	MeshVertexBuffer::MeshVertexBuffer(Window* window, const Model& model)
+		: VertexBuffer(window), model(model)
 	{
-		vertices = mesh.getVertices().size();
-		indices = mesh.getIndices().size();
+		type = VertexBufferType::MESH;
+		submeshCount = (uint32_t)model.getMeshes().size();
 	}
 
 	MeshVertexBuffer::~MeshVertexBuffer()
 	{
-
 	}
 };

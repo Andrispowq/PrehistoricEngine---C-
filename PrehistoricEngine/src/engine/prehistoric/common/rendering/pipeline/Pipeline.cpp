@@ -1,14 +1,14 @@
 #include "Includes.hpp"
 #include "Pipeline.h"
 
-#include "prehistoric/core/config/FrameworkConfig.h"
+#include "prehistoric/application/Application.h"
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 
 namespace Prehistoric
 {
 	Pipeline::Pipeline(Window* window, AssetManager* manager, ShaderHandle shader)
-		: viewportStart{ 0, 0 }, viewportSize{ (float)FrameworkConfig::windowWidth, (float)FrameworkConfig::windowHeight },
-		scissorStart{ 0, 0 }, scissorSize{ FrameworkConfig::windowWidth, FrameworkConfig::windowHeight }
+		: viewportStart{ 0, 0 }, viewportSize{ (float)__FrameworkConfig.windowWidth, (float)__FrameworkConfig.windowHeight },
+		scissorStart{ 0, 0 }, scissorSize{ __FrameworkConfig.windowWidth, __FrameworkConfig.windowHeight }
 	{
 		this->window = window;
 		this->manager = manager;

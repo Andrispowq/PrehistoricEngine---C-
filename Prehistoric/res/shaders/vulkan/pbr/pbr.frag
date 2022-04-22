@@ -3,15 +3,14 @@
 
 layout (location = 0) out vec4 outColour;
 
-const int max_lights = 10;
+const int max_lights = 1000;
 const float PI = 3.141592653589793;
 const float emissionFactor = 3.0;
 
 layout (location = 0) in vec3 position_FS;
 layout (location = 1) in vec2 texture_FS;
 layout (location = 2) in vec3 normal_FS;
-layout (location = 3) in vec3 light_position[max_lights];
-layout (location = 14) in vec3 camera_position;
+layout (location = 3) in vec3 tangent_FS;
 
 layout(set = 0, binding = 0, std140) uniform Camera
 {
@@ -94,17 +93,22 @@ void main()
 	
 	float dist = length(position_FS - cameraPosition);	
 	vec3 normal = normalize(normal_FS);
-	if(dist < highDetailRange && material.usesNormalMap == 1)
+	if((dist < (highDetailRange - 50)) && (material.usesNormalMap == 1) && (dot(tangent_FS, vec3(0)) != 1))
 	{
-		float attenuation = clamp(-dist / highDetailRange + 1.0, 0.0, 1.0);
-		
-		normal = 2.0 * texture(normalMap, texture_FS).rbg - 1.0;
-		normal = normalize(normal);
-		normal.xz *= attenuation;
+		float attenuation = clamp(-dist / (highDetailRange - 50) + 1.0, 0.0, 1.0);
+
+		vec3 bumpNormal = 2.0 * texture(normalMap, texture_FS).rbg - 1.0;
+		bumpNormal = normalize(bumpNormal);
+
+		vec3 B = normalize(cross(tangent_FS, normal));
+		mat3 tbn = mat3(tangent_FS, normal, B);
+
+		bumpNormal.xz *= attenuation;
+		normal = tbn * bumpNormal;
 	}
 	
 	vec3 N = normalize(normal);
-	vec3 V = normalize(camera_position - position_FS);
+	vec3 V = normalize(cameraPosition - position_FS);
 	vec3 R = reflect(-V, N);
 	
 	vec3 F0 = vec3(0.04); 
@@ -116,11 +120,11 @@ void main()
 	for(int i = 0; i < numberOfLights; ++i)
     {
         // calculate per-light radiance
-        vec3 L = normalize(light_position[i] - position_FS);
+        vec3 L = normalize(lights.position[i].xyz - position_FS);
         vec3 H = normalize(V + L);
-        float dist = length(light_position[i] - position_FS);
+        float dist = length(lights.position[i].xyz - position_FS);
         float attenuation = 1 / pow(dist, 2);
-        vec3 radiance = lights.colour[i].rgb * lights.intensity[i].rgb * attenuation; 
+        vec3 radiance = lights.colour[i].rgb * lights.intensity[i].r * attenuation;
         
         // cook-torrance brdf
         float NDF = DistributionGGX(N, H, roughness);
@@ -157,7 +161,6 @@ void main()
 	vec3 ambient = (kD * diffuse + specular) * occlusion;*/
 	
 	vec3 ambient = vec3(0.04) * albedoColour;
-
 	vec3 colour = ambient + Lo + max(emission * emissionFactor, 0.0);
 	
 	colour = 1.0 - exp(-colour * exposure);

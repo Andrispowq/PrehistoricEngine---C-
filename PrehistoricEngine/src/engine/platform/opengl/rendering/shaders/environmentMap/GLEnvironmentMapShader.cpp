@@ -1,7 +1,7 @@
 #include "Includes.hpp"
 #include "GLEnvironmentMapShader.h"
 
-#include "prehistoric/core/config/EnvironmentMapConfig.h"
+#include "prehistoric/application/Application.h"
 
 namespace Prehistoric
 {
@@ -18,6 +18,6 @@ namespace Prehistoric
 	void GLEnvironmentMapShader::UpdateUniforms(Vector2f equirectMapRes) const
 	{
 		SetUniform("equirectangularMapResolution", equirectMapRes);
-		SetUniformf("resolution", (float)EnvironmentMapConfig::environmentMapResolution);
+		SetUniformf("resolution", (float)__EnvironmentMapConfig.environmentMapResolution);
 	}
 };

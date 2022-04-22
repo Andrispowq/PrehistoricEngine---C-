@@ -1,12 +1,16 @@
 #include "Includes.hpp"
 #include "WorldLoader.h"
 
-#include "prehistoric/core/config/EnvironmentMapConfig.h"
+#include "prehistoric/application/Application.h"
+
+#include <json.hpp>
 
 namespace Prehistoric
 {
-	void WorldLoader::LoadWorld(const std::string& worldFile, GameObject* root, Window* window, AssembledAssetManager* manager)
+	void WorldLoader::LoadWorld(const std::string& worldFile, GameObject* root)
 	{
+		PR_PROFILE("Loading world from .wrld file");
+
 		std::ifstream file;
 		file.open(worldFile.c_str());
 
@@ -24,10 +28,18 @@ namespace Prehistoric
 				std::vector<std::string> tokens = Util::Split(line, ' ');
 				std::vector<std::string> nameTokens = Util::Split(tokens[0], '.');
 
-				if (tokens.size() == 0 || nameTokens[0] == "#")
+				if (line.empty() || nameTokens[0][0] == '#')
 					continue;
 
 				//Setting the directories which we'll be using to load models and textures from
+				if (nameTokens[0] == "world")
+				{
+					if (nameTokens[1] == "name")
+					{
+						sceneName = tokens[1];
+					}
+				}
+
 				if (nameTokens[0] == "directories")
 				{
 					if (nameTokens[1] == "models")
@@ -45,11 +57,23 @@ namespace Prehistoric
 				{
 					if (nameTokens[1] == "load")
 					{
-						meshIndex++;
-						meshNames.push_back(tokens[1]);
-						frontFaces.push_back(tokens[3] == "clockwise" ? FrontFace::CLOCKWISE :
-							(tokens[3] == "counter-clockwise" ? FrontFace::COUNTER_CLOCKWISE : FrontFace::DOUBLE_SIDED));
-						man->loadVertexBuffer(std::nullopt, directoryModels + tokens[2], BatchSettings::QueuedLoad);
+						std::string meshName = tokens[1];
+						std::string directory = tokens[2];
+
+						// In case we already loaded this, don't add it to the queue
+						std::optional<VertexBufferHandle> handle = man->loadVertexBuffer(std::nullopt, directoryModels + directory, BatchSettings::QueuedLoad);
+						if (handle.has_value())
+						{
+							models.insert(std::make_pair(meshName, handle.value()));
+						}
+						else
+						{
+							meshIndex++;
+							meshNames.push_back(meshName);
+							meshDirectories.push_back(directory);
+							frontFaces.push_back(tokens[3] == "clockwise" ? FrontFace::CLOCKWISE :
+								(tokens[3] == "counter-clockwise" ? FrontFace::COUNTER_CLOCKWISE : FrontFace::DOUBLE_SIDED));
+						}
 					}
 					else if (nameTokens[1] == "dispatch")
 					{
@@ -65,18 +89,32 @@ namespace Prehistoric
 
 						for (int i = 0; i < meshIndex; i++)
 						{
-							models.insert(std::make_pair(meshNames[i], man->storeVertexBuffer(pointers[i], meshNames[i])));
+							models.insert(std::make_pair(meshNames[i], man->storeVertexBuffer(pointers[i], directoryModels + meshDirectories[i])));
 							pointers[i]->setFrontFace(frontFaces[i]);
 						}
+
+						man->getVertexBufferLoader()->FlushPointers();
 					}
 				}
 				if (nameTokens[0] == "textures")
 				{
 					if (nameTokens[1] == "load")
 					{
-						texIndex++;
-						textureNames.push_back(tokens[1]);
-						man->loadTexture(directoryTextures + tokens[2], Anisotropic, Repeat, BatchSettings::QueuedLoad);
+						std::string texName = tokens[1];
+						std::string directory = tokens[2];
+
+						// In case we already loaded this, don't add it to the queue
+						std::optional<TextureHandle> handle = man->loadTexture(directoryTextures + directory, Anisotropic, Repeat, BatchSettings::QueuedLoad);
+						if (handle.has_value())
+						{
+							textures.insert(std::make_pair(texName, handle.value()));
+						}
+						else
+						{
+							texIndex++;
+							textureNames.push_back(texName);
+							textureDirectories.push_back(directory);
+						}
 					}
 					else if (nameTokens[1] == "dispatch")
 					{
@@ -96,7 +134,7 @@ namespace Prehistoric
 
 						for (int i = 0; i < texIndex; i++)
 						{
-							textures.insert(std::make_pair(textureNames[i], man->storeTexture(pointers[i], textureNames[i])));
+							textures.insert(std::make_pair(textureNames[i], man->storeTexture(pointers[i], directoryTextures + textureDirectories[i])));
 						}
 
 						man->getTextureLoader()->FlushPointers();
@@ -109,6 +147,7 @@ namespace Prehistoric
 					if (nameTokens[1] == "add")
 					{
 						MaterialHandle material = manager->storeMaterial(new Material(man));
+						material->setName(tokens[1]);
 						materials.insert(std::make_pair(tokens[1], material));
 					}
 					else
@@ -172,7 +211,7 @@ namespace Prehistoric
 				}
 
 				//Creating GameObjects
-				if (nameTokens[0] == "world")
+				if (nameTokens[0] == "root")
 				{
 					if (nameTokens[1] == "object")
 					{
@@ -275,10 +314,6 @@ namespace Prehistoric
 								{
 									name = ShaderName::PBR;
 								}
-								else if (compTokens[1] == "basic")
-								{
-									name = ShaderName::Basic;
-								}
 
 								shader = man->loadShader(name).value();
 								shaders.insert(std::make_pair(compTokens[1], shader));
@@ -293,11 +328,11 @@ namespace Prehistoric
 							{
 								pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
 								
-								if (FrameworkConfig::api == OpenGL)
+								if (__FrameworkConfig.api == OpenGL)
 								{
 									reinterpret_cast<GLGraphicsPipeline*>(pipeline.pointer)->setBackfaceCulling(true);
 								}
-								else if (FrameworkConfig::api == Vulkan)
+								else if (__FrameworkConfig.api == Vulkan)
 								{
 									reinterpret_cast<VKGraphicsPipeline*>(pipeline.pointer)->setBackfaceCulling(true);
 								}
@@ -318,6 +353,7 @@ namespace Prehistoric
 							std::vector<std::string> posTokens = Util::Split(compTokens[0], ',');
 							light->setColour({ (float)std::atof(posTokens[0].c_str()), (float)std::atof(posTokens[1].c_str()), (float)std::atof(posTokens[2].c_str()) });
 							light->setIntensity((float)std::atof(compTokens[1].c_str()));
+							light->setRadius((float)std::atof(compTokens[2].c_str()));
 
 							obj->AddComponent("Light", light);
 						}
@@ -365,10 +401,6 @@ namespace Prehistoric
 										{
 											name = ShaderName::PBR;
 										}
-										else if (compTokens[1] == "basic")
-										{
-											name = ShaderName::Basic;
-										}
 
 										shader = man->loadShader(name).value();
 										shaders.insert(std::make_pair(compTokens[1], shader));
@@ -383,11 +415,11 @@ namespace Prehistoric
 									{
 										pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
 
-										if (FrameworkConfig::api == OpenGL)
+										if (__FrameworkConfig.api == OpenGL)
 										{
 											reinterpret_cast<GLGraphicsPipeline*>(pipeline.pointer)->setBackfaceCulling(true);
 										}
-										else if (FrameworkConfig::api == Vulkan)
+										else if (__FrameworkConfig.api == Vulkan)
 										{
 											reinterpret_cast<VKGraphicsPipeline*>(pipeline.pointer)->setBackfaceCulling(true);
 										}
@@ -422,6 +454,278 @@ namespace Prehistoric
 							}
 						}
 					}
+				}
+			}
+		}
+		else
+		{
+			PR_LOG_ERROR("Could not open world file %s!\n", worldFile.c_str());
+		}
+	}
+
+	void WorldLoader::LoadWorldJSON(const std::string& worldFile, GameObject* root)
+	{
+		PR_PROFILE("Loading world from .json file");
+
+		std::ifstream file;
+		file.open(worldFile.c_str(), std::ios::ate);
+
+		AssetManager* man = manager->getAssetManager();
+
+		if (file.is_open())
+		{
+			std::string contents;
+			size_t size = file.tellg();
+			contents.resize(size);
+			file.seekg(0);
+			file.read(&contents[0], size);
+
+			nlohmann::json file_json = nlohmann::json::parse(contents);
+			sceneName = file_json["name"];
+
+			{
+				nlohmann::json directories = file_json["directories"];
+				directoryModels = directories["models"];
+				directoryTextures = directories["textures"];
+			}
+
+			{
+				std::vector<nlohmann::json> models_list = file_json["models"];
+				for (auto& model : models_list)
+				{
+					std::string name = model["name"];
+					std::string directory = model["directory"];
+					int front_face = model["front-face"];
+
+					FrontFace frontFace = FrontFace::DOUBLE_SIDED;
+					if (front_face == 0)
+					{
+						frontFace = FrontFace::CLOCKWISE;
+					}
+					else if (front_face == 1)
+					{
+						frontFace = FrontFace::COUNTER_CLOCKWISE;
+					}
+
+					// In case we already loaded this, don't add it to the queue
+					std::optional<VertexBufferHandle> handle = man->loadVertexBuffer(std::nullopt, directoryModels + directory, BatchSettings::QueuedLoad);
+					if (handle.has_value())
+					{
+						models.insert(std::make_pair(name, handle.value()));
+					}
+					else
+					{
+						meshNames.push_back(name);
+						meshDirectories.push_back(directory);
+						frontFaces.push_back(frontFace);
+					}
+				}
+
+				man->getVertexBufferLoader()->ForceLoadQueue();
+
+				size_t count;
+				VertexBuffer** pointers = (VertexBuffer**)man->getVertexBufferLoader()->GetLoadedPointers(count);
+
+				if (count != meshNames.size())
+				{
+					PR_LOG_ERROR("The loaded VertexBuffer count isn't equal to the requested VertexBuffer count!\n");
+				}
+
+				for (int i = 0; i < meshNames.size(); i++)
+				{
+					models.insert(std::make_pair(meshNames[i], man->storeVertexBuffer(pointers[i], directoryModels + meshDirectories[i])));
+					pointers[i]->setFrontFace(frontFaces[i]);
+				}
+
+				man->getVertexBufferLoader()->FlushPointers();
+			}
+
+			{
+				std::vector<nlohmann::json> textures_list = file_json["textures"];
+				for (auto& texture : textures_list)
+				{
+					std::string name = texture["name"];
+					std::string directory = texture["directory"];
+
+					// In case we already loaded this, don't add it to the queue
+					std::optional<TextureHandle> handle = man->loadTexture(directoryTextures + directory, Anisotropic, Repeat, BatchSettings::QueuedLoad);
+					if (handle.has_value())
+					{
+						textures.insert(std::make_pair(name, handle.value()));
+					}
+					else
+					{
+						textureNames.push_back(name);
+						textureDirectories.push_back(directory);
+					}
+				}
+
+				man->getTextureLoader()->ForceLoadQueue();
+
+				size_t count;
+				Texture** pointers = (Texture**)man->getTextureLoader()->GetLoadedPointers(count);
+
+				if (count != textureNames.size())
+				{
+					PR_LOG_ERROR("The loaded VertexBuffer count isn't equal to the requested VertexBuffer count!\n");
+				}
+
+				for (int i = 0; i < textureNames.size(); i++)
+				{
+					textures.insert(std::make_pair(textureNames[i], man->storeTexture(pointers[i], directoryTextures + textureDirectories[i])));
+				}
+
+				man->getTextureLoader()->FlushPointers();
+			}
+
+			{
+				std::vector<nlohmann::json> materials_list = file_json["materials"];
+				for (auto& element : materials_list)
+				{
+					std::string nameMat = element["name"];
+					std::vector<nlohmann::json> contents = element["contents"];
+
+					Material* material = new Material(man);
+					material->setName(nameMat);
+
+					for (auto& content : contents)
+					{
+						std::string name = content["name"];
+						std::string type = content["type"];
+
+						if (type == "texture")
+						{
+							std::string value = content["value"];
+							material->addTexture((name + "Map"), textures[value]);
+						}
+						else if (type == "vec4")
+						{
+							std::vector<float> value = content["value"];
+							material->addVector4f(name, Vector4f(value[0], value[1], value[2], value[3]));
+						}
+						else if (type == "vec3")
+						{
+							std::vector<float> value = content["value"];
+							material->addVector3f(name, Vector3f(value[0], value[1], value[2]));
+						}
+						else if (type == "vec2")
+						{
+							std::vector<float> value = content["value"];
+							material->addVector2f(name, Vector2f(value[0], value[1]));
+						}
+						else if (type == "float")
+						{
+							float value = content["value"];
+							material->addFloat(name, value);
+						}
+						else if (type == "int")
+						{
+							int value = content["value"];
+							material->addInt(name, value);
+						}
+					}
+
+					materials.insert(std::make_pair(nameMat, manager->storeMaterial(material)));
+				}
+			}
+
+			{
+				nlohmann::json root_contents = file_json["root"];
+				std::vector<nlohmann::json> root_children = root_contents["children"];
+				for (auto& root_child : root_children)
+				{
+					std::string name = root_child["name"];
+					nlohmann::json transform = root_child["transform"];
+					std::vector<nlohmann::json> components = root_child["components"];
+
+					GameObject* object = new GameObject;
+					object->setName(name);
+
+					if (transform.contains("position"))
+					{
+						std::vector<float> position = transform["position"];
+						object->SetPosition({ position[0], position[1], position[2] });
+					}
+					if (transform.contains("rotation"))
+					{
+						std::vector<float> rotation = transform["rotation"];
+						object->SetRotation({ rotation[0], rotation[1], rotation[2] });
+					}
+					if (transform.contains("scaling"))
+					{
+						std::vector<float> scaling = transform["scaling"];
+						object->SetScale({ scaling[0], scaling[1], scaling[2] });
+					}
+
+					for (auto& component : components)
+					{
+						std::string type = component["type"];
+
+						if (type == "Renderer")
+						{
+							std::string modelName = component["model"];
+							std::string shaderName = component["shader"];
+							std::string materialName = component["material"];
+
+							VertexBufferHandle vbo = models.at(modelName);
+							ShaderHandle shader;
+
+							MaterialHandle material = materials.at(materialName);
+							PipelineHandle pipeline;
+
+							auto shaderIndex = shaders.find(shaderName);
+							if (shaderIndex != shaders.end())
+							{
+								shader = shaderIndex->second;
+							}
+							else
+							{
+								ShaderName name;
+								if (shaderName == "pbr")
+								{
+									name = ShaderName::PBR;
+								}
+
+								shader = manager->getAssetManager()->loadShader(name).value();
+								shaders.insert(std::make_pair(shaderName, shader));
+							}
+
+							auto pipelineIndex = pipelines.find(modelName + "," + shaderName);
+							if (pipelineIndex != pipelines.end())
+							{
+								pipeline = pipelineIndex->second;
+							}
+							else
+							{
+								pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
+
+								if (__FrameworkConfig.api == OpenGL)
+								{
+									reinterpret_cast<GLGraphicsPipeline*>(pipeline.pointer)->setBackfaceCulling(true);
+								}
+								else if (__FrameworkConfig.api == Vulkan)
+								{
+									reinterpret_cast<VKGraphicsPipeline*>(pipeline.pointer)->setBackfaceCulling(true);
+								}
+
+								pipelines.emplace(std::make_pair(modelName + "," + shaderName, pipeline));
+							}
+
+							RendererComponent* rendererComponent = new RendererComponent(window, manager, pipeline, material);
+							object->AddComponent(RENDERER_COMPONENT, rendererComponent);
+						}
+						else if (type == "Light")
+						{
+							std::vector<float> colour = component["colour"];
+							float intensity = component["intensity"];
+							float range = component["range"];
+
+							Light* light = new Light(Vector3f(colour[0], colour[1], colour[2]), intensity, range, true, false);
+							object->AddComponent(LIGHT_COMPONENT, light);
+						}
+					}
+
+					root->AddChild(name, object);
 				}
 			}
 		}

@@ -2,15 +2,14 @@
 #define MESH_H
 
 #include "Vertex.h"
-#include "obj/Shape.h"
 
 namespace Prehistoric
 {
 	class Mesh
 	{
 	public:
-		Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices,
-			const std::vector<Shape>& shapes = {}) : vertices(vertices), indices(indices), shapes(shapes) {}
+		Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, int materialIndex = -1)
+			: vertices(vertices), indices(indices), materialIndex(materialIndex) {}
 		Mesh() {}
 
 		~Mesh() {}
@@ -24,11 +23,11 @@ namespace Prehistoric
 
 		inline std::vector<Vertex> getVertices() const { return vertices; }
 		inline std::vector<uint32_t> getIndices() const { return indices; }
-		inline std::vector<Shape> getShapes() const { return shapes; }
+		inline int getMaterialIndex() const { return materialIndex; }
 
-		inline void setVertices(const std::vector<Vertex>& vertices) { this->vertices = vertices; }
-		inline void setIndices(const std::vector<uint32_t>& indices) { this->indices = indices; }
-		inline void setShapes(const std::vector<Shape>& shapes) { this->shapes = shapes; }
+		inline void setVertices(std::vector<Vertex>&& vertices) { this->vertices = vertices; }
+		inline void setIndices(std::vector<uint32_t>&& indices) { this->indices = indices; }
+		inline void setMaterialIndex(int materialIndex) { this->materialIndex = materialIndex; }
 
 		Mesh(const Mesh&) = default;
 		Mesh(Mesh&&) = default;
@@ -38,7 +37,7 @@ namespace Prehistoric
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;
 
-		std::vector<Shape> shapes;
+		int materialIndex;
 	};
 };
 

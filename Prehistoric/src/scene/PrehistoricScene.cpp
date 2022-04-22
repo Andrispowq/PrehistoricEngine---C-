@@ -1,6 +1,6 @@
 #include "PrehistoricScene.h"
 
-#include "prehistoric/core/config/EnvironmentMapConfig.h"
+#include "prehistoric/application/Application.h"
 
 //We go around in a circle, from -range to range on the y and z axes
 static void sun_move_function(Prehistoric::GameObject* object, float frameTime)
@@ -8,7 +8,7 @@ static void sun_move_function(Prehistoric::GameObject* object, float frameTime)
 	constexpr float range = 32000.0f;
 	constexpr float anglesPerSecond = 0.5f;
 
-	static float angle = 190.0f;
+	static float angle = 135.0f;
 
 	float x = cos(ToRadians(angle)) * range;
 	float y = sin(ToRadians(angle)) * range;
@@ -17,22 +17,18 @@ static void sun_move_function(Prehistoric::GameObject* object, float frameTime)
 	object->SetPosition({ x, y, 0 });
 }
 
-PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObject* root, Prehistoric::Window* window, Prehistoric::Camera* camera,
-	Prehistoric::AssembledAssetManager* manager, const std::string& worldFile)
-	: Scene(name, root, window, camera, manager)
+PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window* window, Prehistoric::Camera* camera,
+	Prehistoric::AssembledAssetManager* manager)
+	: Scene(name, window, camera, manager)
 {
 	using namespace Prehistoric;
 
-	WorldLoader loader;
-
-	if (FrameworkConfig::api == Vulkan)
+	if (__FrameworkConfig.api == Vulkan)
 	{
-		loader.LoadWorld(worldFile, root, window, manager);
-
 		AssetManager* man = manager->getAssetManager();
 
-		VertexBufferHandle quad = man->loadVertexBuffer(std::nullopt, "quadModel").value();
-		VertexBufferHandle sphere = man->loadVertexBuffer(std::nullopt, "sphereModel").value();
+		VertexBufferHandle quad = man->loadVertexBuffer(std::nullopt, "res/models/quad.obj").value();
+		VertexBufferHandle sphere = man->loadVertexBuffer(std::nullopt, "res/models/sphere.obj").value();
 		ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
 
 		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, quad);
@@ -50,7 +46,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 		obj->AddComponent(RENDERER_COMPONENT, renderer);
 		obj->Rotate({ -90, 0, 0 });
 		obj->Move({ 0, 0, 15 });
-		root->AddChild("OBJ", obj);
+		sceneRoot->AddChild("OBJ", obj);
 
 		float space = 4.0f;
 		float count = 7.0f;
@@ -66,7 +62,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 				GameObject* obj = new GameObject;
 				obj->SetPosition({ x * space, y * space, -50 });
 				obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline2, material2));
-				root->AddChild(std::string("obj" + std::to_string(x) + std::to_string(y)), obj);
+				sceneRoot->AddChild(std::string("obj" + std::to_string(x) + std::to_string(y)), obj);
 			}
 		}
 	}
@@ -74,33 +70,35 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 	{
 		AssetManager* man = manager->getAssetManager();
 
-		loader.LoadWorld(worldFile, root, window, manager);
-
 		GameObject* sun = new GameObject();
-		sun->setUpdateFunction(sun_move_function);
-		sun->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0.95f, 0.87f), Vector3f(10000000000.0f)));
+		//sun->setUpdateFunction(sun_move_function);
+		sun->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0.95f, 0.87f), 100.0f, 50000.0f, true, true));
 		sun_move_function(sun, 0.0f);
-		//root->AddChild("sun", sun);
+		sceneRoot->AddChild("sun", sun);
 
 		Atmosphere* atm = new Atmosphere(window, manager);
 		atm->setSun(sun->GetComponent<Light>());
-		//root->AddChild("atmosphere", atm);
+		sceneRoot->AddChild("atmosphere", atm);
+ 
+		/*Terrain* terrain1 = new Terrain(window, camera, manager, "res/config/terrain_1.json");
+		terrain1->UpdateQuadtree();
+		sceneRoot->AddChild("terrain1", terrain1);*/
 
-		Terrain* terrain = new Terrain(window, camera, manager, "res/config/terrain_0.cfg");
-		terrain->UpdateQuadtree();
-		root->AddChild("terrain0", terrain);
+		/*Terrain* terrain0 = new Terrain(window, camera, manager, "res/config/terrain_0.json");
+		terrain0->UpdateQuadtree();
+		sceneRoot->AddChild("terrain0", terrain0);*/
 
-		GameObject* slider = new GUISlider(window, manager, 0.0f, 2.0f, Vector3f(0.5f), &EngineConfig::rendererExposure, sizeof(float), true);
+		/*GameObject* slider = new GUISlider(window, manager, 0.0f, 2.0f, Vector3f(0.5f), &__EngineConfig.rendererExposure, sizeof(float), true);
 		slider->SetPosition({ 0.5f, 0.5f, 0 });
 		slider->SetScale({ 0.125f, 0.05f, 1 });
-		root->AddChild("slider", slider);
-		
-		GameObject* slider2 = new GUISlider(window, manager, 1.0f, 3.4f, Vector3f(0.4f), &EngineConfig::rendererGamma, sizeof(float), true);
+		sceneRoot->AddChild("slider", slider);
+
+		GameObject* slider2 = new GUISlider(window, manager, 1.0f, 3.4f, Vector3f(0.4f), &__EngineConfig.rendererGamma, sizeof(float), true);
 		slider2->SetPosition({ 0.5f, 0.25f, 0 });
 		slider2->SetScale({ 0.125f, 0.05f, 1 });
-		root->AddChild("slider2", slider2);
+		sceneRoot->AddChild("slider2", slider2);*/
 
-		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "sphereModel").value();
+		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/sphere.obj").value();
 		ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
 		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
 
@@ -118,7 +116,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::GameObj
 				GameObject* obj = new GameObject;
 				obj->SetPosition({ x * space, y * space, -50 });
 				obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, material2));
-				root->AddChild(std::string("obj" + std::to_string(x) + std::to_string(y)), obj);
+				sceneRoot->AddChild(std::string("obj" + std::to_string(x) + std::to_string(y)), obj);
 			}
 		}
 	}

@@ -8,9 +8,13 @@
 
 #include "platform/windows/WindowsWindow.h"
 
+#include "prehistoric/application/Application.h"
+
 namespace Prehistoric
 {
 	Statistics RenderingEngine::statistics;
+
+	bool bloomEnabled = true;
 
 	RenderingEngine::RenderingEngine()
 		: window(nullptr), camera(nullptr), renderer(nullptr)
@@ -37,20 +41,24 @@ namespace Prehistoric
 		CameraInput keyInput({ KEY_HELD, PR_KEY_W, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_S, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_D, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_A, PR_JOYSTICK_1 },
 			{ KEY_HELD, PR_KEY_UP, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_DOWN, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_RIGHT, PR_JOYSTICK_1 }, { KEY_HELD, PR_KEY_LEFT, PR_JOYSTICK_1 });
 
-		camera = std::make_unique<Camera>(5.0f, 50.0f, 0.8f, 80.0f, Vector3f(0));
-		camera->AddCameraInput(keyInput);
+		CameraInput joystickInput({ JOYSTICK_AXIS_MOVED_POSITIVE, PR_GAMEPAD_AXIS_LEFT_Y, PR_JOYSTICK_1 }, { JOYSTICK_AXIS_MOVED_NEGATIVE, PR_GAMEPAD_AXIS_LEFT_Y, PR_JOYSTICK_1 },
+			{ JOYSTICK_AXIS_MOVED_POSITIVE, PR_GAMEPAD_AXIS_LEFT_X, PR_JOYSTICK_1 }, { JOYSTICK_AXIS_MOVED_NEGATIVE, PR_GAMEPAD_AXIS_LEFT_X, PR_JOYSTICK_1 },
+			{ JOYSTICK_AXIS_MOVED_POSITIVE, PR_GAMEPAD_AXIS_RIGHT_Y, PR_JOYSTICK_1 }, { JOYSTICK_AXIS_MOVED_NEGATIVE, PR_GAMEPAD_AXIS_RIGHT_Y, PR_JOYSTICK_1 }, 
+			{ JOYSTICK_AXIS_MOVED_POSITIVE, PR_GAMEPAD_AXIS_RIGHT_X, PR_JOYSTICK_1 }, { JOYSTICK_AXIS_MOVED_NEGATIVE, PR_GAMEPAD_AXIS_RIGHT_X, PR_JOYSTICK_1 });
 
+		camera = std::make_unique<FPSCamera>();
+		camera->AddCameraInput(keyInput);
+		camera->AddCameraInput(joystickInput);
 		camera->LogStage();
-		camera->setSpeedControl({ MOUSE_SCROLL, PR_KEY_UNKNOWN, PR_JOYSTICK_1 });
 	}
 
 	void RenderingEngine::Init(AssembledAssetManager* manager)
 	{
-		if (FrameworkConfig::api == OpenGL)
+		if (__FrameworkConfig.api == OpenGL)
 		{
 			renderer = std::make_unique<GLRenderer>(window.get(), camera.get(), manager);
 		}
-		else if (FrameworkConfig::api == Vulkan)
+		else if (__FrameworkConfig.api == Vulkan)
 		{
 			renderer = std::make_unique<VKRenderer>(window.get(), camera.get(), manager);
 		}
@@ -70,6 +78,9 @@ namespace Prehistoric
 
 	void RenderingEngine::Update(float delta)
 	{
+		__FrameworkConfig.windowWidth = window->getWidth();
+		__FrameworkConfig.windowHeight = window->getHeight();
+
 		if (InputInstance.IsKeyPushed(PR_KEY_ESCAPE))
 		{
 			window->setClosed(true);
@@ -86,10 +97,21 @@ namespace Prehistoric
 		}
 
 		camera->Update(window.get(), delta);
+
+		if (InputInstance.IsKeyPushed(PR_KEY_K))
+		{
+			bloomEnabled = !bloomEnabled;
+		}
 	}
 
 	void RenderingEngine::Render()
 	{
 		renderer->Render();
+	}
+
+	void RenderingEngine::ChangeCamera(Camera* camera)
+	{
+		this->camera = (std::unique_ptr<Camera>)camera;
+		renderer->setCamera(camera);
 	}
 };

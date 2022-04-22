@@ -10,7 +10,6 @@
 #include "prehistoric/core/node/component/renderer/RendererComponent.h"
 #include "prehistoric/core/model/obj/OBJLoader.h"
 
-#include "platform/opengl/rendering/shaders/basic/GLBasicShader.h"
 #include "platform/vulkan/rendering/shaders/basic/VKBasicShader.h"
 
 #include "platform/opengl/rendering/shaders/pbr/GLPBRShader.h"
@@ -28,24 +27,35 @@ namespace Prehistoric
 	class WorldLoader
 	{
 	public:
-		WorldLoader() {}
+		WorldLoader(Window* window, AssembledAssetManager* manager) 
+			: window(window), manager(manager) {}
 		virtual ~WorldLoader() {}
 
-		void LoadWorld(const std::string& worldFile, GameObject* root, Window* window, AssembledAssetManager* manager);
-	private:
+		void LoadWorld(const std::string& worldFile, GameObject* root);
+		void LoadWorldJSON(const std::string& worldFile, GameObject* root);
+
+	public:
+		std::string sceneName;
+
 		std::string directoryModels;
 		std::string directoryTextures;
 
 		//Rendering stuff
 		std::unordered_map<std::string, TextureHandle> textures;
 		std::vector<std::string> textureNames;
+		std::vector<std::string> textureDirectories;
 		std::unordered_map<std::string, MaterialHandle> materials;
 
 		std::unordered_map<std::string, VertexBufferHandle> models;
 		std::vector<std::string> meshNames;
+		std::vector<std::string> meshDirectories;
 		std::vector<FrontFace> frontFaces;
 		std::unordered_map<std::string, ShaderHandle> shaders;
 		std::unordered_map<std::string, PipelineHandle> pipelines;
+
+	private:
+		Window* window;
+		AssembledAssetManager* manager;
 	};
 };
 

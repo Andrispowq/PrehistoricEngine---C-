@@ -30,8 +30,8 @@ namespace Prehistoric
 		bool AddShader(const std::vector<char>& code, ShaderType type) override;
 		bool CompileShader() const override;
 
-		virtual void UpdateGlobalUniforms(Camera* camera, const std::vector<Light*>& lights) const override {}
-		virtual void UpdateTextureUniforms(Material* material, uint32_t descriptor_index = 0) const override {}
+		virtual void UpdateGlobalUniforms(Renderer* renderer) const override {}
+		virtual void UpdateMaterialUniforms(Material* material, uint32_t descriptor_index = 0) const override {}
 		virtual void UpdateObjectUniforms(GameObject* object, uint32_t instance_index = 0) const override {}
 
 		virtual void SetUniformi(const std::string& name, int value, size_t offset = 0, uint32_t instance_index = 0) const override { glUniform1i(getUniformLocation(name), value); }
@@ -41,6 +41,8 @@ namespace Prehistoric
 		virtual void SetUniform(const std::string& name, const Vector3f& value, size_t offset = 0, uint32_t instance_index = 0) const override { glUniform3f(getUniformLocation(name), value.x, value.y, value.z); }
 		virtual void SetUniform(const std::string& name, const Vector4f& value, size_t offset = 0, uint32_t instance_index = 0) const override { glUniform4f(getUniformLocation(name), value.x, value.y, value.z, value.w); }
 		virtual void SetUniform(const std::string& name, const Matrix4f& matrix, size_t offset = 0, uint32_t instance_index = 0) const override { glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, matrix.m); }
+
+		virtual void SetUniformBlock(const std::string& name, int value, size_t offset = 0, uint32_t instance_index = 0) const override { glUniformBlockBinding(program, getUniformLocation(name), value); };
 
 		virtual void SetTexture(const std::string& name, Texture* value, uint32_t instance_index = 0) const {};
 		virtual void SetUniform(const std::string& name, const void* value, size_t size, size_t offset = 0, uint32_t instance_index = 0) const override {}

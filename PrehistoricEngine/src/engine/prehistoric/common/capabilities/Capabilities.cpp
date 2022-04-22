@@ -1,6 +1,8 @@
 #include "Includes.hpp"
 #include "Capabilities.h"
 
+#include "prehistoric/application/Application.h"
+
 #include "platform/opengl/capabilities/GLCapabilities.h"
 #include "platform/vulkan/capabilities/VKCapabilities.h"
 
@@ -12,11 +14,11 @@ namespace Prehistoric
 	{
 		if (instance == nullptr)
 		{
-			if (FrameworkConfig::api == OpenGL)
+			if (__FrameworkConfig.api == OpenGL)
 			{
 				instance = new GLCapabilities();
 			}
-			else if (FrameworkConfig::api == Vulkan)
+			else if (__FrameworkConfig.api == Vulkan)
 			{
 				instance = new VKCapabilities();
 			}

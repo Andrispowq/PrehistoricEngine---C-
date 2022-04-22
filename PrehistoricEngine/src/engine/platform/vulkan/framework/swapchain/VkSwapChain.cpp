@@ -2,6 +2,7 @@
 #include "VKSwapchain.h"
 
 #include "platform/vulkan/framework/context/VKContext.h"
+#include "prehistoric/application/Application.h"
 
 namespace Prehistoric
 {
@@ -352,7 +353,8 @@ namespace Prehistoric
         }
         else
         {
-            VkExtent2D actualExtent = { FrameworkConfig::windowWidth, FrameworkConfig::windowHeight };
+            VkExtent2D actualExtent = { __FrameworkConfig.windowWidth, 
+                __FrameworkConfig.windowHeight };
 
             actualExtent.width = max(capabilities.minImageExtent.width, min(capabilities.maxImageExtent.width, actualExtent.width));
             actualExtent.height = max(capabilities.minImageExtent.height, min(capabilities.maxImageExtent.height, actualExtent.height));
