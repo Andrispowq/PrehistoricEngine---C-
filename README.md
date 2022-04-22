@@ -8,27 +8,33 @@ Please read this file to learn about to features of this engine, and how to use 
 
 ## The engine's features
 
-A working 3D rendering pipeline with Physically Based Shading:
-![](/images/pbr_image_1.png)
+A 3D renderer with Physically Based Rendering, Image Based Lighting, and many more features:
+![](/images/opengl.png)
+
+A work-in-progress Vulkan-based renderer:
+![](/images/vulkan.png)
 
 A work-in-progress Atmosphere renderer with light scattering simulations:
 ![](/images/atmosphere_1.png)
 ![](/images/atmosphere_2.png)
 
-A functional, customisable Terrain rendering system:
-![](/images/terrain.png)
+A work-in-progress volumetric renderer, which can currently render smoke, dust, and other effects:
+![](/images/smoke_1.png)
+![](/images/smoke_2.png)
 
-A helpful debug mode, rendering everything in wireframe:
+A functional, customisable Terrain rendering system, paired with a helpful debug mode:
+![](/images/terrain.png)
 ![](/images/terrain_wireframe.png)
+
+An editor, which makes content creation easier then every before:
+![](/images/editor.png)
 
 ## Planned features
 
 * Extending the atmosphere system with a better dynamic light scattering simulation, and a day-night cycle
-* A deferred renderer, with additional rendering options, including Screen-space Ambient Occlusion, Screen-space reflections, Screen-space ray tracing with compute shaders
-* Multi-sample anti-aliasing for framebuffers
-* A complete scripting system with the PrehistoricScript language (completely beginner-friendly, interpreted at runtime)
-* An easy to use editor system for creating scenes, and game logic
-* An easy way to add game logic to the GameObjects
+* Extending the renderer with animation support, hybrid rendering with ray tracing
+* A complete scripting system with C#
+* Improving the editor's features
 * Porting every feature to Vulkan, extending it's current functionalities
 * Porting the engine to other platforms, including
   * Linux
