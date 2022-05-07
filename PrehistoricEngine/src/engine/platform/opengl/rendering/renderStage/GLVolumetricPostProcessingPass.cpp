@@ -28,7 +28,7 @@ namespace Prehistoric
 		manager->addReference<Pipeline>(renderPipeline.handle);
 
 		static_cast<GLComputePipeline*>(renderPipeline.pointer)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
-		static_cast<GLComputePipeline*>(renderPipeline.pointer)->addTextureBinding(0, outputImage.pointer, WRITE_ONLY);
+		static_cast<GLComputePipeline*>(renderPipeline.pointer)->addTextureBinding(0, outputImage.pointer, (AccessMask)ComputeAccessFlags::WRITE_ONLY);
 	}
 
 	GLVolumetricPostProcessingPass::~GLVolumetricPostProcessingPass()
@@ -56,7 +56,7 @@ namespace Prehistoric
 
 		static_cast<GLComputePipeline*>(renderPipeline.pointer)->removeTextureBinding(0);
 		static_cast<GLComputePipeline*>(renderPipeline.pointer)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
-		static_cast<GLComputePipeline*>(renderPipeline.pointer)->addTextureBinding(0, outputImage.pointer, WRITE_ONLY);
+		static_cast<GLComputePipeline*>(renderPipeline.pointer)->addTextureBinding(0, outputImage.pointer, (AccessMask)ComputeAccessFlags::WRITE_ONLY);
 	}
 
 	void GLVolumetricPostProcessingPass::Render()

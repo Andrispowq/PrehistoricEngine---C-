@@ -772,6 +772,9 @@
     </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\util\guid\GUID.h" />
     <ClInclude Include="src\engine\prehistoric\core\scene\world\WorldSerialiser.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLRayTracingPipeline.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLRayTracingPass.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\rayTracing\GLRayTracingShader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -1218,5 +1221,8 @@
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\util\guid\GUID.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\scene\world\WorldSerialiser.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\pipeline\GLRayTracingPipeline.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLRayTracingPass.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\rayTracing\GLRayTracingShader.cpp" />
   </ItemGroup>
 </Project>

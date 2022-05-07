@@ -174,6 +174,9 @@ namespace Prehistoric
 		case Prehistoric::ShaderName::VolumetricPostProcessing:
 			name = "volumetric_post_processing";
 			break;
+		case Prehistoric::ShaderName::RayTracing:
+			name = "ray_tracing";
+			break;
 		default:
 			name = "invalid";
 			break;

@@ -19,6 +19,7 @@
 #include "platform/opengl/rendering/shaders/postProcessing/GLBloomDecomposeShader.h"
 #include "platform/opengl/rendering/shaders/postProcessing/GLVolumetricPostProcessingShader.h"
 #include "platform/opengl/rendering/shaders/shadow/GLShadowDepthPassShader.h"
+#include "platform/opengl/rendering/shaders/rayTracing/GLRayTracingShader.h"
 
 #include "platform/vulkan/rendering/shaders/basic/VKBasicShader.h"
 #include "platform/vulkan/rendering/shaders/pbr/VKPBRShader.h"
@@ -103,6 +104,10 @@ namespace Prehistoric
 			else if (path == "volumetric_post_processing")
 			{
 				shader = new GLVolumetricPostProcessingShader();
+			}
+			else if (path == "ray_tracing")
+			{
+				shader = new GLRayTracingShader();
 			}
 		}
 		else if (__FrameworkConfig.api == Vulkan)

@@ -26,7 +26,8 @@ namespace Prehistoric
 		BloomCombine,
 		BloomDecompose,
 		ShadowDepthPass,
-		VolumetricPostProcessing
+		VolumetricPostProcessing,
+		RayTracing
 	};
 
 	class ShaderLoader : public Loader

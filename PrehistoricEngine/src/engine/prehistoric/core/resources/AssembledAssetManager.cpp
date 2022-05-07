@@ -5,6 +5,7 @@
 
 #include "platform/opengl/rendering/pipeline/GLGraphicsPipeline.h"
 #include "platform/opengl/rendering/pipeline/GLComputePipeline.h"
+#include "platform/opengl/rendering/pipeline/GLRayTracingPipeline.h"
 
 #include "platform/vulkan/rendering/pipeline/VKGraphicsPipeline.h"
 
@@ -60,6 +61,10 @@ namespace Prehistoric
 			}
 			break;
 		case Prehistoric::PipelineTypeHashFlags::RayTracing:
+			if (__FrameworkConfig.api == OpenGL)
+			{
+				pipe = new GLRayTracingPipeline(window, manager.get(), shaderHandle);
+			}
 			break;
 		default:
 			break;

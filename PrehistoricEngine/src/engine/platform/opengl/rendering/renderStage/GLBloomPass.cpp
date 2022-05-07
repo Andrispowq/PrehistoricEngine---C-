@@ -57,7 +57,7 @@ namespace Prehistoric
 		manager->addReference<Pipeline>(bloomCombinePipeline.handle);
 
 		static_cast<GLComputePipeline*>(decomposePipeline.pointer)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
-		static_cast<GLComputePipeline*>(decomposePipeline.pointer)->addTextureBinding(0, rend->getMainPass()->getBloomImage().pointer, WRITE_ONLY);
+		static_cast<GLComputePipeline*>(decomposePipeline.pointer)->addTextureBinding(0, rend->getMainPass()->getBloomImage().pointer, (AccessMask)ComputeAccessFlags::WRITE_ONLY);
 
 		scratchFBO = std::make_unique<GLFramebuffer>(window);
 	}
@@ -112,7 +112,7 @@ namespace Prehistoric
 
 		static_cast<GLComputePipeline*>(decomposePipeline.pointer)->removeTextureBinding(0);
 		static_cast<GLComputePipeline*>(decomposePipeline.pointer)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
-		static_cast<GLComputePipeline*>(decomposePipeline.pointer)->addTextureBinding(0, rend->getMainPass()->getBloomImage().pointer, WRITE_ONLY);
+		static_cast<GLComputePipeline*>(decomposePipeline.pointer)->addTextureBinding(0, rend->getMainPass()->getBloomImage().pointer, (AccessMask)ComputeAccessFlags::WRITE_ONLY);
 	}
 
 	void GLBloomPass::Render()
@@ -128,6 +128,7 @@ namespace Prehistoric
 		Vector2f size = { (float)width, (float)height };
 
 		GLMainPass* mainPass = rend->getMainPass();
+		//GLRayTracingPass* rtxPass = rend->getRayTracingPass();
 
 		/* {
 			PR_PROFILE("Decompose pass");
@@ -153,7 +154,7 @@ namespace Prehistoric
 				//VERTICAL
 				static_cast<GLComputePipeline*>(gaussianPipeline.pointer)->removeTextureBinding(0);
 				static_cast<GLComputePipeline*>(gaussianPipeline.pointer)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
-				static_cast<GLComputePipeline*>(gaussianPipeline.pointer)->addTextureBinding(0, temporaryImages[i].pointer, WRITE_ONLY);
+				static_cast<GLComputePipeline*>(gaussianPipeline.pointer)->addTextureBinding(0, temporaryImages[i].pointer, (AccessMask)ComputeAccessFlags::WRITE_ONLY);
 
 				Texture* source = mainPass->getBloomImage().pointer;
 				if (i > 0)
@@ -167,7 +168,7 @@ namespace Prehistoric
 
 				//HORIZONTAL
 				static_cast<GLComputePipeline*>(gaussianPipeline.pointer)->removeTextureBinding(0);
-				static_cast<GLComputePipeline*>(gaussianPipeline.pointer)->addTextureBinding(0, bloomImages[i].pointer, WRITE_ONLY);
+				static_cast<GLComputePipeline*>(gaussianPipeline.pointer)->addTextureBinding(0, bloomImages[i].pointer, (AccessMask)ComputeAccessFlags::WRITE_ONLY);
 
 				gaussianPipeline->BindPipeline(nullptr);
 				static_cast<GLGaussianShader*>(gaussianPipeline->getShader())->UpdateUniforms(temporaryImages[i].pointer, true, targetDim, targetDim);
@@ -193,7 +194,7 @@ namespace Prehistoric
 				//COMBINE
 				static_cast<GLComputePipeline*>(bloomCombinePipeline.pointer)->removeTextureBinding(0);
 				static_cast<GLComputePipeline*>(bloomCombinePipeline.pointer)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
-				static_cast<GLComputePipeline*>(bloomCombinePipeline.pointer)->addTextureBinding(0, temporaryImages[i].pointer, WRITE_ONLY);
+				static_cast<GLComputePipeline*>(bloomCombinePipeline.pointer)->addTextureBinding(0, temporaryImages[i].pointer, (AccessMask)ComputeAccessFlags::WRITE_ONLY);
 
 				bloomCombinePipeline->BindPipeline(nullptr);
 				static_cast<GLBloomCombineShader*>(bloomCombinePipeline->getShader())->UpdateUniforms(bloomImages[i + 1].pointer, bloomImages[i].pointer, targetDim);
@@ -221,7 +222,7 @@ namespace Prehistoric
 			PR_PROFILE("Combine pass");
 			static_cast<GLComputePipeline*>(bloomCombinePipeline.pointer)->removeTextureBinding(0);
 			static_cast<GLComputePipeline*>(bloomCombinePipeline.pointer)->setInvocationSize({ width / 4, height / 4, 1 });
-			static_cast<GLComputePipeline*>(bloomCombinePipeline.pointer)->addTextureBinding(0, combinedImage.pointer, WRITE_ONLY);
+			static_cast<GLComputePipeline*>(bloomCombinePipeline.pointer)->addTextureBinding(0, combinedImage.pointer, (AccessMask)ComputeAccessFlags::WRITE_ONLY);
 
 			bloomCombinePipeline->BindPipeline(nullptr);
 			static_cast<GLBloomCombineShader*>(bloomCombinePipeline->getShader())->UpdateUniforms(mainPass->getColourImage().pointer, bloomImages[0].pointer, size);

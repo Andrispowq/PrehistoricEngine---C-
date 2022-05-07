@@ -30,6 +30,8 @@ namespace Prehistoric
 		volumetricPostProcessingPass = new GLVolumetricPostProcessingPass(this);
 		hdrPass = new GLHDRPass(this);
 
+		rtxPass = new GLRayTracingPass(this);
+
 		uint32_t width = window->getWidth();
 		uint32_t height = window->getHeight();
 
@@ -55,6 +57,8 @@ namespace Prehistoric
 		delete volumetricPostProcessingPass;
 		delete hdrPass;
 
+		delete rtxPass;
+
 		AssetManager* man = manager->getAssetManager();
 		manager->removeReference<Pipeline>(renderPipeline.handle);
 	}
@@ -74,6 +78,8 @@ namespace Prehistoric
 			bloomPass->OnResized();
 			volumetricPostProcessingPass->OnResized();
 			hdrPass->OnResized();
+
+			rtxPass->OnResized();
 
 			window->getSwapchain()->SetWindowSize(width, height);
 
@@ -106,7 +112,7 @@ namespace Prehistoric
 		uint32_t width = window->getWidth();
 		uint32_t height = window->getHeight();
 
-		depthPass->Render();
+		/*depthPass->Render();
 		
 		//shadow pass
 		renderingShadow = true;
@@ -114,11 +120,13 @@ namespace Prehistoric
 		renderingShadow = false;
 
 		lightCullingPass->Render();
-		mainPass->Render();
+		mainPass->Render();*/
+
+		rtxPass->Render();
 
 		if (bloomEnabled)
 		{
-			bloomPass->Render();
+			//bloomPass->Render();
 		}
 
 		volumetricPostProcessingPass->Render();

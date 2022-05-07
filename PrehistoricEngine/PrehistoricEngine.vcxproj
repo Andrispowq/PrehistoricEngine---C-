@@ -145,6 +145,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\Includes.hpp" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLRayTracingPipeline.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLRayTracingPass.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\rayTracing\GLRayTracingShader.h" />
     <ClInclude Include="src\engine\Prehistoric.h" />
     <ClInclude Include="src\engine\platform\Platform.h" />
     <ClInclude Include="src\engine\platform\opengl\buffer\GLMeshVertexBuffer.h" />
@@ -328,11 +331,13 @@
     <ClCompile Include="src\engine\platform\opengl\rendering\pipeline\GLComputePipeline.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\pipeline\GLGraphicsPipeline.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\pipeline\GLPipeline.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\pipeline\GLRayTracingPipeline.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLBloomPass.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLDepthPass.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLHDRPass.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLLightCullingPass.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLMainPass.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLRayTracingPass.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLShadowDepthPass.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLVolumetricPostProcessingPass.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\GLShader.cpp" />
@@ -355,6 +360,7 @@
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLGaussianShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLHDRShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLVolumetricPostProcessingShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\rayTracing\GLRayTracingShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\shadow\GLShadowDepthPassShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShadowShader.cpp" />

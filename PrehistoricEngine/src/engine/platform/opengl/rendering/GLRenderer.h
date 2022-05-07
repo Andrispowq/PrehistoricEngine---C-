@@ -18,6 +18,8 @@
 #include "platform/opengl/rendering/renderStage/GLVolumetricPostProcessingPass.h"
 #include "platform/opengl/rendering/renderStage/GLHDRPass.h"
 
+#include "platform/opengl/rendering/renderStage/GLRayTracingPass.h"
+
 namespace Prehistoric
 {
 	class GLRenderer : public Renderer
@@ -41,6 +43,8 @@ namespace Prehistoric
 		GLVolumetricPostProcessingPass* getVolumetricPostProcessingPass() const { return volumetricPostProcessingPass; }
 		GLHDRPass* getHDRPass() const { return hdrPass; }
 
+		GLRayTracingPass* getRayTracingPass() const { return rtxPass; }
+
 	protected:
 		GLDepthPass* depthPass;
 		GLShadowDepthPass* shadowDepthPass;
@@ -49,6 +53,8 @@ namespace Prehistoric
 		GLBloomPass* bloomPass;
 		GLVolumetricPostProcessingPass* volumetricPostProcessingPass;
 		GLHDRPass* hdrPass;
+
+		GLRayTracingPass* rtxPass;
 
 		VertexBufferHandle quad;
 		ShaderHandle renderShader;

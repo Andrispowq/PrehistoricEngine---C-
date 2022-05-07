@@ -7,13 +7,16 @@
 
 #include "prehistoric/common/buffer/ShaderStorageBuffer.h"
 
-static constexpr uint32_t READ_ONLY = 0x1;
-static constexpr uint32_t WRITE_ONLY = 0x2;
-static constexpr uint32_t READ_WRITE = 0x3;
-
 namespace Prehistoric
 {
 	typedef uint32_t AccessMask;
+
+	enum class ComputeAccessFlags
+	{
+		READ_ONLY = 0x1,
+		WRITE_ONLY = 0x2,
+		READ_WRITE = 0x3,
+	};
 
 	class ComputePipeline
 	{
