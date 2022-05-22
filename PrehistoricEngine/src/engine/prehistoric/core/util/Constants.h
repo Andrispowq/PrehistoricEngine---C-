@@ -39,6 +39,8 @@
 #define WIREFRAME_RENDERER_COMPONENT "WireframeRenderer"
 #define LIGHT_COMPONENT "Light"
 #define AUDIO_COMPONENT "Audio"
+#define PHYSICS_COMPONENT "Physics"
+#define SCRIPT_COMPONENT "Script"
 
 #define GUI_ELEMENT_COMPONENT "GUIElement"
 #define GUI_BUTTON_COMPONENT "GUIButton"

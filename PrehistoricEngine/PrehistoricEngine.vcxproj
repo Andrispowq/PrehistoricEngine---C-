@@ -77,7 +77,7 @@
       <PrecompiledHeaderFile>Includes.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_FAST_MATH;PR_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>vendor\GLFW\include;vendor\GLAD\include;vendor\ImGUI;vendor\OpenAL-Soft\include;vendor\SpotifyAPI\SpotifyAPI\src;Dependencies\include\Vulkan;Dependencies\include\stb;Dependencies\include\tinyobjloader;Dependencies\include\tinygltfloader;Dependencies\include\nlohmann_json;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor\GLFW\include;vendor\GLAD\include;vendor\ImGUI;vendor\OpenAL-Soft\include;vendor\SpotifyAPI\SpotifyAPI\src;Dependencies\include\Vulkan;Dependencies\include\stb;Dependencies\include\tinyobjloader;Dependencies\include\tinygltfloader;Dependencies\include\nlohmann_json;Dependencies\include\Mono;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
@@ -90,7 +90,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>Dependencies\lib\Vulkan\vulkan-1.lib;Dependencies\lib\AL\OpenAL32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Dependencies\lib\Mono\mono-2.0-sgen.lib;Dependencies\lib\Vulkan\vulkan-1.lib;Dependencies\lib\AL\OpenAL32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -99,7 +99,7 @@
       <PrecompiledHeaderFile>Includes.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_FAST_MATH;PR_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>vendor\GLFW\include;vendor\GLAD\include;vendor\ImGUI;vendor\OpenAL-Soft\include;vendor\SpotifyAPI\SpotifyAPI\src;Dependencies\include\Vulkan;Dependencies\include\stb;Dependencies\include\tinyobjloader;Dependencies\include\tinygltfloader;Dependencies\include\nlohmann_json;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor\GLFW\include;vendor\GLAD\include;vendor\ImGUI;vendor\OpenAL-Soft\include;vendor\SpotifyAPI\SpotifyAPI\src;Dependencies\include\Vulkan;Dependencies\include\stb;Dependencies\include\tinyobjloader;Dependencies\include\tinygltfloader;Dependencies\include\nlohmann_json;Dependencies\include\Mono;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -115,7 +115,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <AdditionalDependencies>Dependencies\lib\Vulkan\vulkan-1.lib;Dependencies\lib\AL\OpenAL32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Dependencies\lib\Mono\mono-2.0-sgen.lib;Dependencies\lib\Vulkan\vulkan-1.lib;Dependencies\lib\AL\OpenAL32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">
@@ -124,7 +124,7 @@
       <PrecompiledHeaderFile>Includes.hpp</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_FAST_MATH;PR_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>vendor\GLFW\include;vendor\GLAD\include;vendor\ImGUI;vendor\OpenAL-Soft\include;vendor\SpotifyAPI\SpotifyAPI\src;Dependencies\include\Vulkan;Dependencies\include\stb;Dependencies\include\tinyobjloader;Dependencies\include\tinygltfloader;Dependencies\include\nlohmann_json;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>vendor\GLFW\include;vendor\GLAD\include;vendor\ImGUI;vendor\OpenAL-Soft\include;vendor\SpotifyAPI\SpotifyAPI\src;Dependencies\include\Vulkan;Dependencies\include\stb;Dependencies\include\tinyobjloader;Dependencies\include\tinygltfloader;Dependencies\include\nlohmann_json;Dependencies\include\Mono;src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -140,14 +140,11 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <AdditionalDependencies>Dependencies\lib\Vulkan\vulkan-1.lib;Dependencies\lib\AL\OpenAL32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Dependencies\lib\Mono\mono-2.0-sgen.lib;Dependencies\lib\Vulkan\vulkan-1.lib;Dependencies\lib\AL\OpenAL32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\Includes.hpp" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLRayTracingPipeline.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLRayTracingPass.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\rayTracing\GLRayTracingShader.h" />
     <ClInclude Include="src\engine\Prehistoric.h" />
     <ClInclude Include="src\engine\platform\Platform.h" />
     <ClInclude Include="src\engine\platform\opengl\buffer\GLMeshVertexBuffer.h" />
@@ -162,11 +159,13 @@
     <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLComputePipeline.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLGraphicsPipeline.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLPipeline.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLRayTracingPipeline.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLBloomPass.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLDepthPass.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLHDRPass.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLLightCullingPass.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLMainPass.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLRayTracingPass.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLShadowDepthPass.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLVolumetricPostProcessingPass.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\GLShader.h" />
@@ -189,6 +188,7 @@
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLGaussianShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLHDRShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLVolumetricPostProcessingShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\rayTracing\GLRayTracingShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\shadow\GLShadowDepthPassShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainShadowShader.h" />
@@ -253,10 +253,12 @@
     <ClInclude Include="src\engine\prehistoric\common\util\PlatformUtils.h" />
     <ClInclude Include="src\engine\prehistoric\common\util\RenderUtils.h" />
     <ClInclude Include="src\engine\prehistoric\core\CoreEngine.h" />
+    <ClInclude Include="src\engine\prehistoric\core\engines\ScriptEngine.h" />
     <ClInclude Include="src\engine\prehistoric\core\ImGUI\ImGUILayer.h" />
     <ClInclude Include="src\engine\prehistoric\core\config\EngineSettings.h" />
     <ClInclude Include="src\engine\prehistoric\core\engines\AudioEngine.h" />
     <ClInclude Include="src\engine\prehistoric\core\engines\Engine.h" />
+    <ClInclude Include="src\engine\prehistoric\core\engines\PhysicsEngine.h" />
     <ClInclude Include="src\engine\prehistoric\core\engines\RenderingEngine.h" />
     <ClInclude Include="src\engine\prehistoric\core\events\ApplicationEvent.h" />
     <ClInclude Include="src\engine\prehistoric\core\events\Event.h" />
@@ -283,11 +285,15 @@
     <ClInclude Include="src\engine\prehistoric\core\modules\terrain\TerrainMaps.h" />
     <ClInclude Include="src\engine\prehistoric\core\modules\terrain\TerrainNode.h" />
     <ClInclude Include="src\engine\prehistoric\core\modules\terrain\TerrainQuadtree.h" />
+    <ClInclude Include="src\engine\prehistoric\core\node\component\scripting\ScriptComponent.h" />
     <ClInclude Include="src\engine\prehistoric\core\node\GameObject.h" />
     <ClInclude Include="src\engine\prehistoric\core\node\Node.h" />
     <ClInclude Include="src\engine\prehistoric\core\node\component\Component.h" />
     <ClInclude Include="src\engine\prehistoric\core\node\component\audio\AudioComponent.h" />
     <ClInclude Include="src\engine\prehistoric\core\node\component\light\Light.h" />
+    <ClInclude Include="src\engine\prehistoric\core\node\component\physics\PhysicsComponent.h" />
+    <ClInclude Include="src\engine\prehistoric\core\node\component\physics\colliders\Collider.h" />
+    <ClInclude Include="src\engine\prehistoric\core\node\component\physics\colliders\SphereCollider.h" />
     <ClInclude Include="src\engine\prehistoric\core\node\component\renderer\RenderableComponent.h" />
     <ClInclude Include="src\engine\prehistoric\core\node\component\renderer\RendererComponent.h" />
     <ClInclude Include="src\engine\prehistoric\core\node\movement\Camera.h" />
@@ -304,10 +310,10 @@
     <ClInclude Include="src\engine\prehistoric\core\scene\world\WorldLoader.h" />
     <ClInclude Include="src\engine\prehistoric\core\scene\world\WorldSerialiser.h" />
     <ClInclude Include="src\engine\prehistoric\core\util\Constants.h" />
-    <ClInclude Include="src\engine\prehistoric\core\util\guid\GUID.h" />
     <ClInclude Include="src\engine\prehistoric\core\util\ModelFabricator.h" />
     <ClInclude Include="src\engine\prehistoric\core\util\Util.h" />
     <ClInclude Include="src\engine\prehistoric\core\util\codes\InputCode.h" />
+    <ClInclude Include="src\engine\prehistoric\core\util\guid\GUID.h" />
     <ClInclude Include="src\engine\prehistoric\core\util\log\ColourCodes.h" />
     <ClInclude Include="src\engine\prehistoric\core\util\log\Log.h" />
     <ClInclude Include="src\engine\prehistoric\core\util\math\Math.h" />
@@ -421,10 +427,12 @@
     <ClCompile Include="src\engine\prehistoric\common\util\InitDevice.cpp" />
     <ClCompile Include="src\engine\prehistoric\common\util\PlatformUtils.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\CoreEngine.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\engines\ScriptEngine.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\ImGUI\ImGUIBuild.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\ImGUI\ImGUILayer.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\config\EngineSettings.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\engines\AudioEngine.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\engines\PhysicsEngine.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\engines\RenderingEngine.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\layers\Layer.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\layers\LayerStack.cpp" />
@@ -446,10 +454,14 @@
     <ClCompile Include="src\engine\prehistoric\core\modules\terrain\TerrainMaps.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\modules\terrain\TerrainNode.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\modules\terrain\TerrainQuadtree.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\node\component\scripting\ScriptComponent.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\node\GameObject.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\node\Node.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\node\component\audio\AudioComponent.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\node\component\light\Light.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\node\component\physics\PhysicsComponent.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\node\component\physics\colliders\Collider.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\node\component\physics\colliders\SphereCollider.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\node\component\renderer\RenderableComponent.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\node\component\renderer\RendererComponent.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\node\movement\Camera.cpp" />
@@ -464,9 +476,9 @@
     <ClCompile Include="src\engine\prehistoric\core\scene\Scene.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\scene\world\WorldLoader.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\scene\world\WorldSerialiser.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\util\guid\GUID.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\util\ModelFabricator.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\util\Util.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\util\guid\GUID.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\util\log\Log.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\util\math\Math.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\util\time\Time.cpp" />

@@ -5,6 +5,8 @@
 
 #include "prehistoric/core/engines/RenderingEngine.h"
 #include "prehistoric/core/engines/AudioEngine.h"
+#include "prehistoric/core/engines/PhysicsEngine.h"
+#include "prehistoric/core/engines/ScriptEngine.h"
 
 #include "prehistoric/core/scene/Scene.h"
 
@@ -45,6 +47,8 @@ namespace Prehistoric
 
 		inline RenderingEngine* getRenderingEngine() { return renderingEngine.get(); }
 		inline AudioEngine* getAudioEngine() { return audioEngine.get(); }
+		inline PhysicsEngine* getPhysicsEngine() { return physicsEngine.get(); }
+		inline ScriptEngine* getScriptEngine() { return scriptEngine.get(); }
 
 		inline GameObject* getRootObject() const { return root.get(); }
 		inline AssembledAssetManager* getAssetManager() const { return manager.get(); }
@@ -68,6 +72,8 @@ namespace Prehistoric
 		//Engines
 		std::unique_ptr<RenderingEngine> renderingEngine;
 		std::unique_ptr<AudioEngine> audioEngine;
+		std::unique_ptr<PhysicsEngine> physicsEngine;
+		std::unique_ptr<ScriptEngine> scriptEngine;
 
 		//Settings
 		EngineSettings engineSettings;

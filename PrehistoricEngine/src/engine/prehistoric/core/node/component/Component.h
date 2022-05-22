@@ -13,7 +13,8 @@ namespace Prehistoric
 		AudioComponent,
 		RenderableComponent,
 		RendererComponent,
-		LightComponent
+		LightComponent,
+		PhysicsComponent
 	};
 
 	class Component

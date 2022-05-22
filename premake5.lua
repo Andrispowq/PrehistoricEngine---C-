@@ -27,6 +27,7 @@ IncludeDir["STB"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/stb"
 IncludeDir["tinyobj"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/tinyobjloader"
 IncludeDir["tinygltf"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/tinygltfloader"
 IncludeDir["nlohmann_json"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/nlohmann_json"
+IncludeDir["Mono"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/Mono"
 
 group "Dependencies"
     include "PrehistoricEngine/vendor/GLFW"
@@ -74,11 +75,13 @@ project "PrehistoricEngine"
         "%{IncludeDir.tinyobj}",
         "%{IncludeDir.tinygltf}",
         "%{IncludeDir.nlohmann_json}",
+        "%{IncludeDir.Mono}",
         "%{prj.location}/src/engine"
     }
 
     links
     {
+        "%{wks.location}/PrehistoricEngine/Dependencies/lib/Mono/mono-2.0-sgen.lib",
         "%{wks.location}/PrehistoricEngine/Dependencies/lib/Vulkan/vulkan-1.lib",
         "%{wks.location}/PrehistoricEngine/Dependencies/lib/AL/OpenAL32.lib",
         "opengl32.lib",
@@ -147,6 +150,7 @@ project "PrehistoricEditor"
         "%{IncludeDir.tinyobj}",
         "%{IncludeDir.AudioFile}",
         "%{IncludeDir.nlohmann_json}",
+        "%{IncludeDir.Mono}",
         "%{prj.location}/src",
         "PrehistoricEngine/src/engine"
     }
@@ -163,6 +167,7 @@ project "PrehistoricEditor"
     }    
     
     postbuildcommands { "{COPY} \"%{wks.location}/PrehistoricEngine/Dependencies/lib/libcurl/libcurl.dll\"  ../bin/" .. outputdir .. "/PrehistoricEditor"  }
+    postbuildcommands { "{COPY} \"%{wks.location}/PrehistoricEngine/Dependencies/lib/Mono/mono-2.0-sgen.dll\"  ../bin/" .. outputdir .. "/PrehistoricEditor"  }
 
     filter "system:windows"
         systemversion "latest"
@@ -215,6 +220,7 @@ project "Prehistoric"
         "%{IncludeDir.STB}",
         "%{IncludeDir.tinyobj}",
         "%{IncludeDir.nlohmann_json}",
+        "%{IncludeDir.Mono}",
         "%{prj.location}/src",
         "PrehistoricEngine/src/engine"
     }
@@ -231,6 +237,7 @@ project "Prehistoric"
     }
     
     postbuildcommands { "{COPY} \"%{wks.location}/PrehistoricEngine/Dependencies/lib/libcurl/libcurl.dll\"  ../bin/" .. outputdir .. "/Prehistoric"  }
+    postbuildcommands { "{COPY} \"%{wks.location}/PrehistoricEngine/Dependencies/lib/Mono/mono-2.0-sgen.dll\"  ../bin/" .. outputdir .. "/Prehistoric"  }
 
     filter "system:windows"
         systemversion "latest"

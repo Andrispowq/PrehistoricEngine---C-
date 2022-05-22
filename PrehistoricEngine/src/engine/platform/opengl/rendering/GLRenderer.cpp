@@ -112,7 +112,7 @@ namespace Prehistoric
 		uint32_t width = window->getWidth();
 		uint32_t height = window->getHeight();
 
-		/*depthPass->Render();
+		depthPass->Render();
 		
 		//shadow pass
 		renderingShadow = true;
@@ -120,13 +120,13 @@ namespace Prehistoric
 		renderingShadow = false;
 
 		lightCullingPass->Render();
-		mainPass->Render();*/
+		mainPass->Render();
 
-		rtxPass->Render();
+		//rtxPass->Render();
 
 		if (bloomEnabled)
 		{
-			//bloomPass->Render();
+			bloomPass->Render();
 		}
 
 		volumetricPostProcessingPass->Render();

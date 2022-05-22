@@ -58,6 +58,9 @@
     <Filter Include="platform\opengl\rendering\shaders\postProcessing">
       <UniqueIdentifier>{1663F4C5-020C-5CF5-2BA2-777417AA7636}</UniqueIdentifier>
     </Filter>
+    <Filter Include="platform\opengl\rendering\shaders\rayTracing">
+      <UniqueIdentifier>{07D0C822-F3E2-C87B-9CCC-A56888BE65C9}</UniqueIdentifier>
+    </Filter>
     <Filter Include="platform\opengl\rendering\shaders\shadow">
       <UniqueIdentifier>{19F551E6-0572-4529-2EEF-453D1ACBE1BC}</UniqueIdentifier>
     </Filter>
@@ -244,6 +247,12 @@
     <Filter Include="prehistoric\core\node\component\light">
       <UniqueIdentifier>{07529DEF-7316-9CDF-3C7C-CCA9A8FF3715}</UniqueIdentifier>
     </Filter>
+    <Filter Include="prehistoric\core\node\component\physics">
+      <UniqueIdentifier>{D259197F-3EE9-DA69-47E5-BB81B3F31576}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\node\component\physics\colliders">
+      <UniqueIdentifier>{4253284B-AE19-8567-F774-13CA637AF3CB}</UniqueIdentifier>
+    </Filter>
     <Filter Include="prehistoric\core\node\component\renderer">
       <UniqueIdentifier>{06661F39-F2E2-127C-1B60-1390073CAF0F}</UniqueIdentifier>
     </Filter>
@@ -267,6 +276,9 @@
     </Filter>
     <Filter Include="prehistoric\core\util\codes">
       <UniqueIdentifier>{B3D9F790-1FE7-2577-A8CD-216214DAF12D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\util\guid">
+      <UniqueIdentifier>{EEFCC378-DA0C-7049-43C6-D4672FF55EE2}</UniqueIdentifier>
     </Filter>
     <Filter Include="prehistoric\core\util\log">
       <UniqueIdentifier>{C7A791A6-336A-C530-7C1A-54BDE81B9E0E}</UniqueIdentifier>
@@ -320,6 +332,9 @@
     <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLPipeline.h">
       <Filter>platform\opengl\rendering\pipeline</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLRayTracingPipeline.h">
+      <Filter>platform\opengl\rendering\pipeline</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLBloomPass.h">
       <Filter>platform\opengl\rendering\renderStage</Filter>
     </ClInclude>
@@ -333,6 +348,9 @@
       <Filter>platform\opengl\rendering\renderStage</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLMainPass.h">
+      <Filter>platform\opengl\rendering\renderStage</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLRayTracingPass.h">
       <Filter>platform\opengl\rendering\renderStage</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLShadowDepthPass.h">
@@ -400,6 +418,9 @@
     </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLVolumetricPostProcessingShader.h">
       <Filter>platform\opengl\rendering\shaders\postProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\rayTracing\GLRayTracingShader.h">
+      <Filter>platform\opengl\rendering\shaders\rayTracing</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\shadow\GLShadowDepthPassShader.h">
       <Filter>platform\opengl\rendering\shaders\shadow</Filter>
@@ -605,6 +626,9 @@
     <ClInclude Include="src\engine\prehistoric\core\engines\Engine.h">
       <Filter>prehistoric\core\engines</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\engines\PhysicsEngine.h">
+      <Filter>prehistoric\core\engines</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\engines\RenderingEngine.h">
       <Filter>prehistoric\core\engines</Filter>
     </ClInclude>
@@ -698,6 +722,15 @@
     <ClInclude Include="src\engine\prehistoric\core\node\component\light\Light.h">
       <Filter>prehistoric\core\node\component\light</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\node\component\physics\PhysicsComponent.h">
+      <Filter>prehistoric\core\node\component\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\node\component\physics\colliders\Collider.h">
+      <Filter>prehistoric\core\node\component\physics\colliders</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\node\component\physics\colliders\SphereCollider.h">
+      <Filter>prehistoric\core\node\component\physics\colliders</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\node\component\renderer\RenderableComponent.h">
       <Filter>prehistoric\core\node\component\renderer</Filter>
     </ClInclude>
@@ -740,6 +773,9 @@
     <ClInclude Include="src\engine\prehistoric\core\scene\world\WorldLoader.h">
       <Filter>prehistoric\core\scene\world</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\scene\world\WorldSerialiser.h">
+      <Filter>prehistoric\core\scene\world</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\util\Constants.h">
       <Filter>prehistoric\core\util</Filter>
     </ClInclude>
@@ -751,6 +787,9 @@
     </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\util\codes\InputCode.h">
       <Filter>prehistoric\core\util\codes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\util\guid\GUID.h">
+      <Filter>prehistoric\core\util\guid</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\util\log\ColourCodes.h">
       <Filter>prehistoric\core\util\log</Filter>
@@ -770,11 +809,8 @@
     <ClInclude Include="src\engine\prehistoric\core\util\time\Timer.h">
       <Filter>prehistoric\core\util\time</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\util\guid\GUID.h" />
-    <ClInclude Include="src\engine\prehistoric\core\scene\world\WorldSerialiser.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\pipeline\GLRayTracingPipeline.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLRayTracingPass.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\rayTracing\GLRayTracingShader.h" />
+    <ClInclude Include="src\engine\prehistoric\core\engines\ScriptEngine.h" />
+    <ClInclude Include="src\engine\prehistoric\core\node\component\scripting\ScriptComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -814,6 +850,9 @@
     <ClCompile Include="src\engine\platform\opengl\rendering\pipeline\GLPipeline.cpp">
       <Filter>platform\opengl\rendering\pipeline</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\pipeline\GLRayTracingPipeline.cpp">
+      <Filter>platform\opengl\rendering\pipeline</Filter>
+    </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLBloomPass.cpp">
       <Filter>platform\opengl\rendering\renderStage</Filter>
     </ClCompile>
@@ -827,6 +866,9 @@
       <Filter>platform\opengl\rendering\renderStage</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLMainPass.cpp">
+      <Filter>platform\opengl\rendering\renderStage</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLRayTracingPass.cpp">
       <Filter>platform\opengl\rendering\renderStage</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLShadowDepthPass.cpp">
@@ -894,6 +936,9 @@
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\postProcessing\GLVolumetricPostProcessingShader.cpp">
       <Filter>platform\opengl\rendering\shaders\postProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\rayTracing\GLRayTracingShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\rayTracing</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\shadow\GLShadowDepthPassShader.cpp">
       <Filter>platform\opengl\rendering\shaders\shadow</Filter>
@@ -1087,6 +1132,9 @@
     <ClCompile Include="src\engine\prehistoric\core\engines\AudioEngine.cpp">
       <Filter>prehistoric\core\engines</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\engines\PhysicsEngine.cpp">
+      <Filter>prehistoric\core\engines</Filter>
+    </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\engines\RenderingEngine.cpp">
       <Filter>prehistoric\core\engines</Filter>
     </ClCompile>
@@ -1162,6 +1210,15 @@
     <ClCompile Include="src\engine\prehistoric\core\node\component\light\Light.cpp">
       <Filter>prehistoric\core\node\component\light</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\node\component\physics\PhysicsComponent.cpp">
+      <Filter>prehistoric\core\node\component\physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\node\component\physics\colliders\Collider.cpp">
+      <Filter>prehistoric\core\node\component\physics\colliders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\node\component\physics\colliders\SphereCollider.cpp">
+      <Filter>prehistoric\core\node\component\physics\colliders</Filter>
+    </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\node\component\renderer\RenderableComponent.cpp">
       <Filter>prehistoric\core\node\component\renderer</Filter>
     </ClCompile>
@@ -1201,11 +1258,17 @@
     <ClCompile Include="src\engine\prehistoric\core\scene\world\WorldLoader.cpp">
       <Filter>prehistoric\core\scene\world</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\scene\world\WorldSerialiser.cpp">
+      <Filter>prehistoric\core\scene\world</Filter>
+    </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\util\ModelFabricator.cpp">
       <Filter>prehistoric\core\util</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\util\Util.cpp">
       <Filter>prehistoric\core\util</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\util\guid\GUID.cpp">
+      <Filter>prehistoric\core\util\guid</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\util\log\Log.cpp">
       <Filter>prehistoric\core\util\log</Filter>
@@ -1219,10 +1282,7 @@
     <ClCompile Include="src\engine\prehistoric\core\util\time\Timer.cpp">
       <Filter>prehistoric\core\util\time</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\util\guid\GUID.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\scene\world\WorldSerialiser.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\pipeline\GLRayTracingPipeline.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLRayTracingPass.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\rayTracing\GLRayTracingShader.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\engines\ScriptEngine.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\node\component\scripting\ScriptComponent.cpp" />
   </ItemGroup>
 </Project>

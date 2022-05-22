@@ -79,7 +79,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_FAST_MATH;PR_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\PrehistoricEngine\vendor\GLFW\include;..\PrehistoricEngine\vendor\GLAD\include;..\PrehistoricEngine\vendor\ImGUI;..\PrehistoricEngine\vendor\OpenAL-Soft\include;..\PrehistoricEngine\vendor\SpotifyAPI\SpotifyAPI\src;..\PrehistoricEngine\Dependencies\include\Vulkan;..\PrehistoricEngine\Dependencies\include\stb;..\PrehistoricEngine\Dependencies\include\tinyobjloader;..\PrehistoricEngine\Dependencies\include\nlohmann_json;src;..\PrehistoricEngine\src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\PrehistoricEngine\vendor\GLFW\include;..\PrehistoricEngine\vendor\GLAD\include;..\PrehistoricEngine\vendor\ImGUI;..\PrehistoricEngine\vendor\OpenAL-Soft\include;..\PrehistoricEngine\vendor\SpotifyAPI\SpotifyAPI\src;..\PrehistoricEngine\Dependencies\include\Vulkan;..\PrehistoricEngine\Dependencies\include\stb;..\PrehistoricEngine\Dependencies\include\tinyobjloader;..\PrehistoricEngine\Dependencies\include\nlohmann_json;..\PrehistoricEngine\Dependencies\include\Mono;src;..\PrehistoricEngine\src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
@@ -92,7 +92,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>IF EXIST "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"\ (xcopy /Q /E /Y /I "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"  ..\bin\Debug-windows-x86_64\Prehistoric &gt; nul) ELSE (xcopy /Q /Y /I "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"  ..\bin\Debug-windows-x86_64\Prehistoric &gt; nul)</Command>
+      <Command>IF EXIST "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"\ (xcopy /Q /E /Y /I "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"  ..\bin\Debug-windows-x86_64\Prehistoric &gt; nul) ELSE (xcopy /Q /Y /I "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"  ..\bin\Debug-windows-x86_64\Prehistoric &gt; nul)
+IF EXIST "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\Mono\mono-2.0-sgen.dll"\ (xcopy /Q /E /Y /I "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\Mono\mono-2.0-sgen.dll"  ..\bin\Debug-windows-x86_64\Prehistoric &gt; nul) ELSE (xcopy /Q /Y /I "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\Mono\mono-2.0-sgen.dll"  ..\bin\Debug-windows-x86_64\Prehistoric &gt; nul)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -100,7 +101,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_FAST_MATH;PR_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\PrehistoricEngine\vendor\GLFW\include;..\PrehistoricEngine\vendor\GLAD\include;..\PrehistoricEngine\vendor\ImGUI;..\PrehistoricEngine\vendor\OpenAL-Soft\include;..\PrehistoricEngine\vendor\SpotifyAPI\SpotifyAPI\src;..\PrehistoricEngine\Dependencies\include\Vulkan;..\PrehistoricEngine\Dependencies\include\stb;..\PrehistoricEngine\Dependencies\include\tinyobjloader;..\PrehistoricEngine\Dependencies\include\nlohmann_json;src;..\PrehistoricEngine\src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\PrehistoricEngine\vendor\GLFW\include;..\PrehistoricEngine\vendor\GLAD\include;..\PrehistoricEngine\vendor\ImGUI;..\PrehistoricEngine\vendor\OpenAL-Soft\include;..\PrehistoricEngine\vendor\SpotifyAPI\SpotifyAPI\src;..\PrehistoricEngine\Dependencies\include\Vulkan;..\PrehistoricEngine\Dependencies\include\stb;..\PrehistoricEngine\Dependencies\include\tinyobjloader;..\PrehistoricEngine\Dependencies\include\nlohmann_json;..\PrehistoricEngine\Dependencies\include\Mono;src;..\PrehistoricEngine\src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -116,7 +117,8 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
-      <Command>IF EXIST "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"\ (xcopy /Q /E /Y /I "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"  ..\bin\Release-windows-x86_64\Prehistoric &gt; nul) ELSE (xcopy /Q /Y /I "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"  ..\bin\Release-windows-x86_64\Prehistoric &gt; nul)</Command>
+      <Command>IF EXIST "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"\ (xcopy /Q /E /Y /I "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"  ..\bin\Release-windows-x86_64\Prehistoric &gt; nul) ELSE (xcopy /Q /Y /I "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"  ..\bin\Release-windows-x86_64\Prehistoric &gt; nul)
+IF EXIST "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\Mono\mono-2.0-sgen.dll"\ (xcopy /Q /E /Y /I "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\Mono\mono-2.0-sgen.dll"  ..\bin\Release-windows-x86_64\Prehistoric &gt; nul) ELSE (xcopy /Q /Y /I "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\Mono\mono-2.0-sgen.dll"  ..\bin\Release-windows-x86_64\Prehistoric &gt; nul)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">
@@ -124,7 +126,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;PR_FAST_MATH;PR_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\PrehistoricEngine\vendor\GLFW\include;..\PrehistoricEngine\vendor\GLAD\include;..\PrehistoricEngine\vendor\ImGUI;..\PrehistoricEngine\vendor\OpenAL-Soft\include;..\PrehistoricEngine\vendor\SpotifyAPI\SpotifyAPI\src;..\PrehistoricEngine\Dependencies\include\Vulkan;..\PrehistoricEngine\Dependencies\include\stb;..\PrehistoricEngine\Dependencies\include\tinyobjloader;..\PrehistoricEngine\Dependencies\include\nlohmann_json;src;..\PrehistoricEngine\src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\PrehistoricEngine\vendor\GLFW\include;..\PrehistoricEngine\vendor\GLAD\include;..\PrehistoricEngine\vendor\ImGUI;..\PrehistoricEngine\vendor\OpenAL-Soft\include;..\PrehistoricEngine\vendor\SpotifyAPI\SpotifyAPI\src;..\PrehistoricEngine\Dependencies\include\Vulkan;..\PrehistoricEngine\Dependencies\include\stb;..\PrehistoricEngine\Dependencies\include\tinyobjloader;..\PrehistoricEngine\Dependencies\include\nlohmann_json;..\PrehistoricEngine\Dependencies\include\Mono;src;..\PrehistoricEngine\src\engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -140,7 +142,8 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
-      <Command>IF EXIST "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"\ (xcopy /Q /E /Y /I "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"  ..\bin\Distribution-windows-x86_64\Prehistoric &gt; nul) ELSE (xcopy /Q /Y /I "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"  ..\bin\Distribution-windows-x86_64\Prehistoric &gt; nul)</Command>
+      <Command>IF EXIST "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"\ (xcopy /Q /E /Y /I "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"  ..\bin\Distribution-windows-x86_64\Prehistoric &gt; nul) ELSE (xcopy /Q /Y /I "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\libcurl\libcurl.dll"  ..\bin\Distribution-windows-x86_64\Prehistoric &gt; nul)
+IF EXIST "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\Mono\mono-2.0-sgen.dll"\ (xcopy /Q /E /Y /I "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\Mono\mono-2.0-sgen.dll"  ..\bin\Distribution-windows-x86_64\Prehistoric &gt; nul) ELSE (xcopy /Q /Y /I "$(SolutionDir)\PrehistoricEngine\Dependencies\lib\Mono\mono-2.0-sgen.dll"  ..\bin\Distribution-windows-x86_64\Prehistoric &gt; nul)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
