@@ -26,6 +26,9 @@ namespace Prehistoric
 
 		MonoAssembly* assembly;
 		MonoImage* image;
+
+		MonoClass* component_class;
+		MonoObject* obj;
 	};
 };
 

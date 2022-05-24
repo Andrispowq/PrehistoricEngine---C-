@@ -1,13 +1,20 @@
 using System;
+using System.Runtime.InteropServices;
 
 public class ExampleComponent
 {
-    public float some_value;
+    [DllImport("__Internal", EntryPoint = "ScriptCallback")]
+    public static extern void ScriptCallback(float val);
 
-    public static void Update(float delta)
+    public float some_value = 0.0f;
+
+    public void Update(float delta)
     {
-        Console.Write("Updated component with delta time ");
-        Console.Write(delta);
-        Console.WriteLine();
+        some_value += delta;
+    }
+
+    public void Render()
+    {
+        ScriptCallback(0.5f);
     }
 }

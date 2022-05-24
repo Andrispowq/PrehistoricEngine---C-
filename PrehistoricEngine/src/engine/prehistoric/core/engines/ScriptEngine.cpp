@@ -26,8 +26,12 @@ namespace Prehistoric
 	{
 		for (auto& elem : scriptObjects)
 		{
-			float params[1] = { delta };
-			elem->ExecuteFunction("ExampleComponent", "Update(float)", (void**)&params);
+			double delta_double = (double)delta;
+
+			void* args[1];
+			args[0] = &delta_double;
+			elem->ExecuteFunction("ExampleComponent", "Update(single)", (void**)args);
+			elem->ExecuteFunction("ExampleComponent", "Render()", nullptr);
 		}
 
 		scriptObjects.clear();
