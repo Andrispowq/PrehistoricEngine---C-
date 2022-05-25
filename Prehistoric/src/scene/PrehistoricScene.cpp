@@ -148,19 +148,20 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 		comp2->setCollider(collider2);
 
 		ScriptComponent* script2 = new ScriptComponent();
+		script2->Compile("res/scripts/Script");
 		script2->ReloadAssembly("res/scripts/Script.dll");
 
 		GameObject* obj1 = new GameObject;
 		obj1->SetPosition({ -50, -50, 50 });
 		obj1->SetScale(10.0f);
 		obj1->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, mater1));
-		obj1->AddComponent(PHYSICS_COMPONENT, comp1);
+		//obj1->AddComponent(PHYSICS_COMPONENT, comp1);
 		sceneRoot->AddChild("obj1", obj1);
 
 		GameObject* obj2 = new GameObject;
-		obj2->SetPosition({ -50, 50, 50 });
+		obj2->SetPosition(/*{-50, 50, 50}*/0);
 		obj2->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, mater2));
-		obj2->AddComponent(PHYSICS_COMPONENT, comp2);
+		//obj2->AddComponent(PHYSICS_COMPONENT, comp2);
 		obj2->AddComponent(SCRIPT_COMPONENT, script2);
 		sceneRoot->AddChild("obj2", obj2);
 	}

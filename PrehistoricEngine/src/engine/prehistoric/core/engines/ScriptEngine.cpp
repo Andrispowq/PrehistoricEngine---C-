@@ -26,10 +26,8 @@ namespace Prehistoric
 	{
 		for (auto& elem : scriptObjects)
 		{
-			double delta_double = (double)delta;
-
 			void* args[1];
-			args[0] = &delta_double;
+			args[0] = &delta;
 			elem->ExecuteFunction("ExampleComponent", "Update(single)", (void**)args);
 			elem->ExecuteFunction("ExampleComponent", "Render()", nullptr);
 		}
