@@ -7,8 +7,8 @@ public class ExampleComponent
 
     public void Update(float delta)
     {
-        Vector3f vector = new Vector3f(0.5f, 0.0f, 0.0f);
-        vector.Mul(delta);
+        Vector3f vector = new Vector3f(5.0f, 0.0f, 0.0f);
+        vector = vector.Mul(delta);
 
         Callback.Move(vector);
     }
