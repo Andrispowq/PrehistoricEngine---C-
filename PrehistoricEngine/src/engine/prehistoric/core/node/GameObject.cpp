@@ -38,6 +38,8 @@ namespace Prehistoric
 	{
 		component->setParent(this);
 		components.emplace(name, component);
+
+		component->OnInit();
 		return this;
 	}
 

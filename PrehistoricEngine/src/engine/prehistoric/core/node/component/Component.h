@@ -23,6 +23,8 @@ namespace Prehistoric
 		Component() : parent(nullptr), type(ComponentType::General) {}
 		virtual ~Component() {}
 
+		virtual void OnInit() {}
+
 		virtual void PreUpdate(CoreEngine* engine) {}
 		virtual void PreRender(Renderer* renderer) {}
 

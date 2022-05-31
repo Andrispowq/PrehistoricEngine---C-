@@ -14,7 +14,7 @@ namespace Prehistoric
 {
 	class AssembledAssetManager;
 
-	enum class RenderPriority
+	enum class RenderPriority : uint64_t
 	{
 		_3D = 0,
 		_TRANSPARENCY = 1,
@@ -34,6 +34,8 @@ namespace Prehistoric
 
 		Pipeline* getPipeline() const { return pipeline.pointer; }
 		PipelineHandle getPipelineHandle() const { return pipeline; }
+
+		void setPipeline(PipelineHandle handle) { this->pipeline.handle = handle.handle; this->pipeline.pointer = handle.pointer; }
 
 		inline RenderPriority getPriority() const { return priority; }
 		inline void setPriority(RenderPriority priority) { this->priority = priority; }

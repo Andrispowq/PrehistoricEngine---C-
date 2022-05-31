@@ -1,20 +1,17 @@
 using System;
-using System.Runtime.InteropServices;
 
-public class ExampleComponent
+public class ExampleComponent : BaseComponent
 {
-    public float some_value = 0.0f;
+    public const float SPEED = 5.0f;
 
-    public void Update(float delta)
+    public override void OnInit()
     {
-        Vector3f vector = new Vector3f(5.0f, 0.0f, 0.0f);
-        vector = vector.Mul(delta);
-
-        Callback.Move(vector);
+        transform.position = new Vector3f(0, 5, 0);
+        Log("Initialised ExampleComponent!");
     }
 
-    public void Render()
+    public override void OnUpdate(float delta)
     {
-        some_value += 1.0f;
+        transform.position = transform.position.Add(new Vector3f(SPEED * delta, 0.0f, 0.0f));
     }
 }

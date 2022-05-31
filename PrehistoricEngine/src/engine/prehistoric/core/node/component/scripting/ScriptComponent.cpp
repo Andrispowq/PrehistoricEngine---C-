@@ -8,11 +8,21 @@
 
 #include <filesystem>
 
+#include "prehistoric/core/node/GameObject.h"
+#include "prehistoric/core/node/component/light/Light.h"
+
+#define ToComponentType(x) x##asd
+
 namespace Prehistoric
 {
 	enum class CallbackType : int
 	{
-		MOVE = 0x0
+		HasComponent = 0x0,
+		GetComponent = 0x1,
+		SetComponent = 0x2,
+		GetTransform = 0x3,
+		SetTransform = 0x4,
+		Log = 0x5
 	};
 
 	struct CallbackData
@@ -21,17 +31,136 @@ namespace Prehistoric
 		void* data;
 	};
 
-	static ScriptComponent* current = nullptr;
+	static GameObject* current_parent = nullptr;
+	void HasComponent(CallbackData* data)
+	{
+		bool result = false;
+
+		std::wstring comp_name = (wchar_t*)data->data;
+		if (comp_name == L"RenderableComponent")
+		{
+			result = current_parent->HasComponent<RenderableComponent>();
+		}
+		else if (comp_name == L"RendererComponent")
+		{
+			result = current_parent->HasComponent<RendererComponent>();
+		}
+		else if (comp_name == L"Light")
+		{
+			result = current_parent->HasComponent<Light>();
+		}
+		else if (comp_name == L"PhysicsComponent")
+		{
+			result = current_parent->HasComponent<PhysicsComponent>();
+		}
+		else if (comp_name == L"AudioComponent")
+		{
+			result = current_parent->HasComponent<AudioComponent>();
+		}
+		else if (comp_name == L"ScriptComponent")
+		{
+			result = current_parent->HasComponent<ScriptComponent>();
+		}
+
+		int int_res = result;
+		data->data = (void*)&int_res;
+	}
+
+	void GetComponent(CallbackData* data)
+	{
+		void* result = nullptr;
+
+		std::wstring comp_name = (wchar_t*)data->data;
+		if (comp_name == L"RenderableComponent")
+		{
+			result = (void*)current_parent->GetComponent<RenderableComponent>();
+		}
+		else if (comp_name == L"RendererComponent")
+		{
+			result = (void*)current_parent->GetComponent<RendererComponent>();
+		}
+		else if (comp_name == L"Light")
+		{
+			result = (void*)current_parent->GetComponent<Light>();
+		}
+		else if (comp_name == L"PhysicsComponent")
+		{
+			result = (void*)current_parent->GetComponent<PhysicsComponent>();
+		}
+		else if (comp_name == L"AudioComponent")
+		{
+			result = (void*)current_parent->GetComponent<AudioComponent>();
+		}
+		else if (comp_name == L"ScriptComponent")
+		{
+			result = (void*)current_parent->GetComponent<ScriptComponent>();
+		}
+
+		data->data = result;
+	}
+
+	void GetTransform(CallbackData* data)
+	{
+		Transform& transform = current_parent->getWorldTransform();
+		
+		static float fdata[9];
+		fdata[0] = transform.getPosition().x;
+		fdata[1] = transform.getPosition().y;
+		fdata[2] = transform.getPosition().z;
+		fdata[3] = transform.getRotation().x;
+		fdata[4] = transform.getRotation().y;
+		fdata[5] = transform.getRotation().z;
+		fdata[6] = transform.getScaling().x;
+		fdata[7] = transform.getScaling().y;
+		fdata[8] = transform.getScaling().z;
+		
+		data->data = (void*)fdata;
+	}
+
+	void SetTransform(CallbackData* data)
+	{
+		Transform& transform = current_parent->getWorldTransform();
+
+		float* fdata = (float*)data->data;
+		transform.setPosition({ fdata[0], fdata[1], fdata[2] });
+		transform.setRotation({ fdata[3], fdata[4], fdata[5] });
+		transform.setScaling({ fdata[6], fdata[7], fdata[8] });
+
+		data->data = nullptr;
+	}
+
+	void ScriptLog(CallbackData* data)
+	{
+		PR_LOG_MESSAGE("[%s - ScriptComponent]: %s\n", current_parent->getName().c_str(), (char*)data->data);
+	}
+
 	extern "C" void __declspec(dllexport) ScriptCallback(CallbackData* data)
 	{
 		switch (data->type)
 		{
-		case CallbackType::MOVE:
+		case CallbackType::HasComponent:
 		{
-			float* data_ptr = (float*)data->data;
-			Vector3f amount = Vector3f(data_ptr[0], data_ptr[1], data_ptr[2]);
-			current->getParent()->Move(amount);
-
+			HasComponent(data);
+			break;
+		}
+		case CallbackType::GetComponent:
+		{
+			GetComponent(data);
+			break;
+		}
+		case CallbackType::GetTransform:
+		{
+			GetTransform(data);
+			break;
+		}
+		case CallbackType::SetTransform:
+		{
+			SetTransform(data);
+			break;
+		}
+		case CallbackType::Log:
+		{
+			ScriptLog(data);
 			break;
 		}
 		default:
@@ -50,6 +179,12 @@ namespace Prehistoric
 		}
 	}
 	
+	void ScriptComponent::OnInit()
+	{
+		current_parent = parent;
+		ExecuteFunction("BaseComponent", "Init", nullptr);
+	}
+
 	void ScriptComponent::ReloadAssembly(std::string directory)
 	{
 		assembly = mono_domain_assembly_open(domain, directory.c_str());
@@ -91,7 +226,7 @@ namespace Prehistoric
 			PR_LOG_RUNTIME_ERROR("ERROR: couldn't find function %s!\n", method_name.c_str());
 		}
 
-		current = this;
+		current_parent = this->parent;
 		MonoObject* result = mono_runtime_invoke(method, obj, parameters, nullptr);
 	}
 
@@ -99,6 +234,7 @@ namespace Prehistoric
 	{
 		if (std::filesystem::exists(std::filesystem::current_path().append(directory + ".dll")))
 		{
+			//We can't check yet if we need to recompile
 		}
 
 		std::string command = "call \"../PrehistoricEngine/vendor/Mono/bin/mcs\" ../PrehistoricEngine/scripting/Support/*.cs " + directory + ".cs -target:library -unsafe -out:" + directory + ".dll";

@@ -36,7 +36,7 @@ namespace Prehistoric
         GUID guid = GenerateGUID(key);
 
         children.insert(std::make_pair(guid, child));
-        return this;
+        return child;
     }
 
     Node* Node::getChild(const std::string& key) const

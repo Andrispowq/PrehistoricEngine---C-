@@ -15,6 +15,8 @@ namespace Prehistoric
 		ScriptComponent(std::string directory = "");
 		~ScriptComponent() {}
 
+		virtual void OnInit();
+
 		void ReloadAssembly(std::string directory);
 		void PreUpdate(CoreEngine* engine) override;
 

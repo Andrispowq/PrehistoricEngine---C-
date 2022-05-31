@@ -28,8 +28,8 @@ namespace Prehistoric
 		{
 			void* args[1];
 			args[0] = &delta;
-			elem->ExecuteFunction("ExampleComponent", "Update(single)", (void**)args);
-			elem->ExecuteFunction("ExampleComponent", "Render()", nullptr);
+			elem->ExecuteFunction("BaseComponent", "Update(single)", (void**)args);
+			elem->ExecuteFunction("BaseComponent", "Render()", nullptr);
 		}
 
 		scriptObjects.clear();

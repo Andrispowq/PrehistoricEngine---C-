@@ -125,45 +125,17 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 			}
 		}
 
-		MaterialHandle mater1 = manager->storeMaterial(new Material(man));
-		mater1->addVector3f(COLOUR, { 1, 0, 0 });
-		mater1->addVector4f(MROT, { 0, 0, 1, 0 });
+		MaterialHandle mater_script = manager->storeMaterial(new Material(man));
+		mater_script->addVector3f(COLOUR, { 0, 0, 1 });
+		mater_script->addVector4f(MROT, { 0, 0, 1, 0 });
 
-		MaterialHandle mater2 = manager->storeMaterial(new Material(man));
-		mater2->addVector3f(COLOUR, { 0, 0, 1 });
-		mater2->addVector4f(MROT, { 0, 0, 1, 0 });
+		ScriptComponent* script = new ScriptComponent();
+		script->Compile("res/scripts/Script");
+		script->ReloadAssembly("res/scripts/Script.dll");
 
-		SphereCollider* collider1 = new SphereCollider();
-		collider1->center = { -50, -50, 0 };
-		collider1->radius = 10;
-
-		PhysicsComponent* comp1 = new PhysicsComponent(100, false);
-		comp1->setCollider(collider1);
-
-		SphereCollider* collider2 = new SphereCollider();
-		collider2->center = { -10, 50, 50 };
-		collider2->radius = 1;
-
-		PhysicsComponent* comp2 = new PhysicsComponent(1, true);
-		comp2->setCollider(collider2);
-
-		ScriptComponent* script2 = new ScriptComponent();
-		script2->Compile("res/scripts/Script");
-		script2->ReloadAssembly("res/scripts/Script.dll");
-
-		GameObject* obj1 = new GameObject;
-		obj1->SetPosition({ -50, -50, 50 });
-		obj1->SetScale(10.0f);
-		obj1->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, mater1));
-		//obj1->AddComponent(PHYSICS_COMPONENT, comp1);
-		sceneRoot->AddChild("obj1", obj1);
-
-		GameObject* obj2 = new GameObject;
-		obj2->SetPosition(/*{-50, 50, 50}*/0);
-		obj2->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, mater2));
-		//obj2->AddComponent(PHYSICS_COMPONENT, comp2);
-		obj2->AddComponent(SCRIPT_COMPONENT, script2);
-		sceneRoot->AddChild("obj2", obj2);
+		GameObject* script_obj = (GameObject*)sceneRoot->AddChild("script_obj", new GameObject);
+		script_obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, mater_script));
+		script_obj->AddComponent(SCRIPT_COMPONENT, script);
 	}
 }
 
