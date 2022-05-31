@@ -14,6 +14,82 @@ public class Transform
     public Vector3f position;
     public Vector3f rotation;
     public Vector3f scaling;
+
+    public unsafe float[] ToRaw()
+    {
+        float[] data = new float[9];
+        data[0] = position.x;
+        data[1] = position.y;
+        data[2] = position.z;
+        data[3] = rotation.x;
+        data[4] = rotation.y;
+        data[5] = rotation.z;
+        data[6] = scaling.x;
+        data[7] = scaling.y;
+        data[8] = scaling.z;
+
+        return data;
+    }
+
+    public static unsafe Transform FromRaw(float* data)
+    {
+        Transform transform = new Transform();
+        transform.position = new Vector3f(data[0], data[1], data[2]);
+        transform.rotation = new Vector3f(data[3], data[4], data[5]);
+        transform.scaling = new Vector3f(data[6], data[7], data[8]);
+
+        return transform;
+    }
+}
+
+public class Material
+{
+    public Vector3f colour;
+    public float metallic;
+    public float roughness;
+    public float occlusion;
+
+    public unsafe float[] ToRaw()
+    {
+        float[] data = new float[6];
+        data[0] = colour.x;
+        data[1] = colour.y;
+        data[2] = colour.z;
+        data[3] = metallic;
+        data[4] = roughness;
+        data[5] = occlusion;
+
+        return data;
+    }
+
+    public static unsafe Material FromRaw(float* data)
+    {
+        Material material = new Material();
+        material.colour = new Vector3f(data[0], data[1], data[2]);
+        material.metallic = data[3];
+        material.roughness = data[4];
+        material.occlusion = data[5];
+
+        return material;
+    }
+}
+
+public class Renderer
+{
+    public Material material;
+
+    public unsafe float[] ToRaw()
+    {
+        return material.ToRaw();
+    }
+
+    public static unsafe Renderer FromRaw(float* data)
+    {
+        Renderer renderer = new Renderer();
+        renderer.material = Material.FromRaw(data);
+
+        return renderer;
+    }
 }
 
 public class Callback
@@ -49,6 +125,25 @@ public class Callback
         }
     }
 
+    public static unsafe void SetComponent(string name, void* data)
+    {
+        fixed (char* ptr = name)
+        {
+            System.IntPtr[] ptrs = new System.IntPtr[2];
+            ptrs[0] = (System.IntPtr)ptr;
+            ptrs[1] = (System.IntPtr)data;
+
+            fixed (System.IntPtr* _ptrs = ptrs)
+            {
+                CallbackData callback_data = new CallbackData();
+                callback_data.type = 0x2;
+                callback_data.data = (void*)_ptrs;
+
+                ScriptCallback(callback_data);
+            }
+        }
+    }
+
     public static Transform GetTransform()
     {
         unsafe
@@ -59,13 +154,8 @@ public class Callback
 
             ScriptCallback(callback_data);
             float* data = (float*)callback_data.data;
-               
-            Transform transform = new Transform();               
-            transform.position = new Vector3f(data[0], data[1], data[2]);               
-            transform.rotation = new Vector3f(data[3], data[4], data[5]);
-            transform.scaling = new Vector3f(data[6], data[7], data[8]);
 
-            return transform;
+            return Transform.FromRaw(data);
         }
     }
 
@@ -73,16 +163,7 @@ public class Callback
     {
         unsafe
         {
-            float[] fdata = new float[9];
-            fdata[0] = transform.position.x;
-            fdata[1] = transform.position.y;
-            fdata[2] = transform.position.z;
-            fdata[3] = transform.rotation.x;
-            fdata[4] = transform.rotation.y;
-            fdata[5] = transform.rotation.z;
-            fdata[6] = transform.scaling.x;
-            fdata[7] = transform.scaling.y;
-            fdata[8] = transform.scaling.z;
+            float[] fdata = transform.ToRaw();
 
             fixed (float* data = fdata)
             {

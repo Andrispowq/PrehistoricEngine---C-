@@ -77,7 +77,20 @@ namespace Prehistoric
 		}
 		else if (comp_name == L"RendererComponent")
 		{
-			result = (void*)current_parent->GetComponent<RendererComponent>();
+			RendererComponent* comp = current_parent->GetComponent<RendererComponent>();
+			Material* mat = comp->getMaterial();
+			Vector3f colour = mat->getVector3f(COLOUR);
+			Vector4f mrot = mat->getVector4f(MROT);
+
+			static float transfer_material[6];
+			transfer_material[0] = colour.r;
+			transfer_material[1] = colour.g;
+			transfer_material[2] = colour.b;
+			transfer_material[3] = mrot.r;
+			transfer_material[4] = mrot.g;
+			transfer_material[5] = mrot.b;
+
+			result = (void*)transfer_material;
 		}
 		else if (comp_name == L"Light")
 		{
@@ -94,6 +107,53 @@ namespace Prehistoric
 		else if (comp_name == L"ScriptComponent")
 		{
 			result = (void*)current_parent->GetComponent<ScriptComponent>();
+		}
+
+		data->data = result;
+	}
+
+	void SetComponent(CallbackData* data)
+	{
+		void* result = nullptr;
+		void** ptrs = (void**)data->data;
+
+		std::wstring comp_name = (wchar_t*)ptrs[0];
+		if (comp_name == L"RenderableComponent")
+		{
+			RenderableComponent* comp = current_parent->GetComponent<RenderableComponent>();
+		}
+		else if (comp_name == L"RendererComponent")
+		{
+			RendererComponent* comp = current_parent->GetComponent<RendererComponent>();
+			Material* mat = comp->getMaterial();
+
+			float* fdata = (float*)ptrs[1];
+			Vector3f colour = { fdata[0], fdata[1], fdata[2] };
+			Vector4f mrot = { fdata[3], fdata[4], fdata[5], 0.0f };
+
+			if (mat->getVector3f(COLOUR) == Vector3f(-1)) { mat->addVector3f(COLOUR, colour); }
+			if (mat->getVector4f(MROT) == Vector4f(-1)) { mat->addVector4f(MROT, mrot); }
+
+			mat->getVector3fs()[COLOUR] = colour;
+			mat->getVector4fs()[MROT] = mrot;
+
+			result = nullptr;
+		}
+		else if (comp_name == L"Light")
+		{
+			Light* comp = current_parent->GetComponent<Light>();
+		}
+		else if (comp_name == L"PhysicsComponent")
+		{
+			PhysicsComponent* comp = current_parent->GetComponent<PhysicsComponent>();
+		}
+		else if (comp_name == L"AudioComponent")
+		{
+			AudioComponent* comp = current_parent->GetComponent<AudioComponent>();
+		}
+		else if (comp_name == L"ScriptComponent")
+		{
+			ScriptComponent* comp = current_parent->GetComponent<ScriptComponent>();
 		}
 
 		data->data = result;
@@ -146,6 +206,11 @@ namespace Prehistoric
 		case CallbackType::GetComponent:
 		{
 			GetComponent(data);
+			break;
+		}
+		case CallbackType::SetComponent:
+		{
+			SetComponent(data);
 			break;
 		}
 		case CallbackType::GetTransform:

@@ -7,10 +7,6 @@ public class ExampleComponent : BaseComponent
     public override void OnInit()
     {
         transform.position = new Vector3f(0, 5, 0);
-
-        renderer.material.metallic = 0.5f;
-        renderer.material.roughness = 1.0f;
-
         Log("Initialised ExampleComponent!");
     }
 

@@ -126,8 +126,8 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 		}
 
 		MaterialHandle mater_script = manager->storeMaterial(new Material(man));
-		mater_script->addVector3f(COLOUR, { 0, 0, 1 });
-		mater_script->addVector4f(MROT, { 0, 0, 1, 0 });
+		mater_script->addVector3f(COLOUR, { 1 });
+		mater_script->addVector4f(MROT, { 0.5f, 0.5f, 1, 0 });
 
 		ScriptComponent* script = new ScriptComponent();
 		script->Compile("res/scripts/Script");

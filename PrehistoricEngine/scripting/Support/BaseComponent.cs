@@ -3,6 +3,7 @@ using System;
 public class BaseComponent
 {
     public Transform transform;
+    public Renderer renderer;
 
     public virtual void OnInit() { }
     public virtual void OnUpdate(float delta) { }
@@ -10,20 +11,42 @@ public class BaseComponent
 
     public void Init()
     {
-        transform = Callback.GetTransform();
+        unsafe
+        {
+            transform = Callback.GetTransform();
+            renderer = Renderer.FromRaw((float*)Callback.GetComponent("RendererComponent"));
+        }
 
         OnInit();
 
-        Callback.SetTransform(transform);
+        unsafe
+        {
+            fixed (float* ptr = renderer.ToRaw())
+            {
+                Callback.SetComponent("RendererComponent", (void*)ptr);
+                Callback.SetTransform(transform);
+            }
+        }
     }
 
     public void Update(float delta)
     {
-        transform = Callback.GetTransform();
+        unsafe
+        {
+            transform = Callback.GetTransform();
+            renderer = Renderer.FromRaw((float*)Callback.GetComponent("RendererComponent"));
+        }
 
         OnUpdate(delta);
 
-        Callback.SetTransform(transform);
+        unsafe
+        {
+            fixed (float* ptr = renderer.ToRaw())
+            {
+                Callback.SetComponent("RendererComponent", (void*)ptr);
+                Callback.SetTransform(transform);
+            }
+        }
     }
     
     public void Render()
