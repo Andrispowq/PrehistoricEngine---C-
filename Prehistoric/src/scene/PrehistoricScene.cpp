@@ -131,7 +131,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 
 		ScriptComponent* script = new ScriptComponent();
 		script->Compile("res/scripts/Script");
-		script->ReloadAssembly("res/scripts/Script.dll");
+		script->ReloadAssembly("res/scripts/Script.dll", "ExampleComponent");
 
 		GameObject* script_obj = (GameObject*)sceneRoot->AddChild("script_obj", new GameObject);
 		script_obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, mater_script));

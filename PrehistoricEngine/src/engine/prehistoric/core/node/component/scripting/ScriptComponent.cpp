@@ -168,14 +168,14 @@ namespace Prehistoric
 		}
 	}
 
-	ScriptComponent::ScriptComponent(std::string directory)
+	ScriptComponent::ScriptComponent(std::string directory, std::string componentName)
 		: assembly{nullptr}, image{nullptr}, component_class{nullptr}, obj{nullptr}
 	{
 		domain = Application::Get().getEngineLayer()->getScriptEngine()->GetDomain();
 
-		if (directory != "")
+		if ((directory != "") && (componentName != ""))
 		{
-			ReloadAssembly(directory);
+			ReloadAssembly(directory, componentName);
 		}
 	}
 	
@@ -185,22 +185,24 @@ namespace Prehistoric
 		ExecuteFunction("BaseComponent", "Init", nullptr);
 	}
 
-	void ScriptComponent::ReloadAssembly(std::string directory)
+	void ScriptComponent::ReloadAssembly(std::string directory, std::string componentName)
 	{
+		this->componentName = componentName;
+
 		assembly = mono_domain_assembly_open(domain, directory.c_str());
 		image = mono_assembly_get_image(assembly);
 
 		//Get the class
-		component_class = mono_class_from_name(image, "", "ExampleComponent");
+		component_class = mono_class_from_name(image, "", componentName.c_str());
 		if (!component_class)
 		{
-			PR_LOG_RUNTIME_ERROR("ERROR: couldn't find class ExampleComponent!\n");
+			PR_LOG_RUNTIME_ERROR("ERROR: couldn't find class %s!\n", &componentName[0]);
 		}
 
 		obj = mono_object_new(domain, component_class);
 		if (!obj)
 		{
-			PR_LOG_RUNTIME_ERROR("ERROR: couldn't initialise class ExampleComponent!\n");
+			PR_LOG_RUNTIME_ERROR("ERROR: couldn't initialise class %s!\n", &componentName[0]);
 		}
 
 		mono_runtime_object_init(obj);
