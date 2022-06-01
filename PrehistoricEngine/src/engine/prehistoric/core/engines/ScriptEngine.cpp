@@ -24,6 +24,11 @@ namespace Prehistoric
 
 	void ScriptEngine::Update(float delta)
 	{
+		if (InputInstance.IsKeyPushed(PR_KEY_R)) //Reload scripts
+		{
+
+		}
+
 		for (auto& elem : scriptObjects)
 		{
 			void* args[1];
