@@ -2,7 +2,8 @@ using System;
 
 public class ExampleComponent : BaseComponent
 {
-    public const float SPEED = 20.0f;
+    public float SPEED = 20.0f;
+    public Vector3f DIRECTION = new Vector3f(1, 0, 0);
 
     public override void OnInit()
     {
@@ -16,11 +17,6 @@ public class ExampleComponent : BaseComponent
 
     public override void OnUpdate(float delta)
     {
-        transform.position = transform.position.Add(new Vector3f(SPEED * delta, 0.0f, 0.0f));
-
-        if(transform.position.x < 50.0)
-        {
-            Log("You can still hear this");
-        }
+        transform.position.x += GetJoystickAxis(0, 0) * SPEED * delta;
     }
 }

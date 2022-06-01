@@ -192,4 +192,25 @@ public class Callback
             }
         }
     }
+
+    public static float InputCheck(int input_type, int value)
+    {
+        unsafe
+        {
+            int[] arr = new int[2];
+            arr[0] = input_type;
+            arr[1] = value;
+
+            fixed (int* ptr = arr)
+            {
+                CallbackData callback_data = new CallbackData();
+                callback_data.type = 0x6;
+                callback_data.data = (void*)ptr;
+
+                ScriptCallback(callback_data);
+                float val = *(float*)callback_data.data;
+                return val;
+            }
+        }
+    }
 }

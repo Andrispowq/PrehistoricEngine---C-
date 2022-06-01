@@ -46,12 +46,12 @@ namespace Prehistoric
 
 			if (in.isUp() != 0 && !rotUp)
 			{
-				RotateX(static_cast<float>(-rotAmt * rotationMultiplier * in.isUp() * delta));
+				RotateX(static_cast<float>(rotAmt * rotationMultiplier * in.isUp() * delta));
 				rotUp = true;
 			}
 			if (in.isDown() != 0 && !rotDown)
 			{
-				RotateX(static_cast<float>(rotAmt * rotationMultiplier * in.isDown() * delta));
+				RotateX(static_cast<float>(-rotAmt * rotationMultiplier * in.isDown() * delta));
 				rotDown = true;
 			}
 			if (in.isRightRot() != 0 && !rotRight)

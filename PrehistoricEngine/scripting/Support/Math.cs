@@ -22,4 +22,22 @@ public class Vector3f
     public Vector3f Mul(float v) { return new Vector3f(x * v, y * v, z * v); }
     public Vector3f Div(Vector3f v) { return new Vector3f(x / v.x, y / v.y, z / v.z); }
     public Vector3f Div(float v) { return new Vector3f(x / v, y / v, z / v); }
+
+    public static Vector3f operator +(Vector3f v) => v;
+    public static Vector3f operator -(Vector3f v) => (v * -1);
+
+    public static Vector3f operator +(Vector3f a, Vector3f b) => a.Add(b);
+    public static Vector3f operator -(Vector3f a, Vector3f b) => a.Sub(b);
+    public static Vector3f operator *(Vector3f a, Vector3f b) => a.Mul(b);
+    public static Vector3f operator /(Vector3f a, Vector3f b) => a.Div(b);
+
+    public static Vector3f operator +(Vector3f a, float b) => a.Add(b);
+    public static Vector3f operator -(Vector3f a, float b) => a.Sub(b);
+    public static Vector3f operator *(Vector3f a, float b) => a.Mul(b);
+    public static Vector3f operator /(Vector3f a, float b) => a.Div(b);
+
+    public static Vector3f operator +(float a, Vector3f b) => new Vector3f(a).Add(b);
+    public static Vector3f operator -(float a, Vector3f b) => new Vector3f(a).Sub(b);
+    public static Vector3f operator *(float a, Vector3f b) => new Vector3f(a).Mul(b);
+    public static Vector3f operator /(float a, Vector3f b) => new Vector3f(a).Div(b);
 }

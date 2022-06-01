@@ -22,7 +22,8 @@ namespace Prehistoric
 		SetComponent = 0x2,
 		GetTransform = 0x3,
 		SetTransform = 0x4,
-		Log = 0x5
+		Log = 0x5,
+		InputCheck = 0x6
 	};
 
 	struct CallbackData
@@ -194,6 +195,87 @@ namespace Prehistoric
 		PR_LOG_MESSAGE("[%s - ScriptComponent]: %s\n", current_parent->getName().c_str(), (char*)data->data);
 	}
 
+	void InputCheck(CallbackData* data)
+	{
+		int* values = (int*)data->data;
+		int type = values[0];
+		int val = values[1];
+
+		float ret = false;
+		if ((type & 0xF) == 0x0) //keyboard
+		{
+			if (((type >> 4) & 0x7) == 0x0) //pressed
+			{
+				bool res = InputInstance.IsKeyPushed((InputCode)val);
+				ret = (res ? 1.0f : 0.0f);
+			}
+			else if (((type >> 4) & 0x7) == 0x1) //held
+			{
+				bool res = InputInstance.IsKeyHeld((InputCode)val);
+				ret = (res ? 1.0f : 0.0f);
+			}
+			else if (((type >> 4) & 0x7) == 0x2) //released - not implemented
+			{
+				bool res = false;
+				ret = (res ? 1.0f : 0.0f);
+			}
+		}
+		else if ((type & 0xF) == 0x1) //mouse
+		{
+			if (((type >> 4) & 0xF) == 0x0) //pressed
+			{
+				bool res = InputInstance.IsButtonPushed((InputCode)val);
+				ret = (res ? 1.0f : 0.0f);
+			}
+			else if (((type >> 4) & 0xF) == 0x1) //held
+			{
+				bool res = InputInstance.IsButtonHeld((InputCode)val);
+				ret = (res ? 1.0f : 0.0f);
+			}
+			else if (((type >> 4) & 0xF) == 0x2) //released - not implemented
+			{
+				bool res = false;
+				ret = (res ? 1.0f : 0.0f);
+			}
+		}
+		else if ((type & 0xF) == 0x2) //joystick
+		{
+			if (((type >> 4) & 0x7) == 0x0) //pressed
+			{
+				if (((type >> 7) & 0x1) == 0x1) //axis
+				{
+					ret = InputInstance.getJoystickAxisOffset((InputCode)val, (JoystickID)((type >> 8) & 0xF));
+				}
+				else
+				{
+					bool res = InputInstance.IsJoystickButtonPushed((InputCode)val, (JoystickID)((type >> 8) & 0xF));
+					ret = (res ? 1.0f : 0.0f);
+				}
+			}
+			else if (((type >> 4) & 0x7) == 0x1) //held
+			{
+				if (((type >> 7) & 0x1) == 0x1) //axis
+				{
+					ret = InputInstance.getJoystickAxisOffset((InputCode)val, (JoystickID)((type >> 8) & 0xF));
+				}
+				else
+				{
+					bool res = InputInstance.IsJoystickButtonPushed((InputCode)val, (JoystickID)((type >> 8) & 0xF));
+					ret = (res ? 1.0f : 0.0f);
+				}
+			}
+			else if (((type >> 4) & 0x7) == 0x2) //released - not implemented
+			{
+				bool res = false;
+				ret = (res ? 1.0f : 0.0f);
+			}
+		}
+
+		static float res_buff[1];
+		res_buff[0] = ret;
+		data->data = res_buff;
+	}
+
 	extern "C" void __declspec(dllexport) ScriptCallback(CallbackData* data)
 	{
 		switch (data->type)
@@ -226,6 +308,11 @@ namespace Prehistoric
 		case CallbackType::Log:
 		{
 			ScriptLog(data);
+			break;
+		}
+		case CallbackType::InputCheck:
+		{
+			InputCheck(data);
 			break;
 		}
 		default:
