@@ -323,12 +323,15 @@ namespace Prehistoric
 	ScriptComponent::ScriptComponent(std::string directory, std::string componentName)
 		: assembly{nullptr}, image{nullptr}, component_class{nullptr}, obj{nullptr}
 	{
-		domain = Application::Get().getEngineLayer()->getScriptEngine()->GetDomain();
-
 		if ((directory != "") && (componentName != ""))
 		{
 			ReloadAssembly(directory, componentName);
 		}
+	}
+
+	ScriptComponent::~ScriptComponent()
+	{
+		DestroyDomain();
 	}
 	
 	void ScriptComponent::OnInit()
@@ -337,9 +340,33 @@ namespace Prehistoric
 		ExecuteFunction("BaseComponent", "Init", nullptr);
 	}
 
+	void ScriptComponent::CreateDomain(std::string name)
+	{
+		domain = mono_domain_create_appdomain((char*)name.c_str(), NULL);
+
+		if (domain) 
+		{
+			mono_domain_set(domain, false);
+		}
+	}
+
+	void ScriptComponent::DestroyDomain()
+	{
+		mono_domain_set(Application::Get().getEngineLayer()->getScriptEngine()->getRootDomain(), false);
+		mono_domain_unload(domain);
+	}
+
 	void ScriptComponent::ReloadAssembly(std::string directory, std::string componentName)
 	{
+		this->directory = directory;
 		this->componentName = componentName;
+
+		if (assembly != nullptr)
+		{
+			DestroyDomain();
+		}
+
+		CreateDomain(directory);
 
 		assembly = mono_domain_assembly_open(domain, directory.c_str());
 		image = mono_assembly_get_image(assembly);
@@ -384,11 +411,17 @@ namespace Prehistoric
 		MonoObject* result = mono_runtime_invoke(method, obj, parameters, nullptr);
 	}
 
-	void ScriptComponent::Compile(std::string directory)
+	void ScriptComponent::Compile(std::string directory, bool del)
 	{
-		if (std::filesystem::exists(std::filesystem::current_path().append(directory + ".dll")))
+		//We can't check yet if we need to recompile
+		std::filesystem::path path = std::filesystem::current_path().append(directory + ".dll");
+		std::filesystem::path copy_path = path.parent_path().append("temp/temporary.dll");
+		if (std::filesystem::exists(path) && del)
 		{
-			//We can't check yet if we need to recompile
+			std::filesystem::copy(path, copy_path);
+			std::filesystem::remove(path);
+			std::filesystem::copy(copy_path, path);
+			std::filesystem::remove(copy_path);
 		}
 
 		std::string command = "call \"../PrehistoricEngine/vendor/Mono/bin/mcs\" ../PrehistoricEngine/scripting/Support/*.cs " + directory + ".cs -target:library -unsafe -out:" + directory + ".dll";

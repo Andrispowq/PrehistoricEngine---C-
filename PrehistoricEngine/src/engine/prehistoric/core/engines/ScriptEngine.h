@@ -26,12 +26,12 @@ namespace Prehistoric
 
 		void addScriptObject(ScriptComponent* scriptObject);
 
-		MonoDomain* GetDomain() { return domain; }
+		MonoDomain* getRootDomain() const { return rootDomain; }
 
 		ScriptEngine(const ScriptEngine& engine) = delete;
 		ScriptEngine operator=(const ScriptEngine& engine) = delete;
 	private:
-		MonoDomain* domain;
+		MonoDomain* rootDomain = nullptr;
 
 		std::vector<ScriptComponent*> scriptObjects;
 	};

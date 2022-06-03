@@ -10,12 +10,12 @@ namespace Prehistoric
 	{
 		mono_set_dirs("C:\\Program Files\\Mono\\lib",
 			"C:\\Program Files\\Mono\\etc");
-		domain = mono_jit_init("Prehistoric");
+		rootDomain = mono_jit_init("Prehistoric");
 	}
 
 	ScriptEngine::~ScriptEngine()
 	{
-		mono_jit_cleanup(domain);
+		mono_jit_cleanup(rootDomain);
 	}
 
 	void ScriptEngine::OnEvent(Event& event)
@@ -26,7 +26,13 @@ namespace Prehistoric
 	{
 		if (InputInstance.IsKeyPushed(PR_KEY_R)) //Reload scripts
 		{
-
+			for (auto& elem : scriptObjects)
+			{
+				std::string dir = elem->getDirectory();
+				ScriptComponent::Compile(dir.substr(0, dir.length() - 4), true);
+				elem->ReloadAssembly(dir, elem->getComponentName());
+				elem->OnInit();
+			}
 		}
 
 		for (auto& elem : scriptObjects)

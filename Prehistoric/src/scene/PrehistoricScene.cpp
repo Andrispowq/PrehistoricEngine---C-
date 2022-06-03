@@ -129,13 +129,22 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 		mater_script->addVector3f(COLOUR, { 1 });
 		mater_script->addVector4f(MROT, { 0.5f, 0.5f, 1, 0 });
 
-		ScriptComponent* script = new ScriptComponent();
-		script->Compile("res/scripts/Script");
-		script->ReloadAssembly("res/scripts/Script.dll", "ExampleComponent");
+		MaterialHandle mater_script2 = manager->storeMaterial(new Material(man));
+		mater_script2->addVector3f(COLOUR, { 1 });
+		mater_script2->addVector4f(MROT, { 0.5f, 0.5f, 1, 0 });
+
+		ScriptComponent::Compile("res/scripts/Script");
+		ScriptComponent* script = new ScriptComponent("res/scripts/Script.dll", "ExampleComponent");
+		ScriptComponent::Compile("res/scripts/Script2");
+		ScriptComponent* script2 = new ScriptComponent("res/scripts/Script2.dll", "ExampleComponent");
 
 		GameObject* script_obj = (GameObject*)sceneRoot->AddChild("script_obj", new GameObject);
 		script_obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, mater_script));
 		script_obj->AddComponent(SCRIPT_COMPONENT, script);
+
+		/*GameObject* script_obj2 = (GameObject*)sceneRoot->AddChild("script_obj2", new GameObject);
+		script_obj2->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, mater_script2));
+		script_obj2->AddComponent(SCRIPT_COMPONENT, script2);*/
 	}
 }
 
