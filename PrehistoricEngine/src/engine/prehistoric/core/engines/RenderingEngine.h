@@ -11,6 +11,8 @@
 #include "prehistoric/common/framework/Window.h"
 #include "prehistoric/common/rendering/Renderer.h"
 
+#include "prehistoric/core/node/component/camera/CameraComponent.h"
+
 namespace Prehistoric
 {
 	struct Statistics
@@ -35,9 +37,10 @@ namespace Prehistoric
 		void Render();
 
 		void ChangeCamera(Camera* camera);
+		void AddCameraComponent(CameraComponent* component);
 
 		inline Window* getWindow() const { return window.get(); }
-		inline Camera* getCamera() const { return camera.get(); }
+		inline Camera* getCamera() const { return primaryCamera; }
 
 		inline Renderer* getRenderer() const { return renderer.get(); }
 
@@ -46,10 +49,16 @@ namespace Prehistoric
 		RenderingEngine(const RenderingEngine& engine) = delete;
 		RenderingEngine operator=(const RenderingEngine& engine) = delete;
 	private:
+		void ChangePrimaryCamera(Camera* camera);
+
+	private:
 		std::unique_ptr<Window> window;
-		std::unique_ptr<Camera> camera;
+		std::unique_ptr<Camera> defaultCamera;
 
 		std::unique_ptr<Renderer> renderer;
+
+		std::vector<CameraComponent*> cameraComponents;
+		Camera* primaryCamera = nullptr;
 
 		static Statistics statistics;
 	};

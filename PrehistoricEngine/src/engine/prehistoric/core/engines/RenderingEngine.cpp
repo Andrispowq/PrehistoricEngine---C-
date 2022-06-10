@@ -17,7 +17,7 @@ namespace Prehistoric
 	bool bloomEnabled = true;
 
 	RenderingEngine::RenderingEngine()
-		: window(nullptr), camera(nullptr), renderer(nullptr)
+		: window(nullptr), defaultCamera(nullptr), renderer(nullptr)
 	{
 
 #if defined(PR_WINDOWS_64)
@@ -46,21 +46,23 @@ namespace Prehistoric
 			{ JOYSTICK_AXIS_MOVED_POSITIVE, PR_GAMEPAD_AXIS_RIGHT_Y, PR_JOYSTICK_1 }, { JOYSTICK_AXIS_MOVED_NEGATIVE, PR_GAMEPAD_AXIS_RIGHT_Y, PR_JOYSTICK_1 }, 
 			{ JOYSTICK_AXIS_MOVED_POSITIVE, PR_GAMEPAD_AXIS_RIGHT_X, PR_JOYSTICK_1 }, { JOYSTICK_AXIS_MOVED_NEGATIVE, PR_GAMEPAD_AXIS_RIGHT_X, PR_JOYSTICK_1 });
 
-		camera = std::make_unique<FPSCamera>();
-		camera->AddCameraInput(keyInput);
-		camera->AddCameraInput(joystickInput);
-		camera->LogStage();
+		defaultCamera = std::make_unique<FPSCamera>();
+		defaultCamera->AddCameraInput(keyInput);
+		//defaultCamera->AddCameraInput(joystickInput);
+		defaultCamera->LogStage();
+
+		primaryCamera = defaultCamera.get();
 	}
 
 	void RenderingEngine::Init(AssembledAssetManager* manager)
 	{
 		if (__FrameworkConfig.api == OpenGL)
 		{
-			renderer = std::make_unique<GLRenderer>(window.get(), camera.get(), manager);
+			renderer = std::make_unique<GLRenderer>(window.get(), primaryCamera, manager);
 		}
 		else if (__FrameworkConfig.api == Vulkan)
 		{
-			renderer = std::make_unique<VKRenderer>(window.get(), camera.get(), manager);
+			renderer = std::make_unique<VKRenderer>(window.get(), primaryCamera, manager);
 		}
 	}
 
@@ -68,7 +70,7 @@ namespace Prehistoric
 	{
 		//These depend on the Asset Manager, which needs to be deleted before the windows, so nasty hack ahead
 		delete renderer.release();
-		delete camera.release();
+		delete defaultCamera.release();
 	}
 
 	void RenderingEngine::OnEvent(Event& event)
@@ -96,7 +98,19 @@ namespace Prehistoric
 			renderer->setWireframeMode(!renderer->isWireframeMode());
 		}
 
-		camera->Update(window.get(), delta);
+		defaultCamera->Update(window.get(), delta);
+		ChangePrimaryCamera(defaultCamera.get());
+		for (auto cam : cameraComponents)
+		{
+			cam->getCamera()->Update(window.get(), delta);
+
+			if (cam->IsPrimary())
+			{
+				ChangePrimaryCamera(cam->getCamera());
+			}
+		}
+
+		cameraComponents.clear();
 
 		if (InputInstance.IsKeyPushed(PR_KEY_K))
 		{
@@ -111,7 +125,18 @@ namespace Prehistoric
 
 	void RenderingEngine::ChangeCamera(Camera* camera)
 	{
-		this->camera = (std::unique_ptr<Camera>)camera;
+		this->defaultCamera = (std::unique_ptr<Camera>)camera;
 		renderer->setCamera(camera);
+	}
+
+	void RenderingEngine::AddCameraComponent(CameraComponent* component)
+	{
+		cameraComponents.push_back(component);
+	}
+
+	void RenderingEngine::ChangePrimaryCamera(Camera* camera)
+	{
+		primaryCamera = camera;
+		renderer->setCamera(primaryCamera);
 	}
 };

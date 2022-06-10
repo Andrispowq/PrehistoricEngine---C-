@@ -10,6 +10,7 @@
 
 #include "prehistoric/core/node/GameObject.h"
 #include "prehistoric/core/node/component/light/Light.h"
+#include "prehistoric/core/node/component/camera/CameraComponent.h"
 
 #define ToComponentType(x) x##asd
 
@@ -62,6 +63,10 @@ namespace Prehistoric
 		{
 			result = current_parent->HasComponent<ScriptComponent>();
 		}
+		else if (comp_name == L"CameraComponent")
+		{
+			result = current_parent->HasComponent<CameraComponent>();
+		}
 
 		int int_res = result;
 		data->data = (void*)&int_res;
@@ -109,6 +114,28 @@ namespace Prehistoric
 		{
 			result = (void*)current_parent->GetComponent<ScriptComponent>();
 		}
+		else if (comp_name == L"CameraComponent")
+		{
+			CameraComponent* comp = current_parent->GetComponent<CameraComponent>();
+			Camera* cam = comp->getCamera();
+
+			Vector3f position = cam->getPosition();
+			Vector3f forward = cam->getForward();
+			Vector3f up = cam->getUp();
+
+			static float transfer[9];
+			transfer[0] = position.r;
+			transfer[1] = position.g;
+			transfer[2] = position.b;
+			transfer[3] = forward.r;
+			transfer[4] = forward.g;
+			transfer[5] = forward.b;
+			transfer[6] = up.r;
+			transfer[7] = up.g;
+			transfer[8] = up.b;
+
+			result = (void*)transfer;
+		}
 
 		data->data = result;
 	}
@@ -155,6 +182,23 @@ namespace Prehistoric
 		else if (comp_name == L"ScriptComponent")
 		{
 			ScriptComponent* comp = current_parent->GetComponent<ScriptComponent>();
+		}
+		else if (comp_name == L"CameraComponent")
+		{
+			CameraComponent* comp = current_parent->GetComponent<CameraComponent>();
+			Camera* cam = comp->getCamera();
+
+			float* fdata = (float*)ptrs[1];
+			Vector3f position = { fdata[0], fdata[1], fdata[2] };
+			Vector3f forward = { fdata[3], fdata[4], fdata[5] };
+			Vector3f up = { fdata[6], fdata[7], fdata[8] };
+
+			cam->setPosition(position);
+			cam->setForward(forward);
+			cam->setUp(up);
+			cam->Update(nullptr, 0.0f);
+
+			result = nullptr;
 		}
 
 		data->data = result;

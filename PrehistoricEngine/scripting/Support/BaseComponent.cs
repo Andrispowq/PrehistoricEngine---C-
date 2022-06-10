@@ -3,7 +3,6 @@ using System;
 public class BaseComponent
 {
     public Transform transform;
-    public Renderer renderer;
 
     public virtual void OnInit() { }
     public virtual void OnUpdate(float delta) { }
@@ -11,42 +10,20 @@ public class BaseComponent
 
     public void Init()
     {
-        unsafe
-        {
-            transform = Callback.GetTransform();
-            renderer = Renderer.FromRaw((float*)Callback.GetComponent("RendererComponent"));
-        }
+        transform = Transform.Get();
 
         OnInit();
 
-        unsafe
-        {
-            fixed (float* ptr = renderer.ToRaw())
-            {
-                Callback.SetComponent("RendererComponent", (void*)ptr);
-                Callback.SetTransform(transform);
-            }
-        }
+        Transform.Set(transform);
     }
 
     public void Update(float delta)
     {
-        unsafe
-        {
-            transform = Callback.GetTransform();
-            renderer = Renderer.FromRaw((float*)Callback.GetComponent("RendererComponent"));
-        }
+        transform = Transform.Get();
 
         OnUpdate(delta);
 
-        unsafe
-        {
-            fixed (float* ptr = renderer.ToRaw())
-            {
-                Callback.SetComponent("RendererComponent", (void*)ptr);
-                Callback.SetTransform(transform);
-            }
-        }
+        Transform.Set(transform);
     }
     
     public void Render()
@@ -57,6 +34,11 @@ public class BaseComponent
     public void Log(string text)
     {
         Callback.Log(text);
+    }
+
+    public bool HasComponent(string name)
+    {
+        return Callback.HasComponent(name);
     }
 
     //type -> 4 bits, pressed/held/released -> 3 bits, isAxis -> 1 bit, joystickID -> 4 bits, reserved -> 20 bits

@@ -159,6 +159,16 @@ void EditorLayer::ImGUIRender()
 			return;
 		}
 
+		Track track = sIF->GetAPI().SearchTracks(name).GetItems()[0];
+		std::string artists;
+		for (size_t i = 0; i < track.GetArtists().size(); i++)
+		{
+			artists += track.GetArtists()[i]->GetName();
+			if (i != (track.GetArtists().size() - 1)) artists += ", ";
+		}
+
+		PR_LOG_MESSAGE("Now playing %s: %s\n", artists.c_str(), track.GetName().c_str());
+
 		sIF->PlayTrack(name, float(offset) / 1000.0f);
 
 		//memset(songNameBuffer, 0, 256);

@@ -40,6 +40,16 @@ public class Transform
 
         return transform;
     }
+
+    public static Transform Get()
+    {
+        return Callback.GetTransform();
+    }
+
+    public static void Set(Transform transform)
+    {
+        Callback.SetTransform(transform);
+    }
 }
 
 public class Material
@@ -89,6 +99,65 @@ public class Renderer
         renderer.material = Material.FromRaw(data);
 
         return renderer;
+    }
+
+    public static unsafe Renderer Get()
+    {
+        return Renderer.FromRaw((float*)Callback.GetComponent("RendererComponent"));
+    }
+
+    public static unsafe void Set(Renderer renderer)
+    {
+        fixed (float* ptr = renderer.ToRaw())
+        {
+            Callback.SetComponent("RendererComponent", (void*)ptr);
+        }
+    }
+}
+
+public class Camera
+{
+    public Vector3f position;
+    public Vector3f forward;
+    public Vector3f up;
+
+    public unsafe float[] ToRaw()
+    {
+        float[] data = new float[9];
+        data[0] = position.x;
+        data[1] = position.y;
+        data[2] = position.z;
+        data[3] = forward.x;
+        data[4] = forward.y;
+        data[5] = forward.z;
+        data[6] = up.x;
+        data[7] = up.y;
+        data[8] = up.z;
+
+        return data;
+    }
+
+    public static unsafe Camera FromRaw(float* data)
+    {
+        Camera camera = new Camera();
+        camera.position = new Vector3f(data[0], data[1], data[2]);
+        camera.forward = new Vector3f(data[3], data[4], data[5]);
+        camera.up = new Vector3f(data[6], data[7], data[8]);
+
+        return camera;
+    }
+
+    public static unsafe Camera Get()
+    {
+        return Camera.FromRaw((float*)Callback.GetComponent("CameraComponent"));
+    }
+
+    public static unsafe void Set(Camera camera)
+    {
+        fixed (float* ptr = camera.ToRaw())
+        {
+            Callback.SetComponent("CameraComponent", (void*)ptr);
+        }
     }
 }
 

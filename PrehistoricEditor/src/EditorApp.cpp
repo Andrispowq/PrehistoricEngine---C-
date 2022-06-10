@@ -65,7 +65,7 @@ EditorApp::EditorApp()
 	Camera* cam = engineLayer->getRenderingEngine()->getCamera();//new EditorCamera(); 
 	//engineLayer->getRenderingEngine()->ChangeCamera(cam);
 
-	spotifyIF = std::make_unique<SpotifyInterface>("res/private/access.json", true);
+	spotifyIF = std::make_unique<SpotifyInterface>("res/private/access.json", true, true);
 	sIF = spotifyIF.get();
 	/*auto devs = spotifyIF->GetDevices();
 	spotifyIF->SetDevice(devs[0]->GetId(), true);*/

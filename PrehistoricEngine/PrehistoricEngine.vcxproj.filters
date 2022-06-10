@@ -811,6 +811,8 @@
     </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\engines\ScriptEngine.h" />
     <ClInclude Include="src\engine\prehistoric\core\node\component\scripting\ScriptComponent.h" />
+    <ClInclude Include="src\engine\prehistoric\core\node\component\camera\CameraComponent.h" />
+    <ClInclude Include="src\engine\prehistoric\core\node\movement\ScriptableCamera.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -1284,5 +1286,7 @@
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\engines\ScriptEngine.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\node\component\scripting\ScriptComponent.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\node\component\camera\CameraComponent.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\node\movement\ScriptableCamera.cpp" />
   </ItemGroup>
 </Project>

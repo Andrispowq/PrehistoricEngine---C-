@@ -8,7 +8,7 @@ PrehistoricApp::PrehistoricApp()
 {
 	using namespace Prehistoric;
 
-	spotifyIF = std::make_unique<SpotifyInterface>("res/private/access.json");
+	spotifyIF = std::make_unique<SpotifyInterface>("res/private/access.json", false);
 	spotifyIF->Resume();
 
 	//spotifyIF->PlayTrack("Bad Habits", 38.0f);
@@ -47,13 +47,13 @@ PrehistoricApp::PrehistoricApp()
 	GameObject* audioRoot = new GameObject();
 	engineLayer->getRootObject()->AddChild("audioRoot", audioRoot);
 
-	GameObject* startupMusic = new GameObject();
-	//startupMusic->AddComponent(AUDIO_COMPONENT, new AudioComponent("res/sounds/_Closer.wav", 75.0f, true, true));
-	//startupMusic->AddComponent("startup", new AudioComponent("res/sounds/_Eternal.wav", 0.0f, true, false, true));
-	//startupMusic->GetComponent<AudioComponent>()->PreUpdate(engineLayer);
+	/*GameObject* startupMusic = new GameObject();
+	startupMusic->AddComponent(AUDIO_COMPONENT, new AudioComponent("res/sounds/_Closer.wav", 75.0f, true, true));
+	startupMusic->AddComponent("startup", new AudioComponent("res/sounds/_Eternal.wav", 0.0f, true, false, true));
+	startupMusic->GetComponent<AudioComponent>()->PreUpdate(engineLayer);
 	
 	audioRoot->AddChild("startupMusic", startupMusic);
-	engineLayer->getAudioEngine()->Update(0.0f);
+	engineLayer->getAudioEngine()->Update(0.0f);*/
 
 	scene = std::make_unique<PrehistoricScene>(/*"res/world/testLevel.wrld"*/"res/world/world_1.json", engineLayer->getRenderingEngine()->getWindow(),
 		engineLayer->getRenderingEngine()->getCamera(), engineLayer->getAssetManager()); 

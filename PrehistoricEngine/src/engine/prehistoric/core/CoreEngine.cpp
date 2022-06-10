@@ -100,6 +100,7 @@ namespace Prehistoric
 		renderingEngine->OnEvent(event);
 		audioEngine->OnEvent(event);
 		physicsEngine->OnEvent(event);
+		scriptEngine->OnEvent(event);
 	}
 
 	void CoreEngine::SetScene(Scene* scene)

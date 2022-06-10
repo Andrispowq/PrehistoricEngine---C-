@@ -6,6 +6,7 @@
 
 #include "prehistoric/core/node/component/physics/PhysicsComponent.h"
 #include "prehistoric/core/node/component/physics/colliders/SphereCollider.h"
+#include "prehistoric/core/node/component/camera/CameraComponent.h"
 
 //We go around in a circle, from -range to range on the y and z axes
 static void sun_move_function(Prehistoric::GameObject* object, float frameTime)
@@ -136,15 +137,17 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 		ScriptComponent::Compile("res/scripts/Script");
 		ScriptComponent* script = new ScriptComponent("res/scripts/Script.dll", "ExampleComponent");
 		ScriptComponent::Compile("res/scripts/Script2");
-		ScriptComponent* script2 = new ScriptComponent("res/scripts/Script2.dll", "ExampleComponent");
+		ScriptComponent* script2 = new ScriptComponent("res/scripts/Script2.dll", "CameraController");
+
+		CameraComponent* cam = new CameraComponent(true);
 
 		GameObject* script_obj = (GameObject*)sceneRoot->AddChild("script_obj", new GameObject);
 		script_obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, mater_script));
 		script_obj->AddComponent(SCRIPT_COMPONENT, script);
 
-		/*GameObject* script_obj2 = (GameObject*)sceneRoot->AddChild("script_obj2", new GameObject);
-		script_obj2->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, mater_script2));
-		script_obj2->AddComponent(SCRIPT_COMPONENT, script2);*/
+		GameObject* script_obj2 = (GameObject*)sceneRoot->AddChild("script_obj2", new GameObject);
+		script_obj2->AddComponent(CAMERA_COMPONENT, cam);
+		script_obj2->AddComponent(SCRIPT_COMPONENT, script2);
 	}
 }
 

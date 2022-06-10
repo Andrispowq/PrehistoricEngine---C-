@@ -41,6 +41,7 @@
 #define AUDIO_COMPONENT "Audio"
 #define PHYSICS_COMPONENT "Physics"
 #define SCRIPT_COMPONENT "Script"
+#define CAMERA_COMPONENT "Camera"
 
 #define GUI_ELEMENT_COMPONENT "GUIElement"
 #define GUI_BUTTON_COMPONENT "GUIButton"
