@@ -76,7 +76,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 	{
 		AssetManager* man = manager->getAssetManager();
 
-		GameObject* sun = new GameObject();
+		/*GameObject* sun = new GameObject();
 		//sun->setUpdateFunction(sun_move_function);
 		sun->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0.95f, 0.87f), 100.0f, 50000.0f, true, true));
 		sun_move_function(sun, 0.0f);
@@ -84,7 +84,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 
 		Atmosphere* atm = new Atmosphere(window, manager);
 		atm->setSun(sun->GetComponent<Light>());
-		sceneRoot->AddChild("atmosphere", atm);
+		sceneRoot->AddChild("atmosphere", atm);*/
  
 		/*Terrain* terrain1 = new Terrain(window, camera, manager, "res/config/terrain_1.json");
 		terrain1->UpdateQuadtree();
@@ -134,12 +134,12 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 		mater_script2->addVector3f(COLOUR, { 1 });
 		mater_script2->addVector4f(MROT, { 0.5f, 0.5f, 1, 0 });
 
-		/*ScriptComponent::Compile("res/scripts/Script");
-		ScriptComponent* script = new ScriptComponent("res/scripts/Script.dll", "ExampleComponent");*/
+		ScriptComponent::Compile("res/scripts/Script");
+		ScriptComponent* script = new ScriptComponent("res/scripts/Script.dll", "ExampleComponent");
 		ScriptComponent::Compile("res/scripts/Script2");
 		ScriptComponent* script2 = new ScriptComponent("res/scripts/Script2.dll", "CameraController");
 
-		CameraComponent* cam = new CameraComponent();
+		CameraComponent* cam = new CameraComponent(true);
 
 		/*GameObject* script_obj = (GameObject*)sceneRoot->AddChild("script_obj", new GameObject);
 		script_obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, mater_script));

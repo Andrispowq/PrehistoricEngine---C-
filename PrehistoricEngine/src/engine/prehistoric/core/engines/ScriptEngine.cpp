@@ -26,13 +26,13 @@ namespace Prehistoric
 	{
 		if (InputInstance.IsKeyPushed(PR_KEY_R)) //Reload scripts
 		{
-			for (auto& elem : scriptObjects)
+			/*for (auto& elem : scriptObjects)
 			{
 				std::string dir = elem->getDirectory();
 				ScriptComponent::Compile(dir.substr(0, dir.length() - 4), true);
 				elem->ReloadAssembly(dir, elem->getComponentName());
 				elem->OnInit();
-			}
+			}*/
 		}
 
 		for (auto& elem : scriptObjects)

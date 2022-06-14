@@ -116,7 +116,7 @@ namespace Prehistoric
 		if (__FrameworkConfig.api == OpenGL && EnvironmentMapRenderer::instance && EnvironmentMapRenderer::instance->enabled
 			&& EnvironmentMapRenderer::instance->atmosphere == nullptr)
 		{
-			EnvironmentMapRenderer::instance->RenderCube(camera);
+			EnvironmentMapRenderer::instance->RenderCube(renderer->getCamera());
 		}
 
 		auto& lights = rend->getLights();

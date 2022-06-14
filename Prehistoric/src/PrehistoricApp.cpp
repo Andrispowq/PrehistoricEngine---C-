@@ -92,7 +92,7 @@ PrehistoricApp::PrehistoricApp()
 			EnvironmentMapRenderer::instance = new EnvironmentMapRenderer(engineLayer->getRenderingEngine()->getWindow(), engineLayer->getAssetManager());
 		}
 
-		EnvironmentMapRenderer::instance->atmosphere = (Atmosphere*)sceneRoot->getChild("atmosphere");
+		//EnvironmentMapRenderer::instance->atmosphere = (Atmosphere*)sceneRoot->getChild("atmosphere");
 
 		{
 			PR_PROFILE("Environment map generation - Cubemap, Irradiance, Prefilter map");

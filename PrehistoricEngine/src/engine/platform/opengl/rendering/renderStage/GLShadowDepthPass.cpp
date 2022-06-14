@@ -230,8 +230,8 @@ namespace Prehistoric
 
 	Matrix4f GLShadowDepthPass::GetViewProjMatrix(Vector3f lightDir, float nearPlane, float farPlane)
 	{
-		Matrix4f cam_proj = Matrix4f::PerspectiveProjection(camera->getFov(), ((float)window->getWidth()) / ((float)window->getHeight()), nearPlane, farPlane);
-		Matrix4f cam_view = camera->getViewMatrix();
+		Matrix4f cam_proj = Matrix4f::PerspectiveProjection(renderer->getCamera()->getFov(), ((float)window->getWidth()) / ((float)window->getHeight()), nearPlane, farPlane);
+		Matrix4f cam_view = renderer->getCamera()->getViewMatrix();
 		std::vector<Vector4f> corners = GetFrustumCornersWorldSpace(cam_proj, cam_view);
 
 		//view matrix

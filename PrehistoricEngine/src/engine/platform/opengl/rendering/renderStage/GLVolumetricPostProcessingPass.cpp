@@ -69,7 +69,7 @@ namespace Prehistoric
 		dynamic_cast<GLVolumetricPostProcessingShader*>(shader.pointer)->UpdateUniforms(rend->getMainPass()->getColourImage().pointer,
 				rend->getMainPass()->getPositionMetallicImage().pointer,
 				rend->getMainPass()->getAlbedoRoughnessImage().pointer,
-				rend->getMainPass()->getNormalImage().pointer, camera, rend->getLights());
+				rend->getMainPass()->getNormalImage().pointer, renderer->getCamera(), rend->getLights());
 		renderPipeline->RenderPipeline();
 		renderPipeline->UnbindPipeline();
 	}

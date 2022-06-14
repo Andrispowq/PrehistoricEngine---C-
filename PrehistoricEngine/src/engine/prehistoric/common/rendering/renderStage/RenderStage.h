@@ -26,9 +26,7 @@ namespace Prehistoric
 	protected:
 		AssembledAssetManager* manager;
 		Renderer* renderer;
-
 		Window* window;
-		Camera* camera;
 	};
 };
 

@@ -69,7 +69,7 @@ namespace Prehistoric
 	{
 		PR_PROFILE("Main pass");
 
-		if (camera->isChanged())
+		if (renderer->getCamera()->isChanged())
 		{
 			current_spp = 1;
 		}
