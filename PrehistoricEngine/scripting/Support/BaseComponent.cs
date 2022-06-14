@@ -71,6 +71,11 @@ public class BaseComponent
         int type = 0x000000082 | (joystickID << 8);
 
         float ret = Callback.InputCheck(type, axis);
+        if(Math.Abs(ret) < 0.1f)
+        {
+            return 0.0f;
+        }
+
         return ret;
     }
 

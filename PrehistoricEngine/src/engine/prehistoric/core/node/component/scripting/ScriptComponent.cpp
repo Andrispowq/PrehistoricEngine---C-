@@ -451,6 +451,11 @@ namespace Prehistoric
 			PR_LOG_RUNTIME_ERROR("ERROR: couldn't find function %s!\n", method_name.c_str());
 		}
 
+		if (obj->vtable == nullptr)
+		{
+			DEBUG_BREAK();
+		}
+
 		current_parent = this->parent;
 		MonoObject* result = mono_runtime_invoke(method, obj, parameters, nullptr);
 	}

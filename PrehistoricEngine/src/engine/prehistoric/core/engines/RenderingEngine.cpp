@@ -48,7 +48,7 @@ namespace Prehistoric
 
 		defaultCamera = std::make_unique<FPSCamera>();
 		defaultCamera->AddCameraInput(keyInput);
-		//defaultCamera->AddCameraInput(joystickInput);
+		defaultCamera->AddCameraInput(joystickInput);
 		defaultCamera->LogStage();
 
 		primaryCamera = defaultCamera.get();

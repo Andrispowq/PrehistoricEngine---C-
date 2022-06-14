@@ -117,9 +117,35 @@ public class Renderer
 
 public class Camera
 {
+    private static Vector3f yAxis = new Vector3f(0, 1, 0);
+
     public Vector3f position;
     public Vector3f forward;
     public Vector3f up;
+
+    public Vector3f GetLeft()
+    {
+        return forward.cross(up);
+    }
+
+    public void Move(Vector3f dir, float am)
+    {
+        position += dir * am;
+    }
+
+    public void RotateX(float am)
+    {
+        Vector3f hAxis = yAxis.cross(forward).normalise();
+        forward = forward.rotate(hAxis, am).normalise();
+        up = forward.cross(hAxis).normalise();
+    }
+
+    public void RotateY(float am)
+    {
+        Vector3f hAxis = yAxis.cross(forward).normalise();
+        forward = forward.rotate(yAxis, am).normalise();
+        up = forward.cross(hAxis).normalise();
+    }
 
     public unsafe float[] ToRaw()
     {
