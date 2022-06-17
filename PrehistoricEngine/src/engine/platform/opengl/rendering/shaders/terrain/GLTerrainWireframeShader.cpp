@@ -87,10 +87,10 @@ namespace Prehistoric
 	{
 		TerrainMaps* maps = (TerrainMaps*)material;
 
-		maps->getHeightmap()->Bind(3);
-		SetUniformi("heightmap", 3);
-		maps->getSplatmap()->Bind(4);
-		SetUniformi("splatmap", 4);
+		maps->getHeightmap()->Bind(0);
+		SetUniformi("heightmap", 0);
+		maps->getSplatmap()->Bind(1);
+		SetUniformi("splatmap", 1);
 
 		uint32_t texUnit = 2;
 

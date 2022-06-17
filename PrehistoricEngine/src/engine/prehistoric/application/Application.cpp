@@ -97,7 +97,7 @@ namespace Prehistoric
 				for (auto it = layerStack.rbegin(); it != layerStack.rend(); ++it)
 				{
 					float passed = (float)(passedTime / NANOSECOND);
-					passed = (float)min(passed, frameTime);
+					passed = (float)max(passed, frameTime);
 					(*it)->Update(passed);
 				}
 

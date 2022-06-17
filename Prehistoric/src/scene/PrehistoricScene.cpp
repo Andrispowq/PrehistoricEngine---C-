@@ -86,9 +86,9 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 		atm->setSun(sun->GetComponent<Light>());
 		sceneRoot->AddChild("atmosphere", atm);*/
  
-		/*Terrain* terrain1 = new Terrain(window, camera, manager, "res/config/terrain_1.json");
+		Terrain* terrain1 = new Terrain(window, camera, manager, "res/config/terrain_1.json");
 		terrain1->UpdateQuadtree();
-		sceneRoot->AddChild("terrain1", terrain1);*/
+		sceneRoot->AddChild("terrain1", terrain1);
 
 		/*Terrain* terrain0 = new Terrain(window, camera, manager, "res/config/terrain_0.json");
 		terrain0->UpdateQuadtree();
@@ -139,7 +139,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 		ScriptComponent::Compile("res/scripts/Script2");
 		ScriptComponent* script2 = new ScriptComponent("res/scripts/Script2.dll", "CameraController");
 
-		CameraComponent* cam = new CameraComponent(true);
+		CameraComponent* cam = new CameraComponent(false);
 
 		/*GameObject* script_obj = (GameObject*)sceneRoot->AddChild("script_obj", new GameObject);
 		script_obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, mater_script));

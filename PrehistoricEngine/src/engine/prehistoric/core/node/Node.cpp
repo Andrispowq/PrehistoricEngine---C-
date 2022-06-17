@@ -43,7 +43,7 @@ namespace Prehistoric
     {
         for (auto& entry : children)
         {
-            if (entry.second->name == name)
+            if (entry.second->name == key)
             {
                 return entry.second.get();
             }

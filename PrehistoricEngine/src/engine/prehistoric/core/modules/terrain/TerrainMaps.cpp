@@ -11,9 +11,8 @@
 namespace Prehistoric
 {
 	TerrainMaps::TerrainMaps(Window* window, AssembledAssetManager* manager, const std::string& terrainConfigFile)
+		: window(window), manager(manager)
 	{
-		this->manager = manager;
-
 		LoadConfigFile(terrainConfigFile);
 
 		heightmap = manager->getAssetManager()->loadTexture(heightmapLocation).value();
