@@ -37,6 +37,10 @@ namespace Prehistoric
         inline const Matrix4f& getProjectionMatrix() const { return projectionMatrix; }
         inline const Matrix4f& getViewProjectionMatrix() const { return viewProjectionMatrix; }
 
+        inline void setViewMatrix(const Matrix4f& m) { this->viewMatrix = m; }
+        inline void setProjectionMatrix(const Matrix4f& m) { this->projectionMatrix = m; }
+        inline void setViewProjectionMatrix(const Matrix4f& m) { this->viewProjectionMatrix = m; }
+
         bool isChanged() const { return cameraMoved || cameraRotated; }
 
     protected:

@@ -27,7 +27,14 @@ namespace Prehistoric
 		BloomDecompose,
 		ShadowDepthPass,
 		VolumetricPostProcessing,
-		RayTracing
+		RayTracing,
+		Butterfly,
+		H0k,
+		Hkt,
+		Inversion,
+		TwiddleFactors,
+		Water,
+		WaterWireframe
 	};
 
 	class ShaderLoader : public Loader

@@ -128,6 +128,70 @@ namespace Prehistoric
 						terrainConfig.lodMorphingAreas.push_back(range - terrainConfig.UpdateMorphingArea(int(i) + 1));
 				}
 			}
+
+			{
+				nlohmann::json water_json = file_json["water"];
+				waterConfig.scaleXZ = water_json["scaleXZ"];
+
+				nlohmann::json tessellation_json = water_json["tessellation"];
+				waterConfig.tessellationFactor = tessellation_json["factor"];
+				waterConfig.tessellationSlope = tessellation_json["slope"];
+				waterConfig.tessellationShift = tessellation_json["shift"];
+
+				std::vector<int> ranges = water_json["lodRanges"];
+				size_t rangeCount = water_json["lodRangeCount"];
+
+				waterConfig.lodRanges = ranges;
+				for (size_t i = 0; i < ranges.size(); i++)
+				{
+					int range = ranges[i];
+
+					if (range == 0)
+						waterConfig.lodMorphingAreas.push_back(0);
+					else
+						waterConfig.lodMorphingAreas.push_back(range - waterConfig.UpdateMorphingArea(int(i) + 1));
+				}
+
+				nlohmann::json surfaceParameters_json = water_json["surfaceParameters"];
+				std::vector<float> baseColours = surfaceParameters_json["baseColour"];
+				waterConfig.baseColour = { baseColours[0], baseColours[1], baseColours[2] };
+				waterConfig.displacementScale = surfaceParameters_json["displacementScale"];
+				waterConfig.displacementRange = surfaceParameters_json["displacementRange"];
+				waterConfig.tiling = surfaceParameters_json["tiling"];
+				waterConfig.choppiness = surfaceParameters_json["choppiness"];
+				waterConfig.wavemotion = surfaceParameters_json["wavemotion"];
+				waterConfig.normalStrength = surfaceParameters_json["normalStrength"];
+				waterConfig.highDetailRange = surfaceParameters_json["highDetailRange"];
+				waterConfig.capillarStrength = surfaceParameters_json["capillarStrength"];
+				waterConfig.capillarDownsampling = surfaceParameters_json["capillarDownsampling"];
+				
+				nlohmann::json reflectionParameters_json = water_json["reflectionParameters"];
+				waterConfig.fresnelFactor = reflectionParameters_json["fresnelFactor"];
+				waterConfig.kReflection = reflectionParameters_json["kReflection"];
+				waterConfig.kRefraction = reflectionParameters_json["kRefraction"];
+				waterConfig.reflectionBlendfactor = reflectionParameters_json["reflectionBlendfactor"];
+				waterConfig.dudvDownsampling = reflectionParameters_json["dudvDownsampling"];
+				waterConfig.underwaterBlurfactor = reflectionParameters_json["underwaterBlurfactor"];
+				waterConfig.distortionDelta = reflectionParameters_json["distortionDelta"];
+
+				nlohmann::json lightParameters_json = water_json["lightParameters"];
+				waterConfig.specularFactor = lightParameters_json["specularFactor"];
+				waterConfig.specularAmplifier = lightParameters_json["specularAmplifier"];
+				waterConfig.emissionFactor = lightParameters_json["emissionFactor"];
+				waterConfig.diffuse = lightParameters_json["diffuseEnable"];
+
+				nlohmann::json fftParameters_json = water_json["fftParameters"];
+				std::vector<float> windDirections = fftParameters_json["windDirection"];
+				waterConfig.windDirection = { windDirections[0], windDirections[1] };
+				waterConfig.windSpeed = fftParameters_json["windSpeed"];
+				waterConfig.alignment = fftParameters_json["alignment"];
+				waterConfig.fftResolution = fftParameters_json["fftResolution"];
+				waterConfig.fftAmplitude = fftParameters_json["fftAmplitude"];
+				waterConfig.fftL = fftParameters_json["fftL"];
+				waterConfig.fftCapillarWavesSupression = fftParameters_json["fftCapillarWavesSuppression"];
+				waterConfig.choppy = fftParameters_json["choppy"];
+				waterConfig.tDelta = fftParameters_json["tDelta"];
+			}
 		}
 		else
 		{

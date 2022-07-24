@@ -2,6 +2,8 @@
 
 #include "prehistoric/application/Application.h"
 
+#include "prehistoric/core/modules/water/Water.h"
+
 #include "prehistoric/core/node/component/scripting/ScriptComponent.h"
 
 #include "prehistoric/core/node/component/physics/PhysicsComponent.h"
@@ -89,6 +91,10 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 		Terrain* terrain1 = new Terrain(window, camera, manager, "res/config/terrain_1.json");
 		terrain1->UpdateQuadtree();
 		sceneRoot->AddChild("terrain1", terrain1);
+
+		Water* water = new Water(window, camera, manager, Vector3f(0, -30, 0));
+		water->UpdateQuadtree();
+		sceneRoot->AddChild("water", water);
 
 		/*Terrain* terrain0 = new Terrain(window, camera, manager, "res/config/terrain_0.json");
 		terrain0->UpdateQuadtree();

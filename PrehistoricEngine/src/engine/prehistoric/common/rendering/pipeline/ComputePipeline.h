@@ -30,6 +30,8 @@ namespace Prehistoric
 		std::unordered_map<uint32_t, std::pair<ShaderStorageBuffer*, AccessMask>>& getSSBOBindingTable() { return ssboBindingTable; }
 		Vector3u getInvocationSize() const { return invocationSize; }
 
+		void ResetBindings();
+
 		void addTextureBinding(uint32_t binding, Texture* texture, AccessMask accessMask, size_t mipLevel = 0) { textureBindingTable.insert(std::make_pair(binding, std::make_pair(std::make_pair(texture, mipLevel), accessMask))); }
 		void addSSBOBinding(uint32_t binding, ShaderStorageBuffer* ssbo, AccessMask accessMask) { ssboBindingTable.insert(std::make_pair(binding, std::make_pair(ssbo, accessMask))); }
 		void setInvocationSize(const Vector3u& size) { this->invocationSize = size; }

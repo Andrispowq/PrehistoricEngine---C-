@@ -20,6 +20,13 @@
 #include "platform/opengl/rendering/shaders/postProcessing/GLVolumetricPostProcessingShader.h"
 #include "platform/opengl/rendering/shaders/shadow/GLShadowDepthPassShader.h"
 #include "platform/opengl/rendering/shaders/rayTracing/GLRayTracingShader.h"
+#include "platform/opengl/rendering/shaders/fft/GLButterflyShader.h"
+#include "platform/opengl/rendering/shaders/fft/GLH0kShader.h"
+#include "platform/opengl/rendering/shaders/fft/GLHktShader.h"
+#include "platform/opengl/rendering/shaders/fft/GLInversionShader.h"
+#include "platform/opengl/rendering/shaders/fft/GLTwiddleFactorsShader.h"
+#include "platform/opengl/rendering/shaders/water/GLWaterShader.h"
+#include "platform/opengl/rendering/shaders/water/GLWaterWireframeShader.h"
 
 #include "platform/vulkan/rendering/shaders/basic/VKBasicShader.h"
 #include "platform/vulkan/rendering/shaders/pbr/VKPBRShader.h"
@@ -108,6 +115,34 @@ namespace Prehistoric
 			else if (path == "ray_tracing")
 			{
 				shader = new GLRayTracingShader();
+			}
+			else if (path == "butterfly")
+			{
+				shader = new GLButterflyShader();
+			}
+			else if (path == "inversion")
+			{
+				shader = new GLInversionShader();
+			}
+			else if (path == "h0k")
+			{
+				shader = new GLH0kShader();
+			}
+			else if (path == "hkt")
+			{
+				shader = new GLHktShader();
+			}
+			else if (path == "twiddle_factors")
+			{
+				shader = new GLTwiddleFactorsShader();
+			}
+			else if (path == "water")
+			{
+				shader = new GLWaterShader();
+			}
+			else if (path == "water_wireframe")
+			{
+				shader = new GLWaterWireframeShader();
 			}
 		}
 		else if (__FrameworkConfig.api == Vulkan)

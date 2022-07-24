@@ -9,6 +9,7 @@
 #include "prehistoric/common/texture/Texture.h"
 
 #include "prehistoric/core/modules/terrain/TerrainQuadtree.h"
+#include "prehistoric/core/modules/water/WaterQuadtree.h"
 #include "prehistoric/core/model/material/Material.h" 
 
 namespace Prehistoric
@@ -112,6 +113,57 @@ namespace Prehistoric
         std::vector<int> lodMorphingAreas = {};
     };
 
+    struct WaterConfig
+    {
+        int UpdateMorphingArea(int lod)
+        {
+            return (int)((scaleXZ / WaterQuadtree::rootNodes) / pow(2, lod));
+        }
+
+        float scaleXZ = 0.0f;
+
+        int tessellationFactor = 0;
+        float tessellationSlope = 0.0f;
+        float tessellationShift = 0.0f;
+
+        std::vector<int> lodRanges = {};
+        std::vector<int> lodMorphingAreas = {};
+
+        Vector3f baseColour = 0;
+        float displacementScale = 0.0f;
+        int displacementRange = 0;
+        int tiling = 0;
+        float choppiness = 0.0f;
+        float wavemotion = 0.0f;
+        float normalStrength = 0.0f;
+        int highDetailRange = 0;
+        float capillarStrength = 0.0f;
+        float capillarDownsampling = 0.0f;
+
+        float fresnelFactor = 0.0f;
+        float kReflection = 0.0f;
+        float kRefraction = 0.0f;
+        float reflectionBlendfactor = 0.0f;
+        float dudvDownsampling = 0.0f;
+        float underwaterBlurfactor = 0.0f;
+        float distortionDelta = 0.0f;
+
+        float specularFactor = 0.0f;
+        float specularAmplifier = 0.0f;
+        float emissionFactor = 0.0f;
+        bool diffuse = false;
+
+        Vector2f windDirection = 0;
+        float windSpeed = 0.0f;
+        float alignment = 0.0f;
+        int fftResolution = 0;
+        float fftAmplitude = 0.0f;
+        int fftL = 0;
+        float fftCapillarWavesSupression = 0.0f;
+        bool choppy = false;
+        float tDelta = 0.0f;
+    };
+
     class EngineSettings
     {
     public:
@@ -123,6 +175,7 @@ namespace Prehistoric
         EnvironmentMapConfig environmentMapConfig;
         AtmosphereConfig atmosphereConfig;
         TerrainConfig terrainConfig;
+        WaterConfig waterConfig;
     };
 };
 

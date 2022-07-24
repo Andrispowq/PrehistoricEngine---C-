@@ -813,6 +813,20 @@
     <ClInclude Include="src\engine\prehistoric\core\node\component\scripting\ScriptComponent.h" />
     <ClInclude Include="src\engine\prehistoric\core\node\component\camera\CameraComponent.h" />
     <ClInclude Include="src\engine\prehistoric\core\node\movement\ScriptableCamera.h" />
+    <ClInclude Include="src\engine\prehistoric\core\modules\fft\FFT.h" />
+    <ClInclude Include="src\engine\prehistoric\core\modules\fft\TwiddleFactors.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\fft\GLButterflyShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\fft\GLInversionShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\fft\GLH0kShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\fft\GLHktShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\fft\GLTwiddleFactorsShader.h" />
+    <ClInclude Include="src\engine\prehistoric\core\modules\fft\H0k.h" />
+    <ClInclude Include="src\engine\prehistoric\core\modules\fft\Hkt.h" />
+    <ClInclude Include="src\engine\prehistoric\core\modules\water\WaterQuadtree.h" />
+    <ClInclude Include="src\engine\prehistoric\core\modules\water\WaterNode.h" />
+    <ClInclude Include="src\engine\prehistoric\core\modules\water\Water.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\water\GLWaterShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\water\GLWaterWireframeShader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -1288,5 +1302,19 @@
     <ClCompile Include="src\engine\prehistoric\core\node\component\scripting\ScriptComponent.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\node\component\camera\CameraComponent.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\node\movement\ScriptableCamera.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\modules\fft\FFT.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\modules\fft\TwiddleFactors.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\fft\GLButterflyShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\fft\GLInversionShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\fft\GLH0kShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\fft\GLHktShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\fft\GLTwiddleFactorsShader.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\modules\fft\H0k.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\modules\fft\Hkt.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\modules\water\WaterQuadtree.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\modules\water\WaterNode.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\modules\water\Water.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\water\GLWaterShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\water\GLWaterWireframeShader.cpp" />
   </ItemGroup>
 </Project>
