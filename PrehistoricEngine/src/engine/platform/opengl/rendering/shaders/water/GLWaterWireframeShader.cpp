@@ -90,7 +90,7 @@ namespace Prehistoric
 
 		WaterConfig* config = &__WaterConfig;
 
-		SetUniformf("scaleY", config->displacementScale);
+		SetUniformf("scaleY", config->scaleY);
 		SetUniform("clipplane", Vector4f(0, -1, 0, 100000));
 
 		SetUniformi("tiling", config->tiling);

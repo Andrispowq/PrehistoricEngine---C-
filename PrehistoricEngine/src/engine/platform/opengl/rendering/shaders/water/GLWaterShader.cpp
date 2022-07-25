@@ -78,6 +78,8 @@ namespace Prehistoric
 		AddUniform("zFar");
 		AddUniform("zNear");
 
+		AddUniform("numberOfTilesX");
+
 		AddUniform("isCameraUnderWater");
 		AddUniform("windowWidth");
 		AddUniform("windowHeight");
@@ -120,7 +122,7 @@ namespace Prehistoric
 
 		WaterConfig* config = &__WaterConfig;
 
-		SetUniformf("scaleY", config->displacementScale);
+		SetUniformf("scaleY", config->scaleY);
 		SetUniform("clipplane", Vector4f(0, -1, 0, 100000));
 
 		SetUniformi("tiling", config->tiling);
@@ -150,6 +152,7 @@ namespace Prehistoric
 		SetUniformf("dudvDownsampling", config->dudvDownsampling);
 		SetUniformf("zFar", __EngineConfig.rendererFarPlane);
 		SetUniformf("zNear", __EngineConfig.rendererNearPlane);
+		SetUniformi("numberOfTilesX", __FrameworkConfig.windowWidth / 16);
 
 		SetUniformi("windowWidth", __FrameworkConfig.windowWidth);
 		SetUniformi("windowHeight", __FrameworkConfig.windowHeight);

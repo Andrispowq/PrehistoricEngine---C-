@@ -16,7 +16,7 @@ static void sun_move_function(Prehistoric::GameObject* object, float frameTime)
 	constexpr float range = 32000.0f;
 	constexpr float anglesPerSecond = 0.5f;
 
-	static float angle = 135.0f;
+	static float angle = 170.0f;
 
 	float x = cos(ToRadians(angle)) * range;
 	float y = sin(ToRadians(angle)) * range;
@@ -88,11 +88,11 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 		atm->setSun(sun->GetComponent<Light>());
 		sceneRoot->AddChild("atmosphere", atm);*/
  
-		Terrain* terrain1 = new Terrain(window, camera, manager, "res/config/terrain_1.json");
+		/*Terrain* terrain1 = new Terrain(window, camera, manager, "res/config/terrain_1.json");
 		terrain1->UpdateQuadtree();
-		sceneRoot->AddChild("terrain1", terrain1);
+		sceneRoot->AddChild("terrain1", terrain1);*/
 
-		Water* water = new Water(window, camera, manager, Vector3f(0, -30, 0));
+		Water* water = new Water(window, camera, manager, Vector3f(0, -100, 0));
 		water->UpdateQuadtree();
 		sceneRoot->AddChild("water", water);
 
@@ -109,6 +109,18 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 		slider2->SetPosition({ 0.5f, 0.25f, 0 });
 		slider2->SetScale({ 0.125f, 0.05f, 1 });
 		sceneRoot->AddChild("slider2", slider2);*/
+		
+		GUIElement* reflection = new GUIElement(window, manager, -1, nullptr, 0, true);
+		reflection->setTexture(water->getReflectionTexture());
+		reflection->SetPosition({ -0.5f, 0.5f, 0 });
+		reflection->SetScale({ 0.25f, 0.25f, 1 });
+		sceneRoot->AddChild("reflection", reflection);
+
+		GUIElement* refraction = new GUIElement(window, manager, -1, nullptr, 0, true);
+		refraction->setTexture(water->getRefractionTexture());
+		refraction->SetPosition({ -0.5f, -0.5f, 0 });
+		refraction->SetScale({ 0.25f, 0.25f, 1 });
+		sceneRoot->AddChild("refraction", refraction);
 
 		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/sphere.obj").value();
 		ShaderHandle shader = man->loadShader(ShaderName::PBR).value();

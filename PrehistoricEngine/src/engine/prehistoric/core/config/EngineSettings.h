@@ -113,6 +113,13 @@ namespace Prehistoric
         std::vector<int> lodMorphingAreas = {};
     };
 
+    enum class WaterRenderStage
+    {
+        Default = 0,
+        Reflection = 1,
+        Refraction = 2
+    };
+
     struct WaterConfig
     {
         int UpdateMorphingArea(int lod)
@@ -121,6 +128,7 @@ namespace Prehistoric
         }
 
         float scaleXZ = 0.0f;
+        float scaleY = 0.0f;
 
         int tessellationFactor = 0;
         float tessellationSlope = 0.0f;
@@ -162,6 +170,8 @@ namespace Prehistoric
         float fftCapillarWavesSupression = 0.0f;
         bool choppy = false;
         float tDelta = 0.0f;
+
+        WaterRenderStage stage = WaterRenderStage::Default;
     };
 
     class EngineSettings

@@ -62,6 +62,8 @@ namespace Prehistoric
 		const std::unordered_map<Pipeline*, std::unordered_map<Material*, std::vector<RenderableComponent*>>>& getModelsTransparency() const{ return models_transparency; }
 		const std::unordered_map<Pipeline*, std::vector<RenderableComponent*>>& getModels2D() const{ return models_2d; }
 
+		const std::unordered_map<Pipeline*, std::unordered_map<Material*, std::vector<RenderableComponent*>>>& getModelsWater() const { return models_water; }
+
 	protected:
 		AssembledAssetManager* manager;
 
@@ -72,6 +74,8 @@ namespace Prehistoric
 		std::unordered_map<Pipeline*, std::unordered_map<Material*, std::vector<RenderableComponent*>>> models_3d;
 		std::unordered_map<Pipeline*, std::unordered_map<Material*, std::vector<RenderableComponent*>>> models_transparency;
 		std::unordered_map<Pipeline*, std::vector<RenderableComponent*>> models_2d;
+
+		std::unordered_map<Pipeline*, std::unordered_map<Material*, std::vector<RenderableComponent*>>> models_water;
 
 		std::vector<Light*> lights;
 

@@ -16,11 +16,12 @@ uniform sampler2D Dz;
 uniform mat4 viewProjection;
 uniform vec3 cameraPosition;
 uniform vec2 wind;
-uniform float scaleY;
+uniform float displacementScale;
 uniform float choppiness;
 uniform float motion;
 uniform int displacementRange;
 uniform int highDetailRange;
+uniform int tiling;
 
 vec3 tangent;
 
@@ -47,15 +48,12 @@ void calcTangent()
 
 void main()
 {
-	float dx, dy, dz;
+	float dx, dy, dz;	
+	vec4[] positions = { gl_in[0].gl_Position, gl_in[1].gl_Position, gl_in[2].gl_Position };
 	
-	vec4 position0 = gl_in[0].gl_Position;
-	vec4 position1 = gl_in[1].gl_Position;
-	vec4 position2 = gl_in[2].gl_Position;
-	
-	float dist = (distance(position0.xyz, cameraPosition)
-			+ distance(position1.xyz, cameraPosition) 
-			+ distance(position2.xyz, cameraPosition)) / 3;
+	float dist = (distance(positions[0].xyz, cameraPosition)
+			+ distance(positions[1].xyz, cameraPosition) 
+			+ distance(positions[2].xyz, cameraPosition)) / 3;
 			
 	if(dist < displacementRange + 100)
 	{
@@ -64,49 +62,44 @@ void main()
 			calcTangent();
 		}
 		
-		dy = texture(Dy, mapCoord_GS[0] + (wind * motion)).r * max(0, (-distance(gl_in[0].gl_Position.xyz, cameraPosition) / displacementRange + 1)) * scaleY;
-		dx = texture(Dx, mapCoord_GS[0] + (wind * motion)).r * max(0, (-distance(gl_in[0].gl_Position.xyz, cameraPosition) / displacementRange + 1)) * choppiness;
-		dz = texture(Dz, mapCoord_GS[0] + (wind * motion)).r * max(0, (-distance(gl_in[0].gl_Position.xyz, cameraPosition) / displacementRange + 1)) * choppiness;
-		
-		position0.y += dy;
-		position0.x -= dx;
-		position0.z -= dz;
-		
-		dy = texture(Dy, mapCoord_GS[1] + (wind * motion)).r * max(0, (-distance(gl_in[1].gl_Position.xyz, cameraPosition) / displacementRange + 1)) * scaleY;
-		dx = texture(Dx, mapCoord_GS[1] + (wind * motion)).r * max(0, (-distance(gl_in[1].gl_Position.xyz, cameraPosition) / displacementRange + 1)) * choppiness;
-		dz = texture(Dz, mapCoord_GS[1] + (wind * motion)).r * max(0, (-distance(gl_in[1].gl_Position.xyz, cameraPosition) / displacementRange + 1)) * choppiness;
-		
-		position1.y += dy;
-		position1.x -= dx;
-		position1.z -= dz;
-		
-		dy = texture(Dy, mapCoord_GS[2] + (wind * motion)).r * max(0, (-distance(gl_in[2].gl_Position.xyz, cameraPosition) / displacementRange + 1)) * scaleY;
-		dx = texture(Dx, mapCoord_GS[2] + (wind * motion)).r * max(0, (-distance(gl_in[2].gl_Position.xyz, cameraPosition) / displacementRange + 1)) * choppiness;
-		dz = texture(Dz, mapCoord_GS[2] + (wind * motion)).r * max(0, (-distance(gl_in[2].gl_Position.xyz, cameraPosition) / displacementRange + 1)) * choppiness;
-		
-		position2.y += dy;
-		position2.x -= dx;
-		position2.z -= dz;
+		for (int i = 0; i < gl_in.length(); ++i)
+		{
+			dy = texture(Dy, mapCoord_GS[i] + (wind * motion)).r * max(0,(-distance(gl_in[i].gl_Position.xyz, cameraPosition) / displacementRange + 1)) * displacementScale;
+			dx = texture(Dx, mapCoord_GS[i] + (wind * motion)).r * max(0,(-distance(gl_in[i].gl_Position.xyz, cameraPosition) / displacementRange + 1)) * choppiness;
+			dz = texture(Dz, mapCoord_GS[i] + (wind * motion)).r * max(0,(-distance(gl_in[i].gl_Position.xyz, cameraPosition) / displacementRange + 1)) * choppiness;
+	
+			positions[i].y += dy;
+			positions[i].x -= dx;
+			positions[i].z -= dz;
+		}
 	}
 	
-	gl_Position = viewProjection * position0;
-	position_FS = position0;
+	/*for (int i = 0; i < gl_in.length(); ++i)
+	{
+		gl_Position = viewProjection * positions[i];
+		mapCoord_FS = mapCoord_GS[i];
+		tangent_FS = tangent;
+		EmitVertex();
+	}*/
+	
+	gl_Position = viewProjection * positions[0];
+	position_FS = positions[0];
 	mapCoord_FS = mapCoord_GS[0];
-	normal_FS = normalize(cross(position2.xyz - position0.xyz, position1.xyz - position0.xyz));
+	normal_FS = normalize(cross(positions[2].xyz - positions[0].xyz, positions[1].xyz - positions[0].xyz));
 	tangent_FS = tangent;
 	EmitVertex();
 	
-	gl_Position = viewProjection * position1;
-	position_FS = position1;
+	gl_Position = viewProjection * positions[1];
+	position_FS = positions[1];
 	mapCoord_FS = mapCoord_GS[1];
-	normal_FS = normalize(cross(position0.xyz - position1.xyz, position2.xyz - position1.xyz));
+	normal_FS = normalize(cross(positions[0].xyz - positions[1].xyz, positions[2].xyz - positions[1].xyz));
 	tangent_FS = tangent;
 	EmitVertex();
 	
-	gl_Position = viewProjection * position2;
-	position_FS = position2;
+	gl_Position = viewProjection * positions[2];
+	position_FS = positions[2];
 	mapCoord_FS = mapCoord_GS[2];
-	normal_FS = normalize(cross(position1.xyz - position2.xyz, position0.xyz - position2.xyz));
+	normal_FS = normalize(cross(positions[1].xyz - positions[2].xyz, positions[0].xyz - positions[2].xyz));
 	tangent_FS = tangent;
 	EmitVertex();
 	

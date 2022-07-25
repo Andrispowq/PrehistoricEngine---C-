@@ -266,7 +266,7 @@ namespace Prehistoric
 	void EnvironmentMapRenderer::RenderCube(Camera* camera)
 	{
 		backgroundPipeline->BindPipeline(nullptr);
-		static_cast<GLEnvironmentShader*>(environmentShader.pointer)->UpdateUniforms(camera->getProjectionMatrix(), camera->getViewMatrix(), prefilterMap.pointer, lodRenderedMap);
+		static_cast<GLEnvironmentShader*>(environmentShader.pointer)->UpdateUniforms(camera->getProjectionMatrix(), camera->getOriginalViewMatrix(), prefilterMap.pointer, lodRenderedMap);
 		backgroundPipeline->RenderPipeline();
 		backgroundPipeline->UnbindPipeline();
 	}

@@ -110,10 +110,9 @@ vec2 morph(vec2 localPosition, int morphArea)
 		fixPointLatitude = location + vec2(0, gap);
 		fixPointLongitude = location + vec2(gap, 0);
 	}
-	
-	float planarFactor = 0;
-	
-	if(cameraPosition.y > abs(displacementScale))
+		
+	float planarFactor;
+	if (cameraPosition.y > abs(displacementScale))
 		planarFactor = 1;
 	else
 		planarFactor = cameraPosition.y / abs(displacementScale);
@@ -124,9 +123,9 @@ vec2 morph(vec2 localPosition, int morphArea)
 		* vec4(fixPointLongitude.x, planarFactor, fixPointLongitude.y, 1)).xyz);
 	
 	if(distLatitude > morphArea)
-		morphing.x = morphLatitude(localPosition.xy);
+		morphing.x = morphLatitude(localPosition);
 	if(distLongitude > morphArea)
-		morphing.y = morphLongitude(localPosition.xy);
+		morphing.y = morphLongitude(localPosition);
 		
 	return morphing;
 }
@@ -135,11 +134,10 @@ void main()
 {
 	vec2 localPosition = (localMatrix * vec4(position_VS.x, 0, position_VS.y, 1)).xz;
 	
-	if(lod > 0)
-		localPosition += morph(localPosition, lodMorphArea[lod - 1]);
+	//if(lod > 0)
+		//localPosition += morph(localPosition, lodMorphArea[lod - 1]);
 		
-	mapCoord_TC = localPosition;
-	
+	mapCoord_TC = localPosition;	
 	gl_Position = worldMatrix * vec4(localPosition.x, 0, localPosition.y, 1);
 	gl_ClipDistance[0] = dot(gl_Position, clipplane);
 }

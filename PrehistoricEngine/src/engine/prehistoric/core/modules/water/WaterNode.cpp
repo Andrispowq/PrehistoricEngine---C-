@@ -28,7 +28,9 @@ namespace Prehistoric
 		material.handle = 0;
 
 		rendererComponent = new RendererComponent(window, manager, pipeline, material);
+		rendererComponent->setReflection(false);
 		wireframeRendererComponent = new RendererComponent(window, manager, wireframePipeline, material);
+		wireframeRendererComponent->setReflection(false);
 		
 		AddComponent(RENDERER_COMPONENT, rendererComponent);
 		AddComponent(WIREFRAME_RENDERER_COMPONENT, wireframeRendererComponent);

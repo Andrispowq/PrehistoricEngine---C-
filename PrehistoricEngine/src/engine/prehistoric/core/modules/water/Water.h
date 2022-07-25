@@ -21,6 +21,9 @@ namespace Prehistoric
 		void PreRender(Renderer* renderer) override;
 		void UpdateQuadtree();
 
+		Texture* getReflectionTexture() const { return reflectionTexture.pointer; }
+		Texture* getRefractionTexture() const { return refractionTexture.pointer; }
+
 		Water(const Water&) = default;
 	private:
 		void RenderObjects(Renderer* renderer) const;
@@ -42,6 +45,7 @@ namespace Prehistoric
 		float motion = 0.0f;
 		float distortionDelta = 0.0f;
 		TextureHandle dudv;
+		Vector3f position = 0;
 
 		TexturesData* texData;
 

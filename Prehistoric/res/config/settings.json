@@ -91,11 +91,12 @@
     "water":
     {
         "scaleXZ": 6000.0,
+        "scaleY": 0.0,
         "tessellation":
         {
-            "factor": 20000,
+            "factor": 600,
             "slope": 1.8,
-            "shift": 0.0
+            "shift": 0.3
         },
         "lodRangeCount": 8,
         "lodRanges": [1750, 874, 386, 192, 100, 50, 0, 0],        

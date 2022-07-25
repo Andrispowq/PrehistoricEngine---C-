@@ -65,7 +65,7 @@ namespace Prehistoric
 		SetUniformf("horizontalVerticalShift", __AtmosphereConfig.horizontalVerticalShift);
 		SetUniformi("width", __FrameworkConfig.windowWidth);
 		SetUniformi("height", __FrameworkConfig.windowHeight);
-		SetUniformi("isReflection", 0); //TODO: getting if it's a reflection or not from the RenderingEngine
+		SetUniformi("isReflection", __WaterConfig.stage == WaterRenderStage::Reflection ? 1 : 0);
 		SetUniformi("isCubemap", 1);
 
 		SetUniformf("exposure", __EngineConfig.rendererExposure);
@@ -75,7 +75,7 @@ namespace Prehistoric
 	{
 		Camera* camera = renderer->getCamera();
 
-		SetUniform("m_view", camera->getViewMatrix());
+		SetUniform("m_view", camera->getOriginalViewMatrix());
 		SetUniform("m_projection", camera->getProjectionMatrix());
 
 		SetUniformf("sunRadius", __AtmosphereConfig.sunRadius);

@@ -19,53 +19,37 @@ uniform int tiling;
 
 void main()
 {	
-	float dx, dy, dz;
+	float dx, dy, dz;	
+	vec4[] positions = { gl_in[0].gl_Position, gl_in[1].gl_Position, gl_in[2].gl_Position };
 	
-	vec4 position0 = gl_in[0].gl_Position;
-	vec4 position1 = gl_in[1].gl_Position;
-	vec4 position2 = gl_in[2].gl_Position;
+	float dist = (distance(positions[0].xyz, cameraPosition)
+			+ distance(positions[1].xyz, cameraPosition) 
+			+ distance(positions[2].xyz, cameraPosition)) / 3;
 	
-	float dist = (distance(position0.xyz, cameraPosition)
-			+ distance(position1.xyz, cameraPosition) 
-			+ distance(position2.xyz, cameraPosition)) / 3;
-			
 	if(dist < displacementRange + 100)
-	{
-		dy = texture(Dy, mapCoord_GS[0] + (wind * motion)).r * max(0, (-distance(gl_in[0].gl_Position.xyz, cameraPosition) / displacementRange + 1)) * displacementScale;
-		dx = texture(Dx, mapCoord_GS[0] + (wind * motion)).r * max(0, (-distance(gl_in[0].gl_Position.xyz, cameraPosition) / displacementRange + 1)) * choppiness;
-		dz = texture(Dz, mapCoord_GS[0] + (wind * motion)).r * max(0, (-distance(gl_in[0].gl_Position.xyz, cameraPosition) / displacementRange + 1)) * choppiness;
-		
-		position0.y += dy;
-		position0.x -= dx;
-		position0.z -= dz;
-		
-		dy = texture(Dy, mapCoord_GS[1] + (wind * motion)).r * max(0, (-distance(gl_in[1].gl_Position.xyz, cameraPosition) / displacementRange + 1)) * displacementScale;
-		dx = texture(Dx, mapCoord_GS[1] + (wind * motion)).r * max(0, (-distance(gl_in[1].gl_Position.xyz, cameraPosition) / displacementRange + 1)) * choppiness;
-		dz = texture(Dz, mapCoord_GS[1] + (wind * motion)).r * max(0, (-distance(gl_in[1].gl_Position.xyz, cameraPosition) / displacementRange + 1)) * choppiness;
-		
-		position1.y += dy;
-		position1.x -= dx;
-		position1.z -= dz;
-
-		dy = texture(Dy, mapCoord_GS[2] + (wind * motion)).r * max(0, (-distance(gl_in[2].gl_Position.xyz, cameraPosition) / displacementRange + 1)) * displacementScale;
-		dx = texture(Dx, mapCoord_GS[2] + (wind * motion)).r * max(0, (-distance(gl_in[2].gl_Position.xyz, cameraPosition) / displacementRange + 1)) * choppiness;
-		dz = texture(Dz, mapCoord_GS[2] + (wind * motion)).r * max(0, (-distance(gl_in[2].gl_Position.xyz, cameraPosition) / displacementRange + 1)) * choppiness;
-		
-		position2.y += dy;
-		position2.x -= dx;
-		position2.z -= dz;
+	{		
+		for (int i = 0; i < gl_in.length(); ++i)
+		{
+			dy = texture(Dy, mapCoord_GS[i] + (wind * motion)).r * max(0,(-distance(gl_in[i].gl_Position.xyz, cameraPosition) / displacementRange + 1)) * displacementScale;
+			dx = texture(Dx, mapCoord_GS[i] + (wind * motion)).r * max(0,(-distance(gl_in[i].gl_Position.xyz, cameraPosition) / displacementRange + 1)) * choppiness;
+			dz = texture(Dz, mapCoord_GS[i] + (wind * motion)).r * max(0,(-distance(gl_in[i].gl_Position.xyz, cameraPosition) / displacementRange + 1)) * choppiness;
+	
+			positions[i].y += dy;
+			positions[i].x -= dx;
+			positions[i].z -= dz;
+		}
 	}
 	
-    gl_Position = viewProjection * position0;
+    gl_Position = viewProjection * positions[0];
     EmitVertex();
 	
-	gl_Position = viewProjection * position1;
+	gl_Position = viewProjection * positions[1];
     EmitVertex();
 	
-	gl_Position = viewProjection * position2;
+	gl_Position = viewProjection * positions[2];
     EmitVertex();
 	
-    gl_Position = viewProjection * position0;
+    gl_Position = viewProjection * positions[0];
     EmitVertex();
 	
     EndPrimitive();

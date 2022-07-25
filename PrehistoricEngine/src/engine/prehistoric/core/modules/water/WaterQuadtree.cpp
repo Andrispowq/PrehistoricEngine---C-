@@ -10,7 +10,7 @@ namespace Prehistoric
 	{
 		PatchVertexBuffer* vbo = new GLPatchVertexBuffer(window, generatePatch());
 		VertexBufferHandle vboHandle = manager->getAssetManager()->storeVertexBuffer(vbo);
-		vboHandle->setFrontFace(FrontFace::COUNTER_CLOCKWISE);
+		vboHandle->setFrontFace(FrontFace::DOUBLE_SIDED);
 
 		ShaderHandle shader = manager->getAssetManager()->loadShader(ShaderName::Water).value();
 		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vboHandle);

@@ -132,6 +132,7 @@ namespace Prehistoric
 			{
 				nlohmann::json water_json = file_json["water"];
 				waterConfig.scaleXZ = water_json["scaleXZ"];
+				waterConfig.scaleY = water_json["scaleY"];
 
 				nlohmann::json tessellation_json = water_json["tessellation"];
 				waterConfig.tessellationFactor = tessellation_json["factor"];

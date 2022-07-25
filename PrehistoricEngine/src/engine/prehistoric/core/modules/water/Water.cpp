@@ -7,13 +7,13 @@
 namespace Prehistoric
 {
 	Water::Water(Window* window, Camera* camera, AssembledAssetManager* manager, Vector3f position)
-		: window(window), camera(camera), manager(manager), fft{ nullptr }, reflectionFbo{ nullptr }, refractionFbo{ nullptr }
+		: window(window), camera(camera), manager(manager), position(position), fft{ nullptr }, reflectionFbo{ nullptr }, refractionFbo{ nullptr }
 	{
 		fft = std::make_unique<FFT>(manager, window, &__WaterConfig);		
 		normalMapRenderer = std::make_unique<NormalMapRenderer>(window, manager, __WaterConfig.normalStrength, __WaterConfig.fftResolution);
 
 		AssetManager* man = manager->getAssetManager();
-		dudv = man->loadTexture("res/textures/water/dudv1.jpg").value();
+		dudv = man->loadTexture("res/textures/water/dudv1.jpg", Bilinear, Repeat).value();
 		man->addReference<Texture>(dudv.handle);
 
 		//Create framebuffers
@@ -61,8 +61,8 @@ namespace Prehistoric
 	void Water::PreRender(Renderer* renderer)
 	{
 		//Very bad
-		cameraUnderwater = renderer->getCamera()->getPosition().y < getWorldTransform().getPosition().y;
-		glEnable(GL_CLIP_DISTANCE0);
+		cameraUnderwater = renderer->getCamera()->getPosition().y < position.y;
+		//glEnable(GL_CLIP_DISTANCE0);
 
 		__WaterConfig.distortionDelta += distortionDelta;
 		motion += __WaterConfig.wavemotion;
@@ -75,7 +75,7 @@ namespace Prehistoric
 		//flipping upside down
 		Matrix4f refl = Matrix4f::Identity();
 		refl.m[1 * 4 + 1] = -1;
-		refl.m[3 * 4 + 1] = 2 * -30;
+		refl.m[3 * 4 + 1] = 2 * position.y;
 
 		Camera* camera = renderer->getCamera();
 
@@ -90,8 +90,7 @@ namespace Prehistoric
 		window->getSwapchain()->SetWindowSize(refl_size, refl_size);
 		renderer->PrepareRendering();
 		glFrontFace(GL_CCW);
-		//Consts.CLIP_PLANE = Consts.REFLECTION_PLANE;
-		//Consts.RENDER_STAGE = Consts.REFLECTION_STAGE;
+		__WaterConfig.stage = WaterRenderStage::Reflection;
 
 		if (!cameraUnderwater)
 		{
@@ -111,8 +110,7 @@ namespace Prehistoric
 		refractionFbo->Clear(0.0f);
 		window->getSwapchain()->SetWindowSize(refr_size, refr_size);
 		renderer->PrepareRendering();
-		//Consts.CLIP_PLANE = Consts.REFRACTION_PLANE;
-		//Consts.RENDER_STAGE = Consts.REFRACTION_STAGE;
+		__WaterConfig.stage = WaterRenderStage::Refraction;
 
 		RenderObjects(renderer);
 
@@ -120,9 +118,8 @@ namespace Prehistoric
 
 		refractionFbo->Unbind();
 		window->getSwapchain()->SetWindowSize(width, height);
-		glDisable(GL_CLIP_DISTANCE0);
-		//Consts.CLIP_PLANE = Consts.DEFAULT_PLANE;
-		//Consts.RENDER_STAGE = Consts.DEFAULT_STAGE;
+		//glDisable(GL_CLIP_DISTANCE0);
+		__WaterConfig.stage = WaterRenderStage::Default;
 
 		//FFT stuff
 		fft->Render();
@@ -148,7 +145,7 @@ namespace Prehistoric
 		EnvironmentMapRenderer::instance->RenderCube(camera);
 		GLRenderer* rend = (GLRenderer*)renderer;
 
-		for (auto pipeline : rend->getModels3D())
+		for (auto pipeline : rend->getModelsWater())
 		{
 			Pipeline* pl = pipeline.first;
 

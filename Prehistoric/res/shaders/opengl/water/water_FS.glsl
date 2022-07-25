@@ -39,6 +39,31 @@ uniform int isCameraUnderWater;
 uniform int highDetailRange;
 uniform int windowWidth;
 uniform int windowHeight;
+uniform int tiling;
+
+uniform int numberOfTilesX;
+
+struct PointLight
+{
+	vec4 position;
+	vec4 colour;
+	vec4 intensity_radius;
+};
+
+struct VisibleIndex
+{
+	int index;
+};
+
+layout(std430, binding = 0) readonly buffer LightBuffer
+{
+	PointLight data[];
+} lightBuffer;
+
+layout(std430, binding = 1) readonly buffer VisibleLightIndicesBuffer
+{
+	VisibleIndex data[];
+} visibleLightIndicesBuffer;
 
 const float Eta = 0.15;
 
@@ -90,7 +115,7 @@ void main()
 	vec2 projCoord = vec2(gl_FragCoord.x / windowWidth, gl_FragCoord.y / windowHeight);
 	
 	//reflection
-	vec2 reflecCoord = vec2(projCoord.x, 1 - projCoord.y) + dudvCoord.rb * kReflection;
+	vec2 reflecCoord = vec2(projCoord.x, projCoord.y) + dudvCoord.rb * kReflection;
 	reflecCoord = clamp(reflecCoord, kReflection, 1 - kReflection);
 	vec3 reflection = mix(texture(waterReflection, reflecCoord).rgb, waterColour, reflectionBlendFactor);
 	reflection *= fresnel;
@@ -111,11 +136,30 @@ void main()
 		refraction *= 1 - fresnel;
 	}
 	
-	vec3 fragColor = reflection + refraction;
+	vec3 fragColour = reflection + refraction;
 	
-	outColour = vec4(fragColor, 1);
-	outPositionMetallic = vec4(position_FS.xyz / position_FS.w, 0);
-	outAlbedoRoughness = vec4(fragColor, 0);
+	ivec2 location = ivec2(gl_FragCoord.xy);
+	ivec2 tileID = location / ivec2(16, 16);
+	uint index = uint(tileID.y * numberOfTilesX + tileID.x);
+	
+	vec3 Lo = vec3(0);
+	/*uint offset = index * 1024;
+    for (uint i = 0; i < 1024 && visibleLightIndicesBuffer.data[offset + i].index != -1; i++)
+    {
+		uint lightIndex = visibleLightIndicesBuffer.data[offset + i].index;
+		PointLight light = lightBuffer.data[lightIndex];
+		
+		vec3 lightPos = light.position.xyz;
+		
+		vec3 L = normalize(lightPos - position_FS.xyz);
+		
+		vec3 spec = vec3(specularReflection(L, normal, specularFactor, emission, vertexToEye));
+        Lo += spec;
+    }*/
+	
+	outColour = vec4(fragColour, 1);
+	outPositionMetallic = vec4(position_FS.xyz, 0);
+	outAlbedoRoughness = vec4(fragColour, 0);
 	outNormal = vec4(normal, 1);
 	outBloom = vec4(vec3(0.0), 0.0);
 }

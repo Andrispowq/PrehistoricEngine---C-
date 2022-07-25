@@ -104,6 +104,7 @@ namespace Prehistoric
 		models_3d.clear();
 		models_transparency.clear();
 		models_2d.clear();
+		models_water.clear();
 		lights.clear();
 	}
 

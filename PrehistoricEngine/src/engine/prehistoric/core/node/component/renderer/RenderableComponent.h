@@ -40,6 +40,9 @@ namespace Prehistoric
 		inline RenderPriority getPriority() const { return priority; }
 		inline void setPriority(RenderPriority priority) { this->priority = priority; }
 
+		inline bool hasReflection() const { return reflect_water; }
+		inline void setReflection(bool reflect) { this->reflect_water = reflect; }
+
 		static ComponentType getStaticComponentType() { return ComponentType::RenderableComponent; }
 
 		RenderableComponent(const RenderableComponent&) = delete;
@@ -54,6 +57,7 @@ namespace Prehistoric
 		RenderPriority priority;
 
 		bool registered = false;
+		bool reflect_water = true;
 	};
 };
 

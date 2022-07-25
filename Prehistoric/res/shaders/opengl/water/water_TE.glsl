@@ -1,12 +1,17 @@
 #version 460
 
-layout (quads, fractional_even_spacing, ccw) in;
+layout (quads, fractional_odd_spacing, ccw) in;
 
 in vec2 mapCoord_TE[];
 
 out vec2 mapCoord_GS;
 
 uniform int tiling;
+
+uniform sampler2D Dy;
+uniform sampler2D Dx;
+uniform sampler2D Dz;
+uniform float scaleY;
 
 void main()
 {
@@ -25,6 +30,9 @@ void main()
 	u * v* mapCoord_TE[3] + 
 	(1 - u) * v * mapCoord_TE[15]);
 	
+	float height = texture(Dy, mapCoord).r * scaleY;
+	
+	position.y = height;
 	gl_Position = position;
 	
 	mapCoord_GS = mapCoord * tiling;

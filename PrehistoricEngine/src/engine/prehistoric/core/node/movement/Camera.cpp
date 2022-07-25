@@ -65,6 +65,9 @@ namespace Prehistoric
 		{
 			cameraRotated = true;
 		}
+
+		this->originalViewMatrix = viewMatrix;
+		this->originalViewProjectionMatrix = viewProjectionMatrix;
 	}
 
 	void Camera::SetProjection(float fov, float width, float height)
