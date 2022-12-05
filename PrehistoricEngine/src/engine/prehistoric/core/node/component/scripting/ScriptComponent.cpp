@@ -6,8 +6,6 @@
 #include "mono/metadata/assembly.h"
 #include "mono/metadata/debug-helpers.h"
 
-#include <filesystem>
-
 #include "prehistoric/core/node/GameObject.h"
 #include "prehistoric/core/node/component/light/Light.h"
 #include "prehistoric/core/node/component/camera/CameraComponent.h"
@@ -364,18 +362,22 @@ namespace Prehistoric
 		}
 	}
 
-	ScriptComponent::ScriptComponent(std::string directory, std::string componentName)
-		: assembly{nullptr}, image{nullptr}, component_class{nullptr}, obj{nullptr}
+	ScriptComponent::ScriptComponent(std::string componentName)
+		: component_class{nullptr}, obj{nullptr}
 	{
-		if ((directory != "") && (componentName != ""))
+		ScriptEngine* scriptEngine = Application::Get().getEngineLayer()->getScriptEngine();
+		domain = scriptEngine->getRootDomain();
+		assembly = scriptEngine->getAssembly();
+		image = scriptEngine->getImage();
+
+		if (componentName != "")
 		{
-			ReloadAssembly(directory, componentName);
+			ReloadAssembly(componentName);
 		}
 	}
 
 	ScriptComponent::~ScriptComponent()
 	{
-		DestroyDomain();
 	}
 	
 	void ScriptComponent::OnInit()
@@ -384,36 +386,9 @@ namespace Prehistoric
 		ExecuteFunction("BaseComponent", "Init", nullptr);
 	}
 
-	void ScriptComponent::CreateDomain(std::string name)
+	void ScriptComponent::ReloadAssembly(std::string componentName)
 	{
-		domain = mono_domain_create_appdomain((char*)name.c_str(), NULL);
-
-		if (domain) 
-		{
-			mono_domain_set(domain, false);
-		}
-	}
-
-	void ScriptComponent::DestroyDomain()
-	{
-		mono_domain_set(Application::Get().getEngineLayer()->getScriptEngine()->getRootDomain(), false);
-		mono_domain_unload(domain);
-	}
-
-	void ScriptComponent::ReloadAssembly(std::string directory, std::string componentName)
-	{
-		this->directory = directory;
 		this->componentName = componentName;
-
-		if (assembly != nullptr)
-		{
-			DestroyDomain();
-		}
-
-		CreateDomain(directory);
-
-		assembly = mono_domain_assembly_open(domain, directory.c_str());
-		image = mono_assembly_get_image(assembly);
 
 		//Get the class
 		component_class = mono_class_from_name(image, "", componentName.c_str());
@@ -458,22 +433,5 @@ namespace Prehistoric
 
 		current_parent = this->parent;
 		MonoObject* result = mono_runtime_invoke(method, obj, parameters, nullptr);
-	}
-
-	void ScriptComponent::Compile(std::string directory, bool del)
-	{
-		//We can't check yet if we need to recompile
-		std::filesystem::path path = std::filesystem::current_path().append(directory + ".dll");
-		std::filesystem::path copy_path = path.parent_path().append("temp/temporary.dll");
-		if (std::filesystem::exists(path) && del)
-		{
-			std::filesystem::copy(path, copy_path);
-			std::filesystem::remove(path);
-			std::filesystem::copy(copy_path, path);
-			std::filesystem::remove(copy_path);
-		}
-
-		std::string command = "call \"../PrehistoricEngine/vendor/Mono/bin/mcs\" ../PrehistoricEngine/scripting/Support/*.cs " + directory + ".cs -target:library -unsafe -out:" + directory + ".dll";
-		system(command.c_str());
 	}
 };

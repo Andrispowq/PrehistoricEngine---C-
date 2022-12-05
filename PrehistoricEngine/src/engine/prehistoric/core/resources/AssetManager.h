@@ -10,6 +10,7 @@
 #include "prehistoric/common/framework/Window.h"
 
 #include "loaders/TextureLoader.h"
+#include "loaders/PrehistoricTextureLoader.h"
 #include "loaders/VertexBufferLoader.h"
 #include "loaders/ShaderLoader.h"
 
@@ -269,6 +270,7 @@ namespace Prehistoric
 			return ret;
 		}
 
+		PrehistoricTextureLoader* getPrehistoricTextureLoader() const { return prehistoricTextureLoader; }
 		TextureLoader* getTextureLoader() const { return textureLoader; }
 		VertexBufferLoader* getVertexBufferLoader() const { return vertexBufferLoader; }
 		ShaderLoader* getShaderLoader() const { return shaderLoader; }
@@ -283,6 +285,7 @@ namespace Prehistoric
 		std::unordered_map<size_t, std::pair<std::unique_ptr<VertexBuffer>, uint32_t>> vertexBuffers;
 		std::unordered_map<size_t, std::pair<std::unique_ptr<Shader>, uint32_t>> shaders;
 
+		PrehistoricTextureLoader* prehistoricTextureLoader;
 		TextureLoader* textureLoader;
 		VertexBufferLoader* vertexBufferLoader;
 		ShaderLoader* shaderLoader;

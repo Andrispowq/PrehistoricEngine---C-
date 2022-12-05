@@ -12,7 +12,7 @@ namespace Prehistoric
 	class Material
 	{
 	public:
-		Material(AssetManager* manager);
+		Material(AssetManager* manager, std::string name = "UnnamedMaterial");
 		//Material(AssetManager* manager, nlohmann::json material);
 		~Material();
 		
@@ -37,7 +37,7 @@ namespace Prehistoric
 		Texture* getDefault() const;
 		bool exists(const std::string& key) const { return textures.find(key) != textures.end(); }
 
-		size_t getID() const { return ID; }
+		uint64_t getID() const { return ID; }
 		std::string getName() const { return name; }
 
 		std::unordered_map<std::string, TextureHandle>& getTextures() { return textures; }
@@ -54,8 +54,7 @@ namespace Prehistoric
 
 		AssetManager* manager;
 		uint64_t hash = 0;
-		size_t ID;
-		static size_t lastID;
+		uint64_t ID;
 
 		std::unordered_map<std::string, TextureHandle> textures;
 		std::unordered_map<std::string, Vector4f> vector4s;

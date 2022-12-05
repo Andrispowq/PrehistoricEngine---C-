@@ -23,6 +23,8 @@ namespace Prehistoric
 		Texture* normalMap;
 		Texture* dudvMap;
 
+		float waterHeight = 0.0f;
+
 		float motion = 0.0f;
 		bool underwater = false;
 	};

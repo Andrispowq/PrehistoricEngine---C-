@@ -35,15 +35,15 @@
     [
         {
             "name": "oak_DIF",
-            "directory": "oakFloor/oakFloor_DIF.png"
+            "directory": "prehistoric/oakFloor_DIF.prt"
         },
         {
             "name": "oak_NRM",
-            "directory": "oakFloor/oakFloor_NRM.png"
+            "directory": "prehistoric/oakFloor_NRM.prt"
         },
         {
             "name": "oak_MROT",
-            "directory": "oakFloor/oakFloor_MROT.png"
+            "directory": "prehistoric/oakFloor_MROT.prt"
         },  
 
         {

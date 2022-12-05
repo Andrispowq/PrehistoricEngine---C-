@@ -21,17 +21,27 @@ namespace Prehistoric
 		ScriptEngine();
 		virtual ~ScriptEngine();
 
+		void LoadScripts(const std::string& directory);
+
 		virtual void OnEvent(Event& event) override;
 		virtual void Update(float delta) override;
 
 		void addScriptObject(ScriptComponent* scriptObject);
 
 		MonoDomain* getRootDomain() const { return rootDomain; }
+		MonoAssembly* getAssembly() const { return assembly; }
+		MonoImage* getImage() const { return image; }
 
 		ScriptEngine(const ScriptEngine& engine) = delete;
 		ScriptEngine operator=(const ScriptEngine& engine) = delete;
+
+	public:
+		static void Compile(std::string directory, bool del = false);
+
 	private:
 		MonoDomain* rootDomain = nullptr;
+		MonoAssembly* assembly = nullptr;
+		MonoImage* image;
 
 		std::vector<ScriptComponent*> scriptObjects;
 	};

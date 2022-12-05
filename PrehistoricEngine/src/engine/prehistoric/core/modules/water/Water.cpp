@@ -40,6 +40,8 @@ namespace Prehistoric
 		texData->Dx = fft->getDxTexture();
 		texData->Dz = fft->getDzTexture();
 
+		texData->waterHeight = position.y;
+
 		texData->waterReflection = reflectionTexture.pointer;
 		texData->waterRefraction = refractionTexture.pointer;
 		texData->dudvMap = dudv.pointer;

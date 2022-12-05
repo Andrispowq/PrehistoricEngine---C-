@@ -1,1 +1,0 @@
-call "..\..\..\PrehistoricEngine\vendor\Mono\bin\mcs" ..\..\..\PrehistoricEngine\scripting\Support\*.cs Script.cs -target:library -unsafe -out:Script.dll

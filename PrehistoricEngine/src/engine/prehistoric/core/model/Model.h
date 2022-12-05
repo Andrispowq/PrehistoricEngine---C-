@@ -25,6 +25,9 @@ namespace Prehistoric
 		inline void setMaterials(const std::vector<Material*>& materials) { this->materials = materials; }
 
 	private:
+		std::string name;
+		uint64_t ID;
+
 		std::vector<Mesh> meshes;
 		std::vector<Material*> materials;
 	};

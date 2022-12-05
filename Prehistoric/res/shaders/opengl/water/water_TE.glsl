@@ -12,6 +12,7 @@ uniform sampler2D Dy;
 uniform sampler2D Dx;
 uniform sampler2D Dz;
 uniform float scaleY;
+uniform float waterHeight;
 
 void main()
 {
@@ -30,7 +31,7 @@ void main()
 	u * v* mapCoord_TE[3] + 
 	(1 - u) * v * mapCoord_TE[15]);
 	
-	float height = texture(Dy, mapCoord).r * scaleY;
+	float height = texture(Dy, mapCoord).r * scaleY + waterHeight;
 	
 	position.y = height;
 	gl_Position = position;

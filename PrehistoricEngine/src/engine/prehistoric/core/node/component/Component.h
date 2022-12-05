@@ -14,7 +14,8 @@ namespace Prehistoric
 		RenderableComponent,
 		RendererComponent,
 		LightComponent,
-		PhysicsComponent
+		PhysicsComponent,
+		ScriptComponent,
 	};
 
 	class Component
@@ -32,7 +33,7 @@ namespace Prehistoric
 		inline void setParent(GameObject* parent) { this->parent = parent; }
 
 		virtual ComponentType getComponentType() const { return type; };
-		static ComponentType getStaticComponentType() { return ComponentType::General; };
+		static ComponentType getStaticComponentType() { return ComponentType::ScriptComponent; };
 	protected:
 		GameObject* parent;
 		ComponentType type;

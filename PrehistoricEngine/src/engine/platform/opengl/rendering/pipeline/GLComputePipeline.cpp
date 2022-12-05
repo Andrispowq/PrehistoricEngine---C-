@@ -64,7 +64,7 @@ namespace Prehistoric
 		if (hash)
 			return hash;
 
-		SetHashInternal(APIHashFlags::GL, PipelineTypeHashFlags::Graphics, shader.handle, 0);
+		SetHashInternal(APIHashFlags::GL, PipelineTypeHashFlags::Compute, shader.handle, 0);
 		return hash;
 	}
 };

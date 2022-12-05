@@ -24,6 +24,7 @@ namespace Prehistoric
 
 		AddUniform("clipplane");
 		AddUniform("scaleY");
+		AddUniform("waterHeight");
 
 		for (int i = 0; i < 8; i++)
 		{
@@ -115,6 +116,7 @@ namespace Prehistoric
 		SetUniformi("Dx", 4);
 		SetUniformi("Dz", 5);
 
+		SetUniformf("waterHeight", texData->waterHeight);
 		SetUniformf("motion", texData->motion);
 	}
 

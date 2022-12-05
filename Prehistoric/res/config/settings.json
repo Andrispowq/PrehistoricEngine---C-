@@ -103,7 +103,7 @@
         "surfaceParameters":
         {
             "baseColour": [0.064, 0.085, 0.12],
-            "displacementScale": 32.0,
+            "displacementScale": 8.0,
             "displacementRange": 1000,
             "tiling": 25,
             "choppiness": 12.0,

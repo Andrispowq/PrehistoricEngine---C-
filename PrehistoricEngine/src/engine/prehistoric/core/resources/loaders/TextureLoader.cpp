@@ -9,6 +9,8 @@
 
 #include "prehistoric/application/Application.h"
 
+#include "PrehistoricTextureLoader.h"
+
 namespace Prehistoric
 {
 	static ImageData images[NUM_THREADS];
@@ -47,6 +49,20 @@ namespace Prehistoric
 			ptr.dataUC = data;
 
 			images[i] = { ImageData::ImageType::LDR, width, height, channels, data };
+
+			uint32_t struct_size = width * height * channels / 4 + 20;
+			uint8_t* bytes = new uint8_t[struct_size];
+			memset(bytes, 0, struct_size);
+
+			RawTextureData* raw_data = (RawTextureData*)bytes;
+			raw_data->width = width;
+			raw_data->height = height;
+			raw_data->channels = channels;
+			raw_data->imageType = 0;
+			raw_data->size = struct_size - 20;
+			memcpy(raw_data->data, data, raw_data->size);
+			PrehistoricTextureLoader::SavePrehistoricTexture(location.substr(0, location.length() - 3) + "prt", raw_data);
+			delete bytes;
 
 			delete[] arr;
 		}
@@ -259,6 +275,20 @@ namespace Prehistoric
 
 			ret = { ImageData::ImageType::LDR, width, height, channels, data };
 		}
+
+		uint32_t struct_size = width * height * channels / 4 + 20;
+		uint8_t* bytes = new uint8_t[struct_size];
+		memset(bytes, 0, struct_size);
+
+		RawTextureData* raw_data = (RawTextureData*)bytes;
+		raw_data->width = width;
+		raw_data->height = height;
+		raw_data->channels = channels;
+		raw_data->imageType = 0;
+		raw_data->size = struct_size - 20;
+		memcpy(raw_data->data, ret.ptr.dataUC, raw_data->size);
+		PrehistoricTextureLoader::SavePrehistoricTexture(path.substr(0, path.length() - 3) + "prt", raw_data);
+		delete bytes;
 
 		return ret;
 	}

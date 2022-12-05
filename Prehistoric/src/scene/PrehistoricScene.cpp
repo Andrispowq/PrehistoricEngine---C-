@@ -88,13 +88,13 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 		atm->setSun(sun->GetComponent<Light>());
 		sceneRoot->AddChild("atmosphere", atm);*/
  
-		/*Terrain* terrain1 = new Terrain(window, camera, manager, "res/config/terrain_1.json");
+		Terrain* terrain1 = new Terrain(window, camera, manager, "res/config/terrain_1.json");
 		terrain1->UpdateQuadtree();
-		sceneRoot->AddChild("terrain1", terrain1);*/
+		sceneRoot->AddChild("terrain1", terrain1);
 
-		Water* water = new Water(window, camera, manager, Vector3f(0, -100, 0));
+		/*Water* water = new Water(window, camera, manager, Vector3f(0, 200, 0));
 		water->UpdateQuadtree();
-		sceneRoot->AddChild("water", water);
+		sceneRoot->AddChild("water", water);*/
 
 		/*Terrain* terrain0 = new Terrain(window, camera, manager, "res/config/terrain_0.json");
 		terrain0->UpdateQuadtree();
@@ -110,7 +110,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 		slider2->SetScale({ 0.125f, 0.05f, 1 });
 		sceneRoot->AddChild("slider2", slider2);*/
 		
-		GUIElement* reflection = new GUIElement(window, manager, -1, nullptr, 0, true);
+		/*GUIElement* reflection = new GUIElement(window, manager, -1, nullptr, 0, true);
 		reflection->setTexture(water->getReflectionTexture());
 		reflection->SetPosition({ -0.5f, 0.5f, 0 });
 		reflection->SetScale({ 0.25f, 0.25f, 1 });
@@ -120,7 +120,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 		refraction->setTexture(water->getRefractionTexture());
 		refraction->SetPosition({ -0.5f, -0.5f, 0 });
 		refraction->SetScale({ 0.25f, 0.25f, 1 });
-		sceneRoot->AddChild("refraction", refraction);
+		sceneRoot->AddChild("refraction", refraction);*/
 
 		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/sphere.obj").value();
 		ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
@@ -145,27 +145,46 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 		}
 
 		MaterialHandle mater_script = manager->storeMaterial(new Material(man));
-		mater_script->addVector3f(COLOUR, { 1 });
+		mater_script->addVector3f(COLOUR, { 1, 0, 0 });
 		mater_script->addVector4f(MROT, { 0.5f, 0.5f, 1, 0 });
 
 		MaterialHandle mater_script2 = manager->storeMaterial(new Material(man));
-		mater_script2->addVector3f(COLOUR, { 1 });
+		mater_script2->addVector3f(COLOUR, { 0, 0, 1 });
 		mater_script2->addVector4f(MROT, { 0.5f, 0.5f, 1, 0 });
 
-		ScriptComponent::Compile("res/scripts/Script");
-		ScriptComponent* script = new ScriptComponent("res/scripts/Script.dll", "ExampleComponent");
-		ScriptComponent::Compile("res/scripts/Script2");
-		ScriptComponent* script2 = new ScriptComponent("res/scripts/Script2.dll", "CameraController");
+		ScriptEngine::Compile("res/scripts");
+		ScriptComponent* script = new ScriptComponent("ExampleComponent");
+		ScriptComponent* script2 = new ScriptComponent("CameraController");
+		ScriptComponent* script3 = new ScriptComponent("Logger");
 
 		CameraComponent* cam = new CameraComponent(false);
 
-		/*GameObject* script_obj = (GameObject*)sceneRoot->AddChild("script_obj", new GameObject);
+		GameObject* script_obj = (GameObject*)sceneRoot->AddChild("script_obj", new GameObject);
 		script_obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, mater_script));
-		script_obj->AddComponent(SCRIPT_COMPONENT, script);*/
+		script_obj->AddComponent(SCRIPT_COMPONENT, script);
 
 		GameObject* script_obj2 = (GameObject*)sceneRoot->AddChild("script_obj2", new GameObject);
 		script_obj2->AddComponent(CAMERA_COMPONENT, cam);
 		script_obj2->AddComponent(SCRIPT_COMPONENT, script2);
+
+		GameObject* script_obj3 = (GameObject*)sceneRoot->AddChild("script_obj3", new GameObject);
+		script_obj3->AddComponent(SCRIPT_COMPONENT, script3);
+
+		/*PhysicsComponent* phys_comp = new PhysicsComponent(1.0f, false);
+		phys_comp->setCollider(new SphereCollider());
+
+		GameObject* phys_obj = (GameObject*)sceneRoot->AddChild("phys_obj", new GameObject);
+		phys_obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, mater_script));
+		phys_obj->AddComponent(PHYSICS_COMPONENT, phys_comp);
+		phys_obj->Move({ 0, 100, 0 });
+
+		PhysicsComponent* phys_comp1 = new PhysicsComponent(1.0f, false);
+		phys_comp1->setCollider(new SphereCollider());
+
+		GameObject* phys_obj1 = (GameObject*)sceneRoot->AddChild("phys_obj1", new GameObject);
+		phys_obj1->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, mater_script2));
+		phys_obj1->AddComponent(PHYSICS_COMPONENT, phys_comp1);
+		phys_obj1->Move({ 0, 80, 0 });*/
 	}
 }
 

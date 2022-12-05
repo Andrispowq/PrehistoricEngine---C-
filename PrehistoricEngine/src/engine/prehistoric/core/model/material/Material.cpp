@@ -5,12 +5,11 @@
 
 namespace Prehistoric
 {
-	size_t Material::lastID = 0;
-
-	Material::Material(AssetManager* manager)
+	Material::Material(AssetManager* manager, std::string name)
 	{
 		this->manager = manager;
-		this->ID = lastID++;
+		this->name = name;
+		this->ID = GenerateGUID(name);
 
 		TextureHandle def = manager->loadTexture("res/textures/default.png").value();
 		manager->addReference<Texture>(def.handle);

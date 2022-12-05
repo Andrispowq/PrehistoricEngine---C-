@@ -28,6 +28,7 @@ namespace Prehistoric
 		vertexBuffers.reserve(VertexBuffersSize);
 		shaders.reserve(ShadersSize);
 
+		prehistoricTextureLoader = new PrehistoricTextureLoader(window);
 		textureLoader = new TextureLoader(window);
 		vertexBufferLoader = new VertexBufferLoader(window, this);
 		shaderLoader = new ShaderLoader(window);
@@ -55,7 +56,14 @@ namespace Prehistoric
 			extra->filter = filter;
 			extra->wrapMode = wrapMode;
 
-			textureLoader->LoadResource(false, location, extra);
+			if (location.substr(location.length() - 3, 3) == "prt")
+			{
+				prehistoricTextureLoader->LoadResource(false, location, extra);
+			}
+			else
+			{
+				textureLoader->LoadResource(false, location, extra);
+			}
 			return std::nullopt;
 		}
 
@@ -63,7 +71,15 @@ namespace Prehistoric
 		extra.filter = filter;
 		extra.wrapMode = wrapMode;
 
-		Texture* tex = (Texture*)textureLoader->LoadResource(true, location, &extra).value();
+		Texture* tex;
+		if (location.substr(location.length() - 3, 3) == "prt")
+		{
+			tex = (Texture*)prehistoricTextureLoader->LoadResource(true, location, &extra).value();
+		}
+		else
+		{
+			tex = (Texture*)textureLoader->LoadResource(true, location, &extra).value();
+		}
 		size_t han = texture_ID++;
 
 		TextureHandle handle;

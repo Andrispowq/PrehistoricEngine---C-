@@ -827,6 +827,10 @@
     <ClInclude Include="src\engine\prehistoric\core\modules\water\Water.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\water\GLWaterShader.h" />
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\water\GLWaterWireframeShader.h" />
+    <ClInclude Include="src\engine\platform\vulkan\rendering\pipeline\VKComputePipeline.h" />
+    <ClInclude Include="src\engine\platform\vulkan\rendering\shaders\environmentMap\VKEnvironmentMapShader.h" />
+    <ClInclude Include="src\engine\prehistoric\core\model\loader\PrehistoricDataFile.h" />
+    <ClInclude Include="src\engine\prehistoric\core\resources\loaders\PrehistoricTextureLoader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -1316,5 +1320,9 @@
     <ClCompile Include="src\engine\prehistoric\core\modules\water\Water.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\water\GLWaterShader.cpp" />
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\water\GLWaterWireframeShader.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\rendering\pipeline\VKComputePipeline.cpp" />
+    <ClCompile Include="src\engine\platform\vulkan\rendering\shaders\environmentMap\VKEnvironmentMapShader.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\model\loader\PrehistoricDataFile.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\resources\loaders\PrehistoricTextureLoader.cpp" />
   </ItemGroup>
 </Project>
