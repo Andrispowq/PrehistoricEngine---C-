@@ -70,7 +70,7 @@
     },
     "environmentMap":
     {
-        "location": "res/textures/environmentMaps/cape_hill_2k.hdr",
+        "location": "res/textures/prehistoric/cape_hill_2k.prt",
         "environmentMapResolution": 1024,
         "irradianceMapResolution": 512,
         "prefilterMapResolution": 1024,

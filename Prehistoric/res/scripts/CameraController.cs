@@ -17,14 +17,14 @@ public class CameraController : BaseComponent
             Camera camera = Camera.Get();
             //camera.forward = new Vector3f(0, 0, 1);
 
-            camera.Move(camera.GetLeft(), GetJoystickAxis(InputKey.JOYSTICK_0, InputKey.GAMEPAD_AXIS_LEFT_X) * SPEED * delta);
-            camera.Move(camera.forward, GetJoystickAxis(InputKey.JOYSTICK_0, InputKey.GAMEPAD_AXIS_LEFT_Y) * SPEED * delta);
+            camera.Move(camera.GetLeft(), GetJoystickAxis(Input.JOYSTICK_1, Input.GAMEPAD_AXIS_LEFT_X) * SPEED * delta);
+            camera.Move(camera.forward, GetJoystickAxis(Input.JOYSTICK_1, Input.GAMEPAD_AXIS_LEFT_Y) * SPEED * delta);
 
-            camera.RotateY(GetJoystickAxis(InputKey.JOYSTICK_0, InputKey.GAMEPAD_AXIS_RIGHT_X) * ROTATE_SPEED * delta);
-            camera.RotateX(-GetJoystickAxis(InputKey.JOYSTICK_0, InputKey.GAMEPAD_AXIS_RIGHT_Y) * ROTATE_SPEED * delta);
+            camera.RotateY(GetJoystickAxis(Input.JOYSTICK_1, Input.GAMEPAD_AXIS_RIGHT_X) * ROTATE_SPEED * delta);
+            camera.RotateX(-GetJoystickAxis(Input.JOYSTICK_1, Input.GAMEPAD_AXIS_RIGHT_Y) * ROTATE_SPEED * delta);
 
-            SPEED -= GetJoystickAxis(InputKey.JOYSTICK_0, InputKey.GAMEPAD_AXIS_LEFT_TRIGGER) * 50.0f * delta;
-            SPEED += GetJoystickAxis(InputKey.JOYSTICK_0, InputKey.GAMEPAD_AXIS_RIGHT_TRIGGER) * 50.0f * delta;
+            SPEED -= GetJoystickAxis(Input.JOYSTICK_1, Input.GAMEPAD_AXIS_LEFT_TRIGGER) * 50.0f * delta;
+            SPEED += GetJoystickAxis(Input.JOYSTICK_1, Input.GAMEPAD_AXIS_RIGHT_TRIGGER) * 50.0f * delta;
 
             if(SPEED < 0.0f)
             {

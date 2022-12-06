@@ -9,8 +9,6 @@
 
 #include "prehistoric/application/Application.h"
 
-#include "PrehistoricTextureLoader.h"
-
 namespace Prehistoric
 {
 	static ImageData images[NUM_THREADS];
@@ -29,40 +27,66 @@ namespace Prehistoric
 			unsigned char* arr = new unsigned char[size];
 			stream.read((char*)arr, size);
 
-			int width, height, channels;
-			unsigned char* data;
-			if (__FrameworkConfig.api == OpenGL)
+			if (location.substr(location.length() - 3, 3) != "prt")
 			{
-				data = stbi_load_from_memory(arr, (int)size, &width, &height, &channels, 0);
+				int width, height, channels;
+				unsigned char* data;
+				if (__FrameworkConfig.api == OpenGL)
+				{
+					data = stbi_load_from_memory(arr, (int)size, &width, &height, &channels, 0);
+				}
+				else
+				{
+					data = stbi_load_from_memory(arr, (int)size, &width, &height, &channels, STBI_rgb_alpha);
+				}
+
+				if (data == nullptr)
+				{
+					PR_LOG_ERROR("Failed to load texture %s!\n", location.c_str());
+				}
+
+				ImageData::ImagePtr ptr;
+				ptr.dataUC = data;
+
+				images[i] = { ImageData::ImageType::LDR, width, height, channels, data };
+
+				uint32_t struct_size = width * height * channels + 20;
+				uint8_t* bytes = new uint8_t[struct_size];
+				memset(bytes, 0, struct_size);
+
+				RawTextureData* raw_data = (RawTextureData*)bytes;
+				raw_data->width = width;
+				raw_data->height = height;
+				raw_data->channels = channels;
+				raw_data->imageType = 0;
+				raw_data->size = struct_size - 20;
+				memcpy(raw_data->data, data, raw_data->size);
+				TextureLoader::SavePrehistoricTexture(location.substr(0, location.length() - 3) + "prt", raw_data);
+				delete bytes;
 			}
 			else
 			{
-				data = stbi_load_from_memory(arr, (int)size, &width, &height, &channels, STBI_rgb_alpha);
+				RawTextureData* raw_data = (RawTextureData*)arr;
+
+				int width, height, channels, type;
+				uint8_t* data = new uint8_t[raw_data->size];
+
+				width = raw_data->width;
+				height = raw_data->height;
+				channels = raw_data->channels;
+				type = raw_data->imageType;
+				memcpy(data, &raw_data->data, raw_data->size);
+
+				if (data == nullptr)
+				{
+					PR_LOG_ERROR("Failed to load texture %s!\n", location.c_str());
+				}
+
+				ImageData::ImagePtr ptr;
+				ptr.dataUC = data;
+
+				images[i] = { ImageData::ImageType::LDR, width, height, channels, data };
 			}
-
-			if (data == nullptr)
-			{
-				PR_LOG_ERROR("Failed to load texture %s!\n", location.c_str());
-			}
-
-			ImageData::ImagePtr ptr;
-			ptr.dataUC = data;
-
-			images[i] = { ImageData::ImageType::LDR, width, height, channels, data };
-
-			uint32_t struct_size = width * height * channels / 4 + 20;
-			uint8_t* bytes = new uint8_t[struct_size];
-			memset(bytes, 0, struct_size);
-
-			RawTextureData* raw_data = (RawTextureData*)bytes;
-			raw_data->width = width;
-			raw_data->height = height;
-			raw_data->channels = channels;
-			raw_data->imageType = 0;
-			raw_data->size = struct_size - 20;
-			memcpy(raw_data->data, data, raw_data->size);
-			PrehistoricTextureLoader::SavePrehistoricTexture(location.substr(0, location.length() - 3) + "prt", raw_data);
-			delete bytes;
 
 			delete[] arr;
 		}
@@ -231,65 +255,131 @@ namespace Prehistoric
 		if (!stream.is_open())
 			PR_LOG_RUNTIME_ERROR("Texture file %s couldn't be opened!\n", path.c_str());
 
-		size_t size = (size_t)stream.tellg();
-		stream.seekg(0);
-		unsigned char* buffer = new unsigned char[size];
-		stream.read((char*)buffer, size);
-
 		ImageData ret;
 
-		int width, height, channels;
-		if (stbi_is_hdr(path.c_str()))
+		if (path.substr(path.length() - 3, 3) != "prt")
 		{
-			float* data = stbi_loadf_from_memory(buffer, (int)size, &width, &height, &channels, 0);
+			size_t size = (size_t)stream.tellg();
+			stream.seekg(0);
+			unsigned char* buffer = new unsigned char[size];
+			stream.read((char*)buffer, size);
 
-			if (data == nullptr)
+			int width, height, channels;
+			if (stbi_is_hdr(path.c_str()))
 			{
-				PR_LOG_ERROR("Failed to load texture %s!\n", path.c_str());
-			}
+				float* data = stbi_loadf_from_memory(buffer, (int)size, &width, &height, &channels, 0);
 
-			ImageData::ImagePtr ptr;
-			ptr.dataF = data;
+				if (data == nullptr)
+				{
+					PR_LOG_ERROR("Failed to load texture %s!\n", path.c_str());
+				}
 
-			ret = { ImageData::ImageType::HDR, width, height, channels, ptr };
-		}
-		else
-		{
-			unsigned char* data;
-			if (__FrameworkConfig.api == OpenGL)
-			{
-				data = stbi_load_from_memory(buffer, (int)size, &width, &height, &channels, 0);
+				ImageData::ImagePtr ptr;
+				ptr.dataF = data;
+
+				ret = { ImageData::ImageType::HDR, width, height, channels, ptr };
 			}
 			else
 			{
-				data = stbi_load_from_memory(buffer, (int)size, &width, &height, &channels, STBI_rgb_alpha);
+				unsigned char* data;
+				if (__FrameworkConfig.api == OpenGL)
+				{
+					data = stbi_load_from_memory(buffer, (int)size, &width, &height, &channels, 0);
+				}
+				else
+				{
+					data = stbi_load_from_memory(buffer, (int)size, &width, &height, &channels, STBI_rgb_alpha);
+				}
+
+				if (data == nullptr)
+				{
+					PR_LOG_ERROR("Failed to load texture %s!\n", path.c_str());
+				}
+
+				ImageData::ImagePtr ptr;
+				ptr.dataUC = data;
+
+				ret = { ImageData::ImageType::LDR, width, height, channels, data };
 			}
+
+			uint32_t data_size = width * height * channels;
+			if (ret.type == ImageData::ImageType::HDR)
+			{
+				data_size *= 4;
+			}
+
+			uint32_t struct_size = data_size + 20;
+			uint8_t* bytes = new uint8_t[struct_size];
+			memset(bytes, 0, struct_size);
+
+			RawTextureData* raw_data = (RawTextureData*)bytes;
+			raw_data->width = width;
+			raw_data->height = height;
+			raw_data->channels = channels;
+			raw_data->imageType = (uint32_t)ret.type;
+			raw_data->size = data_size;
+			memcpy(raw_data->data, ret.ptr.dataUC, raw_data->size);
+			TextureLoader::SavePrehistoricTexture(path.substr(0, path.length() - 3) + "prt", raw_data);
+			delete bytes;
+		}
+		else
+		{
+			size_t size = (size_t)stream.tellg();
+			stream.seekg(0);
+			uint8_t* arr = new uint8_t[size];
+			stream.read((char*)arr, size);
+
+			RawTextureData* raw_data = (RawTextureData*)arr;
+
+			int width, height, channels, type;
+			uint8_t* data = new uint8_t[raw_data->size];
+
+			width = raw_data->width;
+			height = raw_data->height;
+			channels = raw_data->channels;
+			type = raw_data->imageType;
+			memcpy(data, &raw_data->data, raw_data->size);
 
 			if (data == nullptr)
 			{
 				PR_LOG_ERROR("Failed to load texture %s!\n", path.c_str());
 			}
 
-			ImageData::ImagePtr ptr;
-			ptr.dataUC = data;
+			if (type == 1)
+			{
+				ImageData::ImagePtr ptr;
+				ptr.dataF = (float*)data;
 
-			ret = { ImageData::ImageType::LDR, width, height, channels, data };
+				ret = { ImageData::ImageType::HDR, width, height, channels, ptr };
+			}
+			else
+			{
+				ImageData::ImagePtr ptr;
+				ptr.dataUC = data;
+
+				ret = { ImageData::ImageType::LDR, width, height, channels, data };
+			}
+
+			delete[] arr;
 		}
 
-		uint32_t struct_size = width * height * channels / 4 + 20;
-		uint8_t* bytes = new uint8_t[struct_size];
-		memset(bytes, 0, struct_size);
-
-		RawTextureData* raw_data = (RawTextureData*)bytes;
-		raw_data->width = width;
-		raw_data->height = height;
-		raw_data->channels = channels;
-		raw_data->imageType = 0;
-		raw_data->size = struct_size - 20;
-		memcpy(raw_data->data, ret.ptr.dataUC, raw_data->size);
-		PrehistoricTextureLoader::SavePrehistoricTexture(path.substr(0, path.length() - 3) + "prt", raw_data);
-		delete bytes;
-
 		return ret;
+	}
+
+	bool TextureLoader::SavePrehistoricTexture(const std::string& path, RawTextureData* data)
+	{
+		std::vector<std::string> split = Util::Split(path, '/');
+
+		std::ofstream file("res/textures/prehistoric/" + split[split.size() - 1], std::ios::binary);
+
+		if (file.is_open())
+		{
+			file.write((const char*)data, data->size + 20);
+			file.close();
+
+			return true;
+		}
+
+		return false;
 	}
 };

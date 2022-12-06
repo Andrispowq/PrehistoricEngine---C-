@@ -176,6 +176,6 @@ void main()
     vec3 normal = texture(normalImage, texCoord).rgb;
 
 	vec3 accumFog = getFog(positionMetallic.rgb, -normalize(sunPosition), vec3(0.9, 0.6, 0.3), normal);
-	vec3 total = sceneColour/* + accumFog*/;//mix(sceneColour, accumFog, 0.8);
+	vec3 total = sceneColour;//mix(sceneColour, accumFog, 0.8);// + accumFog;
     imageStore(outColour, x, vec4(total, 1.0));
 }

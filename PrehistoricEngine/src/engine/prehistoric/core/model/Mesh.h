@@ -19,7 +19,7 @@ namespace Prehistoric
 		std::vector<uint32_t> GetIndexData() const;
 
 		void AddVertex(const Vertex& vertex) { vertices.push_back(vertex); }
-		void AddIndex(const int& index) { indices.push_back(index); }
+		void AddIndex(const uint32_t& index) { indices.push_back(index); }
 
 		inline std::vector<Vertex> getVertices() const { return vertices; }
 		inline std::vector<uint32_t> getIndices() const { return indices; }

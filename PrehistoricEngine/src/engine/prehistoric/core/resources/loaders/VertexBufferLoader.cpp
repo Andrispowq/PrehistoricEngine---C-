@@ -4,17 +4,31 @@
 #include "prehistoric/core/resources/AssetManager.h"
 #include "prehistoric/application/Application.h"
 
+#include "prehistoric/core/model/loader/PrehistoricModelFormat.h"
+
 namespace Prehistoric
 {
     static Model meshes[NUM_THREADS];
 
     static OBJLoader loader;
+    static PrehistoricModelFormat prehistoric_format_loader;
 
     static void load_meshes(size_t start, size_t count, std::string locations[])
     {
         for (size_t i = start; i < (start + count); i++)
         {
-            meshes[i] = std::move(loader.LoadModel(locations[i], "", "")); //TODO
+            Model model;
+            std::string location = locations[i];
+            if (location.substr(location.length() - 3, 3) != "pmf")
+            {
+                model = loader.LoadModel(location, "", "");
+                PrehistoricModelFormat::SavePrehistoricModel(location.substr(0, location.length() - 3) + "pmf", model);
+            }
+            else
+            {
+                model = prehistoric_format_loader.LoadModel(location);
+            }
+            meshes[i] = std::move(model); //TODO
         }
     }
 
@@ -22,6 +36,7 @@ namespace Prehistoric
         : Loader(window), manager(manager)
     {
         loader = OBJLoader(window, manager);
+        prehistoric_format_loader = PrehistoricModelFormat(window, manager);
     }
 
     void* VertexBufferLoader::LoadResourceInternal(const std::string& path, Extra* extra)
@@ -50,7 +65,17 @@ namespace Prehistoric
                 std::string _path = path.substr(0, last_slash);
                 std::string _obj = path.substr(last_slash + 1, path.length() - last_slash - 1);
 
-                Model model = loader.LoadModel(_path, _obj, "");
+                Model model;
+                if (path.substr(path.length() - 3, 3) != "pmf")
+                {
+                    model = loader.LoadModel(_path, _obj, "");
+                    PrehistoricModelFormat::SavePrehistoricModel(path.substr(0, path.length() - 3) + "pmf", model);
+                }
+                else
+                {
+                    model = prehistoric_format_loader.LoadModel(path);
+                }
+
                 if (__FrameworkConfig.api == OpenGL)
                 {
                     ret = new GLMeshVertexBuffer(window, model);
@@ -129,6 +154,18 @@ namespace Prehistoric
 
     Model VertexBufferLoader::LoadModel(const std::string& path)
     {
-        return loader.LoadModel(path, "", "");
+        Model model;
+
+        if (path.substr(path.length() - 3, 3) != "pmf")
+        {
+            model = loader.LoadModel(path, "", "");
+            PrehistoricModelFormat::SavePrehistoricModel(path.substr(0, path.length() - 3) + "pmf", model);
+        }
+        else
+        {
+            model = prehistoric_format_loader.LoadModel(path);
+        }
+
+        return model;
     }
 };

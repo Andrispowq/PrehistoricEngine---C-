@@ -11,22 +11,22 @@
     [
         {
             "name": "quadModel",
-            "directory": "quad.obj",
+            "directory": "prehistoric/quad.pmf",
             "front-face": 1
         },
         {
             "name": "sphereModel",
-            "directory": "sphere.obj",
+            "directory": "prehistoric/sphere.pmf",
             "front-face": 0
         },
         {
             "name": "atmosphere",
-            "directory": "sphere.obj",
+            "directory": "prehistoric/sphere.pmf",
             "front-face": 2
         },
         {
             "name": "cubeModel",
-            "directory": "cube.obj",
+            "directory": "prehistoric/cube.pmf",
             "front-face": 0
         }
     ],
@@ -44,32 +44,32 @@
         {
             "name": "oak_MROT",
             "directory": "prehistoric/oakFloor_MROT.prt"
-        },  
+        },
 
         {
             "name": "metal_DIF",
-            "directory": "metalFloor/metalFloor_DIF.png"
+            "directory": "prehistoric/metalFloor_DIF.prt"
         },
         {
             "name": "metal_NRM",
-            "directory": "metalFloor/metalFloor_NRM.png"
+            "directory": "prehistoric/metalFloor_NRM.prt"
         },
         {
             "name": "metal_MROT",
-            "directory": "metalFloor/metalFloor_MROT.png"
+            "directory": "prehistoric/metalFloor_MROT.prt"
         },
         
         {
             "name": "rock_DIF",
-            "directory": "lunar/lunar-rock_DIF.png"
+            "directory": "prehistoric/lunar-rock_DIF.prt"
         },
         {
             "name": "rock_NRM",
-            "directory": "lunar/lunar-rock_NRM.png"
+            "directory": "prehistoric/lunar-rock_NRM.prt"
         },
         {
             "name": "rock_MROT",
-            "directory": "lunar/lunar-rock_MROT.png"
+            "directory": "prehistoric/lunar-rock_MROT.prt"
         }
     ],
 
