@@ -187,6 +187,30 @@ public class Camera
     }
 }
 
+public class GameObject
+{
+    public System.IntPtr pointer = (System.IntPtr)0;
+    public String name = "Unnamed";
+    
+    public bool IsValid()
+    {
+        if(pointer == (System.IntPtr)0)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public Transform GetTransform()
+    {
+        if (IsValid())
+            return Callback.GetTransform(this);
+        else
+            return null;
+    }
+}
+
 public class Callback
 {
     [DllImport("__Internal", EntryPoint = "ScriptCallback")]
@@ -239,13 +263,27 @@ public class Callback
         }
     }
 
-    public static Transform GetTransform()
+    public static Transform GetTransform(GameObject obj = null)
     {
         unsafe
         {
             CallbackData callback_data = new CallbackData();
             callback_data.type = 0x3;
-            callback_data.data = (void*)0;
+
+            System.IntPtr[] ptrs = new System.IntPtr[1];
+            if (obj == null)
+            {
+                callback_data.data = (void*)0;
+            }
+            else
+            {
+                ptrs[0] = (System.IntPtr)obj.pointer;
+
+                fixed (System.IntPtr* _ptrs = ptrs)
+                {
+                    callback_data.data = (void*)_ptrs;
+                }
+            }
 
             ScriptCallback(callback_data);
             float* data = (float*)callback_data.data;
@@ -305,6 +343,42 @@ public class Callback
                 ScriptCallback(callback_data);
                 float val = *(float*)callback_data.data;
                 return val;
+            }
+        }
+    }
+
+    public static GameObject GetGameObject(string name, GameObject parent = null)
+    {
+        unsafe
+        {
+            System.IntPtr[] ptrs = new System.IntPtr[2];
+
+            if (parent == null)
+            {
+                ptrs[0] = (System.IntPtr)0;
+            }
+            else
+            {
+                ptrs[0] = (System.IntPtr)parent.pointer;
+            }
+
+            fixed (char* name_bytes = name)
+            {
+                ptrs[1] = (System.IntPtr)name_bytes;
+            }
+
+            fixed (System.IntPtr* _ptrs = ptrs)
+            {
+                CallbackData callback_data = new CallbackData();
+                callback_data.type = 0x7;
+                callback_data.data = (void*)_ptrs;
+
+                ScriptCallback(callback_data);
+
+                GameObject result = new GameObject();
+                result.name = name;
+                result.pointer = (System.IntPtr)callback_data.data;
+                return result;
             }
         }
     }

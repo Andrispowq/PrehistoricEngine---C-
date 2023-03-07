@@ -13,7 +13,8 @@ namespace Prehistoric
 	enum class ColliderType
 	{
 		NONE = 0x0,
-		SPHERE = 0x1
+		SPHERE = 0x1,
+		TERRAIN = 0x2,
 	};
 
 	class Collider

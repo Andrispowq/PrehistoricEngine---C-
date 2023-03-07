@@ -103,11 +103,11 @@ float getShadow(vec3 fragPosWorldSpace, vec3 lightDir, vec3 normal)
 const float G_SCATTERING = 0.8;
 const int NB_STEPS = 50;
 
-vec3 RayleighScattering(float distance, float lightDotView, float intensity, /*float wavelength*/vec3 colour, float ior)
+vec3 RayleighScattering(float distance, float lightDotView, float intensity, float wavelength/*vec3 colour*/, float ior)
 {
 	vec3 result = vec3(intensity);
 	result *= ((1 + pow(lightDotView, 2)) / (2 * distance));
-	result *= colour;//result *= pow(((2 * PI) / wavelength), 4);
+	result *= pow(((2 * PI) / wavelength), 4);//colour;
 	result *= pow(((ior * ior - 1) / (ior * ior + 2)), 2);
 	return result;
 }
@@ -122,20 +122,15 @@ float MieScattering(float lightDotView)
 vec3 ComputeScattering(float lightDotView, float distance)
 {
 	float mie = MieScattering(lightDotView);
-	vec3 rayleigh = RayleighScattering(distance, lightDotView, 1000.0, /*700*/vec3(0.9, 0.6, 0.3), 1.1);
+	vec3 rayleigh = RayleighScattering(distance, lightDotView, 1000.0, 700/*vec3(0.9, 0.6, 0.3)*/, 1.1);
 
-	return vec3(mie)/* + rayleigh*/;
+	return vec3(mie) + rayleigh;
 }
 
 vec3 getFog(vec3 worldPosition, vec3 lightDir, vec3 lightColour, vec3 normal)
 {
 	vec3 startPosition = worldPosition;
 	vec3 endPosition = cameraPosition;
-
-	float[4][4] ditherPattern = { { 0.0f, 0.5f, 0.125f, 0.625f},
-		{ 0.75f, 0.22f, 0.875f, 0.375f},
-		{ 0.1875f, 0.6875f, 0.0625f, 0.5625},
-		{ 0.9375f, 0.4375f, 0.8125f, 0.3125} };
 
 	vec3 rayVector = endPosition - startPosition;
 	float rayLength = length(rayVector);
@@ -148,14 +143,10 @@ vec3 getFog(vec3 worldPosition, vec3 lightDir, vec3 lightColour, vec3 normal)
 	vec3 accumFog = vec3(0.0);
 	for (int i = 0; i < NB_STEPS; i++)
 	{
-		//float ditherValue = ditherPattern[int(time * 4) % 4][int(time * 16) % 4];
-		//ditherValue /= 1000.0;
-		//currentPosition += step * ditherValue;
-
 		float shadow = getShadow(currentPosition, lightDir, normal);
 		if (shadow == 0.0)
 		{
-			accumFog += ComputeScattering(dot(rayDirection, lightDir), length(sunPosition - currentPosition)) * /*stepLength */lightColour;
+			accumFog += ComputeScattering(dot(rayDirection, lightDir), length(sunPosition - currentPosition)) * /*stepLength */ lightColour;
 		}
 
 		currentPosition += step;

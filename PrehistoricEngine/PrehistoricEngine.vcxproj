@@ -303,6 +303,7 @@
     <ClInclude Include="src\engine\prehistoric\core\modules\water\WaterNode.h" />
     <ClInclude Include="src\engine\prehistoric\core\modules\water\WaterQuadtree.h" />
     <ClInclude Include="src\engine\prehistoric\core\node\component\camera\CameraComponent.h" />
+    <ClInclude Include="src\engine\prehistoric\core\node\component\physics\colliders\TerrainCollider.h" />
     <ClInclude Include="src\engine\prehistoric\core\node\component\scripting\ScriptComponent.h" />
     <ClInclude Include="src\engine\prehistoric\core\node\GameObject.h" />
     <ClInclude Include="src\engine\prehistoric\core\node\movement\ScriptableCamera.h" />
@@ -491,6 +492,7 @@
     <ClCompile Include="src\engine\prehistoric\core\modules\water\WaterNode.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\modules\water\WaterQuadtree.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\node\component\camera\CameraComponent.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\node\component\physics\colliders\TerrainCollider.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\node\component\scripting\ScriptComponent.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\node\GameObject.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\node\movement\ScriptableCamera.cpp" />

@@ -109,23 +109,24 @@ float getShadow(vec3 fragPosWorldSpace, vec3 lightDir, vec3 normal)
 	// perform perspective divide
 	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
 	// transform to [0,1] range
-	projCoords = projCoords * 0.5 + 0.5;
+	projCoords = projCoords * 0.5 + 0.5;;
 
 	// get depth of current fragment from light's perspective
 	float currentDepth = projCoords.z;
 	if (currentDepth > 1.0)
 	{
-		return 0.0;
+		//return 0.0;
 	}
+
 	// calculate bias (based on depth map resolution and slope)
 	float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
 	if (layer == cascadeCount)
 	{
-		bias *= 1 / (farPlane * 0.5f);
+		bias *= 1 / max(farPlane * 0.5f, 0.005);
 	}
 	else
 	{
-		bias *= 1 / (cascadePlaneDistances[layer] * 0.5f);
+		bias *= 1 / max(cascadePlaneDistances[layer] * 0.5f, 0.005);
 	}
 
 	// PCF
@@ -140,7 +141,7 @@ float getShadow(vec3 fragPosWorldSpace, vec3 lightDir, vec3 normal)
 				vec3(projCoords.xy + vec2(x, y) * texelSize,
 					layer)
 				).r;
-			shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;
+			shadow += ((currentDepth - bias) > pcfDepth) ? 1.0 : 0.0;
 		}
 	}
 	shadow /= 9.0;

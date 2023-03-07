@@ -830,6 +830,7 @@
     <ClInclude Include="src\engine\platform\vulkan\rendering\pipeline\VKComputePipeline.h" />
     <ClInclude Include="src\engine\platform\vulkan\rendering\shaders\environmentMap\VKEnvironmentMapShader.h" />
     <ClInclude Include="src\engine\prehistoric\core\model\loader\PrehistoricModelFormat.h" />
+    <ClInclude Include="src\engine\prehistoric\core\node\component\physics\colliders\TerrainCollider.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -1322,5 +1323,6 @@
     <ClCompile Include="src\engine\platform\vulkan\rendering\pipeline\VKComputePipeline.cpp" />
     <ClCompile Include="src\engine\platform\vulkan\rendering\shaders\environmentMap\VKEnvironmentMapShader.cpp" />
     <ClCompile Include="src\engine\prehistoric\core\model\loader\PrehistoricModelFormat.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\node\component\physics\colliders\TerrainCollider.cpp" />
   </ItemGroup>
 </Project>

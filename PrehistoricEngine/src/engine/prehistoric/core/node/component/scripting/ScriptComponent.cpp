@@ -10,6 +10,9 @@
 #include "prehistoric/core/node/component/light/Light.h"
 #include "prehistoric/core/node/component/camera/CameraComponent.h"
 
+#include <locale>
+#include <codecvt>
+
 #define ToComponentType(x) x##asd
 
 namespace Prehistoric
@@ -22,7 +25,8 @@ namespace Prehistoric
 		GetTransform = 0x3,
 		SetTransform = 0x4,
 		Log = 0x5,
-		InputCheck = 0x6
+		InputCheck = 0x6,
+		GetGameObject = 0x7,
 	};
 
 	struct CallbackData
@@ -204,8 +208,16 @@ namespace Prehistoric
 
 	void GetTransform(CallbackData* data)
 	{
+		void** ptrs = (void**)data->data;
+		GameObject* obj = current_parent;
+
+		if (ptrs != nullptr)
+		{
+			obj = (GameObject*)ptrs[0];
+		}
+
 		Transform& transform = current_parent->getWorldTransform();
-		
+
 		static float fdata[9];
 		fdata[0] = transform.getPosition().x;
 		fdata[1] = transform.getPosition().y;
@@ -216,7 +228,7 @@ namespace Prehistoric
 		fdata[6] = transform.getScaling().x;
 		fdata[7] = transform.getScaling().y;
 		fdata[8] = transform.getScaling().z;
-		
+
 		data->data = (void*)fdata;
 	}
 
@@ -318,6 +330,31 @@ namespace Prehistoric
 		data->data = res_buff;
 	}
 
+	void GetGameObject(CallbackData* data)
+	{
+		GameObject* result = nullptr;
+
+		void** ptrs = (void**)data->data;
+		GameObject* parent = (GameObject*)ptrs[0];
+		std::wstring obj_name = (wchar_t*)ptrs[1];
+
+		using convert_type = std::codecvt_utf8<wchar_t>;
+		std::wstring_convert<convert_type, wchar_t> converter;
+
+		std::string obj_name_ = converter.to_bytes(obj_name);
+
+		if (parent == nullptr)
+		{
+			result = Application::Get().getEngineLayer()->getRootObject();
+		}
+		else
+		{
+			result = (GameObject*)parent->getChild(obj_name_);
+		}
+
+		data->data = (void*)result;
+	}
+
 	extern "C" void __declspec(dllexport) ScriptCallback(CallbackData* data)
 	{
 		switch (data->type)
@@ -355,6 +392,11 @@ namespace Prehistoric
 		case CallbackType::InputCheck:
 		{
 			InputCheck(data);
+			break;
+		}
+		case CallbackType::GetGameObject:
+		{
+			GetGameObject(data);
 			break;
 		}
 		default:

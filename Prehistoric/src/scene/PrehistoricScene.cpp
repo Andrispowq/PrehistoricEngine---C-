@@ -78,7 +78,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 	{
 		AssetManager* man = manager->getAssetManager();
 
-		/*GameObject* sun = new GameObject();
+		GameObject* sun = new GameObject();
 		//sun->setUpdateFunction(sun_move_function);
 		sun->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0.95f, 0.87f), 100.0f, 50000.0f, true, true));
 		sun_move_function(sun, 0.0f);
@@ -86,11 +86,11 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 
 		Atmosphere* atm = new Atmosphere(window, manager);
 		atm->setSun(sun->GetComponent<Light>());
-		sceneRoot->AddChild("atmosphere", atm);*/
+		sceneRoot->AddChild("atmosphere", atm);
  
-		Terrain* terrain1 = new Terrain(window, camera, manager, "res/config/terrain_1.json");
+		/*Terrain* terrain1 = new Terrain(window, camera, manager, "res/config/terrain_1.json");
 		terrain1->UpdateQuadtree();
-		sceneRoot->AddChild("terrain1", terrain1);
+		sceneRoot->AddChild("terrain1", terrain1);*/
 
 		/*Water* water = new Water(window, camera, manager, Vector3f(0, 200, 0));
 		water->UpdateQuadtree();
@@ -154,21 +154,22 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 
 		ScriptEngine::Compile("res/scripts");
 		ScriptComponent* script = new ScriptComponent("ExampleComponent");
-		ScriptComponent* script2 = new ScriptComponent("CameraController");
-		ScriptComponent* script3 = new ScriptComponent("Logger");
+		ScriptComponent* camera_script = new ScriptComponent("CameraController");
+		ScriptComponent* player_script = new ScriptComponent("PlayerController");
 
 		CameraComponent* cam = new CameraComponent(false);
 
-		GameObject* script_obj = (GameObject*)sceneRoot->AddChild("script_obj", new GameObject);
+		GameObject* script_obj = (GameObject*)sceneRoot->AddChild("Example", new GameObject);
 		script_obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, mater_script));
 		script_obj->AddComponent(SCRIPT_COMPONENT, script);
 
-		GameObject* script_obj2 = (GameObject*)sceneRoot->AddChild("script_obj2", new GameObject);
+		GameObject* script_obj2 = (GameObject*)sceneRoot->AddChild("Camera", new GameObject);
 		script_obj2->AddComponent(CAMERA_COMPONENT, cam);
-		script_obj2->AddComponent(SCRIPT_COMPONENT, script2);
+		script_obj2->AddComponent(SCRIPT_COMPONENT, camera_script);
 
-		GameObject* script_obj3 = (GameObject*)sceneRoot->AddChild("script_obj3", new GameObject);
-		script_obj3->AddComponent(SCRIPT_COMPONENT, script3);
+		GameObject* script_obj3 = (GameObject*)sceneRoot->AddChild("Player", new GameObject);
+		script_obj3->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, mater_script));
+		script_obj3->AddComponent(SCRIPT_COMPONENT, player_script);
 
 		/*PhysicsComponent* phys_comp = new PhysicsComponent(1.0f, false);
 		phys_comp->setCollider(new SphereCollider());

@@ -25,7 +25,12 @@ namespace Prehistoric
 				HitInfo info;
 				if (elem->getCollider()->Collide(elem1->getCollider(), info))
 				{
-					Vector3f momentum0 = elem->GetMomentum();
+					elem->setAcceleration(0);
+					elem->setVeloctiy(0);
+					elem1->setAcceleration(0);
+					elem1->setVeloctiy(0);
+
+					/*Vector3f momentum0 = elem->GetMomentum();
 					Vector3f momentum1 = elem1->GetMomentum();
 					Vector3f momentum = momentum0;
 					if (momentum == 0.0f)
@@ -59,7 +64,7 @@ namespace Prehistoric
 					elem1->setAcceleration(0);
 
 					elem->Update(delta);
-					elem1->Update(delta);
+					elem1->Update(delta);*/
 				}
 			}
 		}

@@ -92,7 +92,7 @@ PrehistoricApp::PrehistoricApp()
 			EnvironmentMapRenderer::instance = new EnvironmentMapRenderer(engineLayer->getRenderingEngine()->getWindow(), engineLayer->getAssetManager());
 		}
 
-		//EnvironmentMapRenderer::instance->atmosphere = (Atmosphere*)sceneRoot->getChild("atmosphere");
+		EnvironmentMapRenderer::instance->atmosphere = (Atmosphere*)sceneRoot->getChild("atmosphere");
 
 		{
 			PR_PROFILE("Environment map generation - Cubemap, Irradiance, Prefilter map");
@@ -110,6 +110,14 @@ PrehistoricApp::PrehistoricApp()
 		slider3->SetScale({ 0.125f, 0.05f, 1 });
 		sceneRoot->AddChild("slider3", slider3);*/
 
+		GLRenderer* rend = (GLRenderer*)Application::Get().getEngineLayer()->getRenderingEngine()->getRenderer();
+
+		/*GUIElement* shadow_visualiser0 = new GUIElement(window, manager, Vector3f(-1), nullptr, 0, true);
+		shadow_visualiser0->setTexture(rend->getShadowDepthPass()->getDepthTexture().pointer);
+		shadow_visualiser0->SetPosition({ -0.7f, 0.7f, 0 });
+		shadow_visualiser0->SetScale({ 0.125f, 0.125f, 1 });
+		sceneRoot->AddChild("shadow_visualiser0", shadow_visualiser0);*/
+
 		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/prehistoric/myscene.pmf").value();
 		vbo->setFrontFace(FrontFace::CLOCKWISE);
 		ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
@@ -125,7 +133,7 @@ PrehistoricApp::PrehistoricApp()
 
 		GameObject* obj = new GameObject;
 		obj->SetPosition({ 0, -50, 0 });
-		obj->SetScale({ 0.1f, 0.1f, 0.1f });
+		obj->SetScale({ 1.f, 1.f, 1.f });
 		obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, material));
 		sceneRoot->AddChild("someobj", obj);
 
