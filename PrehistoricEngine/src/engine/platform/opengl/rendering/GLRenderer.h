@@ -17,6 +17,7 @@
 #include "platform/opengl/rendering/renderStage/GLBloomPass.h"
 #include "platform/opengl/rendering/renderStage/GLVolumetricPostProcessingPass.h"
 #include "platform/opengl/rendering/renderStage/GLHDRPass.h"
+#include "platform/opengl/rendering/renderStage/GLVoxelRendererPass.h"
 
 #include "platform/opengl/rendering/renderStage/GLRayTracingPass.h"
 
@@ -42,6 +43,7 @@ namespace Prehistoric
 		GLBloomPass* getBloomPass() const { return bloomPass; }
 		GLVolumetricPostProcessingPass* getVolumetricPostProcessingPass() const { return volumetricPostProcessingPass; }
 		GLHDRPass* getHDRPass() const { return hdrPass; }
+		GLVoxelRendererPass* getVoxelPass() const { return voxelPass; }
 
 		GLRayTracingPass* getRayTracingPass() const { return rtxPass; }
 
@@ -53,6 +55,7 @@ namespace Prehistoric
 		GLBloomPass* bloomPass;
 		GLVolumetricPostProcessingPass* volumetricPostProcessingPass;
 		GLHDRPass* hdrPass;
+		GLVoxelRendererPass* voxelPass;
 
 		GLRayTracingPass* rtxPass;
 

@@ -20,6 +20,7 @@ namespace Prehistoric
 		virtual ~VKTexture();
 
 		virtual void Bind(uint32_t slot = 0) const override {}
+		virtual void BindImage(uint32_t slot = 0) const override {}
 		virtual void Unbind() const override {}
 
 		virtual void UploadTextureData(ImageData data) override;

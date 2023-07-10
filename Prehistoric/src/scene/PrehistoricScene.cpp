@@ -10,21 +10,6 @@
 #include "prehistoric/core/node/component/physics/colliders/SphereCollider.h"
 #include "prehistoric/core/node/component/camera/CameraComponent.h"
 
-//We go around in a circle, from -range to range on the y and z axes
-static void sun_move_function(Prehistoric::GameObject* object, float frameTime)
-{
-	constexpr float range = 32000.0f;
-	constexpr float anglesPerSecond = 0.5f;
-
-	static float angle = 130.0f;
-
-	float x = cos(ToRadians(angle)) * range;
-	float y = sin(ToRadians(angle)) * range;
-	angle -= (anglesPerSecond * frameTime);
-
-	object->SetPosition({ x, y, 0 });
-}
-
 PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window* window, Prehistoric::Camera* camera,
 	Prehistoric::AssembledAssetManager* manager)
 	: Scene(name, window, camera, manager)
@@ -78,27 +63,9 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 	{
 		AssetManager* man = manager->getAssetManager();
 
-		GameObject* sun = new GameObject();
-		//sun->setUpdateFunction(sun_move_function);
-		sun->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0.95f, 0.87f), 100.0f, 50000.0f, true, true));
-		sun_move_function(sun, 0.0f);
-		sceneRoot->AddChild("sun", sun);
-
-		Atmosphere* atm = new Atmosphere(window, manager);
-		atm->setSun(sun->GetComponent<Light>());
-		sceneRoot->AddChild("atmosphere", atm);
- 
-		/*Terrain* terrain1 = new Terrain(window, camera, manager, "res/config/terrain_1.json");
-		terrain1->UpdateQuadtree();
-		sceneRoot->AddChild("terrain1", terrain1);*/
-
 		/*Water* water = new Water(window, camera, manager, Vector3f(0, 200, 0));
 		water->UpdateQuadtree();
 		sceneRoot->AddChild("water", water);*/
-
-		/*Terrain* terrain0 = new Terrain(window, camera, manager, "res/config/terrain_0.json");
-		terrain0->UpdateQuadtree();
-		sceneRoot->AddChild("terrain0", terrain0);*/
 
 		/*GameObject* slider = new GUISlider(window, manager, 0.0f, 2.0f, Vector3f(0.5f), &__EngineConfig.rendererExposure, sizeof(float), true);
 		slider->SetPosition({ 0.5f, 0.5f, 0 });
@@ -152,27 +119,28 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 		mater_script2->addVector3f(COLOUR, { 0, 0, 1 });
 		mater_script2->addVector4f(MROT, { 0.5f, 0.5f, 1, 0 });
 
-		ScriptEngine::Compile("res/scripts");
+		/*ScriptEngine::Compile("res/scripts");
 		ScriptComponent* script = new ScriptComponent("ExampleComponent");
 		ScriptComponent* camera_script = new ScriptComponent("CameraController");
-		ScriptComponent* player_script = new ScriptComponent("PlayerController");
+		//ScriptComponent* player_script = new ScriptComponent("PlayerController");*/
 
-		CameraComponent* cam = new CameraComponent(false);
+		/*CameraComponent* cam = new CameraComponent(false);
 
 		GameObject* script_obj = (GameObject*)sceneRoot->AddChild("Example", new GameObject);
 		script_obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, mater_script));
 		script_obj->AddComponent(SCRIPT_COMPONENT, script);
 
-		GameObject* script_obj2 = (GameObject*)sceneRoot->AddChild("Camera", new GameObject);
-		script_obj2->AddComponent(CAMERA_COMPONENT, cam);
-		script_obj2->AddComponent(SCRIPT_COMPONENT, camera_script);
+		GameObject* camera_object = (GameObject*)sceneRoot->AddChild("Camera", new GameObject);
+		camera_object->AddComponent(CAMERA_COMPONENT, cam);
+		camera_object->AddComponent(SCRIPT_COMPONENT, camera_script);*/
 
-		GameObject* script_obj3 = (GameObject*)sceneRoot->AddChild("Player", new GameObject);
+		/*GameObject* script_obj3 = (GameObject*)sceneRoot->AddChild("Player", new GameObject);
 		script_obj3->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, mater_script));
-		script_obj3->AddComponent(SCRIPT_COMPONENT, player_script);
+		script_obj3->AddComponent(SCRIPT_COMPONENT, player_script);*/
 
-		/*PhysicsComponent* phys_comp = new PhysicsComponent(1.0f, false);
+		PhysicsComponent* phys_comp = new PhysicsComponent(1.0f, false);
 		phys_comp->setCollider(new SphereCollider());
+		phys_comp->AddForce({ 0, -50, 0 });
 
 		GameObject* phys_obj = (GameObject*)sceneRoot->AddChild("phys_obj", new GameObject);
 		phys_obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, mater_script));
@@ -185,7 +153,7 @@ PrehistoricScene::PrehistoricScene(const std::string& name, Prehistoric::Window*
 		GameObject* phys_obj1 = (GameObject*)sceneRoot->AddChild("phys_obj1", new GameObject);
 		phys_obj1->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, mater_script2));
 		phys_obj1->AddComponent(PHYSICS_COMPONENT, phys_comp1);
-		phys_obj1->Move({ 0, 80, 0 });*/
+		phys_obj1->Move({ 0, 80, 0 });
 	}
 }
 

@@ -27,6 +27,8 @@
 #include "platform/opengl/rendering/shaders/fft/GLTwiddleFactorsShader.h"
 #include "platform/opengl/rendering/shaders/water/GLWaterShader.h"
 #include "platform/opengl/rendering/shaders/water/GLWaterWireframeShader.h"
+#include "platform/opengl/rendering/shaders/voxel/GLVoxelisationShader.h"
+#include "platform/opengl/rendering/shaders/voxel/GLConeTracingShader.h"
 
 #include "platform/vulkan/rendering/shaders/basic/VKBasicShader.h"
 #include "platform/vulkan/rendering/shaders/pbr/VKPBRShader.h"
@@ -143,6 +145,14 @@ namespace Prehistoric
 			else if (path == "water_wireframe")
 			{
 				shader = new GLWaterWireframeShader();
+			}
+			else if (path == "voxelisation")
+			{
+				shader = new GLVoxelisationShader();
+			}
+			else if (path == "cone_tracing")
+			{
+				shader = new GLConeTracingShader();
 			}
 		}
 		else if (__FrameworkConfig.api == Vulkan)

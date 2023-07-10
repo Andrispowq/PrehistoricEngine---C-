@@ -43,6 +43,9 @@
     <Filter Include="platform\opengl\rendering\shaders\environmentMap">
       <UniqueIdentifier>{2645CD03-12EE-3433-3B84-50B2278C4F74}</UniqueIdentifier>
     </Filter>
+    <Filter Include="platform\opengl\rendering\shaders\fft">
+      <UniqueIdentifier>{D39354C7-3F58-53B7-08BE-83817441EFEC}</UniqueIdentifier>
+    </Filter>
     <Filter Include="platform\opengl\rendering\shaders\forwardPlus">
       <UniqueIdentifier>{0C4CC59C-78BC-C715-41DB-419EAD0A0017}</UniqueIdentifier>
     </Filter>
@@ -66,6 +69,9 @@
     </Filter>
     <Filter Include="platform\opengl\rendering\shaders\terrain">
       <UniqueIdentifier>{086CC6F7-7486-2999-BDA8-392D290251A0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\opengl\rendering\shaders\water">
+      <UniqueIdentifier>{B6C4F9EF-2254-BBDA-2B50-9CF2975EF6E6}</UniqueIdentifier>
     </Filter>
     <Filter Include="platform\opengl\texture">
       <UniqueIdentifier>{1EC959A8-8A00-A23F-930A-0663FFC0C838}</UniqueIdentifier>
@@ -120,6 +126,9 @@
     </Filter>
     <Filter Include="platform\vulkan\rendering\shaders\basic">
       <UniqueIdentifier>{610274E5-CD91-35D0-D68D-16E8429C70DC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\vulkan\rendering\shaders\environmentMap">
+      <UniqueIdentifier>{B2D68E2E-9E7F-F65D-C715-12DDB31D119F}</UniqueIdentifier>
     </Filter>
     <Filter Include="platform\vulkan\rendering\shaders\pbr">
       <UniqueIdentifier>{E38E92B7-4F53-91A7-18B9-C171843C2DDD}</UniqueIdentifier>
@@ -205,6 +214,9 @@
     <Filter Include="prehistoric\core\model">
       <UniqueIdentifier>{E98FCD5F-D589-F6B1-BEF6-8CC2AA8F5C1E}</UniqueIdentifier>
     </Filter>
+    <Filter Include="prehistoric\core\model\loader">
+      <UniqueIdentifier>{AF42EFEA-1B5B-D614-E407-66AE50DF6AAE}</UniqueIdentifier>
+    </Filter>
     <Filter Include="prehistoric\core\model\material">
       <UniqueIdentifier>{C750C846-3334-D786-3C37-05C3A8999DD7}</UniqueIdentifier>
     </Filter>
@@ -219,6 +231,9 @@
     </Filter>
     <Filter Include="prehistoric\core\modules\environmentMapRenderer">
       <UniqueIdentifier>{2A6A334F-96A5-9312-9F9A-10A20B551843}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\modules\fft">
+      <UniqueIdentifier>{80F730D5-6CB2-2081-156A-99CB01046B11}</UniqueIdentifier>
     </Filter>
     <Filter Include="prehistoric\core\modules\gpgpu">
       <UniqueIdentifier>{634364E5-4F69-2E4C-38AF-B31724745318}</UniqueIdentifier>
@@ -235,6 +250,9 @@
     <Filter Include="prehistoric\core\modules\terrain">
       <UniqueIdentifier>{35DE569F-212F-42E1-4A93-30A33643D54A}</UniqueIdentifier>
     </Filter>
+    <Filter Include="prehistoric\core\modules\water">
+      <UniqueIdentifier>{A3C77DE6-8FED-474D-7833-CD1864F86C19}</UniqueIdentifier>
+    </Filter>
     <Filter Include="prehistoric\core\node">
       <UniqueIdentifier>{3EA06B12-AA0C-270D-7300-BF6ADF2B4975}</UniqueIdentifier>
     </Filter>
@@ -243,6 +261,9 @@
     </Filter>
     <Filter Include="prehistoric\core\node\component\audio">
       <UniqueIdentifier>{61CCDCEE-CD90-DBDE-96F6-0BA9027A7714}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\node\component\camera">
+      <UniqueIdentifier>{D89EBBCD-C4F0-92BD-AD0F-D0CD9900ACA6}</UniqueIdentifier>
     </Filter>
     <Filter Include="prehistoric\core\node\component\light">
       <UniqueIdentifier>{07529DEF-7316-9CDF-3C7C-CCA9A8FF3715}</UniqueIdentifier>
@@ -255,6 +276,9 @@
     </Filter>
     <Filter Include="prehistoric\core\node\component\renderer">
       <UniqueIdentifier>{06661F39-F2E2-127C-1B60-1390073CAF0F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prehistoric\core\node\component\scripting">
+      <UniqueIdentifier>{62E35F39-CEFD-C2DA-1720-D36E8379EAE1}</UniqueIdentifier>
     </Filter>
     <Filter Include="prehistoric\core\node\movement">
       <UniqueIdentifier>{58671106-448D-DB6C-2DD3-603819980039}</UniqueIdentifier>
@@ -383,6 +407,21 @@
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLPrefilterShader.h">
       <Filter>platform\opengl\rendering\shaders\environmentMap</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\fft\GLButterflyShader.h">
+      <Filter>platform\opengl\rendering\shaders\fft</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\fft\GLH0kShader.h">
+      <Filter>platform\opengl\rendering\shaders\fft</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\fft\GLHktShader.h">
+      <Filter>platform\opengl\rendering\shaders\fft</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\fft\GLInversionShader.h">
+      <Filter>platform\opengl\rendering\shaders\fft</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\fft\GLTwiddleFactorsShader.h">
+      <Filter>platform\opengl\rendering\shaders\fft</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\forwardPlus\GLDepthPassShader.h">
       <Filter>platform\opengl\rendering\shaders\forwardPlus</Filter>
     </ClInclude>
@@ -433,6 +472,12 @@
     </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainWireframeShader.h">
       <Filter>platform\opengl\rendering\shaders\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\water\GLWaterShader.h">
+      <Filter>platform\opengl\rendering\shaders\water</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\water\GLWaterWireframeShader.h">
+      <Filter>platform\opengl\rendering\shaders\water</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\platform\opengl\texture\GLTexture.h">
       <Filter>platform\opengl\texture</Filter>
@@ -488,6 +533,9 @@
     <ClInclude Include="src\engine\platform\vulkan\rendering\framebuffer\VKFramebuffer.h">
       <Filter>platform\vulkan\rendering\framebuffer</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\rendering\pipeline\VKComputePipeline.h">
+      <Filter>platform\vulkan\rendering\pipeline</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\platform\vulkan\rendering\pipeline\VKGraphicsPipeline.h">
       <Filter>platform\vulkan\rendering\pipeline</Filter>
     </ClInclude>
@@ -502,6 +550,9 @@
     </ClInclude>
     <ClInclude Include="src\engine\platform\vulkan\rendering\shaders\basic\VKBasicShader.h">
       <Filter>platform\vulkan\rendering\shaders\basic</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\platform\vulkan\rendering\shaders\environmentMap\VKEnvironmentMapShader.h">
+      <Filter>platform\vulkan\rendering\shaders\environmentMap</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\platform\vulkan\rendering\shaders\pbr\VKPBRShader.h">
       <Filter>platform\vulkan\rendering\shaders\pbr</Filter>
@@ -632,6 +683,9 @@
     <ClInclude Include="src\engine\prehistoric\core\engines\RenderingEngine.h">
       <Filter>prehistoric\core\engines</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\engines\ScriptEngine.h">
+      <Filter>prehistoric\core\engines</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\events\ApplicationEvent.h">
       <Filter>prehistoric\core\events</Filter>
     </ClInclude>
@@ -665,6 +719,9 @@
     <ClInclude Include="src\engine\prehistoric\core\model\Vertex.h">
       <Filter>prehistoric\core\model</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\model\loader\PrehistoricModelFormat.h">
+      <Filter>prehistoric\core\model\loader</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\model\material\Material.h">
       <Filter>prehistoric\core\model\material</Filter>
     </ClInclude>
@@ -676,6 +733,18 @@
     </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\modules\environmentMapRenderer\EnvironmentMapRenderer.h">
       <Filter>prehistoric\core\modules\environmentMapRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\modules\fft\FFT.h">
+      <Filter>prehistoric\core\modules\fft</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\modules\fft\H0k.h">
+      <Filter>prehistoric\core\modules\fft</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\modules\fft\Hkt.h">
+      <Filter>prehistoric\core\modules\fft</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\modules\fft\TwiddleFactors.h">
+      <Filter>prehistoric\core\modules\fft</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\modules\gpgpu\NormalMapRenderer.h">
       <Filter>prehistoric\core\modules\gpgpu</Filter>
@@ -707,6 +776,15 @@
     <ClInclude Include="src\engine\prehistoric\core\modules\terrain\TerrainQuadtree.h">
       <Filter>prehistoric\core\modules\terrain</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\modules\water\Water.h">
+      <Filter>prehistoric\core\modules\water</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\modules\water\WaterNode.h">
+      <Filter>prehistoric\core\modules\water</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\modules\water\WaterQuadtree.h">
+      <Filter>prehistoric\core\modules\water</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\node\GameObject.h">
       <Filter>prehistoric\core\node</Filter>
     </ClInclude>
@@ -718,6 +796,9 @@
     </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\node\component\audio\AudioComponent.h">
       <Filter>prehistoric\core\node\component\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\node\component\camera\CameraComponent.h">
+      <Filter>prehistoric\core\node\component\camera</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\node\component\light\Light.h">
       <Filter>prehistoric\core\node\component\light</Filter>
@@ -731,11 +812,17 @@
     <ClInclude Include="src\engine\prehistoric\core\node\component\physics\colliders\SphereCollider.h">
       <Filter>prehistoric\core\node\component\physics\colliders</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\node\component\physics\colliders\TerrainCollider.h">
+      <Filter>prehistoric\core\node\component\physics\colliders</Filter>
+    </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\node\component\renderer\RenderableComponent.h">
       <Filter>prehistoric\core\node\component\renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\node\component\renderer\RendererComponent.h">
       <Filter>prehistoric\core\node\component\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\node\component\scripting\ScriptComponent.h">
+      <Filter>prehistoric\core\node\component\scripting</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\node\movement\Camera.h">
       <Filter>prehistoric\core\node\movement</Filter>
@@ -744,6 +831,9 @@
       <Filter>prehistoric\core\node\movement</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\node\movement\FPSCamera.h">
+      <Filter>prehistoric\core\node\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\prehistoric\core\node\movement\ScriptableCamera.h">
       <Filter>prehistoric\core\node\movement</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\prehistoric\core\resources\AssembledAssetManager.h">
@@ -809,28 +899,10 @@
     <ClInclude Include="src\engine\prehistoric\core\util\time\Timer.h">
       <Filter>prehistoric\core\util\time</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\prehistoric\core\engines\ScriptEngine.h" />
-    <ClInclude Include="src\engine\prehistoric\core\node\component\scripting\ScriptComponent.h" />
-    <ClInclude Include="src\engine\prehistoric\core\node\component\camera\CameraComponent.h" />
-    <ClInclude Include="src\engine\prehistoric\core\node\movement\ScriptableCamera.h" />
-    <ClInclude Include="src\engine\prehistoric\core\modules\fft\FFT.h" />
-    <ClInclude Include="src\engine\prehistoric\core\modules\fft\TwiddleFactors.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\fft\GLButterflyShader.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\fft\GLInversionShader.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\fft\GLH0kShader.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\fft\GLHktShader.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\fft\GLTwiddleFactorsShader.h" />
-    <ClInclude Include="src\engine\prehistoric\core\modules\fft\H0k.h" />
-    <ClInclude Include="src\engine\prehistoric\core\modules\fft\Hkt.h" />
-    <ClInclude Include="src\engine\prehistoric\core\modules\water\WaterQuadtree.h" />
-    <ClInclude Include="src\engine\prehistoric\core\modules\water\WaterNode.h" />
-    <ClInclude Include="src\engine\prehistoric\core\modules\water\Water.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\water\GLWaterShader.h" />
-    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\water\GLWaterWireframeShader.h" />
-    <ClInclude Include="src\engine\platform\vulkan\rendering\pipeline\VKComputePipeline.h" />
-    <ClInclude Include="src\engine\platform\vulkan\rendering\shaders\environmentMap\VKEnvironmentMapShader.h" />
-    <ClInclude Include="src\engine\prehistoric\core\model\loader\PrehistoricModelFormat.h" />
-    <ClInclude Include="src\engine\prehistoric\core\node\component\physics\colliders\TerrainCollider.h" />
+    <ClInclude Include="src\engine\prehistoric\core\node\component\scripting\InternalCalls.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\voxel\GLVoxelisationShader.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\renderStage\GLVoxelRendererPass.h" />
+    <ClInclude Include="src\engine\platform\opengl\rendering\shaders\voxel\GLConeTracingShader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\Includes.cpp" />
@@ -921,6 +993,21 @@
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\environmentMap\GLPrefilterShader.cpp">
       <Filter>platform\opengl\rendering\shaders\environmentMap</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\fft\GLButterflyShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\fft</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\fft\GLH0kShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\fft</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\fft\GLHktShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\fft</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\fft\GLInversionShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\fft</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\fft\GLTwiddleFactorsShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\fft</Filter>
+    </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\forwardPlus\GLDepthPassShader.cpp">
       <Filter>platform\opengl\rendering\shaders\forwardPlus</Filter>
     </ClCompile>
@@ -971,6 +1058,12 @@
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\rendering\shaders\terrain\GLTerrainWireframeShader.cpp">
       <Filter>platform\opengl\rendering\shaders\terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\water\GLWaterShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\water</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\water\GLWaterWireframeShader.cpp">
+      <Filter>platform\opengl\rendering\shaders\water</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\opengl\texture\GLTexture.cpp">
       <Filter>platform\opengl\texture</Filter>
@@ -1026,6 +1119,9 @@
     <ClCompile Include="src\engine\platform\vulkan\rendering\framebuffer\VKFramebuffer.cpp">
       <Filter>platform\vulkan\rendering\framebuffer</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\platform\vulkan\rendering\pipeline\VKComputePipeline.cpp">
+      <Filter>platform\vulkan\rendering\pipeline</Filter>
+    </ClCompile>
     <ClCompile Include="src\engine\platform\vulkan\rendering\pipeline\VKGraphicsPipeline.cpp">
       <Filter>platform\vulkan\rendering\pipeline</Filter>
     </ClCompile>
@@ -1040,6 +1136,9 @@
     </ClCompile>
     <ClCompile Include="src\engine\platform\vulkan\rendering\shaders\basic\VKBasicShader.cpp">
       <Filter>platform\vulkan\rendering\shaders\basic</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\platform\vulkan\rendering\shaders\environmentMap\VKEnvironmentMapShader.cpp">
+      <Filter>platform\vulkan\rendering\shaders\environmentMap</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\platform\vulkan\rendering\shaders\pbr\VKPBRShader.cpp">
       <Filter>platform\vulkan\rendering\shaders\pbr</Filter>
@@ -1158,6 +1257,9 @@
     <ClCompile Include="src\engine\prehistoric\core\engines\RenderingEngine.cpp">
       <Filter>prehistoric\core\engines</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\engines\ScriptEngine.cpp">
+      <Filter>prehistoric\core\engines</Filter>
+    </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\layers\Layer.cpp">
       <Filter>prehistoric\core\layers</Filter>
     </ClCompile>
@@ -1176,6 +1278,9 @@
     <ClCompile Include="src\engine\prehistoric\core\model\Vertex.cpp">
       <Filter>prehistoric\core\model</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\model\loader\PrehistoricModelFormat.cpp">
+      <Filter>prehistoric\core\model\loader</Filter>
+    </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\model\material\Material.cpp">
       <Filter>prehistoric\core\model\material</Filter>
     </ClCompile>
@@ -1187,6 +1292,18 @@
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\modules\environmentMapRenderer\EnvironmentMapRenderer.cpp">
       <Filter>prehistoric\core\modules\environmentMapRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\modules\fft\FFT.cpp">
+      <Filter>prehistoric\core\modules\fft</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\modules\fft\H0k.cpp">
+      <Filter>prehistoric\core\modules\fft</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\modules\fft\Hkt.cpp">
+      <Filter>prehistoric\core\modules\fft</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\modules\fft\TwiddleFactors.cpp">
+      <Filter>prehistoric\core\modules\fft</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\modules\gpgpu\NormalMapRenderer.cpp">
       <Filter>prehistoric\core\modules\gpgpu</Filter>
@@ -1218,6 +1335,15 @@
     <ClCompile Include="src\engine\prehistoric\core\modules\terrain\TerrainQuadtree.cpp">
       <Filter>prehistoric\core\modules\terrain</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\modules\water\Water.cpp">
+      <Filter>prehistoric\core\modules\water</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\modules\water\WaterNode.cpp">
+      <Filter>prehistoric\core\modules\water</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\modules\water\WaterQuadtree.cpp">
+      <Filter>prehistoric\core\modules\water</Filter>
+    </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\node\GameObject.cpp">
       <Filter>prehistoric\core\node</Filter>
     </ClCompile>
@@ -1226,6 +1352,9 @@
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\node\component\audio\AudioComponent.cpp">
       <Filter>prehistoric\core\node\component\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\node\component\camera\CameraComponent.cpp">
+      <Filter>prehistoric\core\node\component\camera</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\node\component\light\Light.cpp">
       <Filter>prehistoric\core\node\component\light</Filter>
@@ -1239,11 +1368,17 @@
     <ClCompile Include="src\engine\prehistoric\core\node\component\physics\colliders\SphereCollider.cpp">
       <Filter>prehistoric\core\node\component\physics\colliders</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\node\component\physics\colliders\TerrainCollider.cpp">
+      <Filter>prehistoric\core\node\component\physics\colliders</Filter>
+    </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\node\component\renderer\RenderableComponent.cpp">
       <Filter>prehistoric\core\node\component\renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\node\component\renderer\RendererComponent.cpp">
       <Filter>prehistoric\core\node\component\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\node\component\scripting\ScriptComponent.cpp">
+      <Filter>prehistoric\core\node\component\scripting</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\node\movement\Camera.cpp">
       <Filter>prehistoric\core\node\movement</Filter>
@@ -1252,6 +1387,9 @@
       <Filter>prehistoric\core\node\movement</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\node\movement\FPSCamera.cpp">
+      <Filter>prehistoric\core\node\movement</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\prehistoric\core\node\movement\ScriptableCamera.cpp">
       <Filter>prehistoric\core\node\movement</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\prehistoric\core\resources\AssembledAssetManager.cpp">
@@ -1302,27 +1440,9 @@
     <ClCompile Include="src\engine\prehistoric\core\util\time\Timer.cpp">
       <Filter>prehistoric\core\util\time</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\prehistoric\core\engines\ScriptEngine.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\node\component\scripting\ScriptComponent.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\node\component\camera\CameraComponent.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\node\movement\ScriptableCamera.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\modules\fft\FFT.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\modules\fft\TwiddleFactors.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\fft\GLButterflyShader.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\fft\GLInversionShader.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\fft\GLH0kShader.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\fft\GLHktShader.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\fft\GLTwiddleFactorsShader.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\modules\fft\H0k.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\modules\fft\Hkt.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\modules\water\WaterQuadtree.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\modules\water\WaterNode.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\modules\water\Water.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\water\GLWaterShader.cpp" />
-    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\water\GLWaterWireframeShader.cpp" />
-    <ClCompile Include="src\engine\platform\vulkan\rendering\pipeline\VKComputePipeline.cpp" />
-    <ClCompile Include="src\engine\platform\vulkan\rendering\shaders\environmentMap\VKEnvironmentMapShader.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\model\loader\PrehistoricModelFormat.cpp" />
-    <ClCompile Include="src\engine\prehistoric\core\node\component\physics\colliders\TerrainCollider.cpp" />
+    <ClCompile Include="src\engine\prehistoric\core\node\component\scripting\InternalCalls.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\voxel\GLVoxelisationShader.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\renderStage\GLVoxelRendererPass.cpp" />
+    <ClCompile Include="src\engine\platform\opengl\rendering\shaders\voxel\GLConeTracingShader.cpp" />
   </ItemGroup>
 </Project>

@@ -30,6 +30,8 @@ namespace Prehistoric
 		volumetricPostProcessingPass = new GLVolumetricPostProcessingPass(this);
 		hdrPass = new GLHDRPass(this);
 
+		voxelPass = new GLVoxelRendererPass(this);
+
 		rtxPass = new GLRayTracingPass(this);
 
 		uint32_t width = window->getWidth();
@@ -57,6 +59,8 @@ namespace Prehistoric
 		delete volumetricPostProcessingPass;
 		delete hdrPass;
 
+		delete voxelPass;
+
 		delete rtxPass;
 
 		AssetManager* man = manager->getAssetManager();
@@ -78,6 +82,8 @@ namespace Prehistoric
 			bloomPass->OnResized();
 			volumetricPostProcessingPass->OnResized();
 			hdrPass->OnResized();
+
+			voxelPass->OnResized();
 
 			rtxPass->OnResized();
 
@@ -117,11 +123,13 @@ namespace Prehistoric
 		
 		//shadow pass
 		renderingShadow = true;
-		//shadowDepthPass->Render();
+		shadowDepthPass->Render();
 		renderingShadow = false;
 
 		lightCullingPass->Render();
 		mainPass->Render();
+
+		//voxelPass->Render();
 
 		//rtxPass->Render();
 
@@ -134,9 +142,15 @@ namespace Prehistoric
 		hdrPass->Render();
 
 		{
+			Texture* result = hdrPass->getOutputImage().pointer;
+			if (wireframeMode)
+			{
+				//result = voxelPass->getOutputImage().pointer;
+			}
+
 			PR_PROFILE("Render to screen");
 			renderPipeline->BindPipeline(nullptr);
-			static_cast<GLGUIShader*>(renderPipeline->getShader())->UpdateCustomUniforms(hdrPass->getOutputImage().pointer, -1);
+			static_cast<GLGUIShader*>(renderPipeline->getShader())->UpdateCustomUniforms(result, -1);
 			renderPipeline->RenderPipeline();
 			renderPipeline->UnbindPipeline();
 		}

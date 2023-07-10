@@ -12,7 +12,7 @@ namespace Prehistoric
 
 	enum ImageType
 	{
-		TEXTURE_2D, TEXTURE_ARRAY_2D, TEXTURE_CUBE_MAP
+		TEXTURE_2D, TEXTURE_ARRAY_2D, TEXTURE_CUBE_MAP, TEXTURE_3D
 	};
 
 	enum SamplerFilter
@@ -36,6 +36,7 @@ namespace Prehistoric
 		virtual ~Texture() = 0;
 
 		virtual void Bind(uint32_t slot = 0) const = 0;
+		virtual void BindImage(uint32_t slot = 0) const = 0;
 		virtual void Unbind() const = 0;
 
 		virtual void UploadTextureData(ImageData data) = 0;
@@ -62,7 +63,7 @@ namespace Prehistoric
 		Texture(Texture&) = delete;
 		Texture& operator=(const Texture&) = delete;
 	protected:
-		uint32_t width, height;
+		uint32_t width, height, depth = 0;
 		uint32_t ID;
 
 		ImageFormat format;

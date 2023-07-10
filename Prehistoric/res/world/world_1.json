@@ -4,7 +4,8 @@
     "directories": 
     {
         "models": "res/models/",
-        "textures": "res/textures/"
+        "textures": "res/textures/",
+        "configs": "res/config/"
     },
 
     "models": 
@@ -299,6 +300,20 @@
                     "value": [1, 0.3, 1, -1]
                 }
             ]
+        }
+    ],
+
+    "world_objects":
+    [
+        {
+            "name": "atmosphere",
+            "type": "scattering_atmosphere",
+            "sun": ""
+        },
+        {
+            "name": "terrain1",
+            "type": "terrain",
+            "config": "terrain_1.json"
         }
     ],
 

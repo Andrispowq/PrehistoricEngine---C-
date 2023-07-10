@@ -93,6 +93,28 @@ namespace Prehistoric
 		return { nullptr, (size_t)-1 };
 	}
 
+	PipelineHandle AssembledAssetManager::getPipelineFromHandle(size_t handle)
+	{
+		auto idx = pipelines.find(handle);
+		if (idx != pipelines.end())
+		{
+			return { idx->second.first.get(), handle };
+		}
+
+		return { nullptr, (size_t)-1 };
+	}
+
+	MaterialHandle AssembledAssetManager::getMaterialFromHandle(size_t handle)
+	{
+		auto idx = materials.find(handle);
+		if (idx != materials.end())
+		{
+			return { idx->second.first.get(), handle };
+		}
+
+		return { nullptr, (size_t)-1 };
+	}
+
 	PipelineHandle AssembledAssetManager::storePipeline(Pipeline* pipeline)
 	{
 		auto idx = pipelineHashMap.find(pipeline->GetHash());

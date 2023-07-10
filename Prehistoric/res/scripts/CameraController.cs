@@ -1,9 +1,12 @@
 using System;
+using Prehistoric;
 
 public class CameraController : BaseComponent
 {
     public static float SPEED = 5.0f;
     public static float ROTATE_SPEED = 180.0f;
+
+    public GameObject player = null;
 
     public override void OnInit()
     {
@@ -12,10 +15,20 @@ public class CameraController : BaseComponent
 
     public override void OnUpdate(float delta)
     {
-        if(HasComponent("CameraComponent"))
+        if(player == null)
+        {
+            GameObject root = GameObject.GetSceneRoot();
+            GameObject testLevel = GameObject.GetGameObject("testLevel", root);
+            player = GameObject.GetGameObject("Player", testLevel);
+        }
+
+        if (HasComponent("CameraComponent"))
         {
             Camera camera = Camera.Get();
-            //camera.forward = new Vector3f(0, 0, 1);
+
+            /*Transform player_transform = Callback.GetTransform(player);
+            player_transform.position.print();
+            camera.position = player_transform.position - new Vector3f(0, -5, 5);*/
 
             camera.Move(camera.GetLeft(), GetJoystickAxis(Input.JOYSTICK_1, Input.GAMEPAD_AXIS_LEFT_X) * SPEED * delta);
             camera.Move(camera.forward, GetJoystickAxis(Input.JOYSTICK_1, Input.GAMEPAD_AXIS_LEFT_Y) * SPEED * delta);

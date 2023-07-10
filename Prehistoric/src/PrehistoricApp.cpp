@@ -9,27 +9,21 @@ PrehistoricApp::PrehistoricApp()
 	using namespace Prehistoric;
 
 	spotifyIF = std::make_unique<SpotifyInterface>("res/private/access.json", false);
-	spotifyIF->Resume();
+	//spotifyIF->Resume();
 
-	//spotifyIF->PlayTrack("Bad Habits", 38.0f);
-	//spotifyIF->PlayTrack("Love me like you do", 118.0f);
-	//spotifyIF->PlayTrack("Mood (Remix) feat. Justin Bieber, J Balvin & iann dior", 30.0f);
-	//spotifyIF->PlayTrack("Back to you", 0.0f);
-	//spotifyIF->PlayTrack("Hate Me", 0.0f);
-	//spotifyIF->PlayTrack("Flip Reset", 58.0f);
-	//spotifyIF->PlayTrack("Hangover", 0.0f);
-	//spotifyIF->PlayTrack("Rajosan", 4.0f);
-	//spotifyIF->PlayTrackByID("playlist:37i9dQZF1EQncLwOalG3K7", 0);432
+	//spotifyIF->PlayTrackByID("playlist:37i9dQZF1EQncLwOalG3K7", 0);
+	//spotifyIF->PlayTrack("Daddy Yankee, Pitbull - Hot", 20.5f);
 
 	/*SpotifyAPI api = spotifyIF->GetAPI();
 	std::vector<PlaylistSimple> playlists = api.GetMyPlaylists().GetItems();
 	for (auto playlist : playlists)
 	{
-		if (playlist.GetName() == "Pop Mix")
+		if (playlist.GetName() == "Best mix")
 		{
-			int index = 0;
+			int index = 60;
 
-			std::vector<PlaylistTrack> pl_tracks = api.GetPlaylistTracks(playlist.GetOwner()->GetId(), playlist.GetId()).GetItems();
+			Pager<PlaylistTrack> tracks = api.GetPlaylistTracks(playlist.GetOwner()->GetId(), playlist.GetId());
+			std::vector<PlaylistTrack> pl_tracks = tracks.GetItems();
 			std::shared_ptr<Track> track = pl_tracks[index].GetTrack();
 			std::string artists;
 			for (size_t i = 0; i < track->GetArtists().size(); i++)
@@ -55,19 +49,13 @@ PrehistoricApp::PrehistoricApp()
 	audioRoot->AddChild("startupMusic", startupMusic);
 	engineLayer->getAudioEngine()->Update(0.0f);*/
 
-	scene = std::make_unique<PrehistoricScene>(/*"res/world/testLevel.wrld"*/"res/world/world_1.json", engineLayer->getRenderingEngine()->getWindow(),
+	scene = std::make_unique<PrehistoricScene>("res/world/world_1.json", engineLayer->getRenderingEngine()->getWindow(),
 		engineLayer->getRenderingEngine()->getCamera(), engineLayer->getAssetManager()); 
 
 	GameObject* sceneRoot = scene->getSceneRoot();
 	Camera* cam = engineLayer->getRenderingEngine()->getCamera();
 
-	if (__FrameworkConfig.api == OpenGL)
-	{
-		/*cam->setPosition(Vector3f(-178, 102, -47));
-		cam->RotateY(-80);
-		cam->RotateX(30);*/
-	}
-	else
+	if (__FrameworkConfig.api != OpenGL)
 	{
 		cam->setPosition(Vector3f(0, 5, -2));
 	}
@@ -136,13 +124,6 @@ PrehistoricApp::PrehistoricApp()
 		obj->SetScale({ 1.f, 1.f, 1.f });
 		obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, material));
 		sceneRoot->AddChild("someobj", obj);
-
-		/*GameObject* obj2 = new GameObject;
-		obj2->SetPosition({ -50, 10, 0 });
-		obj2->SetScale({ 1, 1, 1 });
-		obj2->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, material));
-
-		sceneRoot->AddChild("someobj2", obj2);*/
 	}
 }
 

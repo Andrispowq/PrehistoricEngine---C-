@@ -17,12 +17,14 @@ namespace Prehistoric
 			return GL_TEXTURE_2D_ARRAY;
 		else if (type == TEXTURE_CUBE_MAP)
 			return GL_TEXTURE_CUBE_MAP;
+		else if (type == TEXTURE_3D)
+			return GL_TEXTURE_3D;
 
 		return -1;
 	}
 
-	GLTexture::GLTexture(uint32_t width, uint32_t height, ImageFormat format, ImageType type, bool multisample, bool depth)
-		: Texture(width, height, format, type), multisample(multisample), depth(depth)
+	GLTexture::GLTexture(uint32_t width, uint32_t height, ImageFormat format, ImageType type, bool multisample, bool is_depth)
+		: Texture(width, height, format, type), multisample(multisample), is_depth(is_depth)
 	{
 		glGenTextures(1, &id);
 	}
@@ -30,6 +32,19 @@ namespace Prehistoric
 	GLTexture::GLTexture(uint32_t id, uint32_t width, uint32_t height, ImageFormat format, ImageType type)
 		: id(id), Texture(width, height, format, type)
 	{
+	}
+
+	GLTexture::GLTexture(uint32_t width, uint32_t height, uint32_t depth, ImageFormat format, ImageType type, bool multisample, bool is_depth)
+		: Texture(width, height, format, type), multisample(multisample), is_depth(is_depth)
+	{
+		this->depth = depth;
+		glGenTextures(1, &id);
+	}
+
+	GLTexture::GLTexture(uint32_t id, uint32_t width, uint32_t height, uint32_t depth, ImageFormat format, ImageType type)
+		: id(id), Texture(width, height, format, type)
+	{
+		this->depth = depth;
 	}
 
 	GLTexture::GLTexture()
@@ -51,6 +66,11 @@ namespace Prehistoric
 	void GLTexture::Unbind() const
 	{
 		glBindTexture(getTexType(type, multisample), 0);
+	}
+
+	void GLTexture::BindImage(uint32_t slot) const
+	{
+		glBindImageTexture(0, id, 0, GL_TRUE, 0, GL_READ_WRITE, GL_RGBA8);
 	}
 
 	void GLTexture::UploadTextureData(ImageData data)
@@ -118,25 +138,25 @@ namespace Prehistoric
 		case ClampToEdge:
 			glTexParameteri(type_, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(type_, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			if (type_ == GL_TEXTURE_CUBE_MAP)
+			if (type_ == GL_TEXTURE_CUBE_MAP || type_ == GL_TEXTURE_3D)
 				glTexParameteri(type_, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 			break;
 		case ClampToBorder:
 			glTexParameteri(type_, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 			glTexParameteri(type_, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-			if (type_ == GL_TEXTURE_CUBE_MAP)
+			if (type_ == GL_TEXTURE_CUBE_MAP || type_ == GL_TEXTURE_3D)
 				glTexParameteri(type_, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
 			break;
 		case Repeat:
 			glTexParameteri(type_, GL_TEXTURE_WRAP_S, GL_REPEAT);
 			glTexParameteri(type_, GL_TEXTURE_WRAP_T, GL_REPEAT);
-			if (type_ == GL_TEXTURE_CUBE_MAP)
+			if (type_ == GL_TEXTURE_CUBE_MAP || type_ == GL_TEXTURE_3D)
 				glTexParameteri(type_, GL_TEXTURE_WRAP_R, GL_REPEAT);
 			break;
 		case MirrorRepeat:
 			glTexParameteri(type_, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
 			glTexParameteri(type_, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-			if (type_ == GL_TEXTURE_CUBE_MAP)
+			if (type_ == GL_TEXTURE_CUBE_MAP || type_ == GL_TEXTURE_3D)
 				glTexParameteri(type_, GL_TEXTURE_WRAP_R, GL_MIRRORED_REPEAT);
 			break;
 		default:
@@ -174,11 +194,10 @@ namespace Prehistoric
 	Texture* GLTexture::Storage2DArray(uint32_t width, uint32_t height, uint32_t levels, ImageFormat format, SamplerFilter filter, TextureWrapMode wrapMode, bool generate_mipmaps)
 	{
 		bool depth = (format == D32_LINEAR) || (format == D32_SFLOAT);
-		Texture* texture = new GLTexture(width, height, format, TEXTURE_ARRAY_2D, false, depth);
+		Texture* texture = new GLTexture(width, height, levels, format, TEXTURE_ARRAY_2D, false, depth);
 		texture->Bind();
 
 		glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, getInternalFormat(format), width, height, levels, 0, getFormat(format), GL_FLOAT, nullptr);
-
 
 		constexpr float bordercolor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 		glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, bordercolor);
@@ -190,7 +209,7 @@ namespace Prehistoric
 
 	Texture* GLTexture::Storage3D(uint32_t width, uint32_t height, uint32_t levels, ImageFormat format, SamplerFilter filter, TextureWrapMode wrapMode, bool generate_mipmaps)
 	{
-		Texture* texture = new GLTexture(width, height, format, TEXTURE_CUBE_MAP);
+		Texture* texture = new GLTexture(width, height, 6, format, TEXTURE_CUBE_MAP, false, false);
 		texture->Bind();
 
 		for (uint32_t i = 0; i < 6; ++i)
@@ -198,6 +217,23 @@ namespace Prehistoric
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, getInternalFormat(format), width, height, 0, getFormat(format), GL_FLOAT, nullptr);
 		}
 		
+		texture->SamplerProperties(filter, wrapMode, generate_mipmaps);
+		texture->Unbind();
+		return texture;
+	}
+
+	Texture* GLTexture::StorageTrue3D(uint32_t width, uint32_t height, uint32_t depth, ImageFormat format, SamplerFilter filter, TextureWrapMode wrapMode, bool generate_mipmaps)
+	{
+		Texture* texture = new GLTexture(width, height, depth, format, TEXTURE_3D, false, false);
+		texture->Bind();
+
+		//const int levels = 7;
+		//glTexStorage3D(GL_TEXTURE_3D, levels, GL_RGBA8, width, height, depth);
+		//glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA8, width, height, depth, 0, GL_RGBA, GL_FLOAT, nullptr);
+		//glGenerateMipmap(GL_TEXTURE_3D);
+
+		glTexImage3D(GL_TEXTURE_3D, 0, /*getInternalFormat(format)*/GL_RGBA8, width, height, depth, 0, /*getFormat(format)*/GL_RGBA, GL_FLOAT, nullptr);
+
 		texture->SamplerProperties(filter, wrapMode, generate_mipmaps);
 		texture->Unbind();
 		return texture;
@@ -214,6 +250,8 @@ namespace Prehistoric
 			return GL_TEXTURE_2D_ARRAY;
 		else if (type == TEXTURE_CUBE_MAP)
 			return GL_TEXTURE_CUBE_MAP;
+		else if (type == TEXTURE_3D)
+			return GL_TEXTURE_3D;
 
 		PR_LOG_ERROR("Unsupported texture type: %u\n", type);
 

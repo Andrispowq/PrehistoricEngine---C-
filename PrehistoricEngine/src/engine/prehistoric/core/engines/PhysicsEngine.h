@@ -27,6 +27,7 @@ namespace Prehistoric
 		PhysicsEngine operator=(const PhysicsEngine& engine) = delete;
 	private:
 		std::vector<PhysicsComponent*> physicsComponents;
+		bool simulate = false;
 	};
 };
 

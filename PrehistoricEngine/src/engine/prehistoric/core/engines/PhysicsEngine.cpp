@@ -13,6 +13,17 @@ namespace Prehistoric
 
 	void PhysicsEngine::Update(float delta)
 	{
+		if (InputInstance.IsKeyPushed(PR_KEY_L))
+		{
+			simulate = !simulate;
+		}
+
+		if (!simulate)
+		{
+			physicsComponents.clear();
+			return;
+		}
+
 		for (size_t i = 0; i < physicsComponents.size(); i++)
 		{
 			auto elem = physicsComponents[i];

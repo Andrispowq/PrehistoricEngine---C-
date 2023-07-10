@@ -22,9 +22,6 @@ static void sun_move_function(Prehistoric::GameObject* object, float frameTime)
 	object->SetPosition({ x, y, 0 });
 }
 
-//spotifyIF->PlayTrack("Back to you", 0.0f);
-//spotifyIF->PlayTrack("Story of my life", 50.0f);
-
 /*SpotifyAPI api = spotifyIF->GetAPI();
 std::vector<PlaylistSimple> playlists = api.GetMyPlaylists().GetItems();
 for (auto playlist : playlists)

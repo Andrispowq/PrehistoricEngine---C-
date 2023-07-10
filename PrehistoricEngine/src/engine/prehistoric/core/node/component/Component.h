@@ -16,6 +16,7 @@ namespace Prehistoric
 		LightComponent,
 		PhysicsComponent,
 		ScriptComponent,
+		CameraComponent
 	};
 
 	class Component

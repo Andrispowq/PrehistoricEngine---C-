@@ -22,6 +22,8 @@ namespace Prehistoric
 		bool IsPrimary() const { return primary; }
 		void SetPrimary(bool primary) { this->primary = primary; }
 
+		static ComponentType getStaticComponentType() { return ComponentType::CameraComponent; }
+
 	private:
 		Camera* camera = nullptr;
 		bool primary = false;

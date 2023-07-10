@@ -487,6 +487,7 @@ namespace Prehistoric
 				nlohmann::json directories = file_json["directories"];
 				directoryModels = directories["models"];
 				directoryTextures = directories["textures"];
+				directoryConfigs = directories["configs"];
 			}
 
 			{
@@ -626,6 +627,47 @@ namespace Prehistoric
 					}
 
 					materials.insert(std::make_pair(nameMat, manager->storeMaterial(material)));
+				}
+			}
+
+			//Big world objects like sun, atmosphere, clouds, terrain, oceans, etc
+			{
+				std::vector<nlohmann::json> world_objects = file_json["world_objects"];
+				for (auto& world_object : world_objects)
+				{
+					std::string name = world_object["name"];
+					std::string type = world_object["type"];
+
+					if (type == "scattering_atmosphere")
+					{
+						GameObject* sun = new GameObject();
+
+						std::string sun_name = world_object["sun"];
+						if (sun_name == "")
+						{
+							//sun->setUpdateFunction(&Atmosphere::sunMoveFunction);
+							sun->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0.95f, 0.87f), 100.0f, 50000.0f, true, true));
+							Atmosphere::sunMoveFunction(sun, 0.0f);
+							root->AddChild("sun", sun);
+						}
+						else
+						{
+							PR_LOG_ERROR("ERROR: can't bind existing sun to scattering atmosphere yet!\n");
+						}
+
+						Atmosphere* atmosphere = new Atmosphere(window, manager);
+						atmosphere->setSun(sun->GetComponent<Light>());
+						root->AddChild(name, atmosphere);
+					}
+					else if (type == "terrain")
+					{
+						std::string config = world_object["config"];
+
+						Camera* camera = Application::Get().getEngineLayer()->getRenderingEngine()->getCamera();
+						Terrain* terrain = new Terrain(window, camera, manager, directoryConfigs + config);
+						terrain->UpdateQuadtree();
+						root->AddChild(name, terrain);
+					}
 				}
 			}
 

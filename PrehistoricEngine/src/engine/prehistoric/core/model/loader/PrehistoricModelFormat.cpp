@@ -7,7 +7,7 @@ namespace Prehistoric
 {
 	Model PrehistoricModelFormat::LoadModel(const std::string& path)
 	{
-		PR_PROFILE("Prehistoric::OBJLoader::LoadModel(), path: " + path);
+		PR_PROFILE("Prehistoric::PrehistoricModelFormat::LoadModel(), path: " + path);
 		Model model;
 
 		std::ifstream stream(path, std::ios::ate | std::ios::binary);

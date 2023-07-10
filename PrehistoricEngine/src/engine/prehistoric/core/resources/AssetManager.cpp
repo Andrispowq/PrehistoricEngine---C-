@@ -198,6 +198,12 @@ namespace Prehistoric
 		case Prehistoric::ShaderName::WaterWireframe:
 			name = "water_wireframe";
 			break;
+		case Prehistoric::ShaderName::Voxelisation:
+			name = "voxelisation";
+			break;
+		case Prehistoric::ShaderName::ConeTracing:
+			name = "cone_tracing";
+			break;
 		default:
 			name = "invalid";
 			break;

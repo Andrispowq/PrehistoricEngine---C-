@@ -6,6 +6,8 @@
 
 #include <filesystem>
 
+#include "prehistoric/core/node/component/scripting/InternalCalls.h"
+
 #include "prehistoric/application/Application.h"
 
 namespace Prehistoric
@@ -26,6 +28,8 @@ namespace Prehistoric
 	{
 		assembly = mono_domain_assembly_open(rootDomain, directory.c_str());
 		image = mono_assembly_get_image(assembly);
+
+		InternalCalls::RegisterInternalCalls();
 	}
 
 	void ScriptEngine::OnEvent(Event& event)

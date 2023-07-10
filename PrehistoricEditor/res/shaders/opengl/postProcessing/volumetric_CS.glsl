@@ -61,8 +61,9 @@ float getShadow(vec3 fragPosWorldSpace, vec3 lightDir, vec3 normal)
 	float currentDepth = projCoords.z;
 	if (currentDepth > 1.0)
 	{
-		return 0.0;
+		//return 0.0;
 	}
+
 	// calculate bias (based on depth map resolution and slope)
 	float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
 	if (layer == cascadeCount)
@@ -75,26 +76,13 @@ float getShadow(vec3 fragPosWorldSpace, vec3 lightDir, vec3 normal)
 	}
 
 	// PCF
-	float shadow = 0.0;
-	vec2 texelSize = 1.0 / vec2(textureSize(shadowMap, 0));
-	for (int x = -1; x <= 1; ++x)
-	{
-		for (int y = -1; y <= 1; ++y)
-		{
-			float pcfDepth = texture(
-				shadowMap,
-				vec3(projCoords.xy + vec2(x, y) * texelSize,
-					layer)
-				).r;
-			shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;
-		}
-	}
-	shadow /= 9.0;
+	float pcfDepth = texture(shadowMap, vec3(projCoords.xy, layer)).r;
+	float shadow = ((currentDepth - bias) > pcfDepth) ? 1.0 : 0.0;
 
 	// keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
 	if (projCoords.z > 1.0)
 	{
-		shadow = 0.0;
+		//shadow = 0.0;
 	}
 
 	return shadow;
@@ -103,11 +91,11 @@ float getShadow(vec3 fragPosWorldSpace, vec3 lightDir, vec3 normal)
 const float G_SCATTERING = 0.8;
 const int NB_STEPS = 50;
 
-vec3 RayleighScattering(float distance, float lightDotView, float intensity, /*float wavelength*/vec3 colour, float ior)
+vec3 RayleighScattering(float distance, float lightDotView, float intensity, float wavelength/*vec3 colour*/, float ior)
 {
 	vec3 result = vec3(intensity);
 	result *= ((1 + pow(lightDotView, 2)) / (2 * distance));
-	result *= colour;//result *= pow(((2 * PI) / wavelength), 4);
+	result *= pow(((2 * PI) / wavelength), 4);//colour;
 	result *= pow(((ior * ior - 1) / (ior * ior + 2)), 2);
 	return result;
 }
@@ -122,20 +110,15 @@ float MieScattering(float lightDotView)
 vec3 ComputeScattering(float lightDotView, float distance)
 {
 	float mie = MieScattering(lightDotView);
-	vec3 rayleigh = RayleighScattering(distance, lightDotView, 1000.0, /*700*/vec3(0.9, 0.6, 0.3), 1.1);
+	vec3 rayleigh = RayleighScattering(distance, lightDotView, 1000.0, 700/*vec3(0.9, 0.6, 0.3)*/, 1.1);
 
-	return vec3(mie)/* + rayleigh*/;
+	return vec3(mie) + rayleigh;
 }
 
 vec3 getFog(vec3 worldPosition, vec3 lightDir, vec3 lightColour, vec3 normal)
 {
 	vec3 startPosition = worldPosition;
 	vec3 endPosition = cameraPosition;
-
-	float[4][4] ditherPattern = { { 0.0f, 0.5f, 0.125f, 0.625f},
-		{ 0.75f, 0.22f, 0.875f, 0.375f},
-		{ 0.1875f, 0.6875f, 0.0625f, 0.5625},
-		{ 0.9375f, 0.4375f, 0.8125f, 0.3125} };
 
 	vec3 rayVector = endPosition - startPosition;
 	float rayLength = length(rayVector);
@@ -148,14 +131,10 @@ vec3 getFog(vec3 worldPosition, vec3 lightDir, vec3 lightColour, vec3 normal)
 	vec3 accumFog = vec3(0.0);
 	for (int i = 0; i < NB_STEPS; i++)
 	{
-		//float ditherValue = ditherPattern[int(time * 4) % 4][int(time * 16) % 4];
-		//ditherValue /= 1000.0;
-		//currentPosition += step * ditherValue;
-
 		float shadow = getShadow(currentPosition, lightDir, normal);
 		if (shadow == 0.0)
 		{
-			accumFog += ComputeScattering(dot(rayDirection, lightDir), length(sunPosition - currentPosition)) * /*stepLength */lightColour;
+			accumFog += ComputeScattering(dot(rayDirection, lightDir), length(sunPosition - currentPosition)) * /*stepLength */ lightColour;
 		}
 
 		currentPosition += step;
@@ -176,6 +155,6 @@ void main()
     vec3 normal = texture(normalImage, texCoord).rgb;
 
 	vec3 accumFog = getFog(positionMetallic.rgb, -normalize(sunPosition), vec3(0.9, 0.6, 0.3), normal);
-	vec3 total = sceneColour/* + accumFog*/;//mix(sceneColour, accumFog, 0.8);
+	vec3 total = sceneColour;//mix(sceneColour, accumFog, 0.8);// + accumFog;
     imageStore(outColour, x, vec4(total, 1.0));
 }

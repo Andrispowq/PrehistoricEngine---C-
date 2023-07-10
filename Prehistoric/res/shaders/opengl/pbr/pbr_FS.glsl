@@ -109,7 +109,7 @@ float getShadow(vec3 fragPosWorldSpace, vec3 lightDir, vec3 normal)
 	// perform perspective divide
 	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
 	// transform to [0,1] range
-	projCoords = projCoords * 0.5 + 0.5;;
+	projCoords = projCoords * 0.5 + 0.5;
 
 	// get depth of current fragment from light's perspective
 	float currentDepth = projCoords.z;
@@ -130,26 +130,28 @@ float getShadow(vec3 fragPosWorldSpace, vec3 lightDir, vec3 normal)
 	}
 
 	// PCF
+	float weights[] = { 0.0093, 0.028, 0.065, 0.0659, 0.1217, 0.19859, 0.1757, 0.1217, 0.0659, 0.028, 0.0093 };
 	float shadow = 0.0;
 	vec2 texelSize = 1.0 / vec2(textureSize(shadowMap, 0));
-	for (int x = -1; x <= 1; ++x)
+
+	for (int x = -5; x <= 5; ++x)
 	{
-		for (int y = -1; y <= 1; ++y)
+		for (int y = -5; y <= 5; ++y)
 		{
 			float pcfDepth = texture(
 				shadowMap,
 				vec3(projCoords.xy + vec2(x, y) * texelSize,
 					layer)
 				).r;
-			shadow += ((currentDepth - bias) > pcfDepth) ? 1.0 : 0.0;
+			shadow += (((currentDepth - bias) > pcfDepth) ? 1.0 : 0.0) * weights[x + 5] * weights[y + 5];
 		}
 	}
-	shadow /= 9.0;
+	//shadow /= 9.0;
 
 	// keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
 	if (projCoords.z > 1.0)
 	{
-		shadow = 0.0;
+		//shadow = 0.0;
 	}
 
 	return shadow;
@@ -283,15 +285,18 @@ void main()
     vec3 specular = prefilteredColour * (F * envBRDF.x + envBRDF.y);
 
 
-	vec3 irradianceR = texture(irradianceMap, -N).rgb;
+
+	/*vec3 irradianceR = texture(irradianceMap, -N).rgb;
 	vec3 diffuseR = irradianceR * albedoColour * occlusion;
 
 	vec3 prefilteredColourR = textureLod(prefilterMap, Refr, lod).rgb;
 	vec3 specularR = prefilteredColourR * (F * envBRDF.x + envBRDF.y);
 
+	vec3 ambient = (kD * diffuse * (1 - transmittance) + kD * diffuseR * transmittance + specular * (1 - transmittance) + specularR * transmittance);*/
 
 
-	vec3 ambient = (kD * diffuse * (1 - transmittance) + kD * diffuseR * transmittance + specular * (1 - transmittance) + specularR * transmittance);
+
+	vec3 ambient = kD * diffuse + specular;
     vec3 colour = ambient + Lo + clamp(albedoColour, vec3(0.05), vec3(1.0)) * max(emission, 0.0) * emissionFactor;
 
 	if (isnan(colour.r))

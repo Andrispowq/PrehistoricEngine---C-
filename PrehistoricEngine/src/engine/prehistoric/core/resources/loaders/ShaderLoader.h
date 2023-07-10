@@ -34,7 +34,9 @@ namespace Prehistoric
 		Inversion,
 		TwiddleFactors,
 		Water,
-		WaterWireframe
+		WaterWireframe,
+		Voxelisation,
+		ConeTracing
 	};
 
 	class ShaderLoader : public Loader

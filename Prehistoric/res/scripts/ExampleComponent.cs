@@ -1,4 +1,5 @@
 using System;
+using Prehistoric;
 
 public class ExampleComponent : BaseComponent
 {

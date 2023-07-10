@@ -24,6 +24,7 @@ namespace Prehistoric
 
 		std::string getComponentName() const { return componentName; }
 	private:
+		std::map<std::string, MonoMethod*> method_table;
 		std::string componentName = "";
 
 		MonoDomain* domain;

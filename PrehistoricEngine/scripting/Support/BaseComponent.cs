@@ -1,4 +1,5 @@
 using System;
+using Prehistoric;
 
 public class BaseComponent
 {
@@ -33,36 +34,36 @@ public class BaseComponent
 
     public void Log(string text)
     {
-        Callback.Log(text);
+        InternalCalls.ScriptLog(text);
     }
 
     public bool HasComponent(string name)
     {
-        return Callback.HasComponent(name);
+        return InternalCalls.HasComponent(name);
     }
 
     //type -> 4 bits, pressed/held/released -> 3 bits, isAxis -> 1 bit, joystickID -> 4 bits, reserved -> 20 bits
     public bool IsKeyPressed(int key)
     {
-        float ret = Callback.InputCheck(0x000000000, key);
+        float ret = InternalCalls.InputCheck(0x000000000, key);
         return (ret == 1.0f);
     }
 
     public bool IsKeyHeld(int key)
     {
-        float ret = Callback.InputCheck(0x000000010, key);
+        float ret = InternalCalls.InputCheck(0x000000010, key);
         return (ret == 1.0f);
     }
 
     public bool IsMouseButtonPressed(int button)
     {
-        float ret = Callback.InputCheck(0x000000001, button);
+        float ret = InternalCalls.InputCheck(0x000000001, button);
         return (ret == 1.0f);
     }
 
     public bool IsMouseButtonHeld(int button)
     {
-        float ret = Callback.InputCheck(0x000000011, button);
+        float ret = InternalCalls.InputCheck(0x000000011, button);
         return (ret == 1.0f);
     }
 
@@ -70,8 +71,8 @@ public class BaseComponent
     {
         int type = 0x000000082 | (joystickID << 8);
 
-        float ret = Callback.InputCheck(type, axis);
-        if(Math.Abs(ret) < 0.1f)
+        float ret = InternalCalls.InputCheck(type, axis);
+        if(Math.Abs(ret) < 0.2f)
         {
             return 0.0f;
         }
@@ -83,7 +84,7 @@ public class BaseComponent
     {
         int type = 0x000000002 | (joystickID << 8);
 
-        float ret = Callback.InputCheck(type, button);
+        float ret = InternalCalls.InputCheck(type, button);
         return (ret == 1.0f);
     }
 }

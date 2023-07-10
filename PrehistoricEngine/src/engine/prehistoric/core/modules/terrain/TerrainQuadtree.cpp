@@ -20,6 +20,18 @@ namespace Prehistoric
 		ShaderHandle shadowShader = manager->getAssetManager()->loadShader(ShaderName::TerrainShadow).value();
 		PipelineHandle shadowPipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shadowShader, vboHandle);
 
+		Material* mat = new Material(manager->getAssetManager(), "TerrainMaterial");
+		mat->addTexture("normalMap", maps->getNormalmapHandle());
+		mat->addTexture("heightMap", maps->getHeightmapHandle());
+		mat->addTexture("splatMap", maps->getSplatmapHandle());
+
+		for (int i = 0; i < maps->getMaterials().size(); i++)
+		{
+			mat->addInt("subMaterial" + std::to_string(i), maps->getMaterials()[i].handle);
+		}
+
+		material = manager->storeMaterial(mat);
+
 		for (int i = 0; i < rootNodes; i++)
 		{
 			for (int j = 0; j < rootNodes; j++)
@@ -30,7 +42,7 @@ namespace Prehistoric
 				ss << ", ";
 				ss << j;
 
-				AddChild(ss.str(), new(factory) TerrainNode(&factory, window, camera, manager, maps, pipeline, wireframePipeline, shadowPipeline,
+				AddChild(ss.str(), new(factory) TerrainNode(&factory, window, camera, manager, maps, material, pipeline, wireframePipeline, shadowPipeline,
 					{ i / (float)rootNodes, j / (float)rootNodes }, 0, { float(i), float(j) }));
 			}
 		}

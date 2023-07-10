@@ -10,6 +10,8 @@ namespace Prehistoric
 	CameraComponent::CameraComponent(bool primary)
 		: primary(primary)
 	{
+		type = ComponentType::CameraComponent;
+
 		camera = new ScriptableCamera();
 		camera->Update(nullptr, 0.0f);
 	}

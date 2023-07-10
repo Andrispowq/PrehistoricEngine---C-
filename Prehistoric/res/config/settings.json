@@ -91,7 +91,7 @@
     "water":
     {
         "scaleXZ": 6000.0,
-        "scaleY": 0.0,
+        "scaleY": 30.0,
         "tessellation":
         {
             "factor": 600,

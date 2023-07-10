@@ -1,5 +1,6 @@
 {
     "heightmap": "res/textures/terrain/heightmaps/hm0.bmp",
+    "location": [6000, 0, 0],
     "materials":
     [
         {
