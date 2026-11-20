@@ -27,6 +27,10 @@ newaction {
             emit('enable_language(OBJC OBJCXX)')
             emit('set(CMAKE_OBJCXX_STANDARD 17)')
             emit('set(CMAKE_OBJCXX_STANDARD_REQUIRED ON)')
+            -- Resolve the loader at configure time, including SDK-only installations.
+            emit('find_library(PREHISTORIC_VULKAN_LIBRARY NAMES vulkan HINTS "$ENV{VULKAN_SDK}/lib" REQUIRED)')
+            emit('get_filename_component(PREHISTORIC_VULKAN_LIBRARY_DIR "${PREHISTORIC_VULKAN_LIBRARY}" DIRECTORY)')
+            emit('list(APPEND CMAKE_BUILD_RPATH "${PREHISTORIC_VULKAN_LIBRARY_DIR}")')
         end
 
         local function nativeOpenAL(prj)
@@ -72,6 +76,10 @@ newaction {
                         emit(')')
                     end
                     values('target_include_directories', cfg.includedirs, true)
+                    values('target_link_directories', cfg.libdirs, true)
+                    for _, value in ipairs(cfg.undefines) do
+                        values('target_compile_options', { '-U' .. value }, false)
+                    end
                     values('target_compile_definitions', cfg.defines, false)
                 end
                 local cfg = premake.project.getconfig(prj, "Debug")
@@ -86,7 +94,8 @@ newaction {
                 if #cfg.links > 0 then
                     emit('target_link_libraries(' .. prj.name .. ' PUBLIC')
                     for _, link in ipairs(cfg.links) do
-                        if path.isabsolute(link) then emit('  ' .. quote('${CMAKE_CURRENT_SOURCE_DIR}/' .. path.getrelative(root, link)))
+                        if os.host() == "macosx" and link == "vulkan" then emit('  "${PREHISTORIC_VULKAN_LIBRARY}"')
+                        elseif path.isabsolute(link) then emit('  ' .. quote('${CMAKE_CURRENT_SOURCE_DIR}/' .. path.getrelative(root, link)))
                         else emit('  ' .. quote(link)) end
                     end
                     emit(')')

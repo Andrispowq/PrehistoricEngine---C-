@@ -891,7 +891,7 @@ namespace Prehistoric
 
 		std::array<float, 4> operator[](const int& index) const;
 
-		Matrix4f Invert() const;
+		[[nodiscard]] Matrix4f Invert() const;
 
 		static Matrix4f Identity();
 		static Matrix4f Zero();

@@ -1013,7 +1013,7 @@ std::array<float, 4> Matrix4f::operator[](const int& index) const
 	return arr;
 }
 
-inline Matrix4f Matrix4f::Invert() const
+Matrix4f Matrix4f::Invert() const
 {
 	float s0 = Get(0, 0) * Get(1, 1) - Get(1, 0) * Get(0, 1);
 	float s1 = Get(0, 0) * Get(1, 2) - Get(1, 0) * Get(0, 2);

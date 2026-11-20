@@ -81,8 +81,6 @@ project "PrehistoricEngine"
 
     links
     {
-        "%{wks.location}/PrehistoricEngine/Dependencies/lib/Vulkan/vulkan-1.lib",
-        "opengl32.lib",
         "GLFW",
         "GLAD",
         "ImGUI",
@@ -91,12 +89,20 @@ project "PrehistoricEngine"
     }
 
     filter "system:windows"
-        links { "%{wks.location}/PrehistoricEngine/Dependencies/lib/AL/OpenAL32.lib" }
+        links
+        {
+            "%{wks.location}/PrehistoricEngine/Dependencies/lib/Vulkan/vulkan-1.lib",
+            "%{wks.location}/PrehistoricEngine/Dependencies/lib/AL/OpenAL32.lib",
+            "opengl32.lib"
+        }
     filter {}
 
     filter "system:macosx"
         files { "PrehistoricEngine/src/engine/platform/macos/**.mm" }
-        links { "-framework Cocoa", "-framework UniformTypeIdentifiers" }
+        links { "-framework Cocoa", "-framework UniformTypeIdentifiers", "-framework OpenGL", "vulkan" }
+        if os.getenv("VULKAN_SDK") then
+            libdirs { path.join(os.getenv("VULKAN_SDK"), "lib") }
+        end
 
     filter "system:not macosx"
         removefiles { "PrehistoricEngine/src/engine/platform/macos/**" }
@@ -289,4 +295,12 @@ project "GLFW"
         }
         defines { "_GLFW_COCOA" }
         links { "-framework Cocoa", "-framework IOKit", "-framework CoreFoundation" }
+    filter {}
+
+-- The bundled curl import library is Windows-only.
+project "SpotifyAPI"
+    filter "system:macosx"
+        removelinks { "**.lib" }
+        undefines { "CURL_STATICLIB" }
+        links { "curl" }
     filter {}
