@@ -32,7 +32,7 @@ namespace Prehistoric
 		template<>
 		void addReference<Pipeline>(size_t handle)
 		{
-			auto& idx = pipelines.find(handle);
+			const auto& idx = pipelines.find(handle);
 			if (idx == pipelines.end())
 			{
 				PR_LOG_RUNTIME_ERROR("Could not find Pipeline handle %x\n", handle);
@@ -44,7 +44,7 @@ namespace Prehistoric
 		template<>
 		void addReference<Material>(size_t handle)
 		{
-			auto& idx = materials.find(handle);
+			const auto& idx = materials.find(handle);
 			if (idx == materials.end())
 			{
 				PR_LOG_RUNTIME_ERROR("Could not find Material handle %x\n", handle);
@@ -56,7 +56,7 @@ namespace Prehistoric
 		template<>
 		void removeReference<Pipeline>(size_t handle)
 		{
-			auto& idx = pipelines.find(handle);
+			const auto& idx = pipelines.find(handle);
 			if (idx == pipelines.end())
 			{
 				PR_LOG_RUNTIME_ERROR("Could not find Pipeline handle %x\n", handle);
@@ -83,7 +83,7 @@ namespace Prehistoric
 		template<>
 		void removeReference<Material>(size_t handle)
 		{
-			auto& idx = materials.find(handle);
+			const auto& idx = materials.find(handle);
 			if (idx == materials.end())
 			{
 				PR_LOG_RUNTIME_ERROR("Could not find Material handle %x\n", handle);

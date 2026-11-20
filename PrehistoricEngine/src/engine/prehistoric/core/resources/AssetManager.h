@@ -116,7 +116,7 @@ namespace Prehistoric
 		template<>
 		void addReference<Texture>(size_t handle)
 		{
-			auto& idx = textures.find(handle);
+			const auto& idx = textures.find(handle);
 			if (idx == textures.end())
 			{
 				PR_LOG_RUNTIME_ERROR("Could not find Texture handle %x\n", handle);
@@ -128,7 +128,7 @@ namespace Prehistoric
 		template<>
 		void addReference<VertexBuffer>(size_t handle)
 		{
-			auto& idx = vertexBuffers.find(handle);
+			const auto& idx = vertexBuffers.find(handle);
 			if (idx == vertexBuffers.end())
 			{
 				PR_LOG_RUNTIME_ERROR("Could not find VertexBuffer handle %x\n", handle);
@@ -140,7 +140,7 @@ namespace Prehistoric
 		template<>
 		void addReference<Shader>(size_t handle)
 		{
-			auto& idx = shaders.find(handle);
+			const auto& idx = shaders.find(handle);
 			if (idx == shaders.end())
 			{
 				PR_LOG_RUNTIME_ERROR("Could not find Shader handle %x\n", handle);
@@ -152,7 +152,7 @@ namespace Prehistoric
 		template<>
 		void removeReference<Texture>(size_t handle)
 		{
-			auto& idx = textures.find(handle);
+			const auto& idx = textures.find(handle);
 			if (idx == textures.end())
 			{
 				PR_LOG_RUNTIME_ERROR("Could not find Texture handle %x\n", handle);
@@ -179,7 +179,7 @@ namespace Prehistoric
 		template<>
 		void removeReference<VertexBuffer>(size_t handle)
 		{
-			auto& idx = vertexBuffers.find(handle);
+			const auto& idx = vertexBuffers.find(handle);
 			if (idx == vertexBuffers.end())
 			{
 				PR_LOG_RUNTIME_ERROR("Could not find VertexBuffer handle %x\n", handle);
@@ -206,7 +206,7 @@ namespace Prehistoric
 		template<>
 		void removeReference<Shader>(size_t handle)
 		{
-			auto& idx = shaders.find(handle);
+			const auto& idx = shaders.find(handle);
 			if (idx == shaders.end())
 			{
 				PR_LOG_RUNTIME_ERROR("Could not find Shader handle %x\n", handle);

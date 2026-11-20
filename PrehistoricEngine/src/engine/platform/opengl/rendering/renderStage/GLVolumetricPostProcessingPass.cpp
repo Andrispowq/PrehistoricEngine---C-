@@ -66,7 +66,8 @@ namespace Prehistoric
 		GLRenderer* rend = (GLRenderer*)renderer;
 
 		renderPipeline->BindPipeline(nullptr);
-		dynamic_cast<GLVolumetricPostProcessingShader*>(shader.pointer)->UpdateUniforms(rend->getMainPass()->getColourImage().pointer,
+		dynamic_cast<GLVolumetricPostProcessingShader*>(shader.pointer)->UpdateUniforms(
+			rend->getMainPass()->getColourImage().pointer,
 				rend->getMainPass()->getPositionMetallicImage().pointer,
 				rend->getMainPass()->getAlbedoRoughnessImage().pointer,
 				rend->getMainPass()->getNormalImage().pointer, camera, rend->getLights());

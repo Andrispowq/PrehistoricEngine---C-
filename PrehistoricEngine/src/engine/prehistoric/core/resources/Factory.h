@@ -1,9 +1,6 @@
 #ifndef FACTORY_H
 #define FACTORY_H
 
-#include <memory>
-#include <stdint.h>
-
 namespace Prehistoric
 {
 	template<typename T>
@@ -13,7 +10,7 @@ namespace Prehistoric
 		Factory(size_t max_allocations)
 			: max_allocations(max_allocations)
 		{
-			_ASSERT(sizeof(uint32_t) == 4); //We're relying on the fact that a uint32_t is 4 bytes/32 bits to mark used bits, so it's necessary we check it
+			PR_ASSERT(sizeof(uint32_t) == 4, "uint32_t must have 4 bytes of size!"); //We're relying on the fact that a uint32_t is 4 bytes/32 bits to mark used bits, so it's necessary we check it
 
 			num_of_uint32_ts = ((max_allocations / 32) % 1) ? uint32_t(max_allocations / 32) + 1 : max_allocations / 32;
 
@@ -24,7 +21,7 @@ namespace Prehistoric
 			memset(array, 0, max_allocations * sizeof(T)); //A uint32_t is always 4 bytes
 		}
 
-		Factory(const Factory&& factory)
+		Factory(Factory&& factory) noexcept
 		{
 			max_allocations = factory.max_allocations;
 			num_of_uint32_ts = factory.num_of_uint32_ts;
@@ -77,7 +74,7 @@ namespace Prehistoric
 			used_bits[i] &= ~(0x1 << j);
 		}
 
-		Factory& operator=(Factory&& factory)
+		Factory& operator=(Factory&& factory) noexcept
 		{
 			max_allocations = factory.max_allocations;
 			num_of_uint32_ts = factory.num_of_uint32_ts;

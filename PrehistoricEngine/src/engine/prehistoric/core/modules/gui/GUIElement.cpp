@@ -8,8 +8,8 @@
 
 namespace Prehistoric
 {
-	VertexBufferHandle GUIElement::vbo = { nullptr, -1 };
-	PipelineHandle GUIElement::pipeline = { nullptr, -1 };
+	VertexBufferHandle GUIElement::vbo = { nullptr, static_cast<size_t>(-1) };
+	PipelineHandle GUIElement::pipeline = { nullptr, static_cast<size_t>(-1) };
 
 	GUIElement::GUIElement(Window* window, AssembledAssetManager* manager, Vector3f colour, void* data, size_t dataSize, bool visible)
 		: window(window), manager(manager), colour(colour), data(data), dataSize(dataSize), visible(visible), type(GUIType::Element)

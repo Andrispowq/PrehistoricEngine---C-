@@ -119,7 +119,7 @@ namespace Prehistoric
 			EnvironmentMapRenderer::instance->RenderCube(camera);
 		}
 
-		auto& lights = rend->getLights();
+		const auto& lights = rend->getLights();
 		auto lightCullingPass = rend->getLightCullingPass();
 
 		for (auto pipeline : rend->getModels3D())

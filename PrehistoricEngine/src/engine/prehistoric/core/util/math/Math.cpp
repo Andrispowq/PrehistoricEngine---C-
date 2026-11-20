@@ -998,9 +998,9 @@ inline bool Matrix4f::operator==(const Matrix4f& v) const
 	return true;
 }
 
-std::array<float, 4> Matrix4f::operator[](int index) const
+std::array<float, 4> Matrix4f::operator[](const int& index) const
 {
-	std::array<float, 4> arr;
+	std::array<float, 4> arr{};
 
 	if (index > 3)
 		return arr;

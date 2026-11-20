@@ -39,7 +39,9 @@ namespace Prehistoric
 			AddUniform("cascadePlaneDistances[" + std::to_string(i) + "]");
 	}
 
-	void GLVolumetricPostProcessingShader::UpdateUniforms(Texture* scene, Texture* positionMetallic, Texture* albedoRoughness, Texture* normal, Camera* camera, std::vector<Light*>& lights) const
+	void GLVolumetricPostProcessingShader::UpdateUniforms(Texture* scene,
+		Texture* positionMetallic, Texture* albedoRoughness, Texture* normal,
+		Camera* camera, const std::vector<Light*>& lights) const
 	{
 		scene->Bind(0);
 		SetUniformi("scene", 0);

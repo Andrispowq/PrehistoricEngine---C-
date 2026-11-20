@@ -27,7 +27,7 @@ namespace Prehistoric
 
 		virtual void RecreatePipeline();
 
-		virtual uint64_t VKGraphicsPipeline::GetHash() override;
+		virtual uint64_t GetHash() override;
 
 		VkPipeline getGraphicsPipeline() const { return graphicsPipeline; }
 	private:

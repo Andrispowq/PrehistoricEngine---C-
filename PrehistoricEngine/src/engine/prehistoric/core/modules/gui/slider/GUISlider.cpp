@@ -5,8 +5,8 @@
 
 namespace Prehistoric
 {
-	VertexBufferHandle GUISlider::slider_vbo = { nullptr, -1 };
-	PipelineHandle GUISlider::slider_pipeline = { nullptr, -1 };
+	VertexBufferHandle GUISlider::slider_vbo = { nullptr, static_cast<size_t>(-1) };
+	PipelineHandle GUISlider::slider_pipeline = { nullptr, static_cast<size_t>(-1) };
 
 	GUISlider::GUISlider(Window* window, AssembledAssetManager* manager, float minValue, float maxValue, Vector3f colour, float* data, size_t dataSize, bool visible)
 		: GUIElement(window, manager, colour, data, dataSize, visible), minValue(minValue), maxValue(maxValue), progress(0.5f)
@@ -126,7 +126,7 @@ namespace Prehistoric
 		Vector3f max = pos + scale;
 		
 		Vector3f progress_centre = { min.x + (max.x - min.x) * progress, pos.y, pos.z };
-		Vector3f scaling = { min(scale.x / 15.0f, 0.125f / 15.0f), scale.y, 1 };
+		Vector3f scaling = { std::min(scale.x / 15.0f, 0.125f / 15.0f), scale.y, 1 };
 		slider_position = { progress_centre.x, progress_centre.y };
 		slider_scale = { scaling.x, scaling.y };
 		slider_transform = Matrix4f::Transformation(progress_centre, 0, scaling);

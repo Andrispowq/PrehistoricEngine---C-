@@ -20,9 +20,9 @@ namespace Prehistoric
 		: window(nullptr), camera(nullptr), renderer(nullptr)
 	{
 
-#if defined(PR_WINDOWS_64)
+#if defined(PR_WINDOWS_64) || defined(PR_PLATFORM_MACOS)
 		window = std::make_unique<WindowsWindow>();
-#elif
+#else
 		PR_LOG_RUNTIME_ERROR("Unsupported platform is being used!\n");
 #endif
 

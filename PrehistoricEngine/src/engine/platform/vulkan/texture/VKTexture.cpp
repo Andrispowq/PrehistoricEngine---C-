@@ -6,7 +6,7 @@ namespace Prehistoric
 	VKTexture::VKTexture(VKDevice* device, uint32_t width, uint32_t height, ImageFormat format, ImageType type)
 		: Texture(width, height, format, type), device(device), image{ nullptr }
 	{
-		uint32_t mipLevels = (uint32_t)(std::floor(std::log2(max(width, height)))) + 1;
+		uint32_t mipLevels = (uint32_t)(std::floor(std::log2(std::max(width, height)))) + 1;
 
 		image = std::make_unique<VKImage>(device, width, height, mipLevels, VKImage::getFormat(format), VK_IMAGE_TILING_OPTIMAL,
 			VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_SAMPLE_COUNT_1_BIT,

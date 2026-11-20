@@ -14,7 +14,8 @@
 
 #include "prehistoric/application/Application.h"
 
-#include <Windows.h>
+//TODO: should we include it?
+//#include <Windows.h>
 
 namespace Prehistoric
 {

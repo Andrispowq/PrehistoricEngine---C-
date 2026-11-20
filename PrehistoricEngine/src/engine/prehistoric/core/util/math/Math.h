@@ -2,9 +2,10 @@
 #define MATH_H
 
 #include "Includes.hpp"
-#include "platform/Platform.h"
 
+#if defined(PR_WINDOWS_64) && defined(PR_FAST_MATH)
 #include <xmmintrin.h>
+#endif
 
 #define PI 3.14159265358979323846264338327950288419716939
 
@@ -626,7 +627,6 @@ namespace Prehistoric
 		{
 			struct { T x, y, z; };
 			struct { T r, g, b; };
-			struct { T s, t, r; };
 		};
 	};
 
@@ -712,6 +712,8 @@ namespace Prehistoric
 
 		Vector4<T> negate() const { return Vector4<T>(-x, -y, -z, -w); };
 		Vector4<T> negated() { this->x = -x; this->y = -y; this->z = -z; this->w = -w; return *this; };
+
+		Vector3<T> xyz() const { return Vector3<T>(x, y, z); }
 
 		void print() const { printf("[ %f, %f, %f, %f ]\n", (T)x, (T)y, (T)z, (T)w); }
 
@@ -904,9 +906,9 @@ namespace Prehistoric
 
 		static Matrix4f OrthographicProjection(float l, float r, float b, float t, float n, float f);
 
-		std::array<float, 4> const getRow(const int i) const;
+		[[nodiscard]] std::array<float, 4> const getRow(int i) const;
 
-		inline float Get(int x, int y) const;
+		[[nodiscard]] inline float Get(int x, int y) const;
 		inline void Set(int x, int y, float val);
 
 		void print() const
