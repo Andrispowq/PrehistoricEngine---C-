@@ -4,7 +4,6 @@
 #include "Prehistoric.h"
 
 #include "EditorLayer.h"
-#include "SpotifyInterface.h"
 
 #include "prehistoric/core/scene/Scene.h"
 
@@ -16,7 +15,6 @@ public:
 
 private:
 	EditorLayer* editor;
-	std::unique_ptr<SpotifyInterface> spotifyIF;
 
 	friend class EditorLayer;
 };

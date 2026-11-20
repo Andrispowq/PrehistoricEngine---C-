@@ -23,7 +23,6 @@ IncludeDir["GLFW"] = "%{wks.location}/PrehistoricEngine/vendor/GLFW/include"
 IncludeDir["GLAD"] = "%{wks.location}/PrehistoricEngine/vendor/GLAD/include"
 IncludeDir["ImGUI"] = "%{wks.location}/PrehistoricEngine/vendor/ImGUI"
 IncludeDir["OpenAL"] = "%{wks.location}/PrehistoricEngine/vendor/OpenAL-Soft/include"
-IncludeDir["SpotifyAPI"] = "%{wks.location}/PrehistoricEngine/vendor/SpotifyAPI/SpotifyAPI/src"
 IncludeDir["Vulkan"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/Vulkan"
 IncludeDir["STB"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/stb"
 IncludeDir["tinyobj"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/tinyobjloader"
@@ -35,7 +34,6 @@ group "Dependencies"
     include "PrehistoricEngine/vendor/GLAD"
     include "PrehistoricEngine/vendor/ImGUI"
     include "PrehistoricEngine/vendor/OpenAL-Soft"
-    include "PrehistoricEngine/vendor/SpotifyAPI"
 group ""
 
 project "PrehistoricEngine"
@@ -70,7 +68,6 @@ project "PrehistoricEngine"
         "%{IncludeDir.GLAD}",
         "%{IncludeDir.ImGUI}",
         "%{IncludeDir.OpenAL}",
-        "%{IncludeDir.SpotifyAPI}",
         "%{IncludeDir.Vulkan}",
         "%{IncludeDir.STB}",
         "%{IncludeDir.tinyobj}",
@@ -84,8 +81,7 @@ project "PrehistoricEngine"
         "GLFW",
         "GLAD",
         "ImGUI",
-        "OpenAL",
-        "SpotifyAPI"
+        "OpenAL"
     }
 
     filter "system:windows"
@@ -167,7 +163,6 @@ project "PrehistoricEditor"
         "%{IncludeDir.GLAD}",
         "%{IncludeDir.ImGUI}",
         "%{IncludeDir.OpenAL}",
-        "%{IncludeDir.SpotifyAPI}",
         "%{IncludeDir.Vulkan}",
         "%{IncludeDir.STB}",
         "%{IncludeDir.tinyobj}",
@@ -188,7 +183,6 @@ project "PrehistoricEditor"
         "PrehistoricEngine"
     }    
     
-    postbuildcommands { "{COPY} \"%{wks.location}/PrehistoricEngine/Dependencies/lib/libcurl/libcurl.dll\"  ../bin/" .. outputdir .. "/PrehistoricEditor"  }
 
     filter "system:windows"
         systemversion "latest"
@@ -236,7 +230,6 @@ project "Prehistoric"
         "%{IncludeDir.GLAD}",
         "%{IncludeDir.ImGUI}",
         "%{IncludeDir.OpenAL}",
-        "%{IncludeDir.SpotifyAPI}",
         "%{IncludeDir.Vulkan}",
         "%{IncludeDir.STB}",
         "%{IncludeDir.tinyobj}",
@@ -256,7 +249,6 @@ project "Prehistoric"
         "PrehistoricEngine"
     }
     
-    postbuildcommands { "{COPY} \"%{wks.location}/PrehistoricEngine/Dependencies/lib/libcurl/libcurl.dll\"  ../bin/" .. outputdir .. "/Prehistoric"  }
 
     filter "system:windows"
         systemversion "latest"
@@ -295,12 +287,4 @@ project "GLFW"
         }
         defines { "_GLFW_COCOA" }
         links { "-framework Cocoa", "-framework IOKit", "-framework CoreFoundation" }
-    filter {}
-
--- The bundled curl import library is Windows-only.
-project "SpotifyAPI"
-    filter "system:macosx"
-        removelinks { "**.lib" }
-        undefines { "CURL_STATICLIB" }
-        links { "curl" }
     filter {}

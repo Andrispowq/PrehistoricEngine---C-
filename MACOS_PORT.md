@@ -6,9 +6,8 @@ the engine or claim a runnable macOS executable.
 
 ## Verified results
 
-- Premake generates all eight CMake targets; CMake configuration/generation succeeds.
-- GLFW (Cocoa), GLAD, ImGUI, and SpotifyAPI compile into native static libraries.
-  SpotifyAPI final linkage against native curl has not been validated.
+- Premake generates all seven main CMake targets; CMake configuration/generation succeeds.
+- GLFW (Cocoa), GLAD, and ImGUI compile into native static libraries.
 - The original full build failed compiling OpenAL because its vendored config
   enabled Windows/x86 features. This blocker is now addressed for macOS CMake:
   the pinned upstream build generates a native configuration with CoreAudio and
@@ -30,9 +29,8 @@ Paths below are relative to `PrehistoricEngine/src/engine/` unless stated otherw
 
 ### 1. Native dependency/build configuration
 
-- Root `premake5.lua`: move `vulkan-1.lib`, `opengl32.lib`, and
-  `libcurl.dll` copying into Windows-only filters. On macOS, discover and link
-  native Vulkan/MoltenVK and libcurl libraries. OpenAL is now supplied by its
+- Root `premake5.lua`: keep `vulkan-1.lib` and `opengl32.lib` in Windows-only filters. On macOS, discover and link
+  native Vulkan/MoltenVK libraries. OpenAL is now supplied by its
   upstream CMake target, with `OpenAL32.lib` restricted to Windows. Keep all libraries
   on the same architecture. Avoid linking both bundled OpenAL and a second
   OpenAL implementation. CMake currently retains these original dependencies
@@ -42,9 +40,6 @@ Paths below are relative to `PrehistoricEngine/src/engine/` unless stated otherw
   The old `vendor/OpenAL-Soft/include/config.h` remains Windows-specific and is
   no longer used by the macOS build. Use the `macos-arm64` preset to select arm64
   explicitly even if the terminal CMake runs under Rosetta.
-- `PrehistoricEngine/vendor/SpotifyAPI/premake5.lua` links bundled `libcurl.lib`
-  and defines `CURL_STATICLIB`. Discover native curl and match the static/shared
-  choice. Building an archive alone does not verify its final curl linkage.
 - `.gitmodules` names an OpenAL directory different from the actual
   `vendor/OpenAL-Soft` directory. Reconcile this before relying on recursive clones
   for reproducible dependency setup.
@@ -58,8 +53,8 @@ Paths below are relative to `PrehistoricEngine/src/engine/` unless stated otherw
   `dlopen`/`dlsym`/`dlclose`, and `raise(SIGTRAP)` for debugger breaks.
   Library handles are `void*`; `FREE_LIBRARY` returns zero on successful macOS
   close (unlike Windows `FreeLibrary`, which returns nonzero on success).
-- `prehistoric/application/EntryPoint.h`: allow the existing `main` on macOS;
-  currently it exists only under `PR_WINDOWS_64`.
+- `prehistoric/application/EntryPoint.h`: the engine entry point now supports
+  both Windows and macOS.
 - `platform/windows/WindowsWindow.cpp`: extract/reuse its largely GLFW-based
   window implementation as a shared desktop backend and remove the unconditional
   Windows header from that backend. Use a forward-compatible core context for

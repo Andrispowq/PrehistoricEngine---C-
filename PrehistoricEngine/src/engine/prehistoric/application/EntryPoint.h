@@ -3,7 +3,7 @@
 #include "platform/Platform.h"
 #include "Application.h"
 
-#ifdef PR_WINDOWS_64
+#if defined(PR_WINDOWS_64) || defined(PR_PLATFORM_MACOS)
 
 extern Prehistoric::Application* Prehistoric::CreateApplication();
 

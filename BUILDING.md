@@ -24,7 +24,7 @@ cmake --build --preset debug --parallel 4
 ```
 
 `premake5 cmake` generates the root `CMakeLists.txt` from the existing Premake
-projects. It exports all eight targets, includes, configuration-specific defines,
+projects. It exports all seven main targets, includes, configuration-specific defines,
 static-library link dependencies, and the engine precompiled header. GLFW also
 gets its Cocoa sources/frameworks on macOS. Debug, Release, and Distribution
 presets are supplied. CMake uses the compiler default architecture unless explicitly selected; use the
@@ -43,8 +43,7 @@ platform filters are baked for the generating host. Regenerate after changing
 Premake files, adding source files, or changing host OS. Generated CMake output,
 build directories, and local IDE settings are ignored by Git. The existing
 Visual Studio actions remain available. The exporter does not translate arbitrary
-Premake post-build commands or deployment rules; the Windows DLL copy steps are
-not a macOS deployment mechanism.
+Premake post-build commands or deployment rules; deployment must be configured separately.
 
 **Generation/configuration succeeds; a complete macOS application build does not
 yet succeed.** See [MACOS_PORT.md](MACOS_PORT.md) for verified build failures and

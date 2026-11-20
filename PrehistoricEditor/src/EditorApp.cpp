@@ -22,34 +22,6 @@ static void sun_move_function(Prehistoric::GameObject* object, float frameTime)
 	object->SetPosition({ x, y, 0 });
 }
 
-//spotifyIF->PlayTrack("Back to you", 0.0f);
-//spotifyIF->PlayTrack("Story of my life", 50.0f);
-
-/*SpotifyAPI api = spotifyIF->GetAPI();
-std::vector<PlaylistSimple> playlists = api.GetMyPlaylists().GetItems();
-for (auto playlist : playlists)
-{
-	if (playlist.GetName() == "Pop Mix")
-	{
-		int index = 0;
-
-		std::vector<PlaylistTrack> pl_tracks = api.GetPlaylistTracks(playlist.GetOwner()->GetId(), playlist.GetId()).GetItems();
-		std::shared_ptr<Track> track = pl_tracks[index].GetTrack();
-		std::string artists;
-		for (size_t i = 0; i < track->GetArtists().size(); i++)
-		{
-			artists += track->GetArtists()[i]->GetName();
-			if (i != (track->GetArtists().size() - 1)) artists += ", ";
-		}
-
-		PR_LOG_MESSAGE("Now playing %s: %s\n", artists.c_str(), track->GetName().c_str());
-
-		spotifyIF->PlayTrackByID("playlist:" + playlist.GetId(), index);
-	}
-}*/
-
-SpotifyInterface* sIF;
-
 EditorApp::EditorApp()
 {
 	using namespace Prehistoric;
@@ -64,11 +36,6 @@ EditorApp::EditorApp()
 
 	Camera* cam = engineLayer->getRenderingEngine()->getCamera();//new EditorCamera(); 
 	//engineLayer->getRenderingEngine()->ChangeCamera(cam);
-
-	spotifyIF = std::make_unique<SpotifyInterface>("res/private/access.json", true);
-	sIF = spotifyIF.get();
-	/*auto devs = spotifyIF->GetDevices();
-	spotifyIF->SetDevice(devs[0]->GetId(), true);*/
 
 	cam->setPosition(Vector3f(0, 5, -2));
 	cam->Update(engineLayer->getRenderingEngine()->getWindow(), 0.0f);
