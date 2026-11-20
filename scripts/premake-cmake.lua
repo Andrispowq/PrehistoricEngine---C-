@@ -3,7 +3,7 @@
 newaction {
     trigger = "cmake",
     description = "Generate host-specific CMake targets for CLion",
-    valid_kinds = { "StaticLib", "ConsoleApp" },
+    valid_kinds = { "StaticLib", "ConsoleApp", "Utility" },
     valid_languages = { "C", "C++" },
     onWorkspace = function(wks)
         local root = wks.location
@@ -34,15 +34,15 @@ newaction {
             emit('list(APPEND CMAKE_BUILD_RPATH "${PREHISTORIC_VULKAN_LIBRARY_DIR}")')
         end
 
-        local function nativeOpenAL(prj)
-            return os.host() == "macosx" and prj.name == "OpenAL"
+        local function usesCustomBuild(prj)
+            return (os.host() == "macosx" and prj.name == "OpenAL") or prj.name == "EngineResources"
         end
         if os.host() == "macosx" then
             emit('include(scripts/native-openal.cmake)')
         end
 
         for prj in premake.workspace.eachproject(wks) do
-            if not nativeOpenAL(prj) then
+            if not usesCustomBuild(prj) then
                 local cfg = premake.project.getconfig(prj, "Debug")
                 emit((cfg.kind == "StaticLib" and 'add_library(' .. prj.name .. ' STATIC' or 'add_executable(' .. prj.name))
                 for _, file in ipairs(cfg.files) do
@@ -53,14 +53,14 @@ newaction {
                 end
                 emit(')')
                 for _, file in ipairs(cfg.files) do
-                    if path.getextension(file) == '.mm' then
+                    if path.getextension(file) == '.mm' or path.getname(file) == 'EngineResources.cpp' then
                         emit('set_source_files_properties(' .. relative(file) .. ' PROPERTIES SKIP_PRECOMPILE_HEADERS ON)')
                     end
                 end
             end
         end
         for prj in premake.workspace.eachproject(wks) do
-            if not nativeOpenAL(prj) then
+            if not usesCustomBuild(prj) then
                 for cfg in premake.project.eachconfig(prj) do
                     local condition = '$<CONFIG:' .. cfg.buildcfg .. '>'
                     local function values(command, list, paths)
@@ -110,8 +110,11 @@ newaction {
                 end
             end
         end
+        emit('add_subdirectory(scripts/resources)')
+        emit('add_dependencies(Prehistoric EngineResources)')
+        emit('add_dependencies(PrehistoricEditor EngineResources)')
         emit('include(scripts/vulkan-compute-smoke.cmake)')
-        emit('message(STATUS "Generated build graph; see MACOS_PORT.md for platform support")')
+        emit('message(STATUS "Generated build graph; see docs/MACOS_PORT.md for platform support")')
         out:close()
     end
 }

@@ -46,7 +46,7 @@ Visual Studio actions remain available. The exporter does not translate arbitrar
 Premake post-build commands or deployment rules; deployment must be configured separately.
 
 **The macOS application targets build; full renderer support is still in progress.**
-[MACOS_PORT.md](MACOS_PORT.md) records the original port investigation and may
+[macOS port assessment](docs/MACOS_PORT.md) records the original port investigation and may
 include issues already resolved. To build just the core dependencies:
 
 ```sh
@@ -84,7 +84,7 @@ OpenAL headers and static-link requirements from its target.
 
 For an offline source checkout, pass
 `-DFETCHCONTENT_SOURCE_DIR_OPENAL_SOFT=/absolute/path/to/openal-soft-1.24.2`
-at configure time. The full engine still needs the other changes in MACOS_PORT.md.
+at configure time. The full engine still needs the other changes in [the macOS port assessment](docs/MACOS_PORT.md).
 
 ## Vulkan compute on macOS
 
@@ -162,3 +162,79 @@ Next work is ordered as follows:
 
 Application changes stay with the project author. Codex handles merge integration,
 tests, CI/CD and supporting maintenance, with feature development kept separate.
+
+## Shared fonts and shaders
+
+Fonts and shader sources now live only in `PrehistoricEngine/res/fonts` and
+`PrehistoricEngine/res/shaders`. The shared Vulkan PBR fragment shader retains the
+sample application's edited geometry term, `(roughness + 1)^2 / 2`.
+
+Install CMake 3.21+ and `glslc` from the Vulkan SDK. The resource build finds `glslc`
+on `PATH` or under `VULKAN_SDK/bin` (`Bin` on Windows). You can select it explicitly
+with `-DPREHISTORIC_GLSLC=/absolute/path/to/glslc` when configuring. A missing compiler
+fails configuration instead of silently using old checked-in SPIR-V.
+
+Regenerate and reload CMake after pulling this change:
+
+```sh
+premake5 cmake
+cmake --preset debug
+cmake --build --preset debug --target Prehistoric PrehistoricEditor --parallel 4
+```
+
+Both application targets depend on `EngineResources`. For resource-only work:
+
+```sh
+cmake --build --preset debug --target EngineResources
+# Or compile only the active Vulkan shaders:
+cmake --build --preset debug --target Shaders
+```
+
+The CMake build stages fonts, OpenGL GLSL and generated Vulkan SPIR-V under
+`<build>/bin/engine-resources/`. Vulkan basic/PBR vertex and fragment shaders compile
+incrementally for Vulkan 1.1. Entrypoint edits rebuild that shader; changes to
+other files in the Vulkan shader tree conservatively rebuild all active shaders
+so includes remain tracked even with SDK depfile bugs affecting paths with spaces.
+OpenGL continues to compile GLSL at runtime. Shader compilation failures fail the
+build. Do not check generated `.spv` files into the source resource tree.
+
+Native Premake Visual Studio builds use an `EngineResources` Utility project that
+invokes the same standalone CMake resource build. Both apps depend on this project,
+so shader-only edits are processed without requiring a C++ relink. CMake and `glslc`
+must also be available to Visual Studio. Resources are shared at
+`bin/<configuration>-<system>-<architecture>/engine-resources`, alongside the
+application output folders. Regenerate the solution with the existing batch script.
+The resource CMake generator follows the installed CMake default; its build tree is
+under `build/resources-<configuration>-<system>-<architecture>`.
+
+The loader searches `engine-resources` next to the executable, then its parent
+(the Premake layout). Set `PREHISTORIC_ENGINE_RESOURCES` to an explicit resource
+package directory to override discovery. An explicit override is authoritative;
+missing files produce an error rather than falling back to old application copies.
+Both fonts and shaders use this resolver, including OpenGL shader includes.
+Application working directories still need to be `Prehistoric/` or
+`PrehistoricEditor/` for the remaining project assets.
+
+A standalone resource build does not configure the engine or download OpenAL:
+
+```sh
+cmake -S scripts/resources -B build/resources -G Ninja
+cmake --build build/resources --target EngineResources
+cmake --install build/resources --prefix build/resource-package
+```
+
+Copy the installed `engine-resources` directory next to the deployed executable.
+Both Windows installers now include the generated resource directory; they default
+to `bin/Distribution-windows-x86_64/engine-resources` and accept an Inno Setup
+`/DEngineResourceDir=...` override. Build resources before packaging. Other app
+resources remain in their existing `res/` directories.
+
+The editor-only experimental Vulkan environment-map sources are preserved in the
+shared tree. `-DPREHISTORIC_EXPERIMENTAL_SHADERS=ON` additionally compiles
+`environmentMap.comp`; it does not enable or complete that rendering pipeline.
+Other unfinished environment shader variants remain source-only.
+
+Run `python3 tests/resource_pipeline.py` for isolated build/lookup checks. It needs
+CMake, Ninja, `glslc`, and a C++17 compiler, but no GPU. It checks no-op builds,
+shader/include edits, compiler errors, staged installation, both executable layouts,
+explicit overrides and missing resources. Full rendering still needs runtime checks.

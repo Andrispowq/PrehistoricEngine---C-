@@ -117,6 +117,8 @@ project "PrehistoricEngine"
 
     filter "files:**.mm"
         flags { "NoPCH" }
+    filter "files:**EngineResources.cpp"
+        flags { "NoPCH" }
     filter {}
 
     filter "kind:SharedLib"
@@ -300,3 +302,23 @@ project "GLFW"
         defines { "_GLFW_COCOA" }
         links { "-framework Cocoa", "-framework IOKit", "-framework CoreFoundation" }
     filter {}
+
+-- Native Premake builds use the same portable resource graph as CMake/CLion.
+-- A Utility dependency runs even when only a shader/font changed.
+group "Dependencies"
+project "EngineResources"
+    location "build/premake-resources"
+    kind "Utility"
+    local resourceBuild = '%{wks.location}/build/resources-' .. outputdir
+    local resourceOutput = '%{wks.location}/bin/' .. outputdir .. '/engine-resources'
+    prebuildcommands {
+        'cmake -S "%{wks.location}/scripts/resources" -B "' .. resourceBuild .. '" -DPREHISTORIC_RESOURCE_OUTPUT="' .. resourceOutput .. '" && ' ..
+        'cmake --build "' .. resourceBuild .. '" --config %{cfg.buildcfg} --target EngineResources'
+    }
+    filter {}
+group ""
+for _, app in ipairs({ "Prehistoric", "PrehistoricEditor" }) do
+    project(app)
+    dependson { "EngineResources" }
+    debugdir ("%{wks.location}/" .. app)
+end
