@@ -195,7 +195,8 @@ namespace Prehistoric
 			sets[i] = descriptorPool->getSet(i + first, instance_index)->getSets()[index];
 		}
 
-		vkCmdBindDescriptorSets(vkcmdbuff->getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, first, set_count, sets.data(), 0, nullptr);
+		VkPipelineBindPoint bindPoint = counter == 1 && shaderStages[0].stage == VK_SHADER_STAGE_COMPUTE_BIT ? VK_PIPELINE_BIND_POINT_COMPUTE : VK_PIPELINE_BIND_POINT_GRAPHICS;
+		vkCmdBindDescriptorSets(vkcmdbuff->getCommandBuffer(), bindPoint, pipelineLayout, first, set_count, sets.data(), 0, nullptr);
 	}
 
 	void VKShader::SetUniformi(const std::string& name, int value, size_t offset, uint32_t instance_index) const
@@ -255,18 +256,19 @@ namespace Prehistoric
 
 		std::vector<VkWriteDescriptorSet> sets(swapchain->getSwapchainImages().size());
 
+		VkDescriptorType type = descriptorPool->getUniform(name, instance_index)->getBinding().descriptorType;
+		VkDescriptorImageInfo imageInfo = {};
+		imageInfo.imageLayout = type == VK_DESCRIPTOR_TYPE_STORAGE_IMAGE ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imageInfo.imageView = tex->getImage()->getImageView();
+		imageInfo.sampler = type == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER ? tex->getSampler() : VK_NULL_HANDLE;
+
 		for (size_t i = 0; i < sets.size(); i++)
 		{
-			VkDescriptorImageInfo imageInfo = {};
-			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			imageInfo.imageView = tex->getImage()->getImageView();
-			imageInfo.sampler = tex->getSampler();
-
 			sets[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			sets[i].dstSet = descriptorPool->getSet(location.first, instance_index)->getSets()[i];
 			sets[i].dstBinding = location.second;
 			sets[i].dstArrayElement = 0;
-			sets[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			sets[i].descriptorType = type;
 			sets[i].descriptorCount = 1;
 			sets[i].pImageInfo = &imageInfo;
 		}

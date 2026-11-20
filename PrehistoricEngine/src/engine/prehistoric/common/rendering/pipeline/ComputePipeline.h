@@ -19,13 +19,15 @@ namespace Prehistoric
 	{
 	public:
 		ComputePipeline(Vector3u invocationSize) : invocationSize(invocationSize) {}
-		ComputePipeline() {}
+		ComputePipeline() : invocationSize(1, 1, 1) {}
 
 		virtual ~ComputePipeline() {}
 
 		std::unordered_map<uint32_t, std::pair<std::pair<Texture*, size_t>, AccessMask>>& getTextureBindingTable() { return textureBindingTable; }
 		std::unordered_map<uint32_t, std::pair<ShaderStorageBuffer*, AccessMask>>& getSSBOBindingTable() { return ssboBindingTable; }
 		Vector3u getInvocationSize() const { return invocationSize; }
+
+		void ResetBindings();
 
 		void addTextureBinding(uint32_t binding, Texture* texture, AccessMask accessMask, size_t mipLevel = 0) { textureBindingTable.insert(std::make_pair(binding, std::make_pair(std::make_pair(texture, mipLevel), accessMask))); }
 		void addSSBOBinding(uint32_t binding, ShaderStorageBuffer* ssbo, AccessMask accessMask) { ssboBindingTable.insert(std::make_pair(binding, std::make_pair(ssbo, accessMask))); }

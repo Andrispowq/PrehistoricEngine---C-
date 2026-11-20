@@ -30,7 +30,7 @@ namespace Prehistoric
 	{
 	public:
 		Pipeline(Window* window, AssetManager* manager, ShaderHandle shader);
-		Pipeline() : samples(0) {}
+		Pipeline() : window(nullptr), manager(nullptr), samples(0), buffer(nullptr) {}
 
 		virtual ~Pipeline();
 

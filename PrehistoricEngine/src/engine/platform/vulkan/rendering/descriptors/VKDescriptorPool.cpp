@@ -57,27 +57,19 @@ namespace Prehistoric
 			PR_LOG_RUNTIME_ERROR("Failed to create the pipeline layout in VkDescriptorPool::finalise(void)!\n");
 		}
 
-		std::vector<VkDescriptorPoolSize> _poolSizes(2);
-
-		uniformCount = 0;
-		textureCount = 0;
-
+		poolSizes.clear();
 		for (auto& set : sets)
 		{
 			for (auto& binding : set->getBindings())
 			{
-				if (binding->getBuffer() == nullptr) //It's either a uniform buffer or a texture descriptor now
-					textureCount++;
+				VkDescriptorType type = binding->getBinding().descriptorType;
+				auto size = std::find_if(poolSizes.begin(), poolSizes.end(), [type](const VkDescriptorPoolSize& size) { return size.type == type; });
+				if (size == poolSizes.end())
+					poolSizes.push_back({ type, numImages });
 				else
-					uniformCount++;
+					size->descriptorCount += numImages;
 			}
 		}
-
-		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		poolSizes[0].descriptorCount = uniformCount * numImages;
-
-		poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		poolSizes[1].descriptorCount = textureCount * numImages;
 
 		VkDescriptorPoolCreateInfo _poolCreateInfo = {};
 		_poolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -132,19 +124,19 @@ namespace Prehistoric
 				std::vector<VkWriteDescriptorSet> _writeSets;
 				_writeSets.reserve(numImages);
 
+				VkDescriptorBufferInfo _bufferInfo = {};
+				_bufferInfo.buffer = binding->getBuffer()->getBuffer();
+				_bufferInfo.offset = 0;
+				_bufferInfo.range = binding->getBuffer()->getSize();
+
 				for (uint32_t i = 0; i < numImages; i++)
 				{
-					VkDescriptorBufferInfo _bufferInfo = {};
-					_bufferInfo.buffer = binding->getBuffer()->getBuffer();
-					_bufferInfo.offset = 0;
-					_bufferInfo.range = binding->getBuffer()->getSize();
-
 					VkWriteDescriptorSet _writeSet = {};
 					_writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 					_writeSet.dstSet = set->getSets()[i];
 					_writeSet.dstBinding = binding->getBinding().binding;
 					_writeSet.dstArrayElement = 0;
-					_writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; //For now only uniform buffers are written
+					_writeSet.descriptorType = binding->getBinding().descriptorType;
 					_writeSet.descriptorCount = 1;
 					_writeSet.pBufferInfo = &_bufferInfo;
 
@@ -194,8 +186,8 @@ namespace Prehistoric
 		//Recreate the descriptor pool, so we can allocate enough sets
 		vkDestroyDescriptorPool(device->getDevice(), pool, nullptr);
 
-		poolSizes[0].descriptorCount *= 2;
-		poolSizes[1].descriptorCount *= 2;
+		for (auto& size : poolSizes)
+			size.descriptorCount *= 2;
 
 		VkDescriptorPoolCreateInfo _poolCreateInfo = {};
 		_poolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -252,19 +244,19 @@ namespace Prehistoric
 				std::vector<VkWriteDescriptorSet> _writeSets;
 				_writeSets.reserve(numImages);
 
+				VkDescriptorBufferInfo _bufferInfo = {};
+				_bufferInfo.buffer = binding->getBuffer()->getBuffer();
+				_bufferInfo.offset = 0;
+				_bufferInfo.range = binding->getBuffer()->getSize();
+
 				for (uint32_t i = 0; i < numImages; i++)
 				{
-					VkDescriptorBufferInfo _bufferInfo = {};
-					_bufferInfo.buffer = binding->getBuffer()->getBuffer();
-					_bufferInfo.offset = 0;
-					_bufferInfo.range = binding->getBuffer()->getSize();
-
 					VkWriteDescriptorSet _writeSet = {};
 					_writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 					_writeSet.dstSet = set->getSets()[i];
 					_writeSet.dstBinding = binding->getBinding().binding;
 					_writeSet.dstArrayElement = 0;
-					_writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; //For now only uniform buffers are written
+					_writeSet.descriptorType = binding->getBinding().descriptorType;
 					_writeSet.descriptorCount = 1;
 					_writeSet.pBufferInfo = &_bufferInfo;
 
@@ -292,7 +284,8 @@ namespace Prehistoric
 		}
 		else
 		{
-			VKBuffer* buffer = new VKBuffer(device, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+			VkBufferUsageFlags usage = type == StorageBuffer || type == StorageBufferDynamic ? VK_BUFFER_USAGE_STORAGE_BUFFER_BIT : VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+			VKBuffer* buffer = new VKBuffer(device, size, usage, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 			_binding->setBuffer(buffer);
 		}
 

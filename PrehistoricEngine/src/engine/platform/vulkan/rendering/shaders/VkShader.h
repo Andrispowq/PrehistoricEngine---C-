@@ -77,10 +77,10 @@ namespace Prehistoric
 		VkShaderModule* modules;
 		VkPipelineShaderStageCreateInfo* shaderStages;
 
-		mutable CommandBuffer* commandBuffer;
+		mutable CommandBuffer* commandBuffer = nullptr;
 
 		//Pipeline data
-		VkPipelineLayout pipelineLayout;
+		VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
 		VKDescriptorPool* descriptorPool;
 	};
 };

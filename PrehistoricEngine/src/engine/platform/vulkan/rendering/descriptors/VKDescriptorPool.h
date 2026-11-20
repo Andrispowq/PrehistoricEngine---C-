@@ -44,11 +44,9 @@ namespace Prehistoric
 		VKDevice* device;
 		VKSwapchain* swapchain;
 
-		std::array<VkDescriptorPoolSize, 2> poolSizes;
-		VkDescriptorPool pool;
+		std::vector<VkDescriptorPoolSize> poolSizes;
+		VkDescriptorPool pool = VK_NULL_HANDLE;
 
-		uint32_t uniformCount;
-		uint32_t textureCount;
 
 		uint32_t instance_count = 0;
 

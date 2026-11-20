@@ -35,7 +35,7 @@ namespace Prehistoric
 		_binding.binding = binding;
 		_binding.descriptorCount = 1;
 		_binding.descriptorType = GetDescriptorType(type);
-		_binding.stageFlags = stageFlags;
+		_binding.stageFlags = GetShaderStages(stageFlags);
 		_binding.pImmutableSamplers = nullptr; //For now
 
 		finalised = true;
@@ -66,6 +66,7 @@ namespace Prehistoric
 	{
 		uint32_t flags = 0;
 
+		if (stages & COMPUTE_SHADER) flags = flags | VK_SHADER_STAGE_COMPUTE_BIT;
 		if (stages & VERTEX_SHADER) flags = flags | VK_SHADER_STAGE_VERTEX_BIT;
 		if (stages & TESSELLATION_CONTROL_SHADER) flags = flags | VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
 		if (stages & TESSELLATION_EVALUATION_SHADER) flags = flags | VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;

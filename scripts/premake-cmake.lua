@@ -110,7 +110,8 @@ newaction {
                 end
             end
         end
-        emit('message(STATUS "Generated build graph: engine platform support is still Windows-only; see MACOS_PORT.md")')
+        emit('include(scripts/vulkan-compute-smoke.cmake)')
+        emit('message(STATUS "Generated build graph; see MACOS_PORT.md for platform support")')
         out:close()
     end
 }

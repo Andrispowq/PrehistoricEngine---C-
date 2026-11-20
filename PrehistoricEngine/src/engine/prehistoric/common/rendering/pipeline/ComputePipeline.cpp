@@ -1,2 +1,11 @@
 #include "Includes.hpp"
-#include "RayTracingPipeline.h"
+#include "ComputePipeline.h"
+
+namespace Prehistoric
+{
+	void ComputePipeline::ResetBindings()
+	{
+		textureBindingTable.clear();
+		ssboBindingTable.clear();
+	}
+};

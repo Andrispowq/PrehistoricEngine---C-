@@ -7,6 +7,7 @@
 #include "platform/opengl/rendering/pipeline/GLComputePipeline.h"
 
 #include "platform/vulkan/rendering/pipeline/VKGraphicsPipeline.h"
+#include "platform/vulkan/rendering/pipeline/VKComputePipeline.h"
 
 namespace Prehistoric
 {
@@ -26,11 +27,11 @@ namespace Prehistoric
 		uint64_t hash;
 		if (__FrameworkConfig.api == OpenGL)
 		{
-			hash = Pipeline::GetHash(APIHashFlags::GL, type, shaderHandle.handle, vboHandle.handle);
+			hash = Pipeline::GetHash(APIHashFlags::GL, type, shaderHandle.handle, type == PipelineTypeHashFlags::Compute ? 0 : vboHandle.handle);
 		}
 		else if (__FrameworkConfig.api == Vulkan)
 		{
-			hash = Pipeline::GetHash(APIHashFlags::VK, type, shaderHandle.handle, vboHandle.handle);
+			hash = Pipeline::GetHash(APIHashFlags::VK, type, shaderHandle.handle, type == PipelineTypeHashFlags::Compute ? 0 : vboHandle.handle);
 		}
 
 		auto idx = pipelineHashMap.find(hash);
@@ -57,6 +58,10 @@ namespace Prehistoric
 			if (__FrameworkConfig.api == OpenGL)
 			{
 				pipe = new GLComputePipeline(window, manager.get(), shaderHandle);
+			}
+			else if (__FrameworkConfig.api == Vulkan)
+			{
+				pipe = new VKComputePipeline(window, manager.get(), shaderHandle);
 			}
 			break;
 		case Prehistoric::PipelineTypeHashFlags::RayTracing:

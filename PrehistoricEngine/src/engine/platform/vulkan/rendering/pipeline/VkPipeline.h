@@ -24,6 +24,8 @@ namespace Prehistoric
 
 		virtual void RecreatePipeline() {}
 	protected:
+		VKPipeline() : device(nullptr), surface(nullptr), window(nullptr), swapchain(nullptr) {}
+
 		VKDevice* device;
 		VKSurface* surface;
 

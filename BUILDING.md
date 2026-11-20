@@ -86,3 +86,48 @@ OpenAL headers and static-link requirements from its target.
 For an offline source checkout, pass
 `-DFETCHCONTENT_SOURCE_DIR_OPENAL_SOFT=/absolute/path/to/openal-soft-1.24.2`
 at configure time. The full engine still needs the other changes in MACOS_PORT.md.
+
+## Vulkan compute on macOS
+
+The compute pipeline and `ResetBindings` were brought over from `beta-features`
+(`8571251`) and adapted to the current macOS branch. The asset factory now creates
+`VKComputePipeline` for Vulkan compute requests. Compute descriptors bind at the
+compute bind point; pools count each descriptor type, including storage buffers
+and storage images. Existing Apple GPU discovery and portability extensions are
+retained.
+
+To run the GPU check with the CLion build directory:
+
+```sh
+premake5 cmake
+cmake -S . -B cmake-build-debug
+cmake --build cmake-build-debug --target Prehistoric VulkanComputeSmoke --parallel 6
+./cmake-build-debug/bin/VulkanComputeSmoke ./cmake-build-debug/vulkan_compute.spv
+```
+
+`VulkanComputeSmoke` is optional and appears when `glslangValidator` is available.
+It requires the Vulkan SDK validation layer and GPU access. It uses the engine's
+actual `VKComputePipeline`, writes 256 integers to a storage buffer, verifies CPU
+readback, recreates the pipeline and repeats. Both Apple M1 devices exposed by the
+installed Vulkan drivers passed with zero validation errors. This is a headless
+compute check, not validation of the full renderer or its swapchain.
+
+Use the window/asset-manager constructor through `createPipeline(Compute, ...)`
+for engine shaders. The native-handle constructor supports compute jobs without
+a window; it borrows the device, shader module and pipeline layout. Keep those
+objects alive until after the pipeline is destroyed. Native-handle pipelines
+aren't asset-manager resources.
+
+`setInvocationSize` specifies workgroup counts, not individual invocation counts.
+Bind resources through the Vulkan shader's descriptor sets; the inherited OpenGL
+texture/SSBO binding tables are rejected rather than silently ignored. Storage
+images must have storage usage and be transitioned to `GENERAL` before use;
+`SetTexture` only updates descriptors. Dispatch outside a render pass on a
+compute-capable queue. The caller owns submission, memory barriers, queue-family
+transfers when needed, and waiting before pipeline recreation or destruction.
+See the Vulkan [dispatch requirements](https://docs.vulkan.org/refpages/latest/refpages/source/vkCmdDispatch.html)
+and [synchronization examples](https://docs.vulkan.org/guide/latest/synchronization_examples.html).
+
+The beta environment-map shader was not enabled: its image descriptors, shader
+path and renderer integration are unfinished. Ocean/FFT, environment-map rendering,
+Mono scripting and the full branch synchronization remain separate work.
