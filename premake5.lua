@@ -94,6 +94,21 @@ project "PrehistoricEngine"
         links { "%{wks.location}/PrehistoricEngine/Dependencies/lib/AL/OpenAL32.lib" }
     filter {}
 
+    filter "system:macosx"
+        files { "PrehistoricEngine/src/engine/platform/macos/**.mm" }
+        links { "-framework Cocoa", "-framework UniformTypeIdentifiers" }
+
+    filter "system:not macosx"
+        removefiles { "PrehistoricEngine/src/engine/platform/macos/**" }
+
+    filter "system:not windows"
+        -- Window and input are shared GLFW implementations despite their names.
+        removefiles { "PrehistoricEngine/src/engine/platform/windows/WindowsPlatformUtils.h" }
+
+    filter "files:**.mm"
+        flags { "NoPCH" }
+    filter {}
+
     filter "kind:SharedLib"
        defines { "PR_BUILD_DLL" }
        postbuildcommands { "{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Prehistoric" }

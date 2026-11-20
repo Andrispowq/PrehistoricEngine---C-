@@ -16,7 +16,8 @@ namespace Prehistoric
 
 		engineLayer = new CoreEngine();
 		engineLayer->LoadEngines();
-		engineLayer->getRenderingEngine()->getWindow()->setEventCallback(std::bind(&Application::OnEvent, this, std::placeholders::_1));
+		engineLayer->getRenderingEngine()->getWindow()->setEventCallback(
+			std::bind(&Application::OnEvent, this, std::placeholders::_1));
 
 		//Input initialisation
 		InputInstance.Init(engineLayer->getRenderingEngine()->getWindow());
@@ -96,9 +97,9 @@ namespace Prehistoric
 
 				for (auto it = layerStack.rbegin(); it != layerStack.rend(); ++it)
 				{
-					float passed = (float)(passedTime / NANOSECOND);
-					passed = (float)min(passed, frameTime);
-					(*it)->Update(passed);
+					double passed = static_cast<double>(passedTime) / NANOSECOND;
+					passed = std::min(passed, frameTime);
+					(*it)->Update(static_cast<float>(passed));
 				}
 
 				if (frameCounter >= NANOSECOND)

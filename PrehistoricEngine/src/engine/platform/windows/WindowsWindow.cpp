@@ -14,9 +14,6 @@
 
 #include "prehistoric/application/Application.h"
 
-//TODO: should we include it?
-//#include <Windows.h>
-
 namespace Prehistoric
 {
 	static bool window_size_callback(WindowResizeEvent& event)

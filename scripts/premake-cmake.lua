@@ -23,7 +23,11 @@ newaction {
         emit('if(NOT CMAKE_BUILD_TYPE)\n  set(CMAKE_BUILD_TYPE Debug CACHE STRING "" FORCE)\nendif()')
         emit('set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")')
         emit('set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")')
-        if os.host() == "macosx" then emit('enable_language(OBJC)') end
+        if os.host() == "macosx" then
+            emit('enable_language(OBJC OBJCXX)')
+            emit('set(CMAKE_OBJCXX_STANDARD 17)')
+            emit('set(CMAKE_OBJCXX_STANDARD_REQUIRED ON)')
+        end
 
         local function nativeOpenAL(prj)
             return os.host() == "macosx" and prj.name == "OpenAL"
@@ -43,6 +47,11 @@ newaction {
                     else error('Missing source: ' .. file) end
                 end
                 emit(')')
+                for _, file in ipairs(cfg.files) do
+                    if path.getextension(file) == '.mm' then
+                        emit('set_source_files_properties(' .. relative(file) .. ' PROPERTIES SKIP_PRECOMPILE_HEADERS ON)')
+                    end
+                end
             end
         end
         for prj in premake.workspace.eachproject(wks) do

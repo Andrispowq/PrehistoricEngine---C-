@@ -11,7 +11,7 @@ namespace Prehistoric
 	{
 		if (instance == nullptr)
 		{
-#if defined(PR_WINDOWS_64)
+#if defined(PR_WINDOWS_64) || defined(PR_PLATFORM_MACOS)
 			instance = new WindowsInput();
 #endif
 		}
