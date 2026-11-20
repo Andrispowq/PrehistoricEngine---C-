@@ -88,8 +88,23 @@ namespace Prehistoric
 		{
 			Material* new_mat = new Material(manager);
 
-			if(!material.diffuse_texname.empty()) new_mat->addTexture(ALBEDO_MAP, manager->loadTexture("res/textures/" + material.diffuse_texname, Anisotropic, Repeat).value());
-			if(!material.normal_texname.empty()) new_mat->addTexture(NORMAL_MAP, manager->loadTexture("res/textures/" + material.normal_texname, Anisotropic, Repeat).value());
+			if (!material.diffuse_texname.empty())
+			{
+				std::string location = "res/textures/" + material.diffuse_texname;
+				TextureHandle texture = manager->loadTexture(location, Anisotropic, Repeat).value();
+
+				new_mat->addTexture(ALBEDO_MAP, texture);
+				model.AddTextureLocation(texture.pointer, location);
+			}
+
+			if (!material.normal_texname.empty())
+			{
+				std::string location = "res/textures/" + material.normal_texname;
+				TextureHandle texture = manager->loadTexture(location, Anisotropic, Repeat).value();
+
+				new_mat->addTexture(NORMAL_MAP, texture);
+				model.AddTextureLocation(texture.pointer, location);
+			}
 
 			if(material.diffuse_texname.empty()) new_mat->addVector3f(COLOUR, { material.diffuse[0], material.diffuse[1], material.diffuse[2] });
 			new_mat->addVector4f(MROT, { /*material.metallic*/ 0, /*material.roughness*/ 0.3f, 1, -1 });

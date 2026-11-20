@@ -32,8 +32,8 @@ namespace Prehistoric
 		visibleLightIndicesBuffer = std::make_unique<GLShaderStorageBuffer>(window, nullptr, numberOfTiles * sizeof(VisibleIndex) * 1024);
 
 		static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
-		static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->addSSBOBinding(0, (ShaderStorageBuffer*)lightBuffer.get(), READ_ONLY);
-		static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->addSSBOBinding(1, (ShaderStorageBuffer*)visibleLightIndicesBuffer.get(), WRITE_ONLY);
+		static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->addSSBOBinding(0, (ShaderStorageBuffer*)lightBuffer.get(), (AccessMask)ComputeAccessFlags::READ_ONLY);
+		static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->addSSBOBinding(1, (ShaderStorageBuffer*)visibleLightIndicesBuffer.get(), (AccessMask)ComputeAccessFlags::WRITE_ONLY);
 	}
 
 	GLLightCullingPass::~GLLightCullingPass()
@@ -56,8 +56,8 @@ namespace Prehistoric
 		static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->removeSSBOBinding(0);
 		static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->removeSSBOBinding(1);
 		static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
-		static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->addSSBOBinding(0, (ShaderStorageBuffer*)lightBuffer.get(), READ_ONLY);
-		static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->addSSBOBinding(1, (ShaderStorageBuffer*)visibleLightIndicesBuffer.get(), WRITE_ONLY);
+		static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->addSSBOBinding(0, (ShaderStorageBuffer*)lightBuffer.get(), (AccessMask)ComputeAccessFlags::READ_ONLY);
+		static_cast<GLComputePipeline*>(lightCullingPipeline.pointer)->addSSBOBinding(1, (ShaderStorageBuffer*)visibleLightIndicesBuffer.get(), (AccessMask)ComputeAccessFlags::WRITE_ONLY);
 	}
 
 	void GLLightCullingPass::Render()

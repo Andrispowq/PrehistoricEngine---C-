@@ -26,7 +26,17 @@ namespace Prehistoric
 		BloomCombine,
 		BloomDecompose,
 		ShadowDepthPass,
-		VolumetricPostProcessing
+		VolumetricPostProcessing,
+		RayTracing,
+		Butterfly,
+		H0k,
+		Hkt,
+		Inversion,
+		TwiddleFactors,
+		Water,
+		WaterWireframe,
+		Voxelisation,
+		ConeTracing
 	};
 
 	class ShaderLoader : public Loader

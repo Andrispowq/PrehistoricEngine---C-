@@ -22,6 +22,9 @@ namespace Prehistoric
 		PipelineHandle createPipeline(PipelineTypeHashFlags type, ShaderHandle shaderHandle, VertexBufferHandle vboHandle = { nullptr, (size_t)-1 });
 		MaterialHandle getMaterial(size_t hash);
 
+		PipelineHandle getPipelineFromHandle(size_t handle);
+		MaterialHandle getMaterialFromHandle(size_t handle);
+
 		PipelineHandle storePipeline(Pipeline* pipeline);
 		MaterialHandle storeMaterial(Material* material);
 

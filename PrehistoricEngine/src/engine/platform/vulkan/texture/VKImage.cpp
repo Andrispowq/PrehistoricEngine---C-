@@ -122,7 +122,7 @@ namespace Prehistoric
 		stagingBuffer.Store(data.ptr.dataUC);
 		stagingBuffer.UnmapMemory();
 
-		VKUtil::TransitionImageLayout(device, image, /*GetFormat(format)*/VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
+		VKUtil::TransitionImageLayout(device, image, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
 		VKUtil::CopyBufferToImage(device, stagingBuffer.getBuffer(), image, width, height);
 		
 		if (mipLevels < 2)

@@ -25,6 +25,8 @@ namespace Prehistoric
 		Material* getMaterial() const { return material.pointer; }
 		MaterialHandle getMaterialHandle() const { return material; }
 
+		void setMaterial(MaterialHandle handle) { this->material.handle = material.handle; this->material.pointer = material.pointer; }
+
 		static ComponentType getStaticComponentType() { return ComponentType::RendererComponent; }
 
 	private:

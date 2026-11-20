@@ -69,6 +69,10 @@ namespace Prehistoric
 			std::cout << "\033" << colour;
 #endif
 			log_Internal(line, file, message, args...);
+
+#ifdef PR_COLOURED_LOGGING_FUNCTIONS
+			std::cout << "\033" << WHITE;
+#endif
 		}
 
 		template<typename... Args> static void log_RuntimeError(size_t line, const char* file, const std::string& colour, const std::string& message, Args... args)
@@ -77,6 +81,10 @@ namespace Prehistoric
 			std::cout << "\033" << colour;
 #endif
 			log_Internal(line, file, message, args...);
+
+#ifdef PR_COLOURED_LOGGING_FUNCTIONS
+			std::cout << "\033" << WHITE;
+#endif
 
 			DEBUG_BREAK();
 		}

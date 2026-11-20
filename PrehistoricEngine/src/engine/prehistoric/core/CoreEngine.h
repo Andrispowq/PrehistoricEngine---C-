@@ -5,6 +5,10 @@
 
 #include "prehistoric/core/engines/RenderingEngine.h"
 #include "prehistoric/core/engines/AudioEngine.h"
+#include "prehistoric/core/engines/PhysicsEngine.h"
+#ifdef PR_WINDOWS_64
+#include "prehistoric/core/engines/ScriptEngine.h"
+#endif
 
 #include "prehistoric/core/scene/Scene.h"
 
@@ -45,8 +49,13 @@ namespace Prehistoric
 
 		inline RenderingEngine* getRenderingEngine() { return renderingEngine.get(); }
 		inline AudioEngine* getAudioEngine() { return audioEngine.get(); }
+		inline PhysicsEngine* getPhysicsEngine() { return physicsEngine.get(); }
+#ifdef PR_WINDOWS_64
+		inline ScriptEngine* getScriptEngine() { return scriptEngine.get(); }
+#endif
 
 		inline GameObject* getRootObject() const { return root.get(); }
+		inline GameObject* getSceneRoot() const { return sceneRoot; }
 		inline AssembledAssetManager* getAssetManager() const { return manager.get(); }
 
 		inline EngineSettings* getEngineSettings() { return &engineSettings; }
@@ -68,6 +77,10 @@ namespace Prehistoric
 		//Engines
 		std::unique_ptr<RenderingEngine> renderingEngine;
 		std::unique_ptr<AudioEngine> audioEngine;
+		std::unique_ptr<PhysicsEngine> physicsEngine;
+#ifdef PR_WINDOWS_64
+		std::unique_ptr<ScriptEngine> scriptEngine;
+#endif
 
 		//Settings
 		EngineSettings engineSettings;

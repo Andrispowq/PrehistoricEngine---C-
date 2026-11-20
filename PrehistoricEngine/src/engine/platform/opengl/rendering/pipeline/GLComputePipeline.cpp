@@ -16,11 +16,11 @@ namespace Prehistoric
 		{
 			GLenum access;
 
-			if (binding.second.second == READ_ONLY)
+			if (binding.second.second == (uint32_t)ComputeAccessFlags::READ_ONLY)
 				access = GL_READ_ONLY;
-			else if (binding.second.second == WRITE_ONLY)
+			else if (binding.second.second == (uint32_t)ComputeAccessFlags::WRITE_ONLY)
 				access = GL_WRITE_ONLY;
-			else if (binding.second.second == READ_WRITE)
+			else if (binding.second.second == (uint32_t)ComputeAccessFlags::READ_WRITE)
 				access = GL_READ_WRITE;
 			else
 				access = GL_READ_WRITE;
@@ -64,7 +64,7 @@ namespace Prehistoric
 		if (hash)
 			return hash;
 
-		SetHashInternal(APIHashFlags::GL, PipelineTypeHashFlags::Graphics, shader.handle, 0);
+		SetHashInternal(APIHashFlags::GL, PipelineTypeHashFlags::Compute, shader.handle, 0);
 		return hash;
 	}
 };

@@ -42,7 +42,7 @@ namespace Prehistoric
 		{
 			GLComputePipeline* glPipe = reinterpret_cast<GLComputePipeline*>(pipeline.pointer);
 			glPipe->setInvocationSize({ N / 16, N / 16, 1 });
-			glPipe->addTextureBinding(0, normalmap.pointer, WRITE_ONLY);
+			glPipe->addTextureBinding(0, normalmap.pointer, (AccessMask)ComputeAccessFlags::WRITE_ONLY);
 		}
 		else if (__FrameworkConfig.api == Vulkan)
 		{

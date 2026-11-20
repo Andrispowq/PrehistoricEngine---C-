@@ -19,7 +19,7 @@ namespace Prehistoric
 	public:
 		TerrainNode() {}
 		TerrainNode(Factory<TerrainNode>* factory, Window* window, Camera* camera, AssembledAssetManager* manager, TerrainMaps* maps,
-			PipelineHandle pipeline, PipelineHandle wireframePipeline, PipelineHandle shadowPipeline,
+			MaterialHandle material, PipelineHandle pipeline, PipelineHandle wireframePipeline, PipelineHandle shadowPipeline,
 			const Vector2f& location, int lod, const Vector2f& index);
 		virtual ~TerrainNode();
 
@@ -98,7 +98,7 @@ namespace Prehistoric
 		RendererComponent* rendererComponent;
 		RendererComponent* wireframeRendererComponent;
 		RendererComponent* shadowComponent;
-		Material* material;
+		MaterialHandle material;
 
 		Transform localTransform;
 	};

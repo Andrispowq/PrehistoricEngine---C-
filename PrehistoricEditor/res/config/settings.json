@@ -3,7 +3,7 @@
     {
         "window":
         {
-            "name": "Prehistoric Engine",
+            "name": "Prehistoric Editor",
             "width": 1280,
             "height": 720,
             "fullScreen": false,
@@ -87,5 +87,60 @@
         },
         "lodRangeCount": 8,
         "lodRanges": [1750, 874, 386, 192, 100, 50, 0, 0]
+    },
+    "water":
+    {
+        "scaleXZ": 6000.0,
+        "scaleY": 0.0,
+        "tessellation":
+        {
+            "factor": 600,
+            "slope": 1.8,
+            "shift": 0.3
+        },
+        "lodRangeCount": 8,
+        "lodRanges": [1750, 874, 386, 192, 100, 50, 0, 0],        
+        "surfaceParameters":
+        {
+            "baseColour": [0.064, 0.085, 0.12],
+            "displacementScale": 8.0,
+            "displacementRange": 1000,
+            "tiling": 25,
+            "choppiness": 12.0,
+            "wavemotion": 80,
+            "normalStrength": 0.28,
+            "highDetailRange": 500,
+            "capillarStrength": 1,
+            "capillarDownsampling": 8
+        },
+        "reflectionParameters":
+        {
+            "fresnelFactor": 0.3,
+            "kReflection": 0.008,
+            "kRefraction": 0.008,
+            "reflectionBlendfactor": 0.7,
+            "dudvDownsampling": 1,
+            "underwaterBlurfactor": 0.015,
+            "distortionDelta": 1.0E-3
+        },
+        "lightParameters":
+        {
+            "specularFactor": 280,
+            "specularAmplifier": 8,
+            "emissionFactor": 3.0,
+            "diffuseEnable": true
+        },
+        "fftParameters":
+        {
+            "windDirection": [1, 1],
+            "windSpeed": 160,
+            "alignment": 2,
+            "fftResolution": 256,
+            "fftAmplitude": 2,
+            "fftL": 1000,
+            "fftCapillarWavesSuppression": 0.1,
+            "choppy": false, 
+            "tDelta": 0.004
+        }
     }
 }

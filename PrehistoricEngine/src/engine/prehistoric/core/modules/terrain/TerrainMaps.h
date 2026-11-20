@@ -20,6 +20,10 @@ namespace Prehistoric
 		Texture* getNormalmap() const { return normalmap.pointer; }
 		Texture* getSplatmap() const { return splatmap.pointer; }
 
+		TextureHandle getHeightmapHandle() const { return heightmap; }
+		TextureHandle getNormalmapHandle() const { return normalmap; }
+		TextureHandle getSplatmapHandle() const { return splatmap; }
+
 		float* getHeights() const { return heights; }
 
 		Vector3f getPosition() const { return position; }

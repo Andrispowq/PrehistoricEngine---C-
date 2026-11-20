@@ -39,6 +39,7 @@ namespace Prehistoric
 
 		std::string directoryModels;
 		std::string directoryTextures;
+		std::string directoryConfigs;
 
 		//Rendering stuff
 		std::unordered_map<std::string, TextureHandle> textures;

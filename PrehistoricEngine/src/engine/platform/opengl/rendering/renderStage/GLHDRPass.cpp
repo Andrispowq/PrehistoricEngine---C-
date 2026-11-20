@@ -27,7 +27,7 @@ namespace Prehistoric
 		manager->addReference<Pipeline>(hdrPipeline.handle);
 
 		static_cast<GLComputePipeline*>(hdrPipeline.pointer)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
-		static_cast<GLComputePipeline*>(hdrPipeline.pointer)->addTextureBinding(0, outputImage.pointer, WRITE_ONLY);
+		static_cast<GLComputePipeline*>(hdrPipeline.pointer)->addTextureBinding(0, outputImage.pointer, (AccessMask)ComputeAccessFlags::WRITE_ONLY);
 	}
 
 	GLHDRPass::~GLHDRPass()
@@ -54,7 +54,7 @@ namespace Prehistoric
 
 		static_cast<GLComputePipeline*>(hdrPipeline.pointer)->removeTextureBinding(0);
 		static_cast<GLComputePipeline*>(hdrPipeline.pointer)->setInvocationSize({ workGroupsX, workGroupsY, 1 });
-		static_cast<GLComputePipeline*>(hdrPipeline.pointer)->addTextureBinding(0, outputImage.pointer, WRITE_ONLY);
+		static_cast<GLComputePipeline*>(hdrPipeline.pointer)->addTextureBinding(0, outputImage.pointer, (AccessMask)ComputeAccessFlags::WRITE_ONLY);
 	}
 
 	void GLHDRPass::Render()

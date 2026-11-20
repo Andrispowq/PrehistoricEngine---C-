@@ -95,20 +95,20 @@ namespace Prehistoric
 
 	void GLTerrainShadowShader::UpdateMaterialUniforms(Material* material, uint32_t descriptor_index) const
 	{
-		TerrainMaps* maps = (TerrainMaps*)material;
+		material->getTexture("heightMap")->Bind(0);
+		SetUniformi("heightmap", 0);
+		material->getTexture("splatMap")->Bind(1);
+		SetUniformi("splatmap", 1);
 
-		maps->getHeightmap()->Bind(3);
-		SetUniformi("heightmap", 3);
-		maps->getSplatmap()->Bind(4);
-		SetUniformi("splatmap", 4);
-
-		uint32_t texUnit = 6;
+		uint32_t texUnit = 2;
 
 		for (unsigned int i = 0; i < 3; i++)
 		{
 			std::string uniformName = "materials[" + std::to_string(i) + "].";
 
-			MaterialHandle material = maps->getMaterials()[i];
+			int handle = material->getInt("subMaterial" + std::to_string(i));
+			AssembledAssetManager* manager = Application::Get().getEngineLayer()->getAssetManager();
+			MaterialHandle material = manager->getMaterialFromHandle((size_t)handle);
 
 			material->getTexture(MROT_MAP)->Bind(texUnit);
 			SetUniformi(uniformName + MROT_MAP, texUnit);

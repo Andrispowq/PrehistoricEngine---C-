@@ -36,6 +36,7 @@ namespace Prehistoric
 		Camera* camera;
 
 		TerrainMaps* maps;
+		MaterialHandle material;
 
 		Factory<TerrainNode> factory;
 	};

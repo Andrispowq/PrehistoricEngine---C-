@@ -62,8 +62,7 @@ void main()
 			
 			float height = gl_in[i].gl_Position.y;
 			
-			vec4 blendValues = texture(splatmap, mapCoord_GS[i]);
-			
+			vec4 blendValues = texture(splatmap, mapCoord_GS[i]);			
 			float[4] blendValueArray = float[](blendValues.r, blendValues.g, blendValues.b, blendValues.a);
 			
 			float scale = 0;

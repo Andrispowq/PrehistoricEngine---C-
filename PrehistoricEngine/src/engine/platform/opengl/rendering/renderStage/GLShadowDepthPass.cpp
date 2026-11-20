@@ -34,14 +34,14 @@ namespace Prehistoric
 
 		//TODO
 		float farPlane = __EngineConfig.rendererFarPlane;
-		shadowCascadeLevels = std::vector<float>{ farPlane / 50.0f, farPlane / 25.0f, farPlane / 10.0f, farPlane / 2.0f };
+		shadowCascadeLevels = std::vector<float>{ farPlane / 250.0f, farPlane / 100.0f, farPlane / 50.0f, farPlane / 25.0f, farPlane / 10.0f, farPlane / 2.0f};
 		cascadeDistances = shadowCascadeLevels;
 
 		matrices = new GLUniformBufferObject(window, nullptr, 16 * 16 * sizeof(float));
 		_matrices = matrices;
 
 		AssetManager* man = manager->getAssetManager();
-		depthTexture = man->storeTexture(GLTexture::Storage2DArray((uint32_t)SIZE, (uint32_t)SIZE, (int)shadowCascadeLevels.size() + 1, D32_LINEAR, Nearest, ClampToEdge, false));
+		depthTexture = man->storeTexture(GLTexture::Storage2DArray((uint32_t)SIZE, (uint32_t)SIZE, (int)shadowCascadeLevels.size() + 1, D32_LINEAR, Bilinear, ClampToEdge, false));
 		man->addReference<Texture>(depthTexture.handle);
 
 		depthShader = man->loadShader(ShaderName::ShadowDepthPass).value();
@@ -68,7 +68,7 @@ namespace Prehistoric
 
 		AssetManager* man = manager->getAssetManager();
 		man->removeReference<Texture>(depthTexture.handle);
-		depthTexture = man->storeTexture(GLTexture::Storage2DArray((uint32_t)SIZE, (uint32_t)SIZE, (int)shadowCascadeLevels.size() + 1, D32_LINEAR, Nearest, ClampToEdge, false));
+		depthTexture = man->storeTexture(GLTexture::Storage2DArray((uint32_t)SIZE, (uint32_t)SIZE, (int)shadowCascadeLevels.size() + 1, D32_LINEAR, Bilinear, ClampToEdge, false));
 		man->addReference<Texture>(depthTexture.handle);
 
 		framebuffer->Bind();
@@ -158,7 +158,7 @@ namespace Prehistoric
 				}
 				else
 				{
-					for (auto renderer_ : material.second)
+					/*for (auto renderer_ : material.second)
 					{
 						depthShader->UpdateObjectUniforms(renderer_->getParent());
 
@@ -166,7 +166,7 @@ namespace Prehistoric
 						{
 							vbo->Draw(nullptr, i);
 						}
-					}
+					}*/
 				}
 			}
 
@@ -230,8 +230,8 @@ namespace Prehistoric
 
 	Matrix4f GLShadowDepthPass::GetViewProjMatrix(Vector3f lightDir, float nearPlane, float farPlane)
 	{
-		Matrix4f cam_proj = Matrix4f::PerspectiveProjection(camera->getFov(), ((float)window->getWidth()) / ((float)window->getHeight()), nearPlane, farPlane);
-		Matrix4f cam_view = camera->getViewMatrix();
+		Matrix4f cam_proj = Matrix4f::PerspectiveProjection(renderer->getCamera()->getFov(), ((float)window->getWidth()) / ((float)window->getHeight()), nearPlane, farPlane);
+		Matrix4f cam_view = renderer->getCamera()->getViewMatrix();
 		std::vector<Vector4f> corners = GetFrustumCornersWorldSpace(cam_proj, cam_view);
 
 		//view matrix
@@ -267,7 +267,7 @@ namespace Prehistoric
 		}
 
 		//Tuneable
-		constexpr float zMult = 10.0f;
+		constexpr float zMult = 5.0f; //10.0f
 		if (minZ < 0)
 		{
 			minZ *= zMult;
@@ -294,7 +294,7 @@ namespace Prehistoric
 	{
 		std::vector<Matrix4f> ret;
 
-		for (size_t i = 0; i < shadowCascadeLevels.size() + 1; ++i)
+		for (size_t i = 0; i < (shadowCascadeLevels.size() + 1); ++i)
 		{
 			if (i == 0)
 			{

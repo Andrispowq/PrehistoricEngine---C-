@@ -174,6 +174,36 @@ namespace Prehistoric
 		case Prehistoric::ShaderName::VolumetricPostProcessing:
 			name = "volumetric_post_processing";
 			break;
+		case Prehistoric::ShaderName::RayTracing:
+			name = "ray_tracing";
+			break;
+		case Prehistoric::ShaderName::Butterfly:
+			name = "butterfly";
+			break;
+		case Prehistoric::ShaderName::Inversion:
+			name = "inversion";
+			break;
+		case Prehistoric::ShaderName::H0k:
+			name = "h0k";
+			break;
+		case Prehistoric::ShaderName::Hkt:
+			name = "hkt";
+			break;
+		case Prehistoric::ShaderName::TwiddleFactors:
+			name = "twiddle_factors";
+			break;
+		case Prehistoric::ShaderName::Water:
+			name = "water";
+			break;
+		case Prehistoric::ShaderName::WaterWireframe:
+			name = "water_wireframe";
+			break;
+		case Prehistoric::ShaderName::Voxelisation:
+			name = "voxelisation";
+			break;
+		case Prehistoric::ShaderName::ConeTracing:
+			name = "cone_tracing";
+			break;
 		default:
 			name = "invalid";
 			break;

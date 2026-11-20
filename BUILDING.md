@@ -45,10 +45,9 @@ build directories, and local IDE settings are ignored by Git. The existing
 Visual Studio actions remain available. The exporter does not translate arbitrary
 Premake post-build commands or deployment rules; deployment must be configured separately.
 
-**Generation/configuration succeeds; a complete macOS application build does not
-yet succeed.** See [MACOS_PORT.md](MACOS_PORT.md) for verified build failures and
-the source changes required to port the engine. To build the dependencies already
-working on macOS:
+**The macOS application targets build; full renderer support is still in progress.**
+[MACOS_PORT.md](MACOS_PORT.md) records the original port investigation and may
+include issues already resolved. To build just the core dependencies:
 
 ```sh
 cmake --build --preset debug --target GLFW GLAD ImGUI --parallel 4
@@ -128,6 +127,38 @@ transfers when needed, and waiting before pipeline recreation or destruction.
 See the Vulkan [dispatch requirements](https://docs.vulkan.org/refpages/latest/refpages/source/vkCmdDispatch.html)
 and [synchronization examples](https://docs.vulkan.org/guide/latest/synchronization_examples.html).
 
-The beta environment-map shader was not enabled: its image descriptors, shader
-path and renderer integration are unfinished. Ocean/FFT, environment-map rendering,
-Mono scripting and the full branch synchronization remain separate work.
+The beta environment-map shader is present after the branch merge, but is not
+enabled: its image descriptors, shader path and renderer integration are unfinished.
+The merge also retains the experimental ocean/FFT, physics, model/texture formats
+and scripting code; their presence does not mean they have been validated at runtime.
+
+
+## Branch workflow after the beta merge
+
+`master` is the shared integration branch. Create a short-lived feature branch from
+an up-to-date `master` for each change, review and validate it, merge it back, then
+delete the merged feature branch. Codex-created branches use `codex/` as a prefix.
+The merge commit retains the history of `beta-features`; the old branch is retired.
+
+The merge keeps the macOS platform, dialogs, Vulkan portability/device selection,
+compute pipeline, resource configuration and native OpenAL build. Vulkan texture
+loading expands beta RGB/grayscale `.prt` data to RGBA, and records the actual
+channel count for STB-decoded RGBA images. OpenGL-only atmosphere and terrain
+world objects are skipped by the Vulkan loader. Spotify remains
+removed. Generated Visual Studio projects are no longer tracked: regenerate them
+with Premake so they match the source and dependency graph.
+
+Beta's Mono scripting integration is Windows-only: its sources, engine hooks,
+import library and DLL copy step are excluded on macOS. The Windows implementation
+still expects its existing Mono installation/runtime layout. A macOS Mono port is
+separate work. Windows execution has not yet been verified on this host.
+
+Next work is ordered as follows:
+
+1. Diagnose the Vulkan viewport occupying the top-left quarter of the window.
+2. Diagnose camera translation while rotation works.
+3. Add tests for existing behaviour, CI/CD, and actual Windows build verification.
+4. Extend Vulkan rendering support.
+
+Application changes stay with the project author. Codex handles merge integration,
+tests, CI/CD and supporting maintenance, with feature development kept separate.

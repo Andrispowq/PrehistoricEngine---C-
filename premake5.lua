@@ -28,6 +28,7 @@ IncludeDir["STB"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/stb"
 IncludeDir["tinyobj"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/tinyobjloader"
 IncludeDir["tinygltf"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/tinygltfloader"
 IncludeDir["nlohmann_json"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/nlohmann_json"
+IncludeDir["Mono"] = "%{wks.location}/PrehistoricEngine/Dependencies/include/Mono"
 
 group "Dependencies"
     include "PrehistoricEngine/vendor/GLFW"
@@ -73,6 +74,7 @@ project "PrehistoricEngine"
         "%{IncludeDir.tinyobj}",
         "%{IncludeDir.tinygltf}",
         "%{IncludeDir.nlohmann_json}",
+        "%{IncludeDir.Mono}",
         "%{prj.location}/src/engine"
     }
 
@@ -87,6 +89,7 @@ project "PrehistoricEngine"
     filter "system:windows"
         links
         {
+            "%{wks.location}/PrehistoricEngine/Dependencies/lib/Mono/mono-2.0-sgen.lib",
             "%{wks.location}/PrehistoricEngine/Dependencies/lib/Vulkan/vulkan-1.lib",
             "%{wks.location}/PrehistoricEngine/Dependencies/lib/AL/OpenAL32.lib",
             "opengl32.lib"
@@ -105,7 +108,12 @@ project "PrehistoricEngine"
 
     filter "system:not windows"
         -- Window and input are shared GLFW implementations despite their names.
-        removefiles { "PrehistoricEngine/src/engine/platform/windows/WindowsPlatformUtils.h" }
+        removefiles
+        {
+            "PrehistoricEngine/src/engine/platform/windows/WindowsPlatformUtils.h",
+            "PrehistoricEngine/src/engine/prehistoric/core/engines/ScriptEngine.*",
+            "PrehistoricEngine/src/engine/prehistoric/core/node/component/scripting/**"
+        }
 
     filter "files:**.mm"
         flags { "NoPCH" }
@@ -168,6 +176,7 @@ project "PrehistoricEditor"
         "%{IncludeDir.tinyobj}",
         "%{IncludeDir.AudioFile}",
         "%{IncludeDir.nlohmann_json}",
+        "%{IncludeDir.Mono}",
         "%{prj.location}/src",
         "PrehistoricEngine/src/engine"
     }
@@ -186,6 +195,7 @@ project "PrehistoricEditor"
 
     filter "system:windows"
         systemversion "latest"
+        postbuildcommands { '{COPY} "%{wks.location}/PrehistoricEngine/Dependencies/lib/Mono/mono-2.0-sgen.dll" "%{cfg.targetdir}"' }
 
         defines
         {
@@ -234,6 +244,7 @@ project "Prehistoric"
         "%{IncludeDir.STB}",
         "%{IncludeDir.tinyobj}",
         "%{IncludeDir.nlohmann_json}",
+        "%{IncludeDir.Mono}",
         "%{prj.location}/src",
         "PrehistoricEngine/src/engine"
     }
@@ -252,6 +263,7 @@ project "Prehistoric"
 
     filter "system:windows"
         systemversion "latest"
+        postbuildcommands { '{COPY} "%{wks.location}/PrehistoricEngine/Dependencies/lib/Mono/mono-2.0-sgen.dll" "%{cfg.targetdir}"' }
 
         defines
         {

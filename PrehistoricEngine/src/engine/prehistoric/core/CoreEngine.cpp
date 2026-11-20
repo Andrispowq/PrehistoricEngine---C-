@@ -25,6 +25,10 @@ namespace Prehistoric
 
 		renderingEngine->PreRelease();
 		delete manager.release();
+#ifdef PR_WINDOWS_64
+		delete scriptEngine.release();
+#endif
+		delete physicsEngine.release();
 		delete audioEngine.release();
 		delete renderingEngine.release();
 
@@ -45,6 +49,10 @@ namespace Prehistoric
 		//Engines' initialisation
 		renderingEngine = std::make_unique<RenderingEngine>();
 		audioEngine = std::make_unique<AudioEngine>();
+		physicsEngine = std::make_unique<PhysicsEngine>();
+#ifdef PR_WINDOWS_64
+		scriptEngine = std::make_unique<ScriptEngine>();
+#endif
 
 		//Manager and the renderers in the rendering engine
 		manager = std::make_unique<AssembledAssetManager>(renderingEngine->getWindow());
@@ -62,6 +70,10 @@ namespace Prehistoric
 
 		renderingEngine->Update(frameTime);
 		audioEngine->Update(frameTime);
+		physicsEngine->Update(frameTime);
+#ifdef PR_WINDOWS_64
+		scriptEngine->Update(frameTime);
+#endif
 	}
 
 	void CoreEngine::Render()
@@ -93,6 +105,10 @@ namespace Prehistoric
 	{
 		renderingEngine->OnEvent(event);
 		audioEngine->OnEvent(event);
+		physicsEngine->OnEvent(event);
+#ifdef PR_WINDOWS_64
+		scriptEngine->OnEvent(event);
+#endif
 	}
 
 	void CoreEngine::SetScene(Scene* scene)

@@ -108,13 +108,11 @@ namespace Prehistoric
 
 	void GLTerrainShader::UpdateMaterialUniforms(Material* material, uint32_t descriptor_index) const
 	{
-		TerrainMaps* maps = (TerrainMaps*)material;
-
-		maps->getHeightmap()->Bind(3);
+		material->getTexture("heightMap")->Bind(3);
 		SetUniformi("heightmap", 3);
-		maps->getNormalmap()->Bind(4);
+		material->getTexture("normalMap")->Bind(4);
 		SetUniformi("normalmap", 4);
-		maps->getSplatmap()->Bind(5);
+		material->getTexture("splatMap")->Bind(5);
 		SetUniformi("splatmap", 5);
 
 		uint32_t texUnit = 6;
@@ -123,7 +121,9 @@ namespace Prehistoric
 		{
 			std::string uniformName = "materials[" + std::to_string(i) + "].";
 
-			MaterialHandle material = maps->getMaterials()[i];
+			int handle = material->getInt("subMaterial" + std::to_string(i));
+			AssembledAssetManager* manager = Application::Get().getEngineLayer()->getAssetManager();
+			MaterialHandle material = manager->getMaterialFromHandle((size_t)handle);
 
 			material->getTexture(ALBEDO_MAP)->Bind(texUnit);
 			SetUniformi(uniformName + ALBEDO_MAP, texUnit);

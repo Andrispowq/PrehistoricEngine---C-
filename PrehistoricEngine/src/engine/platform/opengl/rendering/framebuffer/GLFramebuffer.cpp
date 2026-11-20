@@ -51,7 +51,7 @@ namespace Prehistoric
 	void GLFramebuffer::addDepthAttachment(uint32_t width, uint32_t height, bool multisample)
 	{
 		this->width = width;
-		this->height = width;
+		this->height = height;
 
 		if (depthAttachment != -1)
 			glDeleteRenderbuffers(1, &depthAttachment);

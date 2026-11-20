@@ -29,6 +29,8 @@ namespace Prehistoric
 
 		Atmosphere(const Atmosphere&) = default;
 
+		static void sunMoveFunction(Prehistoric::GameObject* object, float frameTime);
+
 	private:
 		Window* window;
 

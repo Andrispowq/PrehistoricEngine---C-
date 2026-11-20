@@ -11,27 +11,21 @@ PrehistoricApp::PrehistoricApp()
 	GameObject* audioRoot = new GameObject();
 	engineLayer->getRootObject()->AddChild("audioRoot", audioRoot);
 
-	GameObject* startupMusic = new GameObject();
-	//startupMusic->AddComponent(AUDIO_COMPONENT, new AudioComponent("res/sounds/_Closer.wav", 75.0f, true, true));
-	//startupMusic->AddComponent("startup", new AudioComponent("res/sounds/_Eternal.wav", 0.0f, true, false, true));
-	//startupMusic->GetComponent<AudioComponent>()->PreUpdate(engineLayer);
+	/*GameObject* startupMusic = new GameObject();
+	startupMusic->AddComponent(AUDIO_COMPONENT, new AudioComponent("res/sounds/_Closer.wav", 75.0f, true, true));
+	startupMusic->AddComponent("startup", new AudioComponent("res/sounds/_Eternal.wav", 0.0f, true, false, true));
+	startupMusic->GetComponent<AudioComponent>()->PreUpdate(engineLayer);
 	
 	audioRoot->AddChild("startupMusic", startupMusic);
-	engineLayer->getAudioEngine()->Update(0.0f);
+	engineLayer->getAudioEngine()->Update(0.0f);*/
 
-	scene = std::make_unique<PrehistoricScene>(/*"res/world/testLevel.wrld"*/"res/world/world_1.json", engineLayer->getRenderingEngine()->getWindow(),
+	scene = std::make_unique<PrehistoricScene>("res/world/world_1.json", engineLayer->getRenderingEngine()->getWindow(),
 		engineLayer->getRenderingEngine()->getCamera(), engineLayer->getAssetManager()); 
 
 	GameObject* sceneRoot = scene->getSceneRoot();
 	Camera* cam = engineLayer->getRenderingEngine()->getCamera();
 
-	if (__FrameworkConfig.api == OpenGL)
-	{
-		/*cam->setPosition(Vector3f(-178, 102, -47));
-		cam->RotateY(-80);
-		cam->RotateX(30);*/
-	}
-	else
+	if (__FrameworkConfig.api != OpenGL)
 	{
 		cam->setPosition(Vector3f(0, 5, -2));
 	}
@@ -74,7 +68,15 @@ PrehistoricApp::PrehistoricApp()
 		slider3->SetScale({ 0.125f, 0.05f, 1 });
 		sceneRoot->AddChild("slider3", slider3);*/
 
-		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/myscene.obj").value();
+		GLRenderer* rend = (GLRenderer*)Application::Get().getEngineLayer()->getRenderingEngine()->getRenderer();
+
+		/*GUIElement* shadow_visualiser0 = new GUIElement(window, manager, Vector3f(-1), nullptr, 0, true);
+		shadow_visualiser0->setTexture(rend->getShadowDepthPass()->getDepthTexture().pointer);
+		shadow_visualiser0->SetPosition({ -0.7f, 0.7f, 0 });
+		shadow_visualiser0->SetScale({ 0.125f, 0.125f, 1 });
+		sceneRoot->AddChild("shadow_visualiser0", shadow_visualiser0);*/
+
+		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/prehistoric/myscene.pmf").value();
 		vbo->setFrontFace(FrontFace::CLOCKWISE);
 		ShaderHandle shader = man->loadShader(ShaderName::PBR).value();
 		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
@@ -89,16 +91,9 @@ PrehistoricApp::PrehistoricApp()
 
 		GameObject* obj = new GameObject;
 		obj->SetPosition({ 0, -50, 0 });
-		obj->SetScale({ 1.1f, 1.1f, 1.1f });
+		obj->SetScale({ 1.f, 1.f, 1.f });
 		obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, material));
 		sceneRoot->AddChild("someobj", obj);
-
-		/*GameObject* obj2 = new GameObject;
-		obj2->SetPosition({ -50, 10, 0 });
-		obj2->SetScale({ 1, 1, 1 });
-		obj2->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, material));
-
-		sceneRoot->AddChild("someobj2", obj2);*/
 	}
 }
 

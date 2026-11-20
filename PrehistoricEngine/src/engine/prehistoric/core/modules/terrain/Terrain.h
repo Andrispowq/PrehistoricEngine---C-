@@ -25,6 +25,8 @@ namespace Prehistoric
 		Window* window;
 		Camera* camera;
 
+		TerrainQuadtree* quadtree;
+
 		std::unique_ptr<TerrainMaps> maps;
 	};
 };

@@ -153,12 +153,13 @@ void main()
 	vec4 ray_eye = inverse(m_projection) * ray_clip;
 	ray_eye = vec4(ray_eye.xy, -1.0, 0.0);
 	vec3 ray_world = (inverse(m_view) * ray_eye).xyz;
-	ray_world.y += horizontalVerticalShift;
 	
 	if (isReflection == 1)
 	{
 		ray_world.y *= -1;
 	}
+	
+	ray_world.y += horizontalVerticalShift;
 	
 	vec3 out_LightScattering = vec3(0);
 
@@ -181,7 +182,7 @@ void main()
     out_Colour = 1.0 - exp(-out_Colour * exposure);
 
 	// no sun rendering when scene reflection
-	if(sunradius < sunRadius && isReflection == 0)
+	if(sunradius < sunRadius)
 	{
 		sunradius /= sunRadius;
 		float smoothRadius = smoothstep(0, 1, 0.1f / sunradius - 0.1f);

@@ -127,6 +127,10 @@ namespace Prehistoric
 		{
 		case RenderPriority::_3D:
 			register_model(models_3d, renderable);
+			if (renderable->hasReflection())
+			{
+				register_model(models_water, renderable);
+			}
 			break;
 		case RenderPriority::_TRANSPARENCY:
 			register_model(models_transparency, renderable);

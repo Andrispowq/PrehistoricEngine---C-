@@ -13,7 +13,10 @@ namespace Prehistoric
 		AudioComponent,
 		RenderableComponent,
 		RendererComponent,
-		LightComponent
+		LightComponent,
+		PhysicsComponent,
+		ScriptComponent,
+		CameraComponent
 	};
 
 	class Component
@@ -22,6 +25,8 @@ namespace Prehistoric
 		Component() : parent(nullptr), type(ComponentType::General) {}
 		virtual ~Component() {}
 
+		virtual void OnInit() {}
+
 		virtual void PreUpdate(CoreEngine* engine) {}
 		virtual void PreRender(Renderer* renderer) {}
 
@@ -29,7 +34,7 @@ namespace Prehistoric
 		inline void setParent(GameObject* parent) { this->parent = parent; }
 
 		virtual ComponentType getComponentType() const { return type; };
-		static ComponentType getStaticComponentType() { return ComponentType::General; };
+		static ComponentType getStaticComponentType() { return ComponentType::ScriptComponent; };
 	protected:
 		GameObject* parent;
 		ComponentType type;

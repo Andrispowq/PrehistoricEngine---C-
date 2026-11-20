@@ -5,6 +5,7 @@
 
 #include "platform/opengl/rendering/pipeline/GLGraphicsPipeline.h"
 #include "platform/opengl/rendering/pipeline/GLComputePipeline.h"
+#include "platform/opengl/rendering/pipeline/GLRayTracingPipeline.h"
 
 #include "platform/vulkan/rendering/pipeline/VKGraphicsPipeline.h"
 #include "platform/vulkan/rendering/pipeline/VKComputePipeline.h"
@@ -65,6 +66,10 @@ namespace Prehistoric
 			}
 			break;
 		case Prehistoric::PipelineTypeHashFlags::RayTracing:
+			if (__FrameworkConfig.api == OpenGL)
+			{
+				pipe = new GLRayTracingPipeline(window, manager.get(), shaderHandle);
+			}
 			break;
 		default:
 			break;
@@ -88,6 +93,28 @@ namespace Prehistoric
 		if (idx != materialHashMap.end())
 		{
 			return { materials[idx->second].first.get(), idx->second };
+		}
+
+		return { nullptr, (size_t)-1 };
+	}
+
+	PipelineHandle AssembledAssetManager::getPipelineFromHandle(size_t handle)
+	{
+		auto idx = pipelines.find(handle);
+		if (idx != pipelines.end())
+		{
+			return { idx->second.first.get(), handle };
+		}
+
+		return { nullptr, (size_t)-1 };
+	}
+
+	MaterialHandle AssembledAssetManager::getMaterialFromHandle(size_t handle)
+	{
+		auto idx = materials.find(handle);
+		if (idx != materials.end())
+		{
+			return { idx->second.first.get(), handle };
 		}
 
 		return { nullptr, (size_t)-1 };

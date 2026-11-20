@@ -31,6 +31,12 @@ namespace Prehistoric
 		TextureWrapMode wrapMode = Repeat;
 	};
 
+	struct RawTextureData
+	{
+		uint32_t width, height, channels, imageType, size;
+		char data[0];
+	};
+
 	class TextureLoader : public Loader
 	{
 	public:
@@ -41,6 +47,8 @@ namespace Prehistoric
 
 		static Texture* LoadTexture(Window* window, const std::string& path, SamplerFilter filter = Anisotropic, TextureWrapMode wrapMode = Repeat);
 		static ImageData LoadTextureData(const std::string& path);
+
+		static bool SavePrehistoricTexture(const std::string& path, RawTextureData* data);
 	};
 };
 

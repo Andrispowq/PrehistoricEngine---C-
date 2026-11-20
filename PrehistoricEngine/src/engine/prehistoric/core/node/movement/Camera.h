@@ -27,28 +27,37 @@ namespace Prehistoric
         inline Vector3f getForward() const { return forward; }
         inline Vector3f getUp() const { return up; }
 
+        inline void setPosition(Vector3f position) { this->position = position; }
+        inline void setForward(Vector3f forward) { this->forward = forward; }
+        inline void setUp(Vector3f up) { this->up = up; }
+
         inline float getFov() const { return fovY; }
 
         inline const Matrix4f& getViewMatrix() const { return viewMatrix; }
         inline const Matrix4f& getProjectionMatrix() const { return projectionMatrix; }
         inline const Matrix4f& getViewProjectionMatrix() const { return viewProjectionMatrix; }
 
+        inline const Matrix4f& getOriginalViewMatrix() const { return originalViewMatrix; }
+        inline const Matrix4f& getOriginalViewProjectionMatrix() const { return originalViewProjectionMatrix; }
+
+        inline void setViewMatrix(const Matrix4f& m) { this->viewMatrix = m; }
+        inline void setProjectionMatrix(const Matrix4f& m) { this->projectionMatrix = m; }
+        inline void setViewProjectionMatrix(const Matrix4f& m) { this->viewProjectionMatrix = m; }
+
         bool isChanged() const { return cameraMoved || cameraRotated; }
 
-        inline void setPosition(Vector3f pos) { this->position = pos; }
-
     protected:
-        std::vector<CameraInput> inputs;
+        std::vector<CameraInput> inputs = {};
 
-        Vector3f position;
-        Vector3f previousPosition;
-        Vector3f forward;
-        Vector3f previousForward;
-        Vector3f up;
+        Vector3f position = 0;
+        Vector3f previousPosition = 0;
+        Vector3f forward = 0;
+        Vector3f previousForward = 0;
+        Vector3f up = 0;
 
-        float movAmt;
-        float rotAmt;
-        float mouseSensitivity;
+        float movAmt = 0.0f;
+        float rotAmt = 0.0f;
+        float mouseSensitivity = 0.0f;
 
         Matrix4f viewMatrix;
         Matrix4f projectionMatrix;
@@ -56,15 +65,18 @@ namespace Prehistoric
         Matrix4f previousViewMatrix;
         Matrix4f previousViewProjectionMatrix;
 
-        bool cameraMoved;
-        bool cameraRotated;
+        Matrix4f originalViewMatrix;
+        Matrix4f originalViewProjectionMatrix;
 
-        float width;
-        float height;
-        float fovY;
+        bool cameraMoved = false;
+        bool cameraRotated = false;
 
-        Vector4f* frustumPlanes;
-        Vector3f* frustumCorners;
+        float width = 0.0f;
+        float height = 0.0f;
+        float fovY = 0.0f;
+
+        Vector4f* frustumPlanes = nullptr;
+        Vector3f* frustumCorners = nullptr;
     };
 };
 

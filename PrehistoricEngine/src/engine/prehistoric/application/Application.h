@@ -15,6 +15,7 @@
 #define __TerrainConfig __EngineSettings->terrainConfig
 #define __AtmosphereConfig __EngineSettings->atmosphereConfig
 #define __EnvironmentMapConfig __EngineSettings->environmentMapConfig
+#define __WaterConfig __EngineSettings->waterConfig
 
 namespace Prehistoric
 {

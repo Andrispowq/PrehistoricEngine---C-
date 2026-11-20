@@ -45,6 +45,12 @@ namespace Prehistoric
 			return 0;
 		}
 
-		return axes[(uint32_t)axis];
+		float ret = axes[(uint32_t)axis];
+		if (std::abs(ret) < 0.2f)
+		{
+			return 0.0f;
+		}
+
+		return ret;
 	}
 };
