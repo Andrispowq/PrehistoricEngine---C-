@@ -32,6 +32,7 @@ namespace Prehistoric
 		std::vector<std::unique_ptr<VKFramebuffer>> primaryFramebuffers;
 
 		bool commandBuffersReady = false;
+		bool frameReady = false;
 	};
 };
 

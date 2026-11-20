@@ -151,6 +151,12 @@ namespace Prehistoric
 			wnd->getEventCallback()((Event&)ev);
 		});
 
+		glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height)
+		{
+			Window* wnd = (Window*)glfwGetWindowUserPointer(window);
+			wnd->setResized(true);
+		});
+
 		glfwSetWindowCloseCallback(window, [](GLFWwindow* window)
 		{
 			Window* wnd = (Window*)glfwGetWindowUserPointer(window);

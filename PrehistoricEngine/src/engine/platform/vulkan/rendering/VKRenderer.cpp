@@ -51,25 +51,28 @@ namespace Prehistoric
 	void VKRenderer::PrepareRendering()
 	{
 		VKSwapchain* swapchain = (VKSwapchain*)window->getSwapchain();
-		swapchain->GetNextImageIndex();
+		frameReady = false;
+		int framebufferWidth, framebufferHeight;
+		glfwGetFramebufferSize((GLFWwindow*)window->getWindowHandle(), &framebufferWidth, &framebufferHeight);
+		if (framebufferWidth == 0 || framebufferHeight == 0)
+			return;
 
 		if (window->isResized())
 		{
 			PR_PROFILE("Resizing window");
 
-			delete renderpass.release();
-			primaryFramebuffers.clear();
-
-			uint32_t width = window->getWidth();
-			uint32_t height = window->getHeight();
-
 			VKContext* context = (VKContext*)window->getContext();
-			VKSwapchain* swapchain = (VKSwapchain*)window->getSwapchain();
-
-			camera->SetProjection(camera->getFov(), (float)width, (float)height);
-			swapchain->SetWindowSize(width, height);
-
 			VKDevice* device = (VKDevice*)context->getDevices();
+			vkDeviceWaitIdle(device->getDevice());
+
+			primaryFramebuffers.clear();
+			delete renderpass.release();
+
+			swapchain->SetWindowSize((uint32_t)framebufferWidth, (uint32_t)framebufferHeight);
+			VkExtent2D extent = swapchain->getSwapchainExtent();
+			uint32_t width = extent.width;
+			uint32_t height = extent.height;
+			camera->SetProjection(camera->getFov(), (float)width, (float)height);
 
 			renderpass = std::make_unique<VKRenderpass>(device, swapchain);
 			swapchain->setRenderpass(renderpass.get());
@@ -109,6 +112,10 @@ namespace Prehistoric
 			commandBuffersReady = false;
 		}
 
+		if (!swapchain->GetNextImageIndex())
+			return;
+		frameReady = true;
+
 		if (!commandBuffersReady)
 		{
 			BuildCommandBuffers();
@@ -124,16 +131,19 @@ namespace Prehistoric
 
 	void VKRenderer::EndRendering()
 	{
-		VKSwapchain* swapchain = (VKSwapchain*)window->getSwapchain();
-		uint32_t index = swapchain->getAquiredImageIndex();
-		VKCommandBuffer* buffer = commandPool->getCommandBuffer(index);
-
-		/*renderpass->EndRenderpass(buffer);
-		buffer->UnbindBuffer();*/
-
+		if (frameReady)
 		{
-			PR_PROFILE("Submitting");
-			window->Render(buffer);
+			VKSwapchain* swapchain = (VKSwapchain*)window->getSwapchain();
+			uint32_t index = swapchain->getAquiredImageIndex();
+			VKCommandBuffer* buffer = commandPool->getCommandBuffer(index);
+
+			/*renderpass->EndRenderpass(buffer);
+			buffer->UnbindBuffer();*/
+
+			{
+				PR_PROFILE("Submitting");
+				window->Render(buffer);
+			}
 		}
 
 		//Clear the lists
@@ -145,6 +155,9 @@ namespace Prehistoric
 
 	void VKRenderer::Render()
 	{
+		if (!frameReady)
+			return;
+
 		PR_PROFILE("Update uniforms");
 
 		VKSwapchain* swapchain = (VKSwapchain*)window->getSwapchain();

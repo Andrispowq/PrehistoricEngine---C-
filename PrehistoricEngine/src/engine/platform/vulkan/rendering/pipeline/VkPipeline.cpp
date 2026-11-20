@@ -19,5 +19,9 @@ namespace Prehistoric
 
 		this->window = window;
 		this->swapchain = swapchain;
+
+		VkExtent2D extent = swapchain->getSwapchainExtent();
+		setViewportSize({ (float)extent.width, (float)extent.height });
+		setScissorSize({ extent.width, extent.height });
 	}
 };
