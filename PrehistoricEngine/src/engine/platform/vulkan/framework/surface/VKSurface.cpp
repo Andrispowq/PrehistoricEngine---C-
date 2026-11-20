@@ -25,6 +25,7 @@ namespace Prehistoric
 		uint32_t formatCount = 0;
 		vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
 
+		swapchainSupport.formats.clear();
 		if (formatCount != 0)
 		{
 			swapchainSupport.formats.resize(formatCount);
@@ -34,6 +35,7 @@ namespace Prehistoric
 		uint32_t presentModeCount;
 		vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
 
+		swapchainSupport.presentModes.clear();
 		if (presentModeCount != 0)
 		{
 			swapchainSupport.presentModes.resize(presentModeCount);

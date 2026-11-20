@@ -48,9 +48,9 @@ namespace Prehistoric
 		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice physDev = VK_NULL_HANDLE);
 
 	private:
-		VkPhysicalDevice physicalDevice;
-		VkDevice device;
-		QueueFamilyIndices indices;
+		VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+		VkDevice device = VK_NULL_HANDLE;
+		QueueFamilyIndices indices = {};
 
 		VKSurface* _surface;
 

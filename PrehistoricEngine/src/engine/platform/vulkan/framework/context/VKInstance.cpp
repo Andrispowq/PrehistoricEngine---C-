@@ -1,6 +1,9 @@
 #include "Includes.hpp"
 #include "VKInstance.h"
 
+#include <cstring>
+#include <stdexcept>
+
 #include "platform/Platform.h"
 
 #include "prehistoric/application/Application.h"
@@ -40,6 +43,14 @@ namespace Prehistoric
 		//Extensions
 		auto extensions = GetRequiredExtensions();
 
+#if defined(PR_PLATFORM_MACOS)
+		for (const auto& extension : extensions)
+		{
+			if (strcmp(extension, VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME) == 0)
+				createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+		}
+#endif
+
 		createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 		createInfo.ppEnabledExtensionNames = extensions.data();
 
@@ -69,7 +80,7 @@ namespace Prehistoric
 		//The instance creation
 		if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
 		{
-			PR_LOG_RUNTIME_ERROR("Failed to create vulkan instance!\n");
+			throw std::runtime_error("Failed to create Vulkan instance!");
 		}
 
 #if defined(PR_ENABLE_DEBUGGING) && defined(PR_VK_ENABLE_VALIDATION_LAYERS)
@@ -146,7 +157,28 @@ namespace Prehistoric
 		const char** glfwExtensions;
 		glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
+		if (!glfwExtensions || glfwExtensionCount == 0)
+			throw std::runtime_error("GLFW could not find Vulkan surface extensions!");
+
 		std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+
+#if defined(PR_PLATFORM_MACOS)
+		uint32_t extensionCount = 0;
+		if (vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr) != VK_SUCCESS)
+			throw std::runtime_error("Failed to enumerate Vulkan instance extensions!");
+		std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+		if (vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, availableExtensions.data()) != VK_SUCCESS)
+			throw std::runtime_error("Failed to enumerate Vulkan instance extensions!");
+
+		for (const auto& extension : availableExtensions)
+		{
+			if (strcmp(extension.extensionName, VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME) == 0)
+			{
+				extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+				break;
+			}
+		}
+#endif
 
 		if (__FrameworkConfig.apiVulkanUseValidationLayers)
 		{

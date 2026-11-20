@@ -117,11 +117,18 @@ namespace Prehistoric
 		}
 
 #if defined(PR_ENABLE_DEBUGGING)
-		glEnable(GL_DEBUG_OUTPUT);
-		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-		glDebugMessageCallback(OpenGLMessageCallback, nullptr);
+		if ((GLAD_GL_VERSION_4_3 || GLAD_GL_KHR_debug) && glDebugMessageCallback && glDebugMessageControl)
+		{
+			glEnable(GL_DEBUG_OUTPUT);
+			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+			glDebugMessageCallback(OpenGLMessageCallback, nullptr);
 
-		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
+			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
+		}
+		else
+		{
+			PR_LOG_WARNING("%s", "OpenGL debug output is not supported by this context.\n");
+		}
 #endif
 	}
 };

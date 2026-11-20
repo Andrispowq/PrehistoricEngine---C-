@@ -1,6 +1,9 @@
 #include "Includes.hpp"
 #include "VKDevice.h"
 
+#include <cstring>
+#include <stdexcept>
+
 #include "prehistoric/application/Application.h"
 
 namespace Prehistoric
@@ -12,34 +15,39 @@ namespace Prehistoric
 		deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
 		//Mesh shading extension
-		optionalDeviceExtensions.push_back(VK_NV_MESH_SHADER_EXTENSION_NAME);
+		// optionalDeviceExtensions.push_back(VK_NV_MESH_SHADER_EXTENSION_NAME);
 
 		//Ray tracing extensions
-		optionalDeviceExtensions.push_back(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
-		optionalDeviceExtensions.push_back(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
+		// optionalDeviceExtensions.push_back(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
+		// optionalDeviceExtensions.push_back(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
 
 		//Required by VK_KHR_acceleration_structure
-		optionalDeviceExtensions.push_back(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
-		optionalDeviceExtensions.push_back(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME);
-		optionalDeviceExtensions.push_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
+		// optionalDeviceExtensions.push_back(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
+		// optionalDeviceExtensions.push_back(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME);
+		// optionalDeviceExtensions.push_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
 
 		//Required for VK_KHR_ray_tracing_pipeline
-		optionalDeviceExtensions.push_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
+		// optionalDeviceExtensions.push_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
 
 		//Required by VK_KHR_spirv_1_4
-		optionalDeviceExtensions.push_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
+		// optionalDeviceExtensions.push_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
 
 		//Pick a physical device:
 		uint32_t deviceCount = 0;
-		vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+		VkResult result = vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+		if (result != VK_SUCCESS)
+			throw std::runtime_error("Failed to enumerate Vulkan physical devices!");
 
 		if (deviceCount == 0)
 		{
-			PR_LOG_RUNTIME_ERROR("Failed to find GPUs with Vulkan support!\n");
+			throw std::runtime_error("Failed to find GPUs with Vulkan support!");
 		}
 
 		std::vector<VkPhysicalDevice> devices(deviceCount);
-		vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+		result = vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+		if (result != VK_SUCCESS)
+			throw std::runtime_error("Failed to enumerate Vulkan physical devices!");
+		devices.resize(deviceCount);
 
 		VkPhysicalDeviceFeatures deviceFeatures = {};
 		deviceFeatures.samplerAnisotropy = VK_TRUE;
@@ -55,7 +63,7 @@ namespace Prehistoric
 
 		if (physicalDevice == VK_NULL_HANDLE)
 		{
-			PR_LOG_RUNTIME_ERROR("Failed to find a suitable GPU!\n");
+			throw std::runtime_error("Failed to find a suitable GPU!");
 		}
 
 		VkPhysicalDeviceProperties physicalDeviceProperties;
@@ -75,7 +83,7 @@ namespace Prehistoric
 		QueueFamilyIndices indices = FindQueueFamilies(physicalDevice);
 
 		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-		std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily, indices.presentFamily };
+		std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily, indices.computeFamily, indices.presentFamily };
 
 		float queuePriority = 1.0f;
 		for (uint32_t queueFamily : uniqueQueueFamilies)
@@ -89,9 +97,27 @@ namespace Prehistoric
 			queueCreateInfos.push_back(queueCreateInfo);
 		}
 
-		deviceFeatures.samplerAnisotropy = VK_TRUE;
-		deviceFeatures.sampleRateShading = VK_TRUE;
-		deviceFeatures.geometryShader = VK_TRUE;
+		VkPhysicalDeviceFeatures supportedFeatures = {};
+		vkGetPhysicalDeviceFeatures(physicalDevice, &supportedFeatures);
+		deviceFeatures.sampleRateShading = supportedFeatures.sampleRateShading;
+		deviceFeatures.geometryShader = supportedFeatures.geometryShader;
+
+		//Portability devices require this extension when they advertise it.
+		uint32_t extensionCount = 0;
+		result = vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
+		if (result != VK_SUCCESS)
+			throw std::runtime_error("Failed to enumerate Vulkan device extensions!");
+		std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+		result = vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, availableExtensions.data());
+		if (result != VK_SUCCESS)
+			throw std::runtime_error("Failed to enumerate Vulkan device extensions!");
+		for (const auto& extension : availableExtensions)
+		{
+			if (strcmp(extension.extensionName, "VK_KHR_portability_subset") == 0)
+				deviceExtensions.push_back("VK_KHR_portability_subset");
+		}
+
+		PR_LOG_MESSAGE("Selected Vulkan GPU: %s\n", physicalDeviceProperties.deviceName);
 
 		VkDeviceCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -125,9 +151,10 @@ namespace Prehistoric
 		createInfo.enabledLayerCount = 0;
 #endif
 
-		if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS)
+		if ((result = vkCreateDevice(physicalDevice, &createInfo, nullptr, &device)) != VK_SUCCESS)
 		{
-			PR_LOG_RUNTIME_ERROR("Failed to create logical device!\n");
+			PR_LOG_ERROR("Failed to create logical device! Error: %i\n", result);
+			throw std::runtime_error("Failed to create Vulkan logical device!");
 		}
 
 		graphicsQueue = std::make_unique<VKQueue>(device, indices.graphicsFamily);
@@ -142,11 +169,13 @@ namespace Prehistoric
 
 	std::vector<const char*> VKDevice::getOptionalExtensionsSupported() const
 	{
-		uint32_t extensionCount;
-		vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
+		uint32_t extensionCount = 0;
+		if (vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr) != VK_SUCCESS)
+			throw std::runtime_error("Failed to enumerate optional Vulkan device extensions!");
 
 		std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-		vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, availableExtensions.data());
+		if (vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, availableExtensions.data()) != VK_SUCCESS)
+			throw std::runtime_error("Failed to enumerate optional Vulkan device extensions!");
 
 		std::vector<const char*> supported;
 
@@ -154,7 +183,7 @@ namespace Prehistoric
 		{
 			for (const auto& ext : optionalDeviceExtensions)
 			{
-				if (ext == extension.extensionName)
+				if (strcmp(ext, extension.extensionName) == 0)
 				{
 					supported.push_back(ext);
 				}
@@ -166,40 +195,36 @@ namespace Prehistoric
 
 	bool VKDevice::IsDeviceSuitable(VkPhysicalDevice physDev, VkPhysicalDeviceFeatures features)
 	{
-		VkPhysicalDeviceProperties deviceProperties;
 		VkPhysicalDeviceFeatures deviceFeatures;
-
-		vkGetPhysicalDeviceProperties(physDev, &deviceProperties);
 		vkGetPhysicalDeviceFeatures(physDev, &deviceFeatures);
 
-		if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+		QueueFamilyIndices indices = FindQueueFamilies(physDev);
+		bool extensionsSupported = CheckDeviceExtensionSupport(physDev);
+
+		bool swapChainAdequate = false;
+		if (extensionsSupported)
 		{
-			QueueFamilyIndices indices = FindQueueFamilies(physDev);
-
-			bool extensionsSupported = CheckDeviceExtensionSupport(physDev);
-
-			bool swapChainAdequate = false;
-			if (extensionsSupported)
-			{
-				SwapchainSupportDetails swapChainSupport = _surface->QuerySwapChainSupport(physDev);
-				swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
-			}
-
-			return indices.hasGraphicsFamily && indices.hasPresentFamily && extensionsSupported && swapChainAdequate && deviceFeatures.samplerAnisotropy;
+			SwapchainSupportDetails swapChainSupport = _surface->QuerySwapChainSupport(physDev);
+			swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
 		}
-		else
-		{
-			return false;
-		}
+
+		bool featuresSupported = (!features.samplerAnisotropy || deviceFeatures.samplerAnisotropy) &&
+			(!features.sampleRateShading || deviceFeatures.sampleRateShading) &&
+			(!features.geometryShader || deviceFeatures.geometryShader);
+
+		return indices.hasGraphicsFamily && indices.hasComputeFamily && indices.hasPresentFamily &&
+			extensionsSupported && swapChainAdequate && featuresSupported;
 	}
 
 	bool VKDevice::CheckDeviceExtensionSupport(VkPhysicalDevice device) const
 	{
-		uint32_t extensionCount;
-		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+		uint32_t extensionCount = 0;
+		if (vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr) != VK_SUCCESS)
+			return false;
 
 		std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+		if (vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data()) != VK_SUCCESS)
+			return false;
 
 		std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
 
@@ -216,7 +241,7 @@ namespace Prehistoric
 		if (device == VK_NULL_HANDLE)
 			device = physicalDevice;
 
-		indices = { 0, false, 0, false };
+		indices = {};
 
 		uint32_t queueFamilyCount = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);

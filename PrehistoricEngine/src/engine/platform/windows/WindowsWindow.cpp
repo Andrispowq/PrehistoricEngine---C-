@@ -85,6 +85,9 @@ namespace Prehistoric
 		if (__FrameworkConfig.api == OpenGL)
 		{
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#if defined(PR_PLATFORM_MACOS)
+			glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+#endif
 		}
 		else
 		{

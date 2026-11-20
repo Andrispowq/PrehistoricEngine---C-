@@ -2,9 +2,19 @@
 #include "EngineSettings.h"
 
 #include <json.hpp>
+#include <cmath>
 
 namespace Prehistoric
 {
+	static Vector2i getAPIVersion(const nlohmann::json& value)
+	{
+		double version = value.get<double>();
+		int major = static_cast<int>(version);
+		int minor = static_cast<int>(std::round((version - major) * 10.0));
+
+		return Vector2i(major, minor);
+	}
+
 	void EngineSettings::LoadConfig(const std::string& path)
 	{
 		std::ifstream file;
@@ -39,10 +49,10 @@ namespace Prehistoric
 				else if (activeAPI == "Vulkan") frameworkConfig.api = API::Vulkan;
 
 				nlohmann::json opengl_json = api_json["OpenGL"];
-				frameworkConfig.apiVersions.insert(std::make_pair(API::OpenGL, opengl_json["version"]));
+				frameworkConfig.apiVersions[API::OpenGL] = getAPIVersion(opengl_json["version"]);
 
 				nlohmann::json vulkan_json = api_json["Vulkan"];
-				frameworkConfig.apiVersions.insert(std::make_pair(API::Vulkan, vulkan_json["version"]));
+				frameworkConfig.apiVersions[API::Vulkan] = getAPIVersion(vulkan_json["version"]);
 				frameworkConfig.apiVulkanUseValidationLayers = vulkan_json["useValidationLayers"];
 
 				frameworkConfig.apiVersion = frameworkConfig.apiVersions[frameworkConfig.api];

@@ -29,6 +29,7 @@ newaction {
             emit('set(CMAKE_OBJCXX_STANDARD_REQUIRED ON)')
             -- Resolve the loader at configure time, including SDK-only installations.
             emit('find_library(PREHISTORIC_VULKAN_LIBRARY NAMES vulkan HINTS "$ENV{VULKAN_SDK}/lib" REQUIRED)')
+            emit('find_path(PREHISTORIC_VULKAN_INCLUDE_DIR vulkan/vulkan.h HINTS "$ENV{VULKAN_SDK}/include" REQUIRED)')
             emit('get_filename_component(PREHISTORIC_VULKAN_LIBRARY_DIR "${PREHISTORIC_VULKAN_LIBRARY}" DIRECTORY)')
             emit('list(APPEND CMAKE_BUILD_RPATH "${PREHISTORIC_VULKAN_LIBRARY_DIR}")')
         end
@@ -69,7 +70,11 @@ newaction {
                             -- Consumers inherit the matching upstream AL headers from OpenAL.
                             if not (paths and os.host() == "macosx" and
                                 value:find("vendor/OpenAL%-Soft/include")) then
-                                if paths then value = '${CMAKE_CURRENT_SOURCE_DIR}/' .. path.getrelative(root, value) end
+                                if paths and os.host() == "macosx" and value:find("Dependencies/include/Vulkan") then
+                                    value = '${PREHISTORIC_VULKAN_INCLUDE_DIR}'
+                                elseif paths then
+                                    value = '${CMAKE_CURRENT_SOURCE_DIR}/' .. path.getrelative(root, value)
+                                end
                                 emit('  ' .. quote('$<' .. condition .. ':' .. value .. '>'))
                             end
                         end

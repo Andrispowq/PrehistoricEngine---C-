@@ -1,7 +1,7 @@
 #ifndef VK_INSTANCE_H
 #define VK_INSTANCE_H
 
-//GLFW is only included for getting the VK_KHR_win32_surface extensions for windows
+//GLFW supplies the surface extensions required by the current platform.
 #include <vulkan/vulkan.h>
 #define PR_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -26,7 +26,7 @@ namespace Prehistoric
 
 		void ListExtensions() const;
 	private:
-		VkInstance instance;
+		VkInstance instance = VK_NULL_HANDLE;
 		std::unique_ptr<VKDebugMessenger> messenger; //Owned pointer, but optional
 
 		std::vector<const char*> validationLayers;
