@@ -1,3 +1,5 @@
+include "scripts/premake-cmake.lua"
+
 workspace "PrehistoricEngine"
     architecture "x64"
     startproject "Prehistoric"
@@ -80,7 +82,6 @@ project "PrehistoricEngine"
     links
     {
         "%{wks.location}/PrehistoricEngine/Dependencies/lib/Vulkan/vulkan-1.lib",
-        "%{wks.location}/PrehistoricEngine/Dependencies/lib/AL/OpenAL32.lib",
         "opengl32.lib",
         "GLFW",
         "GLAD",
@@ -88,6 +89,10 @@ project "PrehistoricEngine"
         "OpenAL",
         "SpotifyAPI"
     }
+
+    filter "system:windows"
+        links { "%{wks.location}/PrehistoricEngine/Dependencies/lib/AL/OpenAL32.lib" }
+    filter {}
 
     filter "kind:SharedLib"
        defines { "PR_BUILD_DLL" }
@@ -256,3 +261,17 @@ project "Prehistoric"
         optimize "on"
 
 group ""
+-- Compile GLFW's native Cocoa backend when generating on macOS.
+project "GLFW"
+    filter "system:macosx"
+        files {
+            "PrehistoricEngine/vendor/GLFW/src/cocoa_*.m",
+            "PrehistoricEngine/vendor/GLFW/src/cocoa_time.c",
+            "PrehistoricEngine/vendor/GLFW/src/posix_thread.c",
+            "PrehistoricEngine/vendor/GLFW/src/nsgl_context.m",
+            "PrehistoricEngine/vendor/GLFW/src/egl_context.c",
+            "PrehistoricEngine/vendor/GLFW/src/osmesa_context.c"
+        }
+        defines { "_GLFW_COCOA" }
+        links { "-framework Cocoa", "-framework IOKit", "-framework CoreFoundation" }
+    filter {}

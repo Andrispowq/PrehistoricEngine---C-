@@ -22,9 +22,10 @@
 	#elif TARGET_OS_IPHONE == 1
 		#define PR_PLATFORM_IOS
 		#error "IOS is not supported!"
-	#elif TARGET_OS_MAC == 1
+	#elif TARGET_OS_OSX == 1
 		#define PR_PLATFORM_MACOS
-		#error "MacOS is not supported!"
+		#include <dlfcn.h>
+		#include <signal.h>
 	#else
 		#error "Unknown Apple platform!"
 	#endif
@@ -53,6 +54,17 @@
 	#define LOAD_LIBRARY(x) LoadLibraryA(x)
 	#define LOAD_FUNCTION(library, x) GetProcAddress(library, x)
 	#define FREE_LIBRARY(x) FreeLibrary(x)
+#elif defined(PR_PLATFORM_MACOS)
+	// Mach-O uses symbol visibility for both library producers and consumers.
+	#if defined(PR_BUILD_DLL) || defined(PR_LOAD_DLL)
+		#define PR_API __attribute__((visibility("default")))
+	#else
+		#define PR_API
+	#endif
+
+	#define LOAD_LIBRARY(x) dlopen((x), RTLD_NOW | RTLD_LOCAL)
+	#define LOAD_FUNCTION(library, x) dlsym((library), (x))
+	#define FREE_LIBRARY(x) dlclose((x))
 #else
 	#error "This OS doesn't support DLLs!"
 #endif
@@ -68,7 +80,7 @@
 
 #if defined(PR_WINDOWS_64)
 	#define DEBUG_BREAK() __debugbreak()
-#elif defined(PR_LINUX)
+#elif defined(PR_LINUX) || defined(PR_PLATFORM_MACOS)
 	#define DEBUG_BREAK() raise(SIGTRAP)
 #else
 	#define DEBUG_BREAK()

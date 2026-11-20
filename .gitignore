@@ -18,3 +18,8 @@ Output/
 **.vcxproj
 **.vcxproj.filters
 **.vcxproj.user
+# Local CMake/CLion output (regenerate with premake5 cmake)
+/CMakeLists.txt
+/build/
+/cmake-build-*/
+/.idea/

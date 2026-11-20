@@ -1,0 +1,67 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "debug",
+      "displayName": "Prehistoric Debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "release",
+      "inherits": "debug",
+      "binaryDir": "${sourceDir}/build/release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "distribution",
+      "inherits": "debug",
+      "binaryDir": "${sourceDir}/build/distribution",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Distribution"
+      }
+    },
+    {
+      "name": "macos-arm64",
+      "displayName": "macOS Apple Silicon Debug",
+      "inherits": "debug",
+      "binaryDir": "${sourceDir}/build/macos-arm64",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      },
+      "cacheVariables": {
+        "CMAKE_OSX_ARCHITECTURES": "arm64"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "debug",
+      "configurePreset": "debug"
+    },
+    {
+      "name": "release",
+      "configurePreset": "release"
+    },
+    {
+      "name": "distribution",
+      "configurePreset": "distribution"
+    },
+    {
+      "name": "macos-arm64",
+      "configurePreset": "macos-arm64"
+    }
+  ]
+}
