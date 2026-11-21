@@ -238,3 +238,40 @@ Run `python3 tests/resource_pipeline.py` for isolated build/lookup checks. It ne
 CMake, Ninja, `glslc`, and a C++17 compiler, but no GPU. It checks no-op builds,
 shader/include edits, compiler errors, staged installation, both executable layouts,
 explicit overrides and missing resources. Full rendering still needs runtime checks.
+
+## Shared engine default models and textures
+
+`PrehistoricEngine/res/models/` now owns cube, quad, and sphere OBJ files plus their
+existing PMF variants under `models/prehistoric/`. The shared texture set contains
+`default.png`, `logo.png`, all eight FFT noise images (256/512), water `dudv1.jpg`,
+and their existing PRT variants. Noise filenames use lowercase consistently.
+`EngineResources` stages these files in the same package as fonts and shaders;
+both CMake and Premake application builds and the installers use that package.
+
+Code and saved asset IDs use `engine://models/cube.obj` or
+`engine://textures/default.png`. The asset manager canonicalizes the old paths for
+these specific defaults, so existing JSON and text worlds still load without
+rewriting scene files. The world loader accepts engine IDs even when a scene sets
+`res/models/` or `res/textures/` as its base directory. Physical executable-relative
+paths are resolved only when reading files, not stored in serialized asset IDs.
+
+Legacy aliases are an explicit list of migrated defaults, including the old
+capitalized noise filenames and converted PMF/PRT paths. Other project paths are
+not redirected. These legacy default names are reserved aliases; give custom
+project assets distinct names. Missing engine resources fail explicitly rather
+than substituting a project asset.
+
+Sponza, dome, grass, `myscene`, terrain/heightmaps, floor materials, environment
+images, and water caustics remain in the applications' resource trees. Their
+content and ownership have not changed. Project working-directory requirements
+therefore remain unchanged.
+
+Immediate and queued loads of shared defaults skip the existing automatic PMF/PRT
+export. Loading a built-in no longer recreates copies under application `res/`
+folders or requires writing to the shared package. Existing project asset import
+and export behavior remains unchanged. The checked-in converted defaults are
+preserved as inputs, not regenerated during a read.
+
+`python3 tests/resource_pipeline.py` also verifies all default models/textures in
+both executable layouts, legacy aliases, engine IDs with world directory prefixes,
+and that scene-specific references stay project-local.

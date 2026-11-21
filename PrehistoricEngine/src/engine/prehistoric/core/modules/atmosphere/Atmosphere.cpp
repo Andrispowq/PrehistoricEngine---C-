@@ -6,45 +6,40 @@
 
 #include "prehistoric/application/Application.h"
 
-namespace Prehistoric
-{
-	Atmosphere::Atmosphere(Window* window, AssembledAssetManager* manager)
-		: window(window)
-	{
-		SetScale(Vector3f(__EngineConfig.rendererFarPlane / 2.f));
-		
-		AssetManager* man = manager->getAssetManager();
-		VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "res/models/sphere.obj").value();
-		vbo->setFrontFace(FrontFace::DOUBLE_SIDED);
+namespace Prehistoric {
+    Atmosphere::Atmosphere(Window *window, AssembledAssetManager *manager)
+        : window(window) {
+        SetScale(Vector3f(__EngineConfig.rendererFarPlane / 2.f));
 
-		ShaderHandle shader;
+        AssetManager *man = manager->getAssetManager();
+        VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "engine://models/sphere.obj").value();
+        vbo->setFrontFace(FrontFace::DOUBLE_SIDED);
 
-		if (__AtmosphereConfig.scatteringEnabled)
-		{
-			shader = man->loadShader(ShaderName::AtmosphereScattering).value();
-		}
-		else
-		{
-			shader = man->loadShader(ShaderName::Atmosphere).value();
-		}
+        ShaderHandle shader;
 
-		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
+        if (__AtmosphereConfig.scatteringEnabled) {
+            shader = man->loadShader(ShaderName::AtmosphereScattering).value();
+        } else {
+            shader = man->loadShader(ShaderName::Atmosphere).value();
+        }
 
-		AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline, manager->storeMaterial(nullptr)));
-	}
+        PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
 
-	//We go around in a circle, from -range to range on the y and z axes
-	void Atmosphere::sunMoveFunction(Prehistoric::GameObject* object, float frameTime)
-	{
-		constexpr float range = 32000.0f;
-		constexpr float anglesPerSecond = 0.5f;
+        AddComponent(RENDERER_COMPONENT,
+                     new RendererComponent(window, manager, pipeline, manager->storeMaterial(nullptr)));
+    }
 
-		static float angle = 130.0f;
+    //We go around in a circle, from -range to range on the y and z axes
+    void Atmosphere::sunMoveFunction(Prehistoric::GameObject *object, float frameTime) {
+        constexpr float range = 32000.0f;
+        constexpr float anglesPerSecond = 0.5f;
 
-		float x = cos(ToRadians(angle)) * range;
-		float y = sin(ToRadians(angle)) * range;
-		angle -= (anglesPerSecond * frameTime);
+        static float angle = 130.0f;
 
-		object->SetPosition({ x, y, 0 });
-	}
+        float x = cos(ToRadians(angle)) * range;
+        float y = sin(ToRadians(angle)) * range;
+        angle -= (anglesPerSecond * frameTime);
+
+        object->SetPosition({x, y, 0});
+    }
 };

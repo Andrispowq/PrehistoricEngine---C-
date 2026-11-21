@@ -5,7 +5,7 @@
 - `PrehistoricEngine/src/engine/prehistoric/` contains shared engine code;
   `platform/opengl/` and `platform/vulkan/` contain the rendering backends.
 - `Prehistoric/` is the sample application; `PrehistoricEditor/` is the editor.
-  Each has its own project `res/` tree. Shared fonts and shaders live only in
+  Each has its own project `res/` tree. Shared fonts, shaders, primitive models, and default textures live only in
   `PrehistoricEngine/res/`; `scripts/resources/CMakeLists.txt` builds/stages them.
 - Read `BUILDING.md` for current build instructions. `docs/MACOS_PORT.md` is a
   historical port assessment; some listed blockers have already been resolved.
@@ -37,8 +37,11 @@
 - Vulkan feature presence does not imply parity with OpenGL. Verify descriptors,
   image layouts, synchronization, shader interfaces, and integration at call sites.
 - Vulkan loads generated SPIR-V from `engine-resources` beside the executable
-  (or in its parent for Premake). Build `EngineResources` after shader/font changes;
+  (or in its parent for Premake). Build `EngineResources` after shared asset changes;
   both application targets depend on it. Never restore duplicated app shader trees.
+- Use `engine://models/...` and `engine://textures/...` for built-ins. Keep scene
+  assets in project `res/` trees. Resolve paths only in loaders so saved IDs remain
+  portable; do not auto-export shared defaults into project conversion folders.
 - Preserve vendored dependencies, runtime binaries, model `.obj` files unless their replacement/build path is explicitly
   addressed.
 - Do not track profiler output, ImGui layouts, build output, or machine-local IDE

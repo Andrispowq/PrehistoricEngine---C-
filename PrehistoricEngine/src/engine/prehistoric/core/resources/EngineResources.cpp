@@ -1,6 +1,8 @@
 #include "EngineResources.h"
 
 #include <cstdlib>
+#include <algorithm>
+#include <unordered_map>
 #include <filesystem>
 #include <stdexcept>
 #include <vector>
@@ -60,6 +62,70 @@ namespace Prehistoric {
         const auto file = ResourceRoot() / relativePath;
         if (!std::filesystem::is_regular_file(file))
             throw std::runtime_error("Engine resource missing: " + file.string());
-        return file.string();
+        return file.generic_string();
+    }
+
+    std::string CanonicalAssetReference(const std::string &reference) {
+        if (reference.rfind("engine://", 0) == 0)
+            return reference;
+        std::string legacy = reference;
+        std::replace(legacy.begin(), legacy.end(), '\\', '/');
+        while (legacy.rfind("./", 0) == 0)
+            legacy.erase(0, 2);
+        static const std::unordered_map<std::string, std::string> defaults = {
+            {"res/models/cube.obj", "engine://models/cube.obj"},
+            {"res/models/prehistoric/cube.pmf", "engine://models/prehistoric/cube.pmf"},
+            {"res/models/prehistoric/quad.pmf", "engine://models/prehistoric/quad.pmf"},
+            {"res/models/prehistoric/sphere.pmf", "engine://models/prehistoric/sphere.pmf"},
+            {"res/models/quad.obj", "engine://models/quad.obj"},
+            {"res/models/sphere.obj", "engine://models/sphere.obj"},
+            {"res/textures/default.png", "engine://textures/default.png"},
+            {"res/textures/logo.png", "engine://textures/logo.png"},
+            {"res/textures/noise/Noise256_0.jpg", "engine://textures/noise/noise256_0.jpg"},
+            {"res/textures/noise/Noise256_1.jpg", "engine://textures/noise/noise256_1.jpg"},
+            {"res/textures/noise/Noise256_2.jpg", "engine://textures/noise/noise256_2.jpg"},
+            {"res/textures/noise/Noise256_3.jpg", "engine://textures/noise/noise256_3.jpg"},
+            {"res/textures/noise/Noise512_0.jpg", "engine://textures/noise/noise512_0.jpg"},
+            {"res/textures/noise/Noise512_1.jpg", "engine://textures/noise/noise512_1.jpg"},
+            {"res/textures/noise/Noise512_2.jpg", "engine://textures/noise/noise512_2.jpg"},
+            {"res/textures/noise/Noise512_3.jpg", "engine://textures/noise/noise512_3.jpg"},
+            {"res/textures/noise/noise256_0.jpg", "engine://textures/noise/noise256_0.jpg"},
+            {"res/textures/noise/noise256_1.jpg", "engine://textures/noise/noise256_1.jpg"},
+            {"res/textures/noise/noise256_2.jpg", "engine://textures/noise/noise256_2.jpg"},
+            {"res/textures/noise/noise256_3.jpg", "engine://textures/noise/noise256_3.jpg"},
+            {"res/textures/noise/noise512_0.jpg", "engine://textures/noise/noise512_0.jpg"},
+            {"res/textures/noise/noise512_1.jpg", "engine://textures/noise/noise512_1.jpg"},
+            {"res/textures/noise/noise512_2.jpg", "engine://textures/noise/noise512_2.jpg"},
+            {"res/textures/noise/noise512_3.jpg", "engine://textures/noise/noise512_3.jpg"},
+            {"res/textures/prehistoric/default.prt", "engine://textures/prehistoric/default.prt"},
+            {"res/textures/prehistoric/dudv1.prt", "engine://textures/prehistoric/dudv1.prt"},
+            {"res/textures/prehistoric/logo.prt", "engine://textures/prehistoric/logo.prt"},
+            {"res/textures/prehistoric/noise256_0.prt", "engine://textures/prehistoric/noise256_0.prt"},
+            {"res/textures/prehistoric/noise256_1.prt", "engine://textures/prehistoric/noise256_1.prt"},
+            {"res/textures/prehistoric/noise256_2.prt", "engine://textures/prehistoric/noise256_2.prt"},
+            {"res/textures/prehistoric/noise256_3.prt", "engine://textures/prehistoric/noise256_3.prt"},
+            {"res/textures/water/dudv1.jpg", "engine://textures/water/dudv1.jpg"},
+        };
+        const auto found = defaults.find(legacy);
+        return found == defaults.end() ? reference : found->second;
+    }
+
+    bool IsEngineAsset(const std::string &reference) {
+        return CanonicalAssetReference(reference).rfind("engine://", 0) == 0;
+    }
+
+    std::string ResolveAssetPath(const std::string &reference) {
+        const auto canonical = CanonicalAssetReference(reference);
+        if (canonical.rfind("engine://", 0) == 0)
+            return EngineResourcePath(canonical.substr(9));
+        return reference;
+    }
+
+    std::string JoinAssetReference(const std::string &directory, const std::string &reference) {
+        // Serialized asset IDs are complete references, not relative filenames.
+        if (reference.rfind("engine://", 0) == 0 || reference.rfind("res/", 0) == 0
+            || std::filesystem::path(reference).is_absolute())
+            return CanonicalAssetReference(reference);
+        return CanonicalAssetReference(directory + reference);
     }
 }

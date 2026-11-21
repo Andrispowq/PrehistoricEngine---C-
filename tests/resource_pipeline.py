@@ -86,7 +86,14 @@ with tempfile.TemporaryDirectory(prefix='prehistoric resources ') as temporary:
 #include <iostream>
 #include <exception>
 int main(int argc, char** argv) {
-    try { std::cout << Prehistoric::EngineResourcePath(argv[1]); return 0; }
+    try {
+        const std::string mode = argc > 2 ? argv[2] : "engine";
+        if (mode == "resolve") std::cout << Prehistoric::ResolveAssetPath(argv[1]);
+        else if (mode == "canonical") std::cout << Prehistoric::CanonicalAssetReference(argv[1]);
+        else if (mode == "join") std::cout << Prehistoric::JoinAssetReference(argv[3], argv[1]);
+        else std::cout << Prehistoric::EngineResourcePath(argv[1]);
+        return 0;
+    }
     catch (const std::exception& e) { std::cerr << e.what(); return 1; }
 }
 ''')
@@ -114,6 +121,31 @@ add_executable(ResourceLookup main.cpp EngineResources.cpp)
     nested.mkdir()
     shutil.copy2(executable, nested / executable.name)
     assert Path(run(nested / executable.name, 'fonts/opensans/OpenSans-Bold.ttf', cwd=root, env=env)).is_file()
+    # Both app layouts resolve the shared defaults without project-side copies.
+    for source_asset in (REPO / 'PrehistoricEngine/res').rglob('*'):
+        if not source_asset.is_file():
+            continue
+        relative_asset = source_asset.relative_to(REPO / 'PrehistoricEngine/res')
+        if relative_asset.parts[0] not in ('models', 'textures'):
+            continue
+        resource_id = 'engine://' + relative_asset.as_posix()
+        legacy_id = 'res/' + relative_asset.as_posix()
+        for binary in (installed_executable, nested / executable.name):
+            resolved = Path(run(binary, resource_id, 'resolve', cwd=root, env=env))
+            assert resolved.read_bytes() == source_asset.read_bytes()
+            assert run(binary, legacy_id, 'canonical', cwd=root, env=env) == resource_id
+            assert Path(run(binary, legacy_id, 'resolve', cwd=root, env=env)) == resolved
+        assert run(installed_executable, resource_id, 'join', 'res/models/', env=env) == resource_id
+    assert run(installed_executable, 'res/textures/noise/Noise256_0.jpg', 'canonical',
+               env=env) == 'engine://textures/noise/noise256_0.jpg'
+    assert run(installed_executable, 'cube.obj', 'join', 'res/models/', env=env) == 'engine://models/cube.obj'
+    assert run(installed_executable, 'res/models/quad.obj', 'join', 'res/models/',
+               env=env) == 'engine://models/quad.obj'
+    for project_asset in ('res/models/sponza.obj', 'res/models/dome/dome.obj',
+                          'res/textures/water/caustics.jpg', 'res/textures/oakFloor/oakFloor_DIF.png',
+                          'res/textures/environmentMaps/cape_hill_2k.hdr', 'res/textures/terrain/heightmaps/hm0.bmp'):
+        assert run(installed_executable, project_asset, 'resolve', cwd=root, env=env) == project_asset
+    run(installed_executable, 'engine://models/missing.obj', 'resolve', cwd=root, env=env, success=False)
     override = dict(env, PREHISTORIC_ENGINE_RESOURCES=str(resources))
     assert Path(run(executable, relative, cwd=root, env=override)).is_file()
     missing = dict(env, PREHISTORIC_ENGINE_RESOURCES=str(root / 'missing'))

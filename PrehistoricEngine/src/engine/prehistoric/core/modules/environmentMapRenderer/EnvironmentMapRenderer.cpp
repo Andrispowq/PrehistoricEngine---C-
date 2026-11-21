@@ -14,260 +14,259 @@
 #include "platform/opengl/rendering/pipeline/GLComputePipeline.h"
 //#include "platform/vulkan/rendering/pipeline/VKComputePipeline.h"
 
-namespace Prehistoric
-{
-	EnvironmentMapRenderer* EnvironmentMapRenderer::instance = nullptr;
+namespace Prehistoric {
+    EnvironmentMapRenderer *EnvironmentMapRenderer::instance = nullptr;
 
-	EnvironmentMapRenderer::EnvironmentMapRenderer(Window* window, AssembledAssetManager* manager)
-		: window(window), manager(manager)
-	{
-		mapCache = "";
-		
-		AssetManager* man = manager->getAssetManager();
+    EnvironmentMapRenderer::EnvironmentMapRenderer(Window *window, AssembledAssetManager *manager)
+        : window(window), manager(manager) {
+        mapCache = "";
 
-		//Create the cube mesh
-		cubeBuffer = man->loadVertexBuffer(std::nullopt, "res/models/cube.obj").value();
-		cubeBuffer.pointer->setFrontFace(FrontFace::DOUBLE_SIDED);
+        AssetManager *man = manager->getAssetManager();
 
-		//Load the shaders and the pipelines
-		environmentMapShader = man->storeShader(new GLEnvironmentMapShader());
-		irradianceShader = man->storeShader(new GLIrradianceShader());
-		prefilterShader = man->storeShader(new GLPrefilterShader());
-		brdfIntegrateShader = man->storeShader(new GLBRDFIntegrateShader());
-		environmentShader = man->storeShader(new GLEnvironmentShader());
-		
-		environmentMapPipeline = manager->createPipeline(PipelineTypeHashFlags::Compute, environmentMapShader);
-		irradiancePipeline = manager->createPipeline(PipelineTypeHashFlags::Compute, irradianceShader);
-		prefilterPipeline = manager->createPipeline(PipelineTypeHashFlags::Compute, prefilterShader);
-		brdfIntegratePipeline = manager->createPipeline(PipelineTypeHashFlags::Compute, brdfIntegrateShader);
-		backgroundPipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, environmentShader, cubeBuffer);
+        //Create the cube mesh
+        cubeBuffer = man->loadVertexBuffer(std::nullopt, "engine://models/cube.obj").value();
+        cubeBuffer.pointer->setFrontFace(FrontFace::DOUBLE_SIDED);
 
-		manager->addReference<Pipeline>(environmentMapPipeline.handle);
-		manager->addReference<Pipeline>(irradiancePipeline.handle);
-		manager->addReference<Pipeline>(prefilterPipeline.handle);
-		manager->addReference<Pipeline>(brdfIntegratePipeline.handle);
-		manager->addReference<Pipeline>(backgroundPipeline.handle);
+        //Load the shaders and the pipelines
+        environmentMapShader = man->storeShader(new GLEnvironmentMapShader());
+        irradianceShader = man->storeShader(new GLIrradianceShader());
+        prefilterShader = man->storeShader(new GLPrefilterShader());
+        brdfIntegrateShader = man->storeShader(new GLBRDFIntegrateShader());
+        environmentShader = man->storeShader(new GLEnvironmentShader());
 
-		//Create the framebuffer
-		uint32_t size = __EnvironmentMapConfig.environmentMapResolution;
+        environmentMapPipeline = manager->createPipeline(PipelineTypeHashFlags::Compute, environmentMapShader);
+        irradiancePipeline = manager->createPipeline(PipelineTypeHashFlags::Compute, irradianceShader);
+        prefilterPipeline = manager->createPipeline(PipelineTypeHashFlags::Compute, prefilterShader);
+        brdfIntegratePipeline = manager->createPipeline(PipelineTypeHashFlags::Compute, brdfIntegrateShader);
+        backgroundPipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, environmentShader, cubeBuffer);
 
-		framebuffer = new GLFramebuffer(window);
-		framebuffer->Bind();
-		framebuffer->addDepthAttachment(size, size);
-		framebuffer->Unbind();
+        manager->addReference<Pipeline>(environmentMapPipeline.handle);
+        manager->addReference<Pipeline>(irradiancePipeline.handle);
+        manager->addReference<Pipeline>(prefilterPipeline.handle);
+        manager->addReference<Pipeline>(brdfIntegratePipeline.handle);
+        manager->addReference<Pipeline>(backgroundPipeline.handle);
 
-		//Create the matrices
-		projectionMatrix = Matrix4f::PerspectiveProjection(90, 1, .1f, 100.0f);
+        //Create the framebuffer
+        uint32_t size = __EnvironmentMapConfig.environmentMapResolution;
 
-		viewMatrices[0] = Matrix4f::View(Vector3f(-1, 0, 0), Vector3f(0, -1, 0));
-		viewMatrices[1] = Matrix4f::View(Vector3f(1, 0, 0), Vector3f(0, -1, 0));
-		viewMatrices[2] = Matrix4f::View(Vector3f(0, -1, 0), Vector3f(0, 0, -1));
-		viewMatrices[3] = Matrix4f::View(Vector3f(0, 1, 0), Vector3f(0, 0, 1));
-		viewMatrices[4] = Matrix4f::View(Vector3f(0, 0, 1), Vector3f(0, -1, 0));
-		viewMatrices[5] = Matrix4f::View(Vector3f(0, 0, -1), Vector3f(0, -1, 0));
+        framebuffer = new GLFramebuffer(window);
+        framebuffer->Bind();
+        framebuffer->addDepthAttachment(size, size);
+        framebuffer->Unbind();
 
-		//Creating the BRDF map
-		size = 512;
-		brdfMap = man->storeTexture(GLTexture::Storage2D(size, size, 1, R16G16_LINEAR, Bilinear, ClampToEdge));
-		manager->addReference<Texture>(brdfMap.handle);
-		static_cast<GLComputePipeline*>(brdfIntegratePipeline.pointer)->setInvocationSize({ size / 16, size / 16, 1 });
-		static_cast<GLComputePipeline*>(brdfIntegratePipeline.pointer)->addTextureBinding(0, brdfMap.pointer, (AccessMask)ComputeAccessFlags::WRITE_ONLY);
+        //Create the matrices
+        projectionMatrix = Matrix4f::PerspectiveProjection(90, 1, .1f, 100.0f);
 
-		//Render the brdf map, which is constant between differnet maps
-		brdfIntegratePipeline->BindPipeline(nullptr);
-		brdfIntegratePipeline->RenderPipeline();
-		brdfIntegratePipeline->UnbindPipeline();
+        viewMatrices[0] = Matrix4f::View(Vector3f(-1, 0, 0), Vector3f(0, -1, 0));
+        viewMatrices[1] = Matrix4f::View(Vector3f(1, 0, 0), Vector3f(0, -1, 0));
+        viewMatrices[2] = Matrix4f::View(Vector3f(0, -1, 0), Vector3f(0, 0, -1));
+        viewMatrices[3] = Matrix4f::View(Vector3f(0, 1, 0), Vector3f(0, 0, 1));
+        viewMatrices[4] = Matrix4f::View(Vector3f(0, 0, 1), Vector3f(0, -1, 0));
+        viewMatrices[5] = Matrix4f::View(Vector3f(0, 0, -1), Vector3f(0, -1, 0));
 
-		brdfMap->Bind();
+        //Creating the BRDF map
+        size = 512;
+        brdfMap = man->storeTexture(GLTexture::Storage2D(size, size, 1, R16G16_LINEAR, Bilinear, ClampToEdge));
+        manager->addReference<Texture>(brdfMap.handle);
+        static_cast<GLComputePipeline *>(brdfIntegratePipeline.pointer)->setInvocationSize({size / 16, size / 16, 1});
+        static_cast<GLComputePipeline *>(brdfIntegratePipeline.pointer)->addTextureBinding(
+            0, brdfMap.pointer, (AccessMask) ComputeAccessFlags::WRITE_ONLY);
 
-		__EnvironmentMapConfig.brdfLUT = brdfMap.pointer;
-	}
+        //Render the brdf map, which is constant between differnet maps
+        brdfIntegratePipeline->BindPipeline(nullptr);
+        brdfIntegratePipeline->RenderPipeline();
+        brdfIntegratePipeline->UnbindPipeline();
 
-	EnvironmentMapRenderer::~EnvironmentMapRenderer()
-	{
-		AssetManager* man = manager->getAssetManager();
+        brdfMap->Bind();
 
-		if(equirectangularMap.pointer != nullptr)
-			man->removeReference<Texture>(equirectangularMap.handle);
+        __EnvironmentMapConfig.brdfLUT = brdfMap.pointer;
+    }
 
-		man->removeReference<Texture>(environmentMap.handle);
-		man->removeReference<Texture>(irradianceMap.handle);
-		man->removeReference<Texture>(prefilterMap.handle);
+    EnvironmentMapRenderer::~EnvironmentMapRenderer() {
+        AssetManager *man = manager->getAssetManager();
 
-		delete framebuffer;
+        if (equirectangularMap.pointer != nullptr)
+            man->removeReference<Texture>(equirectangularMap.handle);
 
-		manager->removeReference<Pipeline>(environmentMapPipeline.handle);
-		manager->removeReference<Pipeline>(irradiancePipeline.handle);
-		manager->removeReference<Pipeline>(prefilterPipeline.handle);
-		manager->removeReference<Pipeline>(brdfIntegratePipeline.handle);
-		manager->removeReference<Pipeline>(backgroundPipeline.handle);
-	}
+        man->removeReference<Texture>(environmentMap.handle);
+        man->removeReference<Texture>(irradianceMap.handle);
+        man->removeReference<Texture>(prefilterMap.handle);
 
-	void EnvironmentMapRenderer::GenerateEnvironmentMap()
-	{
-		AssetManager* man = manager->getAssetManager();
+        delete framebuffer;
 
-		if (environmentMap.pointer != nullptr)
-		{
-			man->removeReference<Texture>(environmentMap.handle);
-			man->removeReference<Texture>(irradianceMap.handle);
-			man->removeReference<Texture>(prefilterMap.handle);
+        manager->removeReference<Pipeline>(environmentMapPipeline.handle);
+        manager->removeReference<Pipeline>(irradiancePipeline.handle);
+        manager->removeReference<Pipeline>(prefilterPipeline.handle);
+        manager->removeReference<Pipeline>(brdfIntegratePipeline.handle);
+        manager->removeReference<Pipeline>(backgroundPipeline.handle);
+    }
 
-			static_cast<GLComputePipeline*>(environmentMapPipeline.pointer)->removeTextureBinding(0);
-			static_cast<GLComputePipeline*>(environmentMapPipeline.pointer)->removeTextureBinding(1);
+    void EnvironmentMapRenderer::GenerateEnvironmentMap() {
+        AssetManager *man = manager->getAssetManager();
 
-			static_cast<GLComputePipeline*>(irradiancePipeline.pointer)->removeTextureBinding(0);
-			static_cast<GLComputePipeline*>(prefilterPipeline.pointer)->removeTextureBinding(0);
-		}
+        if (environmentMap.pointer != nullptr) {
+            man->removeReference<Texture>(environmentMap.handle);
+            man->removeReference<Texture>(irradianceMap.handle);
+            man->removeReference<Texture>(prefilterMap.handle);
 
-		if (atmosphere == nullptr)
-		{
-			{
-				PR_PROFILE("Creating the equirectangular map");
+            static_cast<GLComputePipeline *>(environmentMapPipeline.pointer)->removeTextureBinding(0);
+            static_cast<GLComputePipeline *>(environmentMapPipeline.pointer)->removeTextureBinding(1);
 
-				if (mapCache.empty())
-				{
-					equirectangularMap = man->loadTexture(__EnvironmentMapConfig.environmentMapLocation, Bilinear, ClampToEdge).value();
-				}
-				else
-				{
-					if (mapCache != __EnvironmentMapConfig.environmentMapLocation)
-					{
-						if (equirectangularMap.pointer != nullptr)
-						{
-							man->removeReference<Texture>(equirectangularMap.handle);
-						}
+            static_cast<GLComputePipeline *>(irradiancePipeline.pointer)->removeTextureBinding(0);
+            static_cast<GLComputePipeline *>(prefilterPipeline.pointer)->removeTextureBinding(0);
+        }
 
-						equirectangularMap = man->loadTexture(__EnvironmentMapConfig.environmentMapLocation, Bilinear, ClampToEdge).value();
-					}
-				}
+        if (atmosphere == nullptr) {
+            {
+                PR_PROFILE("Creating the equirectangular map");
 
-				man->addReference<Texture>(equirectangularMap.handle);
+                if (mapCache.empty()) {
+                    equirectangularMap = man->loadTexture(__EnvironmentMapConfig.environmentMapLocation, Bilinear,
+                                                          ClampToEdge).value();
+                } else {
+                    if (mapCache != __EnvironmentMapConfig.environmentMapLocation) {
+                        if (equirectangularMap.pointer != nullptr) {
+                            man->removeReference<Texture>(equirectangularMap.handle);
+                        }
 
-				mapCache = __EnvironmentMapConfig.environmentMapLocation;
-			}
-		}
+                        equirectangularMap = man->loadTexture(__EnvironmentMapConfig.environmentMapLocation, Bilinear,
+                                                              ClampToEdge).value();
+                    }
+                }
 
-		{
-			uint32_t size = __EnvironmentMapConfig.environmentMapResolution;
+                man->addReference<Texture>(equirectangularMap.handle);
 
-			if (atmosphere != nullptr)
-			{
-				environmentMap = man->storeTexture(GLTexture::Storage3D(size, size, 1, R8G8B8A8_LINEAR, Trilinear, ClampToEdge, false));
-			}
-			else
-			{
-				environmentMap = man->storeTexture(GLTexture::Storage3D(size, size, 1, R8G8B8A8_LINEAR, Trilinear, ClampToEdge, true));
-			}
+                mapCache = __EnvironmentMapConfig.environmentMapLocation;
+            }
+        }
 
-			{
-				PR_PROFILE("Creating the textures");
-				man->addReference<Texture>(environmentMap.handle);
-				static_cast<GLComputePipeline*>(environmentMapPipeline.pointer)->setInvocationSize({ size / 16, size / 16, 6 });
-				static_cast<GLComputePipeline*>(environmentMapPipeline.pointer)->addTextureBinding(0, environmentMap.pointer, (AccessMask)ComputeAccessFlags::WRITE_ONLY);
-				static_cast<GLComputePipeline*>(environmentMapPipeline.pointer)->addTextureBinding(1, equirectangularMap.pointer, (AccessMask)ComputeAccessFlags::READ_ONLY);
+        {
+            uint32_t size = __EnvironmentMapConfig.environmentMapResolution;
 
-				size = __EnvironmentMapConfig.irradianceMapResolution;
-				irradianceMap = man->storeTexture(GLTexture::Storage3D(size, size, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false));
-				man->addReference<Texture>(irradianceMap.handle);
-				static_cast<GLComputePipeline*>(irradiancePipeline.pointer)->setInvocationSize({ size / 16, size / 16, 6 });
-				static_cast<GLComputePipeline*>(irradiancePipeline.pointer)->addTextureBinding(0, irradianceMap.pointer, (AccessMask)ComputeAccessFlags::WRITE_ONLY);
+            if (atmosphere != nullptr) {
+                environmentMap = man->storeTexture(
+                    GLTexture::Storage3D(size, size, 1, R8G8B8A8_LINEAR, Trilinear, ClampToEdge, false));
+            } else {
+                environmentMap = man->storeTexture(
+                    GLTexture::Storage3D(size, size, 1, R8G8B8A8_LINEAR, Trilinear, ClampToEdge, true));
+            }
 
-				size = __EnvironmentMapConfig.prefilterMapResolution;
-				prefilterMap = man->storeTexture(GLTexture::Storage3D(size, size, __EnvironmentMapConfig.prefilterLevels, R8G8B8A8_LINEAR, Trilinear, ClampToEdge, true));
-				man->addReference<Texture>(prefilterMap.handle);
-			}
-		}
+            {
+                PR_PROFILE("Creating the textures");
+                man->addReference<Texture>(environmentMap.handle);
+                static_cast<GLComputePipeline *>(environmentMapPipeline.pointer)->setInvocationSize({
+                    size / 16, size / 16, 6
+                });
+                static_cast<GLComputePipeline *>(environmentMapPipeline.pointer)->addTextureBinding(
+                    0, environmentMap.pointer, (AccessMask) ComputeAccessFlags::WRITE_ONLY);
+                static_cast<GLComputePipeline *>(environmentMapPipeline.pointer)->addTextureBinding(
+                    1, equirectangularMap.pointer, (AccessMask) ComputeAccessFlags::READ_ONLY);
 
-		// Rendering the cube map
-		{
-			PR_PROFILE("Creating the cube map");
-			if (atmosphere != nullptr)
-			{
-				uint32_t size = __EnvironmentMapConfig.environmentMapResolution;
-				framebuffer->Bind();
-				window->getSwapchain()->SetWindowSize(size, size);
+                size = __EnvironmentMapConfig.irradianceMapResolution;
+                irradianceMap = man->storeTexture(
+                    GLTexture::Storage3D(size, size, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false));
+                man->addReference<Texture>(irradianceMap.handle);
+                static_cast<GLComputePipeline *>(irradiancePipeline.pointer)->setInvocationSize({
+                    size / 16, size / 16, 6
+                });
+                static_cast<GLComputePipeline *>(irradiancePipeline.pointer)->addTextureBinding(
+                    0, irradianceMap.pointer, (AccessMask) ComputeAccessFlags::WRITE_ONLY);
 
-				RendererComponent* comp = atmosphere->GetComponent<RendererComponent>();
-				Pipeline* pipeline = comp->getPipeline();
+                size = __EnvironmentMapConfig.prefilterMapResolution;
+                prefilterMap = man->storeTexture(GLTexture::Storage3D(
+                    size, size, __EnvironmentMapConfig.prefilterLevels, R8G8B8A8_LINEAR, Trilinear, ClampToEdge, true));
+                man->addReference<Texture>(prefilterMap.handle);
+            }
+        }
 
-				pipeline->BindPipeline(nullptr);
-				for (uint32_t i = 0; i < 6; ++i)
-				{
-					framebuffer->addColourAttachment3D(environmentMap.pointer, i);
-					framebuffer->Clear(0.0f);
+        // Rendering the cube map
+        {
+            PR_PROFILE("Creating the cube map");
+            if (atmosphere != nullptr) {
+                uint32_t size = __EnvironmentMapConfig.environmentMapResolution;
+                framebuffer->Bind();
+                window->getSwapchain()->SetWindowSize(size, size);
 
-					if (__AtmosphereConfig.scatteringEnabled)
-					{
-						static_cast<GLAtmosphereScatteringShader*>(pipeline->getShader())->UpdateUniforms(atmosphere, viewMatrices[i], projectionMatrix);
-					}
-					else
-					{
-						static_cast<GLAtmosphereShader*>(pipeline->getShader())->UpdateUniforms(viewMatrices[i], projectionMatrix);
-					}
-					pipeline->RenderPipeline();
-				}
-				pipeline->UnbindPipeline();
+                RendererComponent *comp = atmosphere->GetComponent<RendererComponent>();
+                Pipeline *pipeline = comp->getPipeline();
 
-				window->getSwapchain()->SetWindowSize(window->getWidth(), window->getHeight());
-				framebuffer->Unbind();
-			}
-			else
-			{
-				environmentMapPipeline->BindPipeline(nullptr);
-				static_cast<GLEnvironmentMapShader*>(environmentMapShader.pointer)->UpdateUniforms(Vector2f((float)equirectangularMap->getWidth(), (float)equirectangularMap->getHeight()));
-				environmentMapPipeline->RenderPipeline();
-				environmentMapPipeline->UnbindPipeline();
-			}
+                pipeline->BindPipeline(nullptr);
+                for (uint32_t i = 0; i < 6; ++i) {
+                    framebuffer->addColourAttachment3D(environmentMap.pointer, i);
+                    framebuffer->Clear(0.0f);
 
-			environmentMap->Bind();
-			environmentMap->GenerateMipmaps();
-		}
+                    if (__AtmosphereConfig.scatteringEnabled) {
+                        static_cast<GLAtmosphereScatteringShader *>(pipeline->getShader())->UpdateUniforms(
+                            atmosphere, viewMatrices[i], projectionMatrix);
+                    } else {
+                        static_cast<GLAtmosphereShader *>(pipeline->getShader())->UpdateUniforms(
+                            viewMatrices[i], projectionMatrix);
+                    }
+                    pipeline->RenderPipeline();
+                }
+                pipeline->UnbindPipeline();
 
-		//Rendering the diffuse irradiance map
-		{
-			PR_PROFILE("Creating the irradiance map");
-			irradiancePipeline->BindPipeline(nullptr);
-			static_cast<GLIrradianceShader*>(irradianceShader.pointer)->UpdateUniforms(environmentMap.pointer);
-			irradiancePipeline->RenderPipeline();
-			irradiancePipeline->UnbindPipeline();
+                window->getSwapchain()->SetWindowSize(window->getWidth(), window->getHeight());
+                framebuffer->Unbind();
+            } else {
+                environmentMapPipeline->BindPipeline(nullptr);
+                static_cast<GLEnvironmentMapShader *>(environmentMapShader.pointer)->UpdateUniforms(
+                    Vector2f((float) equirectangularMap->getWidth(), (float) equirectangularMap->getHeight()));
+                environmentMapPipeline->RenderPipeline();
+                environmentMapPipeline->UnbindPipeline();
+            }
 
-			irradianceMap->Bind();
-		}
+            environmentMap->Bind();
+            environmentMap->GenerateMipmaps();
+        }
 
-		//Rendering the pre-filter enviroment map
-		{
-			PR_PROFILE("Creating the prefilter map");
-			for (int level = 0; level < (int)__EnvironmentMapConfig.prefilterLevels; ++level)
-			{
-				int levelSize = (int)(__EnvironmentMapConfig.prefilterMapResolution * pow(0.5f, level));
-				float roughness = (float)level / (__EnvironmentMapConfig.prefilterLevels - 1);
+        //Rendering the diffuse irradiance map
+        {
+            PR_PROFILE("Creating the irradiance map");
+            irradiancePipeline->BindPipeline(nullptr);
+            static_cast<GLIrradianceShader *>(irradianceShader.pointer)->UpdateUniforms(environmentMap.pointer);
+            irradiancePipeline->RenderPipeline();
+            irradiancePipeline->UnbindPipeline();
 
-				if (level > 0)
-					static_cast<GLComputePipeline*>(prefilterPipeline.pointer)->removeTextureBinding(0);
+            irradianceMap->Bind();
+        }
 
-				static_cast<GLComputePipeline*>(prefilterPipeline.pointer)->setInvocationSize({ (uint32_t)levelSize / 16, (uint32_t)levelSize / 16, 6 });
-				static_cast<GLComputePipeline*>(prefilterPipeline.pointer)->addTextureBinding(0, prefilterMap.pointer, (AccessMask)ComputeAccessFlags::WRITE_ONLY, (size_t)level);
+        //Rendering the pre-filter enviroment map
+        {
+            PR_PROFILE("Creating the prefilter map");
+            for (int level = 0; level < (int) __EnvironmentMapConfig.prefilterLevels; ++level) {
+                int levelSize = (int) (__EnvironmentMapConfig.prefilterMapResolution * pow(0.5f, level));
+                float roughness = (float) level / (__EnvironmentMapConfig.prefilterLevels - 1);
 
-				prefilterPipeline->BindPipeline(nullptr);
-				static_cast<GLPrefilterShader*>(prefilterShader.pointer)->UpdateUniforms(environmentMap.pointer, roughness, (float)levelSize);
-				prefilterPipeline->RenderPipeline();
-			}
-			prefilterPipeline->UnbindPipeline();
+                if (level > 0)
+                    static_cast<GLComputePipeline *>(prefilterPipeline.pointer)->removeTextureBinding(0);
 
-			prefilterMap->Bind();
-		}
+                static_cast<GLComputePipeline *>(prefilterPipeline.pointer)->setInvocationSize({
+                    (uint32_t) levelSize / 16, (uint32_t) levelSize / 16, 6
+                });
+                static_cast<GLComputePipeline *>(prefilterPipeline.pointer)->addTextureBinding(
+                    0, prefilterMap.pointer, (AccessMask) ComputeAccessFlags::WRITE_ONLY, (size_t) level);
 
-		__EnvironmentMapConfig.environmentMap = environmentMap.pointer;
-		__EnvironmentMapConfig.irradianceMap = irradianceMap.pointer;
-		__EnvironmentMapConfig.prefilterMap = prefilterMap.pointer;
-	}
+                prefilterPipeline->BindPipeline(nullptr);
+                static_cast<GLPrefilterShader *>(prefilterShader.pointer)->UpdateUniforms(
+                    environmentMap.pointer, roughness, (float) levelSize);
+                prefilterPipeline->RenderPipeline();
+            }
+            prefilterPipeline->UnbindPipeline();
 
-	void EnvironmentMapRenderer::RenderCube(Camera* camera)
-	{
-		backgroundPipeline->BindPipeline(nullptr);
-		static_cast<GLEnvironmentShader*>(environmentShader.pointer)->UpdateUniforms(camera->getProjectionMatrix(), camera->getOriginalViewMatrix(), prefilterMap.pointer, lodRenderedMap);
-		backgroundPipeline->RenderPipeline();
-		backgroundPipeline->UnbindPipeline();
-	}
+            prefilterMap->Bind();
+        }
+
+        __EnvironmentMapConfig.environmentMap = environmentMap.pointer;
+        __EnvironmentMapConfig.irradianceMap = irradianceMap.pointer;
+        __EnvironmentMapConfig.prefilterMap = prefilterMap.pointer;
+    }
+
+    void EnvironmentMapRenderer::RenderCube(Camera *camera) {
+        backgroundPipeline->BindPipeline(nullptr);
+        static_cast<GLEnvironmentShader *>(environmentShader.pointer)->UpdateUniforms(
+            camera->getProjectionMatrix(), camera->getOriginalViewMatrix(), prefilterMap.pointer, lodRenderedMap);
+        backgroundPipeline->RenderPipeline();
+        backgroundPipeline->UnbindPipeline();
+    }
 };

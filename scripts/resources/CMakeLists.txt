@@ -4,7 +4,7 @@ project(PrehistoricResources LANGUAGES NONE)
 
 get_filename_component(resource_source "${CMAKE_CURRENT_LIST_DIR}/../../PrehistoricEngine/res" ABSOLUTE)
 set(PREHISTORIC_RESOURCE_OUTPUT "${CMAKE_BINARY_DIR}/bin/engine-resources" CACHE PATH
-        "Runtime fonts and shaders directory")
+        "Runtime engine resources directory")
 find_program(PREHISTORIC_GLSLC NAMES glslc
         HINTS "$ENV{VULKAN_SDK}/bin" "$ENV{VULKAN_SDK}/Bin")
 if (NOT PREHISTORIC_GLSLC)
@@ -14,7 +14,8 @@ option(PREHISTORIC_EXPERIMENTAL_SHADERS "Compile the unfinished Vulkan environme
 
 # Runtime inputs are copied incrementally; shader source additions trigger reconfigure.
 file(GLOB_RECURSE runtime_inputs CONFIGURE_DEPENDS RELATIVE "${resource_source}"
-        "${resource_source}/fonts/*" "${resource_source}/shaders/opengl/*")
+        "${resource_source}/fonts/*" "${resource_source}/shaders/opengl/*"
+        "${resource_source}/models/*" "${resource_source}/textures/*")
 set(runtime_outputs)
 foreach (relative IN LISTS runtime_inputs)
     set(output "${PREHISTORIC_RESOURCE_OUTPUT}/${relative}")

@@ -1,6 +1,7 @@
 # Resource consolidation assessment
 
-**Implementation update:** Fonts and shaders have since been consolidated under
+**Implementation update:** Fonts, shaders, engine primitive models and default textures have since been consolidated
+under
 `PrehistoricEngine/res/`, with generated runtime packages and portable compilation.
 See [BUILDING.md](../BUILDING.md#shared-fonts-and-shaders). The inventory and findings
 below describe the pre-migration snapshot.
