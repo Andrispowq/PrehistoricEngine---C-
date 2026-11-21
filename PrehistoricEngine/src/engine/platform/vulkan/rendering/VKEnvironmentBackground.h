@@ -22,6 +22,8 @@ namespace Prehistoric {
 
         void Draw(VkCommandBuffer commandBuffer, const Camera *camera) const;
 
+        VkDescriptorImageInfo getSource() const;
+
     private:
         VKDevice *device;
         VKSwapchain *swapchain;

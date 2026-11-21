@@ -270,6 +270,21 @@ namespace Prehistoric {
         vkUnmapMemory(device->getDevice(), mem);
     }
 
+    void VKShader::SetSampledImage(const std::string &name, const VkDescriptorImageInfo &image) const {
+        auto location = descriptorPool->getUniformLocation(name);
+        const auto &sets = descriptorPool->getSet(location.first, 0)->getSets();
+        std::vector<VkWriteDescriptorSet> writes(sets.size());
+        for (size_t i = 0; i < sets.size(); ++i) {
+            writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            writes[i].dstSet = sets[i];
+            writes[i].dstBinding = location.second;
+            writes[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            writes[i].descriptorCount = 1;
+            writes[i].pImageInfo = &image;
+        }
+        vkUpdateDescriptorSets(device->getDevice(), uint32_t(writes.size()), writes.data(), 0, nullptr);
+    }
+
     void VKShader::RegisterInstance() {
         descriptorPool->registerInstance();
     }

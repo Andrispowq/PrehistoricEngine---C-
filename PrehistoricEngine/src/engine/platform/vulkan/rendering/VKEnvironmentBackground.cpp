@@ -42,7 +42,10 @@ namespace Prehistoric {
                                 properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT
                                     ? VK_FILTER_LINEAR
                                     : VK_FILTER_NEAREST;
-        samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+        samplerInfo.mipmapMode = samplerInfo.minFilter == VK_FILTER_LINEAR
+                                     ? VK_SAMPLER_MIPMAP_MODE_LINEAR
+                                     : VK_SAMPLER_MIPMAP_MODE_NEAREST;
+        samplerInfo.maxLod = float(texture->getImage()->getMipLevels() - 1);
         samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
         samplerInfo.addressModeV = samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
         Check(vkCreateSampler(device->getDevice(), &samplerInfo, nullptr, &sampler));
@@ -92,6 +95,13 @@ namespace Prehistoric {
         Check(vkCreatePipelineLayout(device->getDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout));
 
         RecreatePipeline();
+    }
+
+    VkDescriptorImageInfo VKEnvironmentBackground::getSource() const {
+        return {
+            sampler, texture ? texture->getImage()->getImageView() : VK_NULL_HANDLE,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+        };
     }
 
     VKEnvironmentBackground::~VKEnvironmentBackground() {

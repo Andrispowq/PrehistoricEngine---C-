@@ -36,6 +36,7 @@
 
 ## Code and assets
 
+- Put block opening braces on a new line, preserving existing indentation and spacing.
 - Follow the surrounding C++ formatting and ownership conventions. Keep shared
   interfaces backend-neutral and platform-specific code behind platform selection.
 - Vulkan feature presence does not imply parity with OpenGL. Verify descriptors,

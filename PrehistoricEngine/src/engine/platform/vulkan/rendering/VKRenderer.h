@@ -11,6 +11,7 @@
 
 namespace Prehistoric {
     class VKEnvironmentBackground;
+    class VKEnvironmentLighting;
 
     class VKRenderer : public Renderer {
     public:
@@ -30,6 +31,10 @@ namespace Prehistoric {
             return (CommandBuffer *) commandPool->getCommandBuffer(window->getSwapchain()->getAquiredImageIndex());
         }
 
+        VKEnvironmentLighting *getEnvironmentLighting() const {
+            return environmentLighting.get();
+        }
+
     private:
         std::unique_ptr<VKCommandPool> commandPool;
         std::unique_ptr<VKRenderpass> renderpass;
@@ -37,6 +42,7 @@ namespace Prehistoric {
         std::vector<std::unique_ptr<VKFramebuffer> > primaryFramebuffers;
 
         std::unique_ptr<VKEnvironmentBackground> background;
+        std::unique_ptr<VKEnvironmentLighting> environmentLighting;
 
         bool commandBuffersReady = false;
         bool frameReady = false;

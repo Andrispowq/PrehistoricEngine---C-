@@ -354,8 +354,53 @@ expanded to RGBA floats and uploaded without 8-bit clipping. The sampler repeats
 at the longitude seam and clamps at the poles; devices without float linear
 filtering use nearest filtering. Resize recreates the pipeline for the new render
 pass. The two background shaders are part of the normal portable resource build.
-IBL and procedural atmosphere remain unimplemented in this Vulkan path.
+The background remains independent of the IBL maps. Procedural atmosphere is still deferred.
 
 Run `python3 tests/vulkan_background_contract.py` to check compiled shader
 interfaces and resource selection, and `python3 tests/resource_pipeline.py` to
 check shader staging/install and incremental builds. These are not visual tests.
+
+## Vulkan image-based lighting
+
+Vulkan now bakes diffuse irradiance, a GGX-prefiltered reflection cubemap, and a
+split-sum BRDF lookup table from the same HDR source as the background. PBR uses
+these maps for its ambient term, including metallic Fresnel weighting, material
+occlusion, the perturbed normal and reflection direction. The existing direct
+light `/2.0` geometry term, scalar emission and output encoding remain in place.
+Diffuse convolution stores irradiance divided by PI, so a constant white
+surrounding environment produces unit diffuse radiance before material weighting.
+
+The bake runs once during renderer initialization on a graphics queue that also
+supports compute. Explicit image barriers and a completion fence precede PBR
+sampling; the generated maps survive window resizing. Changing the environment
+configuration requires restarting the renderer. An empty environment location
+uses black IBL while preserving the background clear-colour behavior.
+
+To bound startup work, Vulkan caps the configured irradiance resolution at 64
+and reflection resolution at 256, with 512 samples per convolution/LUT texel and
+a 256-square BRDF LUT. Reflection mip count uses `prefilterMapLevels`, clamped to
+the valid chain (at least two levels); PBR derives its maximum LOD from that
+chain. Maps remain linear RGBA32F. The HDR source now has a full mip chain on
+hardware supporting linear float blits. Convolution chooses the source LOD from
+the sample PDF and the equirectangular footprint, using its major axis to avoid
+longitude discontinuities at the poles. The background and mirror reflection
+still sample the sharp base level. Hardware lacking float blit/filter support
+retains the single-level/nearest fallback and does not receive the full filtering
+quality improvement.
+
+Two analytic sampling frames cover the sphere. Their convolution results blend
+smoothly across an equatorial overlap, removing hard sample-pattern switches
+without introducing a new seam at the opposite pole. The overlap evaluates both
+frames, adding startup bake work but no per-frame rendering cost. Finite sampling
+can still produce residual variation; this is not a guarantee of noise-free IBL.
+
+Run `python3 tests/vulkan_ibl_smoke.py` with the Vulkan SDK installed (`VULKAN_SDK`
+can specify its root). This headless test executes the production baker and reads
+back sampled maps for black, constant-HDR, directional and actual Cape Hill HDR
+environments. It exercises the production source-mip recording helper, energy,
+cube orientation, diffuse normalization, roughness filtering, BRDF values and
+nearby samples straddling the old basis switch, the new blend boundaries, and all
+12 cube edges. It also verifies source mip availability and sharp mirror sampling
+under Vulkan validation. It does not require or inspect a window. On macOS,
+the process needs access to Metal; a sandbox that hides GPUs cannot run it.
+`python3 tests/vulkan_pbr_contract.py` also checks the compiled global IBL bindings.

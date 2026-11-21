@@ -1,6 +1,10 @@
 #include "Includes.hpp"
 #include "VKRenderer.h"
 #include "VKEnvironmentBackground.h"
+#include "VKEnvironmentLighting.h"
+#include "platform/vulkan/texture/VKTexture.h"
+#include "prehistoric/application/Application.h"
+#include "prehistoric/core/resources/loaders/TextureLoader.h"
 
 #include "prehistoric/core/node/component/renderer/RenderableComponent.h"
 
@@ -47,6 +51,30 @@ namespace Prehistoric {
         swapchain->setRenderpass(renderpass.get());
         //A nastly little cheat to avoid modifying everything in the Pipeline system because the Vulkan Graphics Pipelines require the renderpass
         background = std::make_unique<VKEnvironmentBackground>(window);
+
+        VkDescriptorImageInfo source = background->getSource();
+        std::unique_ptr<VKTexture> fallback;
+        if (!source.imageView) {
+            fallback.reset(
+                (VKTexture *)
+                TextureLoader::LoadTexture(window, "engine://textures/default.png", Bilinear, ClampToEdge));
+            source = {
+                fallback->getSampler(), fallback->getImage()->getImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+            };
+        }
+
+        // Cap startup work independently of the more expensive OpenGL bake settings.
+        // Maps are immutable and survive swapchain recreation.
+        uint32_t irradianceSize = std::clamp(uint32_t(__EnvironmentMapConfig.irradianceMapResolution), 1u, 64u);
+        uint32_t prefilterSize = std::clamp(uint32_t(__EnvironmentMapConfig.prefilterMapResolution), 2u, 256u);
+        uint32_t levels = std::clamp(uint32_t(__EnvironmentMapConfig.prefilterLevels), 2u, 9u);
+        environmentLighting = std::make_unique<VKEnvironmentLighting>(device->getPhysicalDevice(), device->getDevice(),
+                                                                      device->getGraphicsQueue().getQueue(),
+                                                                      device->getQueueFamilyIndices().graphicsFamily,
+                                                                      source,
+                                                                      irradianceSize, prefilterSize, levels,
+                                                                      ResourceLoader::LoadShaderVK(
+                                                                          "vulkan/ibl/ibl_CS.spv"));
     }
 
     VKRenderer::~VKRenderer() {

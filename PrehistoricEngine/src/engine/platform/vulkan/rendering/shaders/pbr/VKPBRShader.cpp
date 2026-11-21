@@ -2,6 +2,8 @@
 #include <algorithm>
 #include "platform/vulkan/rendering/shaders/VKColourSpace.h"
 #include "VKPBRShader.h"
+#include "platform/vulkan/rendering/VKRenderer.h"
+#include "platform/vulkan/rendering/VKEnvironmentLighting.h"
 
 #include "prehistoric/application/Application.h"
 
@@ -15,6 +17,11 @@ namespace Prehistoric {
         AddUniform("lightConditions", FRAGMENT_SHADER, UniformBuffer, 0, 1, sizeof(int) * 2 + sizeof(float) * 2);
         AddUniform("lights", FRAGMENT_SHADER, UniformBuffer, 0, 2,
                    Vector4f::size() * 3 * __EngineConfig.lightsMaxNumber);
+
+        AddUniform("irradianceMap", FRAGMENT_SHADER, CombinedImageSampler, 0, 3, 0, nullptr);
+        AddUniform("prefilterMap", FRAGMENT_SHADER, CombinedImageSampler, 0, 4, 0, nullptr);
+        AddUniform("brdfLUT", FRAGMENT_SHADER, CombinedImageSampler, 0, 5, 0, nullptr);
+        AddUniform("environment", FRAGMENT_SHADER, UniformBuffer, 0, 6, sizeof(float) * 4);
 
         AddUniform(ALBEDO_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 0, 0, nullptr);
         AddUniform(NORMAL_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 1, 0, nullptr);
@@ -52,6 +59,14 @@ namespace Prehistoric {
     }
 
     void VKPBRShader::UpdateGlobalUniforms(Renderer *renderer) const {
+        auto *environment = static_cast<VKRenderer *>(renderer)->getEnvironmentLighting();
+        // Refresh along with other global uniforms: registering scene instances
+        // can reallocate the descriptor pool and invalidate previous bindings.
+        SetSampledImage("irradianceMap", environment->getIrradiance());
+        SetSampledImage("prefilterMap", environment->getPrefilter());
+        SetSampledImage("brdfLUT", environment->getBRDF());
+        SetUniformf("environment", environment->getMaxReflectionLOD());
+
         Camera *camera = renderer->getCamera();
         std::vector<Light *> lights = renderer->getLights();
 

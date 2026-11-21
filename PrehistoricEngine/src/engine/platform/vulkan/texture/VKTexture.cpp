@@ -22,12 +22,21 @@ namespace Prehistoric {
     }
 
     void VKTexture::UploadTextureData(ImageData data) {
-        // HDR uploads use float RGBA and one mip level: the sky samples LOD 0.
-        // This also avoids requiring float-format blit support for mip generation.
+        // Keep the HDR source mip chain for filtered IBL integration. The sky
+        // still samples LOD 0. Devices without float blit support retain one mip.
         if (data.type == ImageData::ImageType::HDR) {
-            image = std::make_unique<VKImage>(device, data.width, data.height, 1,
+            VkFormatProperties properties{};
+            vkGetPhysicalDeviceFormatProperties(device->getPhysicalDevice(), VK_FORMAT_R32G32B32A32_SFLOAT,
+                                                &properties);
+            const auto required = VK_FORMAT_FEATURE_BLIT_SRC_BIT | VK_FORMAT_FEATURE_BLIT_DST_BIT |
+                                  VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
+            uint32_t mipLevels = (properties.optimalTilingFeatures & required) == required
+                                     ? uint32_t(std::floor(std::log2((std::max)(data.width, data.height)))) + 1
+                                     : 1;
+            image = std::make_unique<VKImage>(device, data.width, data.height, mipLevels,
                                               VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
-                                              VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                                              VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+                                              VK_IMAGE_USAGE_SAMPLED_BIT,
                                               VK_SAMPLE_COUNT_1_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                                               VK_IMAGE_ASPECT_COLOR_BIT);
         }

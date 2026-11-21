@@ -39,6 +39,17 @@ with tempfile.TemporaryDirectory(prefix='vulkan-pbr-contract-') as temporary:
         for identifier in texture_set}
     assert texture_bindings == {0, 1, 2}, 'No emission texture/fallback should be bound'
     assert 'emissionMap' not in assembly
+    # IBL is global, separate from material textures. Reflect actual SPIR-V.
+    for name, binding, dimension in (('irradianceMap', 3, 'Cube'), ('prefilterMap', 4, 'Cube'), ('brdfLUT', 5, '2D')):
+        identifier = re.search(r'OpName\s+(%\S+)\s+"' + name + '"', assembly).group(1)
+        assert re.search(r'OpDecorate\s+' + re.escape(identifier) + r'\s+DescriptorSet\s+0\b', assembly)
+        assert re.search(r'OpDecorate\s+' + re.escape(identifier) + rf'\s+Binding\s+{binding}\b', assembly)
+        pointer = re.search(re.escape(identifier) + r'\s*=\s*OpVariable\s+(%\S+)', assembly).group(1)
+        sampled = re.search(re.escape(pointer) + r'\s*=\s*OpTypePointer\s+UniformConstant\s+(%\S+)', assembly).group(1)
+        image = re.search(re.escape(sampled) + r'\s*=\s*OpTypeSampledImage\s+(%\S+)', assembly).group(1)
+        assert re.search(re.escape(image) + r'\s*=\s*OpTypeImage\s+%\S+\s+' + dimension + r'\b', assembly)
+    assert 'OpImageSampleExplicitLod' in assembly
+
     assert re.search(r'float k\s*=\s*\(r\s*\*\s*r\)\s*/\s*2\.0',
                      shader.read_text()), 'Preserve the requested BRDF geometry term'
 
