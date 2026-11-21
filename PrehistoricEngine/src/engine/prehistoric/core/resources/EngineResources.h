@@ -11,6 +11,11 @@ namespace Prehistoric {
     // Stable serialized IDs; only the explicitly migrated legacy paths are aliases.
     std::string CanonicalAssetReference(const std::string &reference);
 
+    // Separate read-only sample package; override with PREHISTORIC_SAMPLE_RESOURCES.
+    std::string SampleResourcePath(const std::string &relativePath);
+
+    bool IsSharedAsset(const std::string &reference);
+
     bool IsEngineAsset(const std::string &reference);
 
     std::string ResolveAssetPath(const std::string &reference);

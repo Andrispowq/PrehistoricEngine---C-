@@ -261,10 +261,10 @@ not redirected. These legacy default names are reserved aliases; give custom
 project assets distinct names. Missing engine resources fail explicitly rather
 than substituting a project asset.
 
-Sponza, dome, grass, `myscene`, terrain/heightmaps, floor materials, environment
-images, and water caustics remain in the applications' resource trees. Their
-content and ownership have not changed. Project working-directory requirements
-therefore remain unchanged.
+Shared Sponza, dome, `myscene`, terrain textures, floor materials and environment
+images now belong to the separate sample package described below. Unique grass,
+converted assets and water caustics stay app-specific. Project working-directory
+requirements remain unchanged for app settings, worlds and unique assets.
 
 Immediate and queued loads of shared defaults skip the existing automatic PMF/PRT
 export. Loading a built-in no longer recreates copies under application `res/`
@@ -275,3 +275,46 @@ preserved as inputs, not regenerated during a read.
 `python3 tests/resource_pipeline.py` also verifies all default models/textures in
 both executable layouts, legacy aliases, engine IDs with world directory prefixes,
 and that scene-specific references stay project-local.
+
+## Shared sample resources
+
+Shared sample content now lives in `samples/res/`, separately from engine defaults:
+5 model files (dome OBJ, myscene OBJ/MTL, Sponza OBJ/MTL), 88 texture/support files,
+and 5 WAV files. Matching paths were compared byte-for-byte before consolidating
+both application copies. Associated texture documentation is preserved.
+
+Both applications build `SampleResources` through their existing `EngineResources`
+dependency. CMake stages the package at `<build>/bin/sample-resources`; native
+Premake stages it beside `engine-resources` in the configuration output directory.
+Rebuild just sample content with:
+
+```sh
+cmake --build cmake-build-debug --target SampleResources
+```
+
+The standalone `scripts/resources` build and install now produce both
+`engine-resources` and `sample-resources`. Deploy both directories beside the apps
+(or in the common parent directory for Premake's separate application folders).
+`PREHISTORIC_SAMPLE_OUTPUT` selects the sample staging destination at configure time;
+its default is beside `PREHISTORIC_RESOURCE_OUTPUT`. Windows installers include the
+sample package and accept `/DSampleResourceDir=...` for an alternative build layout.
+
+Runtime IDs use `sample://models/sponza.obj`, `sample://textures/oakFloor/oakFloor_DIF.png`
+and `sample://sounds/_Closer.wav`. `PREHISTORIC_SAMPLE_RESOURCES` overrides the
+sample package location independently of `PREHISTORIC_ENGINE_RESOURCES`. Explicit
+missing overrides fail rather than falling back to another package. The manifest
+in `SharedSampleAssets.h` maps only the migrated legacy `res/...` paths to sample
+IDs, so existing worlds and configurations do not need rewriting. The world loader
+accepts sample IDs alongside its per-scene directory prefixes; saved IDs remain
+portable. Model material files are located relative to the model's parent directory.
+
+Sample model and texture reads skip automatic PMF/PRT export, just like engine
+assets. Unique converted PMF/PRT files, the sample app's grass pack and caustics
+remain application-owned. Settings, terrain configurations, worlds, scripts,
+fonts/shader ownership and engine defaults are unchanged by this consolidation.
+Legacy shared filenames are reserved aliases; use distinct names for new private
+project assets. An identical filename alone never triggers automatic sharing.
+
+The resource regression script checks both packages and app layouts, aliases,
+missing overrides, and incremental sample updates without shader rebuilds. Build
+and path tests do not establish full scene rendering or audio playback correctness.

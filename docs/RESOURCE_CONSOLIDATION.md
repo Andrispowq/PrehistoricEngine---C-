@@ -1,6 +1,10 @@
 # Resource consolidation assessment
 
-**Implementation update:** Fonts, shaders, engine primitive models and default textures have since been consolidated
+**Implementation update:** Shared duplicate sample models, textures and sounds now
+live in `samples/res/` and deploy as a separate `sample-resources` package. Settings,
+worlds, scripts and unique application assets remain app-specific.
+
+**Engine resource update:** Fonts, shaders, engine primitive models and default textures have since been consolidated
 under
 `PrehistoricEngine/res/`, with generated runtime packages and portable compilation.
 See [BUILDING.md](../BUILDING.md#shared-fonts-and-shaders). The inventory and findings

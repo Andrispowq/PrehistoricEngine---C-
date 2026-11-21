@@ -80,7 +80,7 @@ namespace Prehistoric {
                 raw_data->imageType = 0;
                 raw_data->size = struct_size - 20;
                 memcpy(raw_data->data, data, raw_data->size);
-                if (!IsEngineAsset(locations[i]))
+                if (!IsSharedAsset(locations[i]))
                     TextureLoader::SavePrehistoricTexture(location.substr(0, location.length() - 3) + "prt", raw_data);
                 delete[] bytes;
             } else {
@@ -312,7 +312,7 @@ namespace Prehistoric {
             raw_data->imageType = (uint32_t) ret.type;
             raw_data->size = data_size;
             memcpy(raw_data->data, ret.ptr.dataUC, raw_data->size);
-            if (!IsEngineAsset(reference))
+            if (!IsSharedAsset(reference))
                 TextureLoader::SavePrehistoricTexture(path.substr(0, path.length() - 3) + "prt", raw_data);
             delete[] bytes;
         } else {

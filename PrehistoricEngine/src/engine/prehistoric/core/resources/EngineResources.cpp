@@ -1,4 +1,6 @@
 #include "EngineResources.h"
+#include "SharedSampleAssets.h"
+#include <unordered_set>
 
 #include <cstdlib>
 #include <algorithm>
@@ -40,33 +42,40 @@ namespace Prehistoric {
 #endif
         }
 
-        std::filesystem::path ResourceRoot() {
-            if (const char *overrideRoot = std::getenv("PREHISTORIC_ENGINE_RESOURCES")) {
+        std::filesystem::path ResourceRoot(const char *package, const char *environment) {
+            if (const char *overrideRoot = std::getenv(environment)) {
                 if (*overrideRoot)
                     return std::filesystem::path(overrideRoot);
             }
             const auto directory = ExecutableDirectory();
-            const auto adjacent = directory / "engine-resources";
+            const auto adjacent = directory / package;
             if (std::filesystem::is_directory(adjacent))
                 return adjacent;
             // Premake places each executable in its own application subdirectory.
-            const auto shared = directory.parent_path() / "engine-resources";
+            const auto shared = directory.parent_path() / package;
             if (std::filesystem::is_directory(shared))
                 return shared;
             throw std::runtime_error(
-                "Engine resources missing beside executable. Build EngineResources or set PREHISTORIC_ENGINE_RESOURCES.");
+                std::string(package) + " missing beside executable. Build EngineResources or set " + environment + ".");
         }
     }
 
     std::string EngineResourcePath(const std::string &relativePath) {
-        const auto file = ResourceRoot() / relativePath;
+        const auto file = ResourceRoot("engine-resources", "PREHISTORIC_ENGINE_RESOURCES") / relativePath;
         if (!std::filesystem::is_regular_file(file))
             throw std::runtime_error("Engine resource missing: " + file.string());
         return file.generic_string();
     }
 
+    std::string SampleResourcePath(const std::string &relativePath) {
+        const auto file = ResourceRoot("sample-resources", "PREHISTORIC_SAMPLE_RESOURCES") / relativePath;
+        if (!std::filesystem::is_regular_file(file))
+            throw std::runtime_error("Sample resource missing: " + file.string());
+        return file.generic_string();
+    }
+
     std::string CanonicalAssetReference(const std::string &reference) {
-        if (reference.rfind("engine://", 0) == 0)
+        if (reference.rfind("engine://", 0) == 0 || reference.rfind("sample://", 0) == 0)
             return reference;
         std::string legacy = reference;
         std::replace(legacy.begin(), legacy.end(), '\\', '/');
@@ -107,23 +116,36 @@ namespace Prehistoric {
             {"res/textures/water/dudv1.jpg", "engine://textures/water/dudv1.jpg"},
         };
         const auto found = defaults.find(legacy);
-        return found == defaults.end() ? reference : found->second;
+        if (found != defaults.end())
+            return found->second;
+        static const std::unordered_set<std::string> samples(SharedSampleAssets.begin(), SharedSampleAssets.end());
+        if (legacy.rfind("res/", 0) == 0 && samples.count(legacy.substr(4)))
+            return "sample://" + legacy.substr(4);
+        return reference;
     }
 
     bool IsEngineAsset(const std::string &reference) {
         return CanonicalAssetReference(reference).rfind("engine://", 0) == 0;
     }
 
+    bool IsSharedAsset(const std::string &reference) {
+        const auto canonical = CanonicalAssetReference(reference);
+        return canonical.rfind("engine://", 0) == 0 || canonical.rfind("sample://", 0) == 0;
+    }
+
     std::string ResolveAssetPath(const std::string &reference) {
         const auto canonical = CanonicalAssetReference(reference);
         if (canonical.rfind("engine://", 0) == 0)
             return EngineResourcePath(canonical.substr(9));
+        if (canonical.rfind("sample://", 0) == 0)
+            return SampleResourcePath(canonical.substr(9));
         return reference;
     }
 
     std::string JoinAssetReference(const std::string &directory, const std::string &reference) {
         // Serialized asset IDs are complete references, not relative filenames.
-        if (reference.rfind("engine://", 0) == 0 || reference.rfind("res/", 0) == 0
+        if (reference.rfind("engine://", 0) == 0 || reference.rfind("sample://", 0) == 0 || reference.rfind("res/", 0)
+            == 0
             || std::filesystem::path(reference).is_absolute())
             return CanonicalAssetReference(reference);
         return CanonicalAssetReference(directory + reference);

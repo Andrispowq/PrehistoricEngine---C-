@@ -1,3 +1,7 @@
+; Override with /DSampleResourceDir=... for another build layout.
+#ifndef SampleResourceDir
+#define SampleResourceDir SourcePath + "\bin\Distribution-windows-x86_64\sample-resources"
+#endif
 ; Override with /DEngineResourceDir=... for another build layout.
 #ifndef EngineResourceDir
 #define EngineResourceDir SourcePath + "\bin\Distribution-windows-x86_64\engine-resources"
@@ -44,6 +48,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
+Source: "{#SampleResourceDir}\*"; DestDir: "{app}\sample-resources"; Flags: ignoreversion recursesubdirs
 Source: "{#EngineResourceDir}\*"; DestDir: "{app}\engine-resources"; Excludes: "*.d"; Flags: ignoreversion recursesubdirs
 Source: "{#SourcePath}\bin\Distribution-windows-x86_64\Prehistoric\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourcePath}\PrehistoricEngine\Dependencies\redist\*"; DestDir: "{app}\redist\"; Flags: ignoreversion

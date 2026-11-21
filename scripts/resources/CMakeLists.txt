@@ -68,3 +68,24 @@ add_dependencies(EngineResources Shaders)
 # Exclude depfiles left by older builds.
 install(DIRECTORY "${PREHISTORIC_RESOURCE_OUTPUT}/" DESTINATION engine-resources
         PATTERN "*.d" EXCLUDE)
+
+# Shared demonstration assets are a separate package, not engine defaults.
+get_filename_component(sample_source "${CMAKE_CURRENT_LIST_DIR}/../../samples/res" ABSOLUTE)
+get_filename_component(package_parent "${PREHISTORIC_RESOURCE_OUTPUT}" DIRECTORY)
+set(PREHISTORIC_SAMPLE_OUTPUT "${package_parent}/sample-resources" CACHE PATH
+        "Runtime shared sample resources directory")
+file(GLOB_RECURSE sample_inputs CONFIGURE_DEPENDS RELATIVE "${sample_source}"
+        "${sample_source}/models/*" "${sample_source}/textures/*" "${sample_source}/sounds/*")
+set(sample_outputs)
+foreach (relative IN LISTS sample_inputs)
+    set(output "${PREHISTORIC_SAMPLE_OUTPUT}/${relative}")
+    get_filename_component(directory "${output}" DIRECTORY)
+    add_custom_command(OUTPUT "${output}"
+            COMMAND "${CMAKE_COMMAND}" -E make_directory "${directory}"
+            COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${sample_source}/${relative}" "${output}"
+            DEPENDS "${sample_source}/${relative}" VERBATIM)
+    list(APPEND sample_outputs "${output}")
+endforeach ()
+add_custom_target(SampleResources DEPENDS ${sample_outputs})
+add_dependencies(EngineResources SampleResources)
+install(DIRECTORY "${PREHISTORIC_SAMPLE_OUTPUT}/" DESTINATION sample-resources)

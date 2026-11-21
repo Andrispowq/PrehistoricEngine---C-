@@ -30,6 +30,7 @@ with tempfile.TemporaryDirectory(prefix='prehistoric resources ') as temporary:
     source = root / 'source'
     shutil.copytree(REPO / 'scripts/resources', source / 'scripts/resources')
     shutil.copytree(REPO / 'PrehistoricEngine/res', source / 'PrehistoricEngine/res')
+    shutil.copytree(REPO / 'samples/res', source / 'samples/res')
     build = root / 'build'
     # Configuration must explain a missing SDK/compiler, not fall back to binaries.
     isolated_env = dict(os.environ, PATH='', VULKAN_SDK=str(root / 'missing-sdk'))
@@ -76,12 +77,30 @@ with tempfile.TemporaryDirectory(prefix='prehistoric resources ') as temporary:
     helper.write_text('// restored\n')
     run('cmake', '--build', build, '--target', 'EngineResources')
 
+    # Updating a sample file must not rebuild shaders or unrelated sample assets.
+    sample_outputs = build / 'bin/sample-resources'
+    sample_before = timestamps(sample_outputs)
+    engine_before = timestamps(resources)
+    material = source / 'samples/res/models/myscene.mtl'
+    original_material = material.read_bytes()
+    material.write_bytes(original_material + b'\n# dependency check\n')
+    run('cmake', '--build', build, '--target', 'EngineResources')
+    sample_after = timestamps(sample_outputs)
+    assert {k for k in sample_before if sample_before[k] != sample_after[k]} == {'models/myscene.mtl'}
+    assert timestamps(resources) == engine_before
+    material.write_bytes(original_material)
+    run('cmake', '--build', build, '--target', 'SampleResources')
+    sample_before = timestamps(sample_outputs)
+    run('cmake', '--build', build, '--target', 'EngineResources')
+    assert timestamps(sample_outputs) == sample_before
+
     # Compile the actual production resolver without the rest of the engine/GPU.
     harness = root / 'harness'
     harness.mkdir()
     production = REPO / 'PrehistoricEngine/src/engine/prehistoric/core/resources'
     shutil.copy2(production / 'EngineResources.cpp', harness)
     shutil.copy2(production / 'EngineResources.h', harness)
+    shutil.copy2(production / 'SharedSampleAssets.h', harness)
     (harness / 'main.cpp').write_text('''#include "EngineResources.h"
 #include <iostream>
 #include <exception>
@@ -114,6 +133,7 @@ add_executable(ResourceLookup main.cpp EngineResources.cpp)
     shutil.copy2(executable, installed_executable)
     env = dict(os.environ)
     env.pop('PREHISTORIC_ENGINE_RESOURCES', None)
+    env.pop('PREHISTORIC_SAMPLE_RESOURCES', None)
     relative = 'shaders/vulkan/pbr/pbr_FS.spv'
     assert Path(run(installed_executable, relative, cwd=root, env=env)).is_file()
     # Premake's per-application executable directory uses the common parent root.
@@ -141,9 +161,27 @@ add_executable(ResourceLookup main.cpp EngineResources.cpp)
     assert run(installed_executable, 'cube.obj', 'join', 'res/models/', env=env) == 'engine://models/cube.obj'
     assert run(installed_executable, 'res/models/quad.obj', 'join', 'res/models/',
                env=env) == 'engine://models/quad.obj'
-    for project_asset in ('res/models/sponza.obj', 'res/models/dome/dome.obj',
-                          'res/textures/water/caustics.jpg', 'res/textures/oakFloor/oakFloor_DIF.png',
-                          'res/textures/environmentMaps/cape_hill_2k.hdr', 'res/textures/terrain/heightmaps/hm0.bmp'):
+    sample_root = REPO / 'samples/res'
+    for asset in sample_root.rglob('*'):
+        if not asset.is_file():
+            continue
+        relative_sample = asset.relative_to(sample_root).as_posix()
+        resource_id = 'sample://' + relative_sample
+        for binary in (installed_executable, nested / executable.name):
+            resolved = Path(run(binary, resource_id, 'resolve', cwd=root, env=env))
+            assert resolved.read_bytes() == asset.read_bytes()
+            assert run(binary, 'res/' + relative_sample, 'canonical', env=env) == resource_id
+            assert Path(run(binary, 'res/' + relative_sample, 'resolve', env=env)) == resolved
+        assert run(installed_executable, resource_id, 'join', 'res/models/', env=env) == resource_id
+    sample_override = dict(env, PREHISTORIC_SAMPLE_RESOURCES=str(install / 'sample-resources'))
+    assert Path(run(executable, 'sample://sounds/_Closer.wav', 'resolve', env=sample_override)).is_file()
+    bad_sample = dict(env, PREHISTORIC_SAMPLE_RESOURCES=str(root / 'missing-samples'))
+    run(installed_executable, 'sample://models/sponza.obj', 'resolve', env=bad_sample, success=False)
+    run(installed_executable, 'sample://textures/missing.png', 'resolve', env=env, success=False)
+    assert run(installed_executable, 'sponza.obj', 'join', 'res/models/', env=env) == 'sample://models/sponza.obj'
+    for project_asset in ('res/models/prehistoric/myscene.pmf', 'res/models/grass/grass field.obj',
+                          'res/textures/water/caustics.jpg', 'res/textures/prehistoric/cape_hill_2k.prt',
+                          'res/config/settings.json', 'res/world/world_1.json', 'res/scripts/CameraController.cs'):
         assert run(installed_executable, project_asset, 'resolve', cwd=root, env=env) == project_asset
     run(installed_executable, 'engine://models/missing.obj', 'resolve', cwd=root, env=env, success=False)
     override = dict(env, PREHISTORIC_ENGINE_RESOURCES=str(resources))

@@ -19,7 +19,7 @@ namespace Prehistoric {
             std::string location = ResolveAssetPath(locations[i]);
             if (location.substr(location.length() - 3, 3) != "pmf") {
                 model = loader.LoadModel(location, "", "");
-                if (!IsEngineAsset(locations[i]))
+                if (!IsSharedAsset(locations[i]))
                     PrehistoricModelFormat::SavePrehistoricModel(location.substr(0, location.length() - 3) + "pmf",
                                                                  model);
             } else {
@@ -57,7 +57,7 @@ namespace Prehistoric {
                     Model model;
                     if (path.substr(path.length() - 3, 3) != "pmf") {
                         model = loader.LoadModel(_path, _obj, "");
-                        if (!IsEngineAsset(reference))
+                        if (!IsSharedAsset(reference))
                             PrehistoricModelFormat::SavePrehistoricModel(
                                 path.substr(0, path.length() - 3) + "pmf", model);
                     } else {
@@ -135,7 +135,7 @@ namespace Prehistoric {
 
         if (path.substr(path.length() - 3, 3) != "pmf") {
             model = loader.LoadModel(path, "", "");
-            if (!IsEngineAsset(reference))
+            if (!IsSharedAsset(reference))
                 PrehistoricModelFormat::SavePrehistoricModel(path.substr(0, path.length() - 3) + "pmf", model);
         } else {
             model = prehistoric_format_loader.LoadModel(path);

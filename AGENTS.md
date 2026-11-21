@@ -7,6 +7,10 @@
 - `Prehistoric/` is the sample application; `PrehistoricEditor/` is the editor.
   Each has its own project `res/` tree. Shared fonts, shaders, primitive models, and default textures live only in
   `PrehistoricEngine/res/`; `scripts/resources/CMakeLists.txt` builds/stages them.
+- Shared demonstration models, textures and sounds live in `samples/res/`, staged
+  as `sample-resources` by `SampleResources` (also a dependency of `EngineResources`).
+  Use `sample://...` references; keep settings, worlds, scripts and unique assets
+  with their application. `SharedSampleAssets.h` lists explicit legacy aliases.
 - Read `BUILDING.md` for current build instructions. `docs/MACOS_PORT.md` is a
   historical port assessment; some listed blockers have already been resolved.
 - Keep changes focused on the requested scope. Preserve unrelated local work.
@@ -39,9 +43,10 @@
 - Vulkan loads generated SPIR-V from `engine-resources` beside the executable
   (or in its parent for Premake). Build `EngineResources` after shared asset changes;
   both application targets depend on it. Never restore duplicated app shader trees.
-- Use `engine://models/...` and `engine://textures/...` for built-ins. Keep scene
-  assets in project `res/` trees. Resolve paths only in loaders so saved IDs remain
-  portable; do not auto-export shared defaults into project conversion folders.
+- Use `engine://models/...` and `engine://textures/...` for built-ins. Keep app-only scene
+  assets in project `res/` trees; shared sample assets use `sample://...`. Resolve paths only in loaders so saved IDs
+  remain
+  portable; do not auto-export shared assets into project conversion folders.
 - Preserve vendored dependencies, runtime binaries, model `.obj` files unless their replacement/build path is explicitly
   addressed.
 - Do not track profiler output, ImGui layouts, build output, or machine-local IDE

@@ -26,9 +26,9 @@ PrehistoricScene::PrehistoricScene(const std::string &name, Prehistoric::Window 
 
         MaterialHandle material = manager->storeMaterial(new Material(man));
         material->addTexture(
-            ALBEDO_MAP, man->loadTexture("res/textures/oakFloor/oakFloor_DIF.png", Anisotropic).value());
-        material->addTexture(NORMAL_MAP, man->loadTexture("res/textures/oakFloor/oakFloor_NRM.png").value());
-        material->addTexture(MROT_MAP, man->loadTexture("res/textures/oakFloor/oakFloor_MROT.png").value());
+            ALBEDO_MAP, man->loadTexture("sample://textures/oakFloor/oakFloor_DIF.png", Anisotropic).value());
+        material->addTexture(NORMAL_MAP, man->loadTexture("sample://textures/oakFloor/oakFloor_NRM.png").value());
+        material->addTexture(MROT_MAP, man->loadTexture("sample://textures/oakFloor/oakFloor_MROT.png").value());
         material->addVector4f(MROT, {-1, -1, -1, 0});
 
         RendererComponent *renderer = new RendererComponent(window, manager, pipeline, material);
