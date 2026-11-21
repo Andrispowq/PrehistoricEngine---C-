@@ -318,3 +318,23 @@ project assets. An identical filename alone never triggers automatic sharing.
 The resource regression script checks both packages and app layouts, aliases,
 missing overrides, and incremental sample updates without shader rebuilds. Build
 and path tests do not establish full scene rendering or audio playback correctness.
+
+## Vulkan PBR emission and output encoding
+
+Vulkan PBR uses the same scalar `emission` material property as OpenGL. Missing or
+negative emission means zero; positive emission is tinted by albedo with OpenGL's
+existing minimum tint and emission factor. There is no Vulkan PBR emission-map
+binding, so a missing map cannot pick an unrelated material texture.
+
+PBR output uses the actual colour-attachment format each frame. For sRGB attachments,
+the shader leaves tone-mapped output linear and the attachment encodes it once.
+For non-sRGB attachments, the shader retains the configured gamma encoding. Exposure
+and the BRDF geometry divisor `/ 2.0` are unchanged; background rendering is separate.
+Rebuild the app normally to regenerate the SPIR-V and update the descriptor layout
+alongside the C++ code.
+
+`python3 tests/vulkan_pbr_contract.py` compiles and validates the fragment shader,
+checks its scalar emission layout and texture bindings, and tests production
+sRGB/UNORM format selection numerically. It requires `glslc`, `spirv-val`,
+`spirv-dis`, and a C++17 compiler (`CXX`, default `c++`). It does not perform GPU
+frame rendering or visual comparison.

@@ -38,14 +38,13 @@ layout(set = 2, binding = 1, std140) uniform Material
 {
 	layout(offset = 00) vec4 mrot;
 	layout(offset = 16) vec3 colour;
-	layout(offset = 32) vec3 emission;
+	layout(offset = 32) float emission;
 	layout(offset = 48) int usesNormalMap;
 } material;
 
 layout (set = 1, binding = 0) uniform sampler2D albedoMap;
 layout (set = 1, binding = 1) uniform sampler2D normalMap;
 layout (set = 1, binding = 2) uniform sampler2D mrotMap;
-layout (set = 1, binding = 3) uniform sampler2D emissionMap;
 
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 float GeometrySchlickGGX(float NdotV, float roughness);
@@ -57,7 +56,7 @@ void main()
 {
 	vec3 albedoColour = material.colour;
 	vec4 mrot = material.mrot;
-	vec3 emission = material.emission;
+	float emission = max(material.emission, 0.0);
 	
 	if (albedoColour.r == -1)
 	{
@@ -80,11 +79,6 @@ void main()
 	if (mrot.a == -1)
 	{
 		mrot.a = mrotMap.a;
-	}
-
-	if (emission.r == -1)
-	{
-		emission = texture(emissionMap, texture_FS).rgb;
 	}
 	
 	float metallic = mrot.r;
@@ -161,9 +155,12 @@ void main()
 	vec3 ambient = (kD * diffuse + specular) * occlusion;*/
 	
 	vec3 ambient = vec3(0.04) * albedoColour;
-	vec3 colour = ambient + Lo + max(emission * emissionFactor, 0.0);
+	// Match OpenGL: scalar emission strength tinted by the material albedo.
+	vec3 colour = ambient + Lo + clamp(albedoColour, vec3(0.05), vec3(1.0)) * emission * emissionFactor;
 	
 	colour = 1.0 - exp(-colour * exposure);
+	// CPU supplies gamma=1 for sRGB attachments; hardware encodes those once.
+	if (gamma != 1.0)
 	colour = pow(colour, vec3(1.0 / gamma));
 	
 	outColour = vec4(colour, 1);
