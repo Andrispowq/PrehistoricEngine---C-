@@ -31,7 +31,7 @@ endforeach ()
 # depend on all non-entrypoint Vulkan files instead; entrypoint edits stay local,
 # while include additions/edits rebuild the shader set. No Python/shell required.
 file(GLOB_RECURSE shader_includes CONFIGURE_DEPENDS "${resource_source}/shaders/vulkan/*")
-foreach (entry basic/basic.vert basic/basic.frag pbr/pbr.vert pbr/pbr.frag environmentMap/environmentMap.comp)
+foreach (entry basic/basic.vert basic/basic.frag pbr/pbr.vert pbr/pbr.frag background/background.vert background/background.frag environmentMap/environmentMap.comp)
     list(REMOVE_ITEM shader_includes "${resource_source}/shaders/vulkan/${entry}")
 endforeach ()
 # A removed include must invalidate outputs too, rather than disappearing silently
@@ -58,6 +58,8 @@ prehistoric_shader(basic/basic.vert basic/basic_VS.spv)
 prehistoric_shader(basic/basic.frag basic/basic_FS.spv)
 prehistoric_shader(pbr/pbr.vert pbr/pbr_VS.spv)
 prehistoric_shader(pbr/pbr.frag pbr/pbr_FS.spv)
+prehistoric_shader(background/background.vert background/background_VS.spv)
+prehistoric_shader(background/background.frag background/background_FS.spv)
 if (PREHISTORIC_EXPERIMENTAL_SHADERS)
     prehistoric_shader(environmentMap/environmentMap.comp environmentMap/environmentMap_CS.spv)
 endif ()

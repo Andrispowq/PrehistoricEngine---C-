@@ -14,13 +14,29 @@ namespace Prehistoric {
     static ImageData images[NUM_THREADS];
 
     static void PrepareVulkanTexture(ImageData &image) {
-        if (__FrameworkConfig.api != Vulkan || image.type != ImageData::ImageType::LDR || image.channels == 4)
+        if (__FrameworkConfig.api != Vulkan || image.channels == 4)
             return;
 
         if (!image.ptr.dataUC || image.channels < 1 || image.channels > 4)
             throw std::runtime_error("Invalid texture data for Vulkan!");
 
         size_t pixels = size_t(image.width) * image.height;
+        if (image.type == ImageData::ImageType::HDR) {
+            float *data = (float *) malloc(pixels * 4 * sizeof(float));
+            if (!data) throw std::bad_alloc();
+            for (size_t i = 0; i < pixels; ++i) {
+                const float *source = image.ptr.dataF + i * image.channels;
+                data[i * 4] = source[0];
+                data[i * 4 + 1] = image.channels < 3 ? source[0] : source[1];
+                data[i * 4 + 2] = image.channels < 3 ? source[0] : source[2];
+                data[i * 4 + 3] = image.channels == 2 ? source[1] : 1.0f;
+            }
+            stbi_image_free(image.ptr.dataF);
+            image.ptr.dataF = data;
+            image.channels = 4;
+            return;
+        }
+
         unsigned char *data = (unsigned char *) malloc(pixels * 4);
         if (!data)
             throw std::bad_alloc();
@@ -295,6 +311,8 @@ namespace Prehistoric {
 
                 ret = {ImageData::ImageType::LDR, width, height, channels, data};
             }
+
+            delete[] buffer;
 
             uint32_t data_size = width * height * channels;
             if (ret.type == ImageData::ImageType::HDR) {

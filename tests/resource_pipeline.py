@@ -45,7 +45,9 @@ with tempfile.TemporaryDirectory(prefix='prehistoric resources ') as temporary:
     run('cmake', '-S', source / 'scripts/resources', '-B', build, '-G', 'Ninja')
     run('cmake', '--build', build, '--target', 'EngineResources')
     resources = build / 'bin/engine-resources'
-    assert len(list(resources.rglob('*.spv'))) == 4
+    assert len(list(resources.rglob('*.spv'))) == 6
+    assert (resources / 'shaders/vulkan/background/background_VS.spv').is_file()
+    assert (resources / 'shaders/vulkan/background/background_FS.spv').is_file()
     assert (resources / 'fonts/opensans/OpenSans-Regular.ttf').is_file()
     baseline = timestamps(resources)
     run('cmake', '--build', build, '--target', 'EngineResources')

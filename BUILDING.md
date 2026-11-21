@@ -338,3 +338,24 @@ checks its scalar emission layout and texture bindings, and tests production
 sRGB/UNORM format selection numerically. It requires `glslc`, `spirv-val`,
 `spirv-dis`, and a C++17 compiler (`CXX`, default `c++`). It does not perform GPU
 frame rendering or visual comparison.
+
+## Vulkan HDR background
+
+Vulkan draws the configured `environmentMap.location` directly as an
+equirectangular background. Both apps select
+`sample://textures/environmentMaps/cape_hill_2k.hdr`; use the original HDR
+(north-to-south image rows), rather than the older vertically flipped `.prt`
+conversion. An empty location keeps the window clear colour.
+
+The fullscreen triangle follows camera rotation and projection, ignores camera
+translation, and leaves depth untouched. It uses the PBR exposure and output
+encoding, including hardware sRGB conversion where applicable. HDR data is
+expanded to RGBA floats and uploaded without 8-bit clipping. The sampler repeats
+at the longitude seam and clamps at the poles; devices without float linear
+filtering use nearest filtering. Resize recreates the pipeline for the new render
+pass. The two background shaders are part of the normal portable resource build.
+IBL and procedural atmosphere remain unimplemented in this Vulkan path.
+
+Run `python3 tests/vulkan_background_contract.py` to check compiled shader
+interfaces and resource selection, and `python3 tests/resource_pipeline.py` to
+check shader staging/install and incremental builds. These are not visual tests.
