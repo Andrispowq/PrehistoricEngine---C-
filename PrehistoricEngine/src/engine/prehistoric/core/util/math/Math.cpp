@@ -1,10 +1,11 @@
 #include "Includes.hpp"
 #include "Math.h"
+#include "MathT.h"
 
 namespace Prehistoric {
 #if defined(PR_FAST_MATH)
 
-    inline Vector2f Vector2f::abs() const {
+    Vector2f Vector2f::abs() const {
         return Vector2f(fabs((*this).x), fabs((*this).y));
     }
 
@@ -26,7 +27,7 @@ namespace Prehistoric {
         return Vector2f(y, x);
     }
 
-    inline Vector3f Vector3f::abs() const {
+    Vector3f Vector3f::abs() const {
         return Vector3f(std::abs(x), std::abs(y), std::abs(z));
     }
 
@@ -93,7 +94,7 @@ namespace Prehistoric {
         return result;
     }
 
-    inline Vector4f Vector4f::abs() const {
+    Vector4f Vector4f::abs() const {
         return Vector4f(std::abs(x), std::abs(y), std::abs(z), std::abs(w));
     }
 
@@ -174,7 +175,7 @@ namespace Prehistoric {
         return *this;
     }
 
-    inline Quaternionf Quaternionf::abs() const {
+    Quaternionf Quaternionf::abs() const {
         return Quaternionf(std::abs(x), std::abs(y), std::abs(z), std::abs(w));
     }
 
@@ -236,7 +237,7 @@ namespace Prehistoric {
         return *this;
     }
 
-    inline Matrix4f Matrix4f::operator+(const Matrix4f &v) const {
+    Matrix4f Matrix4f::operator+(const Matrix4f &v) const {
         Matrix4f res;
 
         for (int i = 0; i < 4; i++) {
@@ -246,7 +247,7 @@ namespace Prehistoric {
         return res;
     }
 
-    inline Matrix4f Matrix4f::operator-(const Matrix4f &v) const {
+    Matrix4f Matrix4f::operator-(const Matrix4f &v) const {
         Matrix4f res;
 
         for (int i = 0; i < 4; i++) {
@@ -256,7 +257,7 @@ namespace Prehistoric {
         return res;
     }
 
-    inline Matrix4f Matrix4f::operator+=(const Matrix4f &v) {
+    Matrix4f Matrix4f::operator+=(const Matrix4f &v) {
         for (int i = 0; i < 4; i++) {
             coloumns[i] = _mm_add_ps(coloumns[i], v.coloumns[i]);
         }
@@ -264,7 +265,7 @@ namespace Prehistoric {
         return *this;
     }
 
-    inline Matrix4f Matrix4f::operator-=(const Matrix4f &v) {
+    Matrix4f Matrix4f::operator-=(const Matrix4f &v) {
         for (int i = 0; i < 4; i++) {
             coloumns[i] = _mm_sub_ps(coloumns[i], v.coloumns[i]);
         }
@@ -272,7 +273,7 @@ namespace Prehistoric {
         return *this;
     }
 
-    inline Matrix4f Matrix4f::operator+(const Vector4f &v) const {
+    Matrix4f Matrix4f::operator+(const Vector4f &v) const {
         Matrix4f res;
 
         for (int i = 0; i < 4; i++) {
@@ -282,7 +283,7 @@ namespace Prehistoric {
         return res;
     }
 
-    inline Matrix4f Matrix4f::operator-(const Vector4f &v) const {
+    Matrix4f Matrix4f::operator-(const Vector4f &v) const {
         Matrix4f res;
 
         for (int i = 0; i < 4; i++) {
@@ -292,7 +293,7 @@ namespace Prehistoric {
         return res;
     }
 
-    inline Matrix4f Matrix4f::operator+=(const Vector4f &v) {
+    Matrix4f Matrix4f::operator+=(const Vector4f &v) {
         for (int i = 0; i < 4; i++) {
             coloumns[i] = _mm_add_ps(coloumns[i], v.reg);
         }
@@ -300,7 +301,7 @@ namespace Prehistoric {
         return *this;
     }
 
-    inline Matrix4f Matrix4f::operator-=(const Vector4f &v) {
+    Matrix4f Matrix4f::operator-=(const Vector4f &v) {
         for (int i = 0; i < 4; i++) {
             coloumns[i] = _mm_sub_ps(coloumns[i], v.reg);
         }
@@ -308,7 +309,7 @@ namespace Prehistoric {
         return *this;
     }
 
-    inline Matrix4f Matrix4f::operator+(const float &v) const {
+    Matrix4f Matrix4f::operator+(const float &v) const {
         Matrix4f res;
 
         for (int i = 0; i < 4; i++) {
@@ -318,7 +319,7 @@ namespace Prehistoric {
         return res;
     }
 
-    inline Matrix4f Matrix4f::operator-(const float &v) const {
+    Matrix4f Matrix4f::operator-(const float &v) const {
         Matrix4f res;
 
         for (int i = 0; i < 4; i++) {
@@ -328,7 +329,7 @@ namespace Prehistoric {
         return res;
     }
 
-    inline Matrix4f Matrix4f::operator+=(const float &v) {
+    Matrix4f Matrix4f::operator+=(const float &v) {
         for (int i = 0; i < 4; i++) {
             coloumns[i] = _mm_add_ps(coloumns[i], _mm_set_ps(v, v, v, v));
         }
@@ -336,7 +337,7 @@ namespace Prehistoric {
         return *this;
     }
 
-    inline Matrix4f Matrix4f::operator-=(const float &v) {
+    Matrix4f Matrix4f::operator-=(const float &v) {
         for (int i = 0; i < 4; i++) {
             coloumns[i] = _mm_sub_ps(coloumns[i], _mm_set_ps(v, v, v, v));
         }
@@ -344,7 +345,7 @@ namespace Prehistoric {
         return *this;
     }
 
-    inline Matrix4f Matrix4f::operator*(const Matrix4f &v) const {
+    Matrix4f Matrix4f::operator*(const Matrix4f &v) const {
         Matrix4f res;
 
         for (int i = 0; i < 4; i++) {
@@ -365,7 +366,7 @@ namespace Prehistoric {
         return res;
     }
 
-    inline Matrix4f Matrix4f::operator*=(const Matrix4f &v) {
+    Matrix4f Matrix4f::operator*=(const Matrix4f &v) {
         Matrix4f res;
 
         for (int i = 0; i < 4; i++) {
@@ -405,7 +406,7 @@ namespace Prehistoric {
         return res;
     }
 
-    inline bool Matrix4f::operator==(const Matrix4f &v) const {
+    bool Matrix4f::operator==(const Matrix4f &v) const {
         for (int i = 0; i < 4; i++) {
             __m128 res = _mm_cmpeq_ps(coloumns[i], v.coloumns[i]);
 
@@ -641,11 +642,11 @@ namespace Prehistoric {
         return arr;
     }
 
-    inline float Matrix4f::Get(int x, int y) const {
+    float Matrix4f::Get(int x, int y) const {
         return m[x * 4 + y];
     }
 
-    inline void Matrix4f::Set(int x, int y, float val) {
+    void Matrix4f::Set(int x, int y, float val) {
         m[x * 4 + y] = val;
     }
 
@@ -705,7 +706,7 @@ namespace Prehistoric {
         return *this;
     }
 
-    inline Matrix4f Matrix4f::operator+(const Matrix4f &v) const {
+    Matrix4f Matrix4f::operator+(const Matrix4f &v) const {
         Matrix4f res;
 
         for (int i = 0; i < 16; i++) {
@@ -715,7 +716,7 @@ namespace Prehistoric {
         return res;
     }
 
-    inline Matrix4f Matrix4f::operator-(const Matrix4f &v) const {
+    Matrix4f Matrix4f::operator-(const Matrix4f &v) const {
         Matrix4f res;
 
         for (int i = 0; i < 16; i++) {
@@ -725,7 +726,7 @@ namespace Prehistoric {
         return res;
     }
 
-    inline Matrix4f Matrix4f::operator+=(const Matrix4f &v) {
+    Matrix4f Matrix4f::operator+=(const Matrix4f &v) {
         for (int i = 0; i < 16; i++) {
             this->m[i] = m[i] + v.m[i];
         }
@@ -733,7 +734,7 @@ namespace Prehistoric {
         return *this;
     }
 
-    inline Matrix4f Matrix4f::operator-=(const Matrix4f &v) {
+    Matrix4f Matrix4f::operator-=(const Matrix4f &v) {
         for (int i = 0; i < 16; i++) {
             this->m[i] = m[i] - v.m[i];
         }
@@ -741,7 +742,7 @@ namespace Prehistoric {
         return *this;
     }
 
-    inline Matrix4f Matrix4f::operator+(const Vector4f &v) const {
+    Matrix4f Matrix4f::operator+(const Vector4f &v) const {
         Matrix4f res;
 
         for (int i = 0; i < 4; i++) {
@@ -754,7 +755,7 @@ namespace Prehistoric {
         return res;
     }
 
-    inline Matrix4f Matrix4f::operator-(const Vector4f &v) const {
+    Matrix4f Matrix4f::operator-(const Vector4f &v) const {
         Matrix4f res;
 
         for (int i = 0; i < 4; i++) {
@@ -767,7 +768,7 @@ namespace Prehistoric {
         return res;
     }
 
-    inline Matrix4f Matrix4f::operator+=(const Vector4f &v) {
+    Matrix4f Matrix4f::operator+=(const Vector4f &v) {
         for (int i = 0; i < 4; i++) {
             m[i * 4 + 0] += v.x;
             m[i * 4 + 1] += v.y;
@@ -778,7 +779,7 @@ namespace Prehistoric {
         return *this;
     }
 
-    inline Matrix4f Matrix4f::operator-=(const Vector4f &v) {
+    Matrix4f Matrix4f::operator-=(const Vector4f &v) {
         for (int i = 0; i < 4; i++) {
             m[i * 4 + 0] -= v.x;
             m[i * 4 + 1] -= v.y;
@@ -789,7 +790,7 @@ namespace Prehistoric {
         return *this;
     }
 
-    inline Matrix4f Matrix4f::operator+(const float &v) const {
+    Matrix4f Matrix4f::operator+(const float &v) const {
         Matrix4f res;
 
         for (int i = 0; i < 16; i++) {
@@ -799,7 +800,7 @@ namespace Prehistoric {
         return res;
     }
 
-    inline Matrix4f Matrix4f::operator-(const float &v) const {
+    Matrix4f Matrix4f::operator-(const float &v) const {
         Matrix4f res;
 
         for (int i = 0; i < 16; i++) {
@@ -809,7 +810,7 @@ namespace Prehistoric {
         return res;
     }
 
-    inline Matrix4f Matrix4f::operator+=(const float &v) {
+    Matrix4f Matrix4f::operator+=(const float &v) {
         for (int i = 0; i < 16; i++) {
             this->m[i] += v;
         }
@@ -817,7 +818,7 @@ namespace Prehistoric {
         return *this;
     }
 
-    inline Matrix4f Matrix4f::operator-=(const float &v) {
+    Matrix4f Matrix4f::operator-=(const float &v) {
         for (int i = 0; i < 16; i++) {
             this->m[i] -= v;
         }
@@ -825,7 +826,7 @@ namespace Prehistoric {
         return *this;
     }
 
-    inline Matrix4f Matrix4f::operator*(const Matrix4f &v) const {
+    Matrix4f Matrix4f::operator*(const Matrix4f &v) const {
         Matrix4f res;
 
         for (int i = 0; i < 4; i++) {
@@ -840,7 +841,7 @@ namespace Prehistoric {
         return res;
     }
 
-    inline Matrix4f Matrix4f::operator*=(const Matrix4f &v) {
+    Matrix4f Matrix4f::operator*=(const Matrix4f &v) {
         Matrix4f res;
 
         for (int i = 0; i < 4; i++) {
@@ -868,7 +869,7 @@ namespace Prehistoric {
         return res;
     }
 
-    inline bool Matrix4f::operator==(const Matrix4f &v) const {
+    bool Matrix4f::operator==(const Matrix4f &v) const {
         for (int i = 0; i < 16; i++) {
             if (this->m[i] != v.m[i]) {
                 return false;
@@ -1063,24 +1064,14 @@ namespace Prehistoric {
     }
 
     Matrix4f Matrix4f::OrthographicProjection(float l, float r, float b, float t, float n, float f) {
-        Matrix4f res;
+        Matrix4f res = Matrix4f::Identity();
 
         res.m[0 * 4 + 0] = 2.0f / (r - l);
-        res.m[0 * 4 + 1] = 0;
-        res.m[0 * 4 + 2] = 0;
-        res.m[0 * 4 + 3] = -(r + l) / (r - l);
-        res.m[1 * 4 + 0] = 0;
         res.m[1 * 4 + 1] = 2.0f / (t - b);
-        res.m[1 * 4 + 2] = 0;
-        res.m[1 * 4 + 3] = -(t + b) / (t - b);
-        res.m[2 * 4 + 0] = 0;
-        res.m[2 * 4 + 1] = 0;
-        res.m[2 * 4 + 2] = 2.0f / (f - n);
-        res.m[2 * 4 + 3] = -(f + n) / (f - n);
-        res.m[3 * 4 + 0] = 0;
-        res.m[3 * 4 + 1] = 0;
-        res.m[3 * 4 + 2] = 0;
-        res.m[3 * 4 + 3] = 1;
+        res.m[2 * 4 + 2] = -2.0f / (f - n);
+        res.m[3 * 4 + 0] = -(r + l) / (r - l);
+        res.m[3 * 4 + 1] = -(t + b) / (t - b);
+        res.m[3 * 4 + 2] = -(f + n) / (f - n);
 
         return res;
     }
@@ -1098,11 +1089,11 @@ namespace Prehistoric {
         return arr;
     }
 
-    inline float Matrix4f::Get(int x, int y) const {
+    float Matrix4f::Get(int x, int y) const {
         return m[x * 4 + y];
     }
 
-    inline void Matrix4f::Set(int x, int y, float val) {
+    void Matrix4f::Set(int x, int y, float val) {
         m[x * 4 + y] = val;
     }
 

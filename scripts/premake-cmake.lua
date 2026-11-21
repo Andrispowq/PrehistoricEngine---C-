@@ -23,6 +23,13 @@ newaction {
         emit('if(NOT CMAKE_BUILD_TYPE)\n  set(CMAKE_BUILD_TYPE Debug CACHE STRING "" FORCE)\nendif()')
         emit('set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")')
         emit('set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")')
+        -- Tests must configure before graphics/audio/resource dependencies are resolved.
+        emit('option(PREHISTORIC_TESTS_ONLY "Configure only CPU contract tests" OFF)')
+        emit('if(PREHISTORIC_TESTS_ONLY)')
+        emit('  enable_testing()')
+        emit('  add_subdirectory(tests)')
+        emit('  return()')
+        emit('endif()')
         if os.host() == "macosx" then
             emit('enable_language(OBJC OBJCXX)')
             emit('set(CMAKE_OBJCXX_STANDARD 17)')

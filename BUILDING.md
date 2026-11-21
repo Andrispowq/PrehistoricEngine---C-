@@ -404,3 +404,78 @@ nearby samples straddling the old basis switch, the new blend boundaries, and al
 under Vulkan validation. It does not require or inspect a window. On macOS,
 the process needs access to Metal; a sandbox that hides GPUs cannot run it.
 `python3 tests/vulkan_pbr_contract.py` also checks the compiled global IBL bindings.
+
+## CPU math tests and CI
+
+The first unit-test milestone uses Catch2 3.8.1 and CTest. Generate the build graph
+on the current host from a recursive checkout (Premake reads the vendor project
+files), then use the isolated test presets:
+
+```sh
+premake5 cmake
+cmake --preset tests
+cmake --build --preset tests --parallel 4
+ctest --preset tests
+```
+
+Use `tests-release` in place of `tests` in all three CMake/CTest commands to test
+optimized code. These configurations set `PREHISTORIC_TESTS_ONLY=ON` and return
+before configuring the engine, Vulkan, shaders, OpenAL, or application resources.
+They compile the production `Math.cpp`, `Math.h`, and `MathT.h` directly, without a
+window, GPU, audio device, engine PCH, or scene. Existing application presets are
+unchanged. CMake 3.21+, Ninja and a C++17 compiler are required; Windows Ninja
+builds should run from an x64 Visual Studio developer shell.
+
+The first configure downloads a SHA-256-pinned Catch2 source archive. For offline
+use, supply an extracted copy of that same release:
+
+```sh
+cmake --preset tests -DFETCHCONTENT_SOURCE_DIR_CATCH2=/absolute/path/to/Catch2-3.8.1
+```
+
+`MathTestsScalar` runs on macOS and Windows. MSVC x64 also builds
+`MathTestsSIMD`, compiling the same contracts and production source separately
+with `PR_FAST_MATH`. This keeps incompatible scalar/SIMD types out of the same
+executable. CTest discovers individual cases, gives each a timeout, and the test
+presets fail if no tests are found.
+
+Coverage includes vector arithmetic and normalization, cross products,
+reflection, interpolation, axis rotation, quaternion products and conjugates,
+matrix storage/copy/move construction, transform order, invertible transforms,
+perspective mapping and view-basis conventions. Float comparisons combine
+absolute and relative tolerances; inputs are deterministic. Zero normalization,
+singular inverse policy, invalid projection arguments, and exhaustive template
+instantiations are not specified by this initial suite.
+
+Run the correctness contracts with `ctest --preset tests -L contract`.
+The four initially reproduced scalar defects are now normal passing contracts:
+
+- Vector4 and quaternion `(Vector2, z, w)` constructors preserve all components,
+  in both scalar and SIMD implementations.
+- Scalar orthographic projection uses column-major translation and matches SIMD:
+  view-space `-near` maps to depth -1 and `-far` to +1, as with perspective.
+- All four scalar Vector2 ordering operators compare matching components.
+
+One separate Windows SIMD defect remains: scalar interpolation does not apply its
+weight to every component (the reproducer exercises Vector3's `y`). On Windows,
+`ctest --preset tests -L known-defect -V` runs this Catch2 `!shouldfail` case.
+The expected assertion failure satisfies that tracker; an unexpected pass fails
+it so the marker must be removed when fixed. It is not a passing correctness
+contract. CI runs this separate report only on Windows; macOS has no remaining
+expected-failure cases.
+
+The testing setup also includes compilation/linkage prerequisites: explicit
+math/C-string includes, template definitions included by Math.cpp, external
+linkage for its out-of-line methods, and the duplicate SIMD texture-coordinate
+member name (`p` names the third texture coordinate; `r` remains the first colour
+coordinate).
+
+`.github/workflows/math-tests.yml` runs Debug and Release on macOS 14 and Windows
+2022 for pull requests and pushes to `master`, plus manual dispatch. It installs
+checksum-pinned Premake 5.0.0-beta8, generates CMake on each host, and uploads
+separate contract/known-defect JUnit reports and CTest logs even on failure.
+Windows uses the Visual Studio 2022 x64 generator to avoid requiring an activated
+Ninja toolchain shell. The workflow does not build or validate the full engine,
+renderer, camera, events, or frame loop. Branch-protection settings must be applied
+in GitHub after the workflow has run successfully; this file alone does not make
+checks required.
