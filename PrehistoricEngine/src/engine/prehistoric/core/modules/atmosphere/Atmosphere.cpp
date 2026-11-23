@@ -1,44 +1,13 @@
 #include "Includes.hpp"
 #include "Atmosphere.h"
-#include "platform/vulkan/rendering/VKRenderer.h"
+#include "prehistoric/common/rendering/Renderer.h"
 
-#include "prehistoric/core/CoreEngine.h"
-#include "prehistoric/core/resources/AssembledAssetManager.h"
-
-#include "prehistoric/application/Application.h"
-
-namespace Prehistoric {
-    Atmosphere::Atmosphere(Window *window, AssembledAssetManager *manager)
-        : window(window) {
-        if (__FrameworkConfig.api == Vulkan) return;
-
-        SetScale(Vector3f(__EngineConfig.rendererFarPlane / 2.f));
-
-        AssetManager *man = manager->getAssetManager();
-        VertexBufferHandle vbo = man->loadVertexBuffer(std::nullopt, "engine://models/sphere.obj").value();
-        vbo->setFrontFace(FrontFace::DOUBLE_SIDED);
-
-        ShaderHandle shader;
-
-        if (__AtmosphereConfig.scatteringEnabled) {
-            shader = man->loadShader(ShaderName::AtmosphereScattering).value();
-        } else {
-            shader = man->loadShader(ShaderName::Atmosphere).value();
-        }
-
-        PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
-
-        AddComponent(RENDERER_COMPONENT,
-                     new RendererComponent(window, manager, pipeline, manager->storeMaterial(nullptr)));
-    }
-
+namespace Prehistoric
+{
     void Atmosphere::PreRender(Renderer* renderer)
     {
         if (!isEnabled()) return;
-        if (__FrameworkConfig.api == Vulkan && sun)
-        {
-            static_cast<VKRenderer*>(renderer)->SetAtmosphereSun(sun->getParent()->getWorldTransform().getPosition());
-        }
+        if (sun) renderer->RegisterAtmosphere(*this);
         GameObject::PreRender(renderer);
     }
 

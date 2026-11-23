@@ -16,6 +16,7 @@ namespace Prehistoric
 		GLDepthPassShader();
 		virtual ~GLDepthPassShader() {}
 
+		void SetTransform(const Matrix4f& transform) const { SetUniform(m_transform, transform); }
 		void UpdateGlobalUniforms(Matrix4f proj, Matrix4f view);
 
 		virtual void UpdateGlobalUniforms(Renderer* renderer) const override;

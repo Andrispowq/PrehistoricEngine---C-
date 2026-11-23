@@ -695,7 +695,7 @@ namespace Prehistoric {
                         }
                     }
 
-                    Atmosphere* atmosphere = new Atmosphere(window, manager);
+                    Atmosphere* atmosphere = new Atmosphere();
                     atmosphere->setSun(sun->GetComponent<Light>());
                     root->AddChild(name, atmosphere);
                 }

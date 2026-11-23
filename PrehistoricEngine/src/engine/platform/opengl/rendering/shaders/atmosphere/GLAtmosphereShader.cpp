@@ -16,23 +16,11 @@ namespace Prehistoric
 		AddUniform("m_projection");
 	}
 
-	void GLAtmosphereShader::UpdateUniforms(Matrix4f view, Matrix4f projection) const
+	void GLAtmosphereShader::UpdateUniforms(const Matrix4f& transform, const Matrix4f& view, const Matrix4f& projection) const
 	{
-		SetUniform("m_transform", Matrix4f::Identity());
+		SetUniform("m_transform", transform);
 		SetUniform("m_view", view);
 		SetUniform("m_projection", projection);
 	}
 
-	void GLAtmosphereShader::UpdateGlobalUniforms(Renderer* renderer) const
-	{
-		Camera* camera = renderer->getCamera();
-
-		SetUniform("m_view", camera->getViewMatrix());
-		SetUniform("m_projection", camera->getProjectionMatrix());
-	}
-
-	void GLAtmosphereShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const
-	{
-		SetUniform("m_transform", object->getWorldTransform().getTransformationMatrix());
-	}
-};
+}

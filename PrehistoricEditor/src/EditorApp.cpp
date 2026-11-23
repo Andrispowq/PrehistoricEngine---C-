@@ -1,4 +1,5 @@
 #include "EditorApp.h"
+#include "platform/opengl/rendering/GLRenderer.h"
 
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 
@@ -53,14 +54,14 @@ EditorApp::EditorApp()
 	{
 		{
 			PR_PROFILE("Environment map generation - BRDF Look-up Table");
-			EnvironmentMapRenderer::instance = new EnvironmentMapRenderer(engineLayer->getRenderingEngine()->getWindow(), engineLayer->getAssetManager());
+			EnvironmentMapRenderer::instance = new EnvironmentMapRenderer(window, manager,
+				static_cast<GLRenderer*>(engineLayer->getRenderingEngine()->getRenderer())->getAtmospherePass());
 		}
 
-		//EnvironmentMapRenderer::instance->atmosphere = (Atmosphere*)root->getChild("atmosphere");
 
 		{
 			PR_PROFILE("Environment map generation - Cubemap, Irradiance, Prefilter map");
-			EnvironmentMapRenderer::instance->GenerateEnvironmentMap();
+			EnvironmentMapRenderer::instance->GenerateEnvironmentMap(scene->FindAtmosphere());
 		}
 
 		EnvironmentMapRenderer::instance->enabled = true;

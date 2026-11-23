@@ -377,6 +377,14 @@ final HDR pass. In worlds without an active scattering atmosphere, the HDR
 environment background is used when configured. Vulkan material lighting still
 comes from the configured HDR environment bake.
 
+The scene owns the atmosphere and its sun binding. Each frame, an enabled
+atmosphere with a sun registers with the renderer. OpenGL's renderer owns the
+sky sphere and pipelines, and Vulkan's renderer owns its fullscreen background
+pipeline. For the initial OpenGL environment bake, the sample and editor look
+up the atmosphere in the loaded scene before the first frame. Editor regeneration
+repeats that lookup, while loading an HDR file explicitly bakes the file.
+Moving the sun updates the visible sky without scheduling an environment rebake.
+
 ## CPU math tests and CI
 
 The first unit-test milestone uses Catch2 3.8.1 and CTest. Generate the build graph

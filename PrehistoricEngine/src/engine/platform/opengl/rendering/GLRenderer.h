@@ -4,6 +4,7 @@
 #include "prehistoric/common/rendering/Renderer.h"
 
 #include <glad/glad.h>
+#include "platform/opengl/rendering/renderStage/GLAtmospherePass.h"
 
 #include "platform/opengl/rendering/framebuffer/GLFramebuffer.h"
 #include "platform/opengl/buffer/GLShaderStorageBuffer.h"
@@ -36,6 +37,7 @@ namespace Prehistoric
 
 		virtual Texture* getOutputTexture() const override { return hdrPass->getOutputImage().pointer; }
 
+		GLAtmospherePass& getAtmospherePass() { return atmospherePass; }
 		GLDepthPass* getDepthPass() const { return depthPass; }
 		GLShadowDepthPass* getShadowDepthPass() const { return shadowDepthPass; }
 		GLLightCullingPass* getLightCullingPass() const { return lightCullingPass; }
@@ -48,6 +50,7 @@ namespace Prehistoric
 		GLRayTracingPass* getRayTracingPass() const { return rtxPass; }
 
 	protected:
+		GLAtmospherePass atmospherePass;
 		GLDepthPass* depthPass;
 		GLShadowDepthPass* shadowDepthPass;
 		GLLightCullingPass* lightCullingPass;

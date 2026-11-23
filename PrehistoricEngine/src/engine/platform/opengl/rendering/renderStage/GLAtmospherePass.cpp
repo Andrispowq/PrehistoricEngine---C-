@@ -1,0 +1,85 @@
+#include "Includes.hpp"
+#include "GLAtmospherePass.h"
+#include "platform/opengl/rendering/pipeline/GLGraphicsPipeline.h"
+#include "platform/opengl/rendering/shaders/atmosphere/GLAtmosphereScatteringShader.h"
+#include "platform/opengl/rendering/shaders/atmosphere/GLAtmosphereShader.h"
+#include "platform/opengl/rendering/shaders/forwardPlus/GLDepthPassShader.h"
+#include "prehistoric/application/Application.h"
+#include "prehistoric/core/modules/atmosphere/Atmosphere.h"
+
+namespace Prehistoric
+{
+	static Matrix4f SphereTransform(const Atmosphere& atmosphere)
+	{
+		return atmosphere.getWorldTransform().getTransformationMatrix() *
+			Matrix4f::Scaling(Vector3f(__EngineConfig.rendererFarPlane / 2.0f));
+	}
+
+	GLAtmospherePass::GLAtmospherePass(AssembledAssetManager& manager)
+		: manager(manager)
+	{
+	}
+
+	GLAtmospherePass::~GLAtmospherePass()
+	{
+		if (simplePipeline.pointer) manager.removeReference<Pipeline>(simplePipeline.handle);
+		if (scatteringPipeline.pointer) manager.removeReference<Pipeline>(scatteringPipeline.handle);
+	}
+
+	Pipeline* GLAtmospherePass::GetPipeline()
+	{
+		bool scattering = __AtmosphereConfig.scatteringEnabled;
+		PipelineHandle& pipeline = scattering ? scatteringPipeline : simplePipeline;
+		if (!pipeline.pointer)
+		{
+			AssetManager* assets = manager.getAssetManager();
+			auto sphere = assets->loadVertexBuffer(std::nullopt, "engine://models/sphere.obj").value();
+			sphere->setFrontFace(FrontFace::DOUBLE_SIDED);
+			auto shader = assets->loadShader(scattering ? ShaderName::AtmosphereScattering : ShaderName::Atmosphere).value();
+			pipeline = manager.createPipeline(PipelineTypeHashFlags::Graphics, shader, sphere);
+			manager.addReference<Pipeline>(pipeline.handle);
+		}
+		return pipeline.pointer;
+	}
+
+	void GLAtmospherePass::DrawScene(const Atmosphere& atmosphere, const Camera& camera)
+	{
+		const Matrix4f& view = __AtmosphereConfig.scatteringEnabled ? camera.getOriginalViewMatrix() : camera.getViewMatrix();
+		Draw(atmosphere, view, camera.getProjectionMatrix(), false);
+	}
+
+	void GLAtmospherePass::DrawCapture(const Atmosphere& atmosphere, const Matrix4f& view, const Matrix4f& projection)
+	{
+		Draw(atmosphere, view, projection, true);
+	}
+
+	void GLAtmospherePass::Draw(const Atmosphere& atmosphere, const Matrix4f& view, const Matrix4f& projection, bool capture)
+	{
+		Pipeline* pipeline = GetPipeline();
+		Matrix4f transform = capture ? Matrix4f::Identity() : SphereTransform(atmosphere);
+		pipeline->BindPipeline(nullptr);
+		if (__AtmosphereConfig.scatteringEnabled)
+		{
+			auto* shader = static_cast<GLAtmosphereScatteringShader*>(pipeline->getShader());
+			shader->UpdateUniforms(atmosphere.getSunPosition(), transform, view, projection, capture);
+		}
+		else
+		{
+			static_cast<GLAtmosphereShader*>(pipeline->getShader())->UpdateUniforms(transform, view, projection);
+		}
+		pipeline->RenderPipeline();
+		pipeline->UnbindPipeline();
+	}
+
+	void GLAtmospherePass::DrawDepth(const Atmosphere& atmosphere, const GLDepthPassShader& shader)
+	{
+		auto* sphere = static_cast<GLGraphicsPipeline*>(GetPipeline())->getVertexBuffer();
+		shader.SetTransform(SphereTransform(atmosphere));
+		sphere->Bind(nullptr);
+		for (uint32_t i = 0; i < sphere->getSubmeshCount(); ++i)
+		{
+			sphere->Draw(nullptr, i);
+		}
+		sphere->Unbind();
+	}
+}

@@ -11,6 +11,7 @@ namespace Prehistoric
 	class RenderableComponent;
 	class AssembledAssetManager;
 	class Light;
+	class Atmosphere;
 
 	//The light structure used in the internal Forward+ renderer calculations
 	struct InternalLight
@@ -42,6 +43,8 @@ namespace Prehistoric
 
 		void RegisterModel(RenderableComponent* renderable);
 		void RegisterLight(Light* light);
+		void RegisterAtmosphere(const Atmosphere& sky) { atmosphere = &sky; }
+		const Atmosphere* getAtmosphere() const { return atmosphere; }
 		void UnregisterModel(RenderableComponent* renderable);
 		void UnregisterLight(Light* light);
 
@@ -78,6 +81,7 @@ namespace Prehistoric
 		std::unordered_map<Pipeline*, std::unordered_map<Material*, std::vector<RenderableComponent*>>> models_water;
 
 		std::vector<Light*> lights;
+		const Atmosphere* atmosphere = nullptr;
 
 		bool wireframeMode;
 		bool renderingShadow = false;

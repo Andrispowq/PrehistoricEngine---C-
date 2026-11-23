@@ -20,7 +20,7 @@ namespace Prehistoric
 	extern bool bloomEnabled; //TODO: this is a shitty way to achieve this
 
 	GLRenderer::GLRenderer(Window* window, Camera* camera, AssembledAssetManager* manager)
-		: Renderer(window, camera, manager)
+		: Renderer(window, camera, manager), atmospherePass(*manager)
 	{
 		depthPass = new GLDepthPass(this);
 		shadowDepthPass = new GLShadowDepthPass(this);
@@ -112,6 +112,7 @@ namespace Prehistoric
 		models_2d.clear();
 		models_water.clear();
 		lights.clear();
+		atmosphere = nullptr;
 	}
 
 	void GLRenderer::Render()

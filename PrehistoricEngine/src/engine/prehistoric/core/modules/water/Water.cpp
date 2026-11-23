@@ -138,8 +138,15 @@ namespace Prehistoric {
     }
 
     void Water::RenderObjects(Renderer *renderer) const {
-        EnvironmentMapRenderer::instance->RenderCube(camera);
-        GLRenderer *rend = (GLRenderer *) renderer;
+        GLRenderer* rend = static_cast<GLRenderer*>(renderer);
+        if (const Atmosphere* sky = rend->getAtmosphere())
+        {
+            rend->getAtmospherePass().DrawScene(*sky, *camera);
+        }
+        else
+        {
+            EnvironmentMapRenderer::instance->RenderCube(camera);
+        }
 
         for (auto pipeline: rend->getModelsWater()) {
             Pipeline *pl = pipeline.first;

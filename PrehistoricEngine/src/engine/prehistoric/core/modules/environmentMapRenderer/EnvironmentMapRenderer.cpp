@@ -1,5 +1,6 @@
 #include "Includes.hpp"
 #include "EnvironmentMapRenderer.h"
+#include "platform/opengl/rendering/renderStage/GLAtmospherePass.h"
 
 #include "prehistoric/application/Application.h"
 
@@ -17,8 +18,8 @@
 namespace Prehistoric {
     EnvironmentMapRenderer *EnvironmentMapRenderer::instance = nullptr;
 
-    EnvironmentMapRenderer::EnvironmentMapRenderer(Window *window, AssembledAssetManager *manager)
-        : window(window), manager(manager) {
+    EnvironmentMapRenderer::EnvironmentMapRenderer(Window* window, AssembledAssetManager* manager, GLAtmospherePass& atmospherePass)
+        : atmospherePass(atmospherePass), window(window), manager(manager) {
         mapCache = "";
 
         AssetManager *man = manager->getAssetManager();
@@ -101,7 +102,7 @@ namespace Prehistoric {
         manager->removeReference<Pipeline>(backgroundPipeline.handle);
     }
 
-    void EnvironmentMapRenderer::GenerateEnvironmentMap() {
+    void EnvironmentMapRenderer::GenerateEnvironmentMap(const Atmosphere* atmosphere) {
         AssetManager *man = manager->getAssetManager();
 
         if (environmentMap.pointer != nullptr) {
@@ -187,24 +188,12 @@ namespace Prehistoric {
                 framebuffer->Bind();
                 window->getSwapchain()->SetWindowSize(size, size);
 
-                RendererComponent *comp = atmosphere->GetComponent<RendererComponent>();
-                Pipeline *pipeline = comp->getPipeline();
-
-                pipeline->BindPipeline(nullptr);
-                for (uint32_t i = 0; i < 6; ++i) {
+                for (uint32_t i = 0; i < 6; ++i)
+                {
                     framebuffer->addColourAttachment3D(environmentMap.pointer, i);
                     framebuffer->Clear(0.0f);
-
-                    if (__AtmosphereConfig.scatteringEnabled) {
-                        static_cast<GLAtmosphereScatteringShader *>(pipeline->getShader())->UpdateUniforms(
-                            atmosphere, viewMatrices[i], projectionMatrix);
-                    } else {
-                        static_cast<GLAtmosphereShader *>(pipeline->getShader())->UpdateUniforms(
-                            viewMatrices[i], projectionMatrix);
-                    }
-                    pipeline->RenderPipeline();
+                    atmospherePass.DrawCapture(*atmosphere, viewMatrices[i], projectionMatrix);
                 }
-                pipeline->UnbindPipeline();
 
                 window->getSwapchain()->SetWindowSize(window->getWidth(), window->getHeight());
                 framebuffer->Unbind();

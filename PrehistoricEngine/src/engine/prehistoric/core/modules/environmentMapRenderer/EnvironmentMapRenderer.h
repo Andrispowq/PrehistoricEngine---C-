@@ -17,15 +17,16 @@
 
 namespace Prehistoric
 {
+	class GLAtmospherePass;
 	class EnvironmentMapRenderer
 	{
 	public:
 		static EnvironmentMapRenderer* instance;
 
-		EnvironmentMapRenderer(Window* window, AssembledAssetManager* manager);
+		EnvironmentMapRenderer(Window* window, AssembledAssetManager* manager, GLAtmospherePass& atmospherePass);
 		virtual ~EnvironmentMapRenderer();
 
-		void GenerateEnvironmentMap();
+		void GenerateEnvironmentMap(const Atmosphere* atmosphere);
 		void RenderCube(Camera* camera);
 
 		Texture* getEnvironmentMap() const { return environmentMap.pointer; }
@@ -37,9 +38,9 @@ namespace Prehistoric
 		float lodRenderedMap = 0.0;
 		bool enabled = true;
 
-		Atmosphere* atmosphere = nullptr;
 
 	private:
+		GLAtmospherePass& atmospherePass;
 		Window* window;
 		AssembledAssetManager* manager;
 

@@ -1,5 +1,6 @@
 #include "Includes.hpp"
 #include "GLDepthPass.h"
+#include "platform/opengl/rendering/shaders/forwardPlus/GLDepthPassShader.h"
 
 #include "prehistoric/core/node/component/renderer/RendererComponent.h"
 
@@ -69,6 +70,10 @@ namespace Prehistoric
 		depthShader->Bind(nullptr);
 		depthShader->UpdateGlobalUniforms(rend);
 
+		if (rend->getAtmosphere())
+		{
+			rend->getAtmospherePass().DrawDepth(*rend->getAtmosphere(), *static_cast<GLDepthPassShader*>(depthShader.pointer));
+		}
 		for (auto pipeline : rend->getModels3D())
 		{
 			Pipeline* pl = pipeline.first;

@@ -41,10 +41,11 @@ namespace Prehistoric
 		AddUniform("exposure");
 	}
 
-	void GLAtmosphereScatteringShader::UpdateUniforms(GameObject* atmosphere, Matrix4f view, Matrix4f projection) const
+	void GLAtmosphereScatteringShader::UpdateUniforms(const Vector3f& sun, const Matrix4f& transform, const Matrix4f& view,
+		const Matrix4f& projection, bool capture) const
 	{
-		SetUniform("m_transform", Matrix4f::Identity());
-		SetUniform("sunPosition", ((Atmosphere*)atmosphere)->getSun()->getParent()->getWorldTransform().getPosition());
+		SetUniform("m_transform", transform);
+		SetUniform("sunPosition", sun);
 
 		SetUniform("m_view", view);
 		SetUniform("m_projection", projection);
@@ -65,44 +66,10 @@ namespace Prehistoric
 		SetUniformf("horizontalVerticalShift", __AtmosphereConfig.horizontalVerticalShift);
 		SetUniformi("width", __FrameworkConfig.windowWidth);
 		SetUniformi("height", __FrameworkConfig.windowHeight);
-		SetUniformi("isReflection", __WaterConfig.stage == WaterRenderStage::Reflection ? 1 : 0);
-		SetUniformi("isCubemap", 1);
+		SetUniformi("isReflection", capture && __WaterConfig.stage == WaterRenderStage::Reflection ? 1 : 0);
+		SetUniformi("isCubemap", capture);
 
 		SetUniformf("exposure", __EngineConfig.rendererExposure);
 	}
 
-	void GLAtmosphereScatteringShader::UpdateGlobalUniforms(Renderer* renderer) const
-	{
-		Camera* camera = renderer->getCamera();
-
-		SetUniform("m_view", camera->getOriginalViewMatrix());
-		SetUniform("m_projection", camera->getProjectionMatrix());
-
-		SetUniformf("sunRadius", __AtmosphereConfig.sunRadius);
-		SetUniform("sunColour", __AtmosphereConfig.sunColour);
-		SetUniformf("sunIntensity", __AtmosphereConfig.sunIntensity);
-
-		SetUniformf("planetRadius", __AtmosphereConfig.planetRadius);
-		SetUniformf("atmosphereRadius", __AtmosphereConfig.atmosphereRadius);
-
-		SetUniform("rayleigh", __AtmosphereConfig.rayleigh);
-		SetUniformf("rayleighHeightScale", __AtmosphereConfig.rayleighHeightScale);
-		SetUniformf("mie", __AtmosphereConfig.mie);
-		SetUniformf("mieHeightScale", __AtmosphereConfig.mieHeightScale);
-		SetUniformf("mieDirection", __AtmosphereConfig.mieDirection);
-
-		SetUniformf("horizontalVerticalShift", __AtmosphereConfig.horizontalVerticalShift);
-		SetUniformi("width", __FrameworkConfig.windowWidth);
-		SetUniformi("height", __FrameworkConfig.windowHeight);
-		SetUniformi("isReflection", 0); //TODO: getting if it's a reflection or not from the RenderingEngine
-		SetUniformi("isCubemap", 0);
-
-		SetUniformf("exposure", __EngineConfig.rendererExposure);
-	}
-
-	void GLAtmosphereScatteringShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const
-	{
-		SetUniform("m_transform", object->getWorldTransform().getTransformationMatrix());
-		SetUniform("sunPosition", ((Atmosphere*)object)->getSun()->getParent()->getWorldTransform().getPosition());
-	}
-};
+}

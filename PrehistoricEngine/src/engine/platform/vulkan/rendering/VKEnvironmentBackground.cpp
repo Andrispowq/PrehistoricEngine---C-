@@ -1,5 +1,6 @@
 #include "Includes.hpp"
 #include "VKEnvironmentBackground.h"
+#include "prehistoric/core/modules/atmosphere/Atmosphere.h"
 #include "platform/vulkan/framework/context/VKContext.h"
 #include "platform/vulkan/framework/swapchain/VKSwapchain.h"
 #include "platform/vulkan/rendering/renderpass/VKRenderpass.h"
@@ -141,9 +142,9 @@ namespace Prehistoric
             "vulkan/background/background_FS.spv", pipelineLayout, 0);
     }
 
-    void VKEnvironmentBackground::Draw(VkCommandBuffer commandBuffer, const Camera* camera, const std::optional<Vector3f>& sun) const
+    void VKEnvironmentBackground::Draw(VkCommandBuffer commandBuffer, const Camera* camera, const Atmosphere* atmosphere) const
     {
-        VkPipeline selected = sun ? atmospherePipeline : pipeline;
+        VkPipeline selected = atmosphere ? atmospherePipeline : pipeline;
         if (!selected) return;
         // Remove translation from the actual view matrix, retaining camera rotation.
         Matrix4f view = camera->getViewMatrix();
@@ -157,7 +158,7 @@ namespace Prehistoric
             constants.rayY[axis] = inverse.m[4 + axis];
             constants.rayCenter[axis] = inverse.m[8 + axis] + inverse.m[12 + axis];
         }
-        if (sun)
+        if (atmosphere)
         {
             const auto& settings = __AtmosphereConfig;
             auto pack = [](float (&values)[4], const Vector3f& xyz, float w)
@@ -167,7 +168,7 @@ namespace Prehistoric
                 values[2] = xyz.z;
                 values[3] = w;
             };
-            pack(constants.sunPositionRadius, *sun, settings.sunRadius);
+            pack(constants.sunPositionRadius, atmosphere->getSunPosition(), settings.sunRadius);
             pack(constants.sunColourIntensity, settings.sunColour, settings.sunIntensity);
             pack(constants.rayleighMie, settings.rayleigh, settings.mie);
             constants.radiiAndScaleHeights[0] = settings.planetRadius;
@@ -184,7 +185,7 @@ namespace Prehistoric
         vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-        if (!sun)
+        if (!atmosphere)
         {
             vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0,
                                     nullptr);

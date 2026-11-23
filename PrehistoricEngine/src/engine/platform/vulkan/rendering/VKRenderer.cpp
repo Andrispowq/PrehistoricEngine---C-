@@ -159,7 +159,7 @@ namespace Prehistoric {
         }
 
         //Clear the lists
-        atmosphereSun.reset();
+        atmosphere = nullptr;
         models_3d.clear();
         models_transparency.clear();
         models_2d.clear();
@@ -229,7 +229,7 @@ namespace Prehistoric {
             buffer->BindBuffer();
             renderpass->BeginRenderpass(buffer, primaryFramebuffers[i].get(), swapchain->getSwapchainExtent(),
                                         swapchain->getClearColour());
-            background->Draw(buffer->getCommandBuffer(), camera, atmosphereSun);
+            background->Draw(buffer->getCommandBuffer(), camera, atmosphere);
 
             uint32_t matIdx = 0;
             uint32_t instIdx = 0;

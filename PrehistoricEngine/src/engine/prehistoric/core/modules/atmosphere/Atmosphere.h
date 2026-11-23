@@ -3,38 +3,22 @@
 
 #include "prehistoric/core/node/GameObject.h"
 
-#include "prehistoric/core/model/obj/OBJLoader.h"
-
-#include "platform/opengl/rendering/shaders/atmosphere/GLAtmosphereScatteringShader.h"
-//#include "platform/opengl/rendering/shaders/atmosphere/VKAtmosphereScatteringShader.h"
-#include "platform/opengl/rendering/shaders/atmosphere/GLAtmosphereShader.h"
-//#include "platform/opengl/rendering/shaders/atmosphere/VKAtmosphereShader.h"
-#include "platform/opengl/rendering/pipeline/GLGraphicsPipeline.h"
-#include "platform/vulkan/rendering/pipeline/VKGraphicsPipeline.h"
-
-#include "prehistoric/core/node/component/renderer/RendererComponent.h"
-
-#include "prehistoric/core/resources/AssembledAssetManager.h"
+#include "prehistoric/core/node/component/light/Light.h"
 
 namespace Prehistoric
 {
 	class Atmosphere : public GameObject
 	{
 	public:
-		Atmosphere(Window* window, AssembledAssetManager* manager);
-		virtual ~Atmosphere() {}
 		void PreRender(Renderer* renderer) override;
 
+		Vector3f getSunPosition() const { return sun->getParent()->getWorldTransform().getPosition(); }
 		inline Light* getSun() const { return sun; }
 		inline void setSun(Light* sun) { this->sun = sun; sun->setIlluminate(false); }
-
-		Atmosphere(const Atmosphere&) = default;
 
 		static void sunMoveFunction(Prehistoric::GameObject* object, float frameTime);
 
 	private:
-		Window* window;
-
 		Light* sun = nullptr;
 	};
 };

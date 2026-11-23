@@ -2,13 +2,12 @@
 #define VK_ENVIRONMENT_BACKGROUND_H
 
 #include <memory>
-#include <optional>
-#include "prehistoric/core/util/math/Math.h"
 #include <vulkan/vulkan.h>
 
 namespace Prehistoric {
     class Window;
     class Camera;
+    class Atmosphere;
     class VKDevice;
     class VKTexture;
     class VKSwapchain;
@@ -23,7 +22,7 @@ namespace Prehistoric {
         void SetPrefilter(const VkDescriptorImageInfo& imageInfo);
         void RecreatePipeline();
 
-        void Draw(VkCommandBuffer commandBuffer, const Camera* camera, const std::optional<Vector3f>& sun) const;
+        void Draw(VkCommandBuffer commandBuffer, const Camera* camera, const Atmosphere* atmosphere) const;
 
         VkDescriptorImageInfo getSource() const;
 

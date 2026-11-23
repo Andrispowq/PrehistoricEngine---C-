@@ -30,7 +30,7 @@ namespace Prehistoric
 
 	void GLDepthPassShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const
 	{
-		SetUniform(m_transform, object->getWorldTransform().getTransformationMatrix());
+		SetTransform(object->getWorldTransform().getTransformationMatrix());
 	}
 };
 

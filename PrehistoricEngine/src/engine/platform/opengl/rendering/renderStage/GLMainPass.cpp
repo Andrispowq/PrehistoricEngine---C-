@@ -113,10 +113,13 @@ namespace Prehistoric
 		multisampleFBO->SetDrawAttachments(5, arr);
 		multisampleFBO->Clear(0.0f);
 
-		if (__FrameworkConfig.api == OpenGL && EnvironmentMapRenderer::instance && EnvironmentMapRenderer::instance->enabled
-			&& EnvironmentMapRenderer::instance->atmosphere == nullptr)
+		if (rend->getAtmosphere())
 		{
-			EnvironmentMapRenderer::instance->RenderCube(renderer->getCamera());
+			rend->getAtmospherePass().DrawScene(*rend->getAtmosphere(), *rend->getCamera());
+		}
+		else if (EnvironmentMapRenderer::instance && EnvironmentMapRenderer::instance->enabled)
+		{
+			EnvironmentMapRenderer::instance->RenderCube(rend->getCamera());
 		}
 
 		const auto& lights = rend->getLights();
