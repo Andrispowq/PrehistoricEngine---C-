@@ -12,15 +12,22 @@ namespace Prehistoric
 	VKGraphicsPipeline::~VKGraphicsPipeline()
 	{
 		vkDestroyPipeline(device->getDevice(), graphicsPipeline, nullptr);
+		vkDestroyPipeline(device->getDevice(), wireframePipeline, nullptr);
 	}
 
 	void VKGraphicsPipeline::BindPipeline(CommandBuffer* buffer) const
+	{
+		BindPipeline(buffer, false);
+	}
+
+	void VKGraphicsPipeline::BindPipeline(CommandBuffer* buffer, bool wireframe) const
 	{
 		VKPipeline::BindPipeline(buffer);
 
 		if (buffer)
 		{
-			vkCmdBindPipeline(((VKCommandBuffer*)buffer)->getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+			vkCmdBindPipeline(((VKCommandBuffer*)buffer)->getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
+				wireframe && wireframePipeline ? wireframePipeline : graphicsPipeline);
 			vbo->Bind(buffer);
 		}
 	}
@@ -47,6 +54,7 @@ namespace Prehistoric
 		VKPipeline::RecreatePipeline();
 
 		vkDestroyPipeline(device->getDevice(), graphicsPipeline, nullptr);
+		vkDestroyPipeline(device->getDevice(), wireframePipeline, nullptr);
 		CreatePipeline();
 	}
 
@@ -117,7 +125,7 @@ namespace Prehistoric
 		rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 		rasterizer.depthClampEnable = VK_FALSE;
 		rasterizer.rasterizerDiscardEnable = VK_FALSE;
-		rasterizer.polygonMode = VK_POLYGON_MODE_FILL;// wireframe ? VK_POLYGON_MODE_LINE : VK_POLYGON_MODE_FILL;
+		rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 		rasterizer.lineWidth = 1.0f;
 		rasterizer.cullMode = backfaceCulling ? VK_CULL_MODE_BACK_BIT : VK_CULL_MODE_NONE;
 		rasterizer.frontFace = vbo->getFrontFace() == FrontFace::COUNTER_CLOCKWISE ? VK_FRONT_FACE_COUNTER_CLOCKWISE : VK_FRONT_FACE_CLOCKWISE;
@@ -192,6 +200,15 @@ namespace Prehistoric
 		if (vkCreateGraphicsPipelines(device->getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
 		{
 			PR_LOG_RUNTIME_ERROR("Graphics pipeline creation has failed!\n");
+		}
+
+		VkPhysicalDeviceFeatures features{};
+		vkGetPhysicalDeviceFeatures(device->getPhysicalDevice(), &features);
+		if (features.fillModeNonSolid)
+		{
+			rasterizer.polygonMode = VK_POLYGON_MODE_LINE;
+			if (vkCreateGraphicsPipelines(device->getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &wireframePipeline) != VK_SUCCESS)
+				PR_LOG_RUNTIME_ERROR("Wireframe pipeline creation failed!\n");
 		}
 	}
 };

@@ -35,7 +35,11 @@ namespace Prehistoric
 
         GUID guid = GenerateGUID(key);
 
-        children.insert(std::make_pair(guid, child));
+        // The time/name GUID can collide when sibling patches are built in the same update.
+        while (!children.try_emplace(guid, child).second)
+        {
+            ++guid;
+        }
         return child;
     }
 

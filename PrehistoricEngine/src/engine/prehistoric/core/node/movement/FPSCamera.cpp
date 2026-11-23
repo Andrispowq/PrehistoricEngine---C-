@@ -181,8 +181,7 @@ namespace Prehistoric
 
 	void FPSCamera::RotateY(const float& angle)
 	{
-		Vector3f hAxis = yAxis.cross(forward).normalise();
 		this->forward = forward.rotate(yAxis, angle).normalise();
-		this->up = forward.cross(hAxis).normalise();
+		this->up = up.rotate(yAxis, angle).normalise();
 	}
 };

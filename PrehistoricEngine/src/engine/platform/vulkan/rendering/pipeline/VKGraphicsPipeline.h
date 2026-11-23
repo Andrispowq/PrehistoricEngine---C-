@@ -22,6 +22,7 @@ namespace Prehistoric
 		virtual ~VKGraphicsPipeline();
 
 		virtual void BindPipeline(CommandBuffer* buffer) const override;
+		void BindPipeline(CommandBuffer* buffer, bool wireframe) const;
 		virtual void RenderPipeline() const override;
 		virtual void UnbindPipeline() const override;
 
@@ -36,6 +37,7 @@ namespace Prehistoric
 		VKRenderpass* renderpass;
 
 		VkPipeline graphicsPipeline;
+		VkPipeline wireframePipeline = VK_NULL_HANDLE;
 	};
 };
 

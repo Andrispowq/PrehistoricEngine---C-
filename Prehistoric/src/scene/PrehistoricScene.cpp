@@ -3,6 +3,7 @@
 #include "prehistoric/application/Application.h"
 
 #include "prehistoric/core/modules/water/Water.h"
+#include "prehistoric/core/modules/terrain/Terrain.h"
 
 #include "prehistoric/core/node/component/scripting/ScriptComponent.h"
 
@@ -16,6 +17,14 @@ PrehistoricScene::PrehistoricScene(const std::string &name, Prehistoric::Window 
 
     if (__FrameworkConfig.api == Vulkan) {
         AssetManager *man = manager->getAssetManager();
+
+        // Keep the material display, its platform and its local lights together above the terrain.
+        const Vector3f displayOrigin(0, 340, 415);
+        for (const auto& [name, node] : sceneRoot->getChildren()) {
+            auto* object = dynamic_cast<GameObject*>(node);
+            if (object && object->GetComponent<RendererComponent>() && !dynamic_cast<Terrain*>(object))
+                object->Move(displayOrigin);
+        }
 
         VertexBufferHandle quad = man->loadVertexBuffer(std::nullopt, "engine://models/quad.obj").value();
         VertexBufferHandle sphere = man->loadVertexBuffer(std::nullopt, "engine://models/sphere.obj").value();
@@ -36,7 +45,7 @@ PrehistoricScene::PrehistoricScene(const std::string &name, Prehistoric::Window 
         GameObject *obj = new GameObject();
         obj->AddComponent(RENDERER_COMPONENT, renderer);
         obj->Rotate({-90, 0, 0});
-        obj->Move({0, 0, 15});
+        obj->Move(displayOrigin + Vector3f(0, 0, 15));
         sceneRoot->AddChild("OBJ", obj);
 
         float space = 4.0f;
@@ -52,7 +61,7 @@ PrehistoricScene::PrehistoricScene(const std::string &name, Prehistoric::Window 
                                        });
 
                 GameObject *obj = new GameObject;
-                obj->SetPosition({x * space, y * space, -50});
+                obj->SetPosition(displayOrigin + Vector3f(x * space, y * space, -50));
                 obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline2, material2));
                 sceneRoot->AddChild(std::string("obj" + std::to_string(x) + std::to_string(y)), obj);
             }

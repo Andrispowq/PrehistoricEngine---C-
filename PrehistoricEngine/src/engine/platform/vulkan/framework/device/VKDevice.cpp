@@ -95,6 +95,9 @@ namespace Prehistoric {
         vkGetPhysicalDeviceFeatures(physicalDevice, &supportedFeatures);
         deviceFeatures.sampleRateShading = supportedFeatures.sampleRateShading;
         deviceFeatures.tessellationShader = supportedFeatures.tessellationShader;
+        deviceFeatures.fillModeNonSolid = supportedFeatures.fillModeNonSolid;
+        if (!deviceFeatures.fillModeNonSolid)
+            PR_LOG_MESSAGE("Wireframe unavailable on this Vulkan device (fillModeNonSolid).\n");
         deviceFeatures.geometryShader = supportedFeatures.geometryShader;
 
         //Portability devices require this extension when they advertise it.

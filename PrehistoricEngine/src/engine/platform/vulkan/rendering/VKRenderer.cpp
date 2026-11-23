@@ -1,5 +1,6 @@
 #include "Includes.hpp"
 #include "VKRenderer.h"
+#include "platform/vulkan/rendering/pipeline/VKGraphicsPipeline.h"
 #include "VKEnvironmentBackground.h"
 #include "VKAtmosphereParameters.h"
 #include "VKEnvironmentLighting.h"
@@ -170,15 +171,15 @@ namespace Prehistoric {
         std::unordered_map<VKShader*, Slots> shaderSlots;
         Slots* slots = nullptr;
         VKShader* shader = nullptr;
-        auto begin = [&](Pipeline* pipeline)
+        auto begin = [&](Pipeline* pipeline, bool wireframe)
         {
             shader = static_cast<VKShader*>(pipeline->getShader());
             slots = &shaderSlots[shader];
-            if (buffer) pipeline->BindPipeline(buffer);
+            if (buffer) static_cast<VKGraphicsPipeline*>(pipeline)->BindPipeline(buffer, wireframe);
         };
         auto beginScene = [&](Pipeline* pipeline)
         {
-            begin(pipeline);
+            begin(pipeline, isWireframeMode());
             if (buffer) shader->BindGlobalSets();
             else shader->UpdateGlobalUniforms(this);
         };
@@ -207,7 +208,7 @@ namespace Prehistoric {
         VisitBatches(models_transparency, beginScene, material, object, end);
         for (const auto& [pipeline, objects] : models_2d)
         {
-            begin(pipeline);
+            begin(pipeline, false);
             for (RenderableComponent* renderable : objects)
             {
                 object(pipeline, renderable);

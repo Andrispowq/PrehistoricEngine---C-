@@ -15,7 +15,15 @@ void main()
 	vec2 uv = location + gap * position.xz;
 	float height = heightAt(uv);
 	if (leaf.quadrant.z > 0)
-		uv += morph(uv, height, morphArea, location, leaf.quadrant.xy, gap, m_transform, cameraPosition);
+	{
+		vec2 shift = morph(uv, height, morphArea, location, leaf.quadrant.xy, gap, m_transform, cameraPosition);
+		if (any(notEqual(shift, vec2(0))))
+		{
+			uv += shift;
+			// Both patches must use the same endpoint height when selecting their edge tessellation.
+			height = heightAt(uv);
+		}
+	}
 	mapCoord_TC = uv;
 	gl_Position = m_transform * vec4(uv.x, height, uv.y, 1);
 }
