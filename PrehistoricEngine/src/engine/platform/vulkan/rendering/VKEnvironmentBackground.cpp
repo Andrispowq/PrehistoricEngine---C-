@@ -3,7 +3,6 @@
 #include "platform/vulkan/framework/context/VKContext.h"
 #include "platform/vulkan/framework/swapchain/VKSwapchain.h"
 #include "platform/vulkan/rendering/renderpass/VKRenderpass.h"
-#include "platform/vulkan/rendering/shaders/VKColourSpace.h"
 #include "platform/vulkan/texture/VKTexture.h"
 #include "prehistoric/application/Application.h"
 #include "prehistoric/core/resources/loaders/TextureLoader.h"
@@ -18,11 +17,9 @@ namespace Prehistoric
         struct BackgroundConstants 
         {
             float inverseViewProjection[16];
-            float exposure;
-            float gamma;
         };
 
-        static_assert(sizeof(BackgroundConstants) == 72);
+        static_assert(sizeof(BackgroundConstants) == 64);
 
         void Check(VkResult result) 
         {
@@ -126,78 +123,8 @@ namespace Prehistoric
         vkDestroyPipeline(device->getDevice(), pipeline, nullptr);
         pipeline = VK_NULL_HANDLE;
 
-        VkShaderModule modules[2]{};
-        VkPipelineShaderStageCreateInfo shaderStages[2]{};
-        const char *paths[] = {"vulkan/background/background_VS.spv", "vulkan/background/background_FS.spv"};
-
-        for (size_t i = 0; i < 2; ++i) 
-        {
-            auto code = ResourceLoader::LoadShaderVK(paths[i]);
-            VkShaderModuleCreateInfo moduleInfo{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
-            moduleInfo.codeSize = code.size();
-            moduleInfo.pCode = reinterpret_cast<const uint32_t *>(code.data());
-            Check(vkCreateShaderModule(device->getDevice(), &moduleInfo, nullptr, &modules[i]));
-
-            shaderStages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            shaderStages[i].stage = i == 0 ? VK_SHADER_STAGE_VERTEX_BIT : VK_SHADER_STAGE_FRAGMENT_BIT;
-            shaderStages[i].module = modules[i];
-            shaderStages[i].pName = "main";
-        }
-
-        VkPipelineVertexInputStateCreateInfo vertex{VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO};
-        VkPipelineInputAssemblyStateCreateInfo assembly{VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO};
-        assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-
-        VkPipelineViewportStateCreateInfo viewport{VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO};
-        viewport.viewportCount = viewport.scissorCount = 1;
-
-        VkDynamicState dynamicStates[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
-        VkPipelineDynamicStateCreateInfo dynamic{VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO};
-        dynamic.dynamicStateCount = 2;
-        dynamic.pDynamicStates = dynamicStates;
-
-        VkPipelineRasterizationStateCreateInfo raster{VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO};
-        raster.polygonMode = VK_POLYGON_MODE_FILL;
-        raster.cullMode = VK_CULL_MODE_NONE;
-        raster.lineWidth = 1.0f;
-
-        VkPipelineMultisampleStateCreateInfo multisample{VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO};
-        multisample.rasterizationSamples = device->getSampleCount();
-
-        VkPipelineDepthStencilStateCreateInfo depth{VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO};
-        depth.depthTestEnable = VK_TRUE;
-        depth.depthWriteEnable = VK_FALSE;
-        depth.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-
-        VkPipelineColorBlendAttachmentState attachment{};
-        attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
-                                    VK_COLOR_COMPONENT_A_BIT;
-
-        VkPipelineColorBlendStateCreateInfo blend{VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO};
-        blend.attachmentCount = 1;
-        blend.pAttachments = &attachment;
-
-        VkGraphicsPipelineCreateInfo info{VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO};
-        info.stageCount = 2;
-        info.pStages = shaderStages;
-        info.pVertexInputState = &vertex;
-        info.pInputAssemblyState = &assembly;
-        info.pViewportState = &viewport;
-        info.pDynamicState = &dynamic;
-        info.pRasterizationState = &raster;
-        info.pMultisampleState = &multisample;
-        info.pDepthStencilState = &depth;
-        info.pColorBlendState = &blend;
-        info.layout = pipelineLayout;
-        info.renderPass = swapchain->getRenderpass()->getRenderPass();
-        const VkResult result = vkCreateGraphicsPipelines(device->getDevice(), VK_NULL_HANDLE, 1, &info, nullptr,
-                                                          &pipeline);
-
-        for (auto module: modules)
-        {
-            vkDestroyShaderModule(device->getDevice(), module, nullptr);
-        }
-        Check(result);
+        pipeline = swapchain->getRenderpass()->CreateFullscreenPipeline("vulkan/background/background_VS.spv",
+            "vulkan/background/background_FS.spv", pipelineLayout, 0);
     }
 
     void VKEnvironmentBackground::Draw(VkCommandBuffer commandBuffer, const Camera *camera) const 
@@ -210,9 +137,6 @@ namespace Prehistoric
         BackgroundConstants constants{};
 
         memcpy(constants.inverseViewProjection, inverse.m, sizeof(constants.inverseViewProjection));
-        constants.exposure = __EngineConfig.rendererExposure;
-        constants.gamma = VKPBRShaderGamma(swapchain->getColourImage()->getImageFormat(), __EngineConfig.rendererGamma);
-
         auto extent = swapchain->getSwapchainExtent();
         VkViewport viewport{0, 0, (float) extent.width, (float) extent.height, 0, 1};
         VkRect2D scissor{{0, 0}, extent};

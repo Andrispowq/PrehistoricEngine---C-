@@ -1,6 +1,5 @@
 #include "Includes.hpp"
 #include <algorithm>
-#include "platform/vulkan/rendering/shaders/VKColourSpace.h"
 #include "VKPBRShader.h"
 #include "platform/vulkan/rendering/VKRenderer.h"
 #include "platform/vulkan/rendering/VKEnvironmentLighting.h"
@@ -14,7 +13,7 @@ namespace Prehistoric {
 
         AddUniform("camera", VERTEX_SHADER | FRAGMENT_SHADER, UniformBuffer, 0, 0,
                    sizeof(float) * 16 * 2 + Vector4f::size());
-        AddUniform("lightConditions", FRAGMENT_SHADER, UniformBuffer, 0, 1, sizeof(int) * 2 + sizeof(float) * 2);
+        AddUniform("lightConditions", FRAGMENT_SHADER, UniformBuffer, 0, 1, sizeof(int) * 2);
         AddUniform("lights", FRAGMENT_SHADER, UniformBuffer, 0, 2,
                    Vector4f::size() * 3 * __EngineConfig.lightsMaxNumber);
 
@@ -77,19 +76,12 @@ namespace Prehistoric {
 
         struct LightCond {
             int highDetailRange, lights;
-            float gamma, exposure;
         } lightCond;
 
         lightCond.highDetailRange = __EngineConfig.rendererHighDetailRange;
         lightCond.lights = (uint32_t) lights.size() >= __EngineConfig.lightsMaxNumber
                                ? __EngineConfig.lightsMaxNumber
                                : (uint32_t) lights.size();
-        // The actual colour attachment handles encoding for sRGB formats.
-        // Query each frame so swapchain recreation cannot leave a stale choice.
-        lightCond.gamma = VKPBRShaderGamma(swapchain->getColourImage()->getImageFormat(),
-                                           __EngineConfig.rendererGamma);
-        lightCond.exposure = __EngineConfig.rendererExposure;
-
         SetUniform("lightConditions", &lightCond, sizeof(LightCond), 0);
 
         size_t baseOffset = __EngineConfig.lightsMaxNumber * Vector4f::size();

@@ -12,7 +12,6 @@ namespace Prehistoric
 
 		AddUniform("camera", VERTEX_SHADER | FRAGMENT_SHADER, UniformBuffer, 0, 0, 2 * sizeof(float) * 16 + Vector3f::size());
 		AddUniform("lights", FRAGMENT_SHADER, UniformBuffer, 0, 1, __EngineConfig.lightsMaxNumber * 3 * Vector4f::size());
-		AddUniform("lightConditions", FRAGMENT_SHADER, UniformBuffer, 0, 2, sizeof(float) * 2);
 
 		AddUniform(ALBEDO_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 0, 0);
 		AddUniform(MROT_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 1, 0);
@@ -56,8 +55,6 @@ namespace Prehistoric
 		SetUniform("camera", camera->getProjectionMatrix(), 16 * sizeof(float) * 1);
 		SetUniform("camera", camera->getPosition(), 16 * sizeof(float) * 2);
 
-		SetUniformf("lightConditions", __EngineConfig.rendererExposure, sizeof(float) * 0);
-		SetUniformf("lightConditions", __EngineConfig.rendererGamma, sizeof(float) * 1);
 
 		size_t baseOffset = __EngineConfig.lightsMaxNumber * Vector4f::size();
 

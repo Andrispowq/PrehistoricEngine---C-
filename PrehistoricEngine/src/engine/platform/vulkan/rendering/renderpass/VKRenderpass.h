@@ -17,12 +17,19 @@ namespace Prehistoric
 		VKRenderpass(VKDevice* device, VKSwapchain* swapchain);
 		virtual ~VKRenderpass();
 
+		std::unique_ptr<VKFramebuffer> CreateFramebuffer(uint32_t imageIndex) const;
 		void BeginRenderpass(VKCommandBuffer* commandBuffer, VKFramebuffer* framebuffer, VkExtent2D swapchainExtent, Vector4f clearColour);
 		void EndRenderpass(VKCommandBuffer* commandBuffer);
 
+		VkPipeline CreateFullscreenPipeline(const char* vertexPath, const char* fragmentPath, VkPipelineLayout layout, uint32_t subpass);
 		VkRenderPass getRenderPass() const { return renderpass; }
 	private:
 		VkRenderPass renderpass;
+		VkDescriptorSetLayout hdrSetLayout{};
+		VkDescriptorPool hdrPool{};
+		VkDescriptorSet hdrSet{};
+		VkPipelineLayout hdrLayout{};
+		VkPipeline hdrPipeline{};
 
 		VKDevice* device;
 		VKSwapchain* swapchain;

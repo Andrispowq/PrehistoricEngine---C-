@@ -39,7 +39,9 @@ namespace Prehistoric
 		VkSwapchainKHR getSwapchain() const { return swapchain; }
 		std::vector<VKImage*> getSwapchainImages() const { return swapchainImages; }
 
-		VKImage* getColourImage() { return multisampleColourImage; }
+		VKImage* getColourImage() { return multisampleColourImage ? multisampleColourImage : hdrImage; }
+		VKImage* getHDRImage() const { return hdrImage; }
+		VkSampleCountFlagBits getSceneSamples() const { return sceneSamples; }
 		VKImage* getDepthImage() { return depthImage; }
 		VkFormat getSwapchainImageFormat() const { return swapchainImageFormat; }
 		VkExtent2D getSwapchainExtent() const { return swapchainExtent; }
@@ -68,7 +70,10 @@ namespace Prehistoric
 		VkExtent2D swapchainExtent;
 
 		std::vector<VKImage*> swapchainImages;
-		VKImage* multisampleColourImage;
+		void CreateSceneAttachments();
+		VKImage* hdrImage = nullptr;
+		VKImage* multisampleColourImage = nullptr;
+		VkSampleCountFlagBits sceneSamples = VK_SAMPLE_COUNT_1_BIT;
 		VKImage* depthImage;
 
 		//Synchronization

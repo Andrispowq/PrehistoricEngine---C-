@@ -5,8 +5,6 @@ layout(location = 0) out vec3 direction;
 layout(push_constant) uniform Background
 {
     mat4 inverseViewProjection;
-    float exposure;
-    float gamma;
 } sky;
 
 void main()

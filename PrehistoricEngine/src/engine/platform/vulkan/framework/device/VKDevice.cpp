@@ -130,16 +130,8 @@ namespace Prehistoric {
         createInfo.enabledExtensionCount = static_cast<uint32_t>(ext.size());
         createInfo.ppEnabledExtensionNames = ext.data();
 
-#if defined(PR_VK_ENABLE_VALIDATION_LAYERS)
-        if (__FrameworkConfig.apiVulkanUseValidationLayers) {
-            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-            createInfo.ppEnabledLayerNames = validationLayers.data();
-        } else {
-            createInfo.enabledLayerCount = 0;
-        }
-#else
-        createInfo.enabledLayerCount = 0;
-#endif
+        // Validation layers are enabled on the instance. Device layer fields stay zero.
+
 
         if ((result = vkCreateDevice(physicalDevice, &createInfo, nullptr, &device)) != VK_SUCCESS) {
             PR_LOG_ERROR("Failed to create logical device! Error: %i\n", result);

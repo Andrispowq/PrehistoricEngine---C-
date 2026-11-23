@@ -23,8 +23,6 @@ layout(set = 0, binding = 1, std140) uniform LightConditions
 {
 	layout(offset = 0) int highDetailRange;
 	layout(offset = 4) int numberOfLights;
-	layout(offset = 8) float gamma;
-	layout(offset = 12) float exposure;
 };
 
 layout(set = 0, binding = 2, std140) uniform Lights
@@ -160,11 +158,6 @@ void main()
 	
 	// Match OpenGL: scalar emission strength tinted by the material albedo.
 	vec3 colour = ambient + Lo + clamp(albedoColour, vec3(0.05), vec3(1.0)) * emission * emissionFactor;
-	
-	colour = 1.0 - exp(-colour * exposure);
-	// CPU supplies gamma=1 for sRGB attachments; hardware encodes those once.
-	if (gamma != 1.0)
-	colour = pow(colour, vec3(1.0 / gamma));
 	
 	outColour = vec4(colour, 1);
 }

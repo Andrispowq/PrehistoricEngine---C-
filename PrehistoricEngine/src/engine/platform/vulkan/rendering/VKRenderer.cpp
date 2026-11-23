@@ -28,17 +28,7 @@ namespace Prehistoric {
         primaryFramebuffers.resize(NumImages);
 
         for (size_t i = 0; i < NumImages; i++) {
-            VkImageView attachments[] =
-            {
-                swapchain->getColourImage()->getImageView(),
-                swapchain->getDepthImage()->getImageView(),
-                swapchain->getSwapchainImages()[i]->getImageView()
-            };
-
-            primaryFramebuffers[i] = std::make_unique<VKFramebuffer>(device->getDevice(), renderpass->getRenderPass(),
-                                                                     swapchain->getSwapchainExtent().width,
-                                                                     swapchain->getSwapchainExtent().height, 3,
-                                                                     attachments);
+            primaryFramebuffers[i] = renderpass->CreateFramebuffer(static_cast<uint32_t>(i));
         }
 
         //Create command pool
@@ -114,16 +104,7 @@ namespace Prehistoric {
             size_t NumImages = swapchain->getSwapchainImages().size();
             primaryFramebuffers.resize(NumImages);
             for (size_t i = 0; i < NumImages; i++) {
-                VkImageView attachments[] =
-                {
-                    swapchain->getColourImage()->getImageView(),
-                    swapchain->getDepthImage()->getImageView(),
-                    swapchain->getSwapchainImages()[i]->getImageView()
-                };
-
-                primaryFramebuffers[i] = std::make_unique<VKFramebuffer>(
-                    device->getDevice(), renderpass->getRenderPass(), swapchain->getSwapchainExtent().width,
-                    swapchain->getSwapchainExtent().height, 3, attachments);
+                primaryFramebuffers[i] = renderpass->CreateFramebuffer(static_cast<uint32_t>(i));
             }
 
             //Create command pool

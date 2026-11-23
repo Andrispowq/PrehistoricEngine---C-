@@ -82,23 +82,8 @@ namespace Prehistoric
             swapchainImages[i] = new VKImage(device, swapImages[i], 1, swapchainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
         }
 
-        //Create multisampled image
-        multisampleColourImage = new VKImage(device, swapchainExtent.width, swapchainExtent.height, 1, swapchainImageFormat,
-            VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, device->getSampleCount(),
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
+        CreateSceneAttachments();
 
-        //Create depth buffer
-        VkFormat depthFormat = FindSupportedFormat(
-            { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
-            VK_IMAGE_TILING_OPTIMAL,
-            VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
-        );
-
-        depthImage = new VKImage(device, swapchainExtent.width, swapchainExtent.height, 1, depthFormat,
-            VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, device->getSampleCount(),
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
-
-        VKUtil::TransitionImageLayout(device, depthImage->getImage(), depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
 
         //Create synchronisation primitives
         imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
@@ -111,6 +96,59 @@ namespace Prehistoric
             renderFinishedSemaphores[i] = new VKSemaphore(device->getDevice());
             inFlightFences[i] = new VKFence(device->getDevice());
         }
+    }
+
+    void VKSwapchain::CreateSceneAttachments()
+    {
+        constexpr VkFormat format = VK_FORMAT_R16G16B16A16_SFLOAT;
+        VkImageFormatProperties properties{};
+        auto usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+        if (vkGetPhysicalDeviceImageFormatProperties(device->getPhysicalDevice(), format, VK_IMAGE_TYPE_2D,
+            VK_IMAGE_TILING_OPTIMAL, usage, 0, &properties) != VK_SUCCESS)
+        {
+            PR_LOG_RUNTIME_ERROR("Floating-point HDR attachments are unavailable!\n");
+        }
+        hdrImage = new VKImage(device, swapchainExtent.width, swapchainExtent.height, 1, format,
+            VK_IMAGE_TILING_OPTIMAL, usage, VK_SAMPLE_COUNT_1_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
+
+        //Create depth buffer
+        VkFormat depthFormat = FindSupportedFormat(
+            { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
+            VK_IMAGE_TILING_OPTIMAL,
+            VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+        );
+
+        VkImageFormatProperties depthProperties{};
+        if (vkGetPhysicalDeviceImageFormatProperties(device->getPhysicalDevice(), depthFormat, VK_IMAGE_TYPE_2D,
+            VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 0, &depthProperties) != VK_SUCCESS)
+        {
+            PR_LOG_RUNTIME_ERROR("Scene depth attachment is unavailable!\n");
+        }
+        sceneSamples = VK_SAMPLE_COUNT_1_BIT;
+        usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+        if (vkGetPhysicalDeviceImageFormatProperties(device->getPhysicalDevice(), format, VK_IMAGE_TYPE_2D,
+            VK_IMAGE_TILING_OPTIMAL, usage, 0, &properties) == VK_SUCCESS)
+        {
+            VkSampleCountFlags supported = properties.sampleCounts & depthProperties.sampleCounts;
+            for (uint32_t count = device->getSampleCount(); count > 1; count >>= 1)
+            {
+                if (count <= __FrameworkConfig.windowNumSamples && (supported & count))
+                {
+                    sceneSamples = static_cast<VkSampleCountFlagBits>(count);
+                    break;
+                }
+            }
+        }
+        if (sceneSamples != VK_SAMPLE_COUNT_1_BIT)
+        {
+            multisampleColourImage = new VKImage(device, swapchainExtent.width, swapchainExtent.height, 1, format,
+                VK_IMAGE_TILING_OPTIMAL, usage, sceneSamples, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
+        }
+        depthImage = new VKImage(device, swapchainExtent.width, swapchainExtent.height, 1, depthFormat,
+            VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, sceneSamples,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+        VKUtil::TransitionImageLayout(device, depthImage->getImage(), depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
     }
 
     VKSwapchain::~VKSwapchain()
@@ -128,6 +166,8 @@ namespace Prehistoric
 
         delete depthImage;
         delete multisampleColourImage;
+        multisampleColourImage = nullptr;
+        delete hdrImage;
 
         for (auto image : swapchainImages)
         {
@@ -234,6 +274,8 @@ namespace Prehistoric
         //We destroy some objects that should be destroyed
         delete depthImage;
         delete multisampleColourImage;
+        multisampleColourImage = nullptr;
+        delete hdrImage;
 
         for (auto image : swapchainImages)
         {
@@ -311,23 +353,8 @@ namespace Prehistoric
             swapchainImages[i] = new VKImage(device, swapImages[i], 1, swapchainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
         }
 
-        //Create multisampled image
-        multisampleColourImage = new VKImage(device, swapchainExtent.width, swapchainExtent.height, 1, swapchainImageFormat,
-            VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, device->getSampleCount(),
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
+        CreateSceneAttachments();
 
-        //Create depth buffer
-        VkFormat depthFormat = FindSupportedFormat(
-            { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
-            VK_IMAGE_TILING_OPTIMAL,
-            VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
-        );
-
-        depthImage = new VKImage(device, swapchainExtent.width, swapchainExtent.height, 1, depthFormat,
-            VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, device->getSampleCount(),
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
-
-        VKUtil::TransitionImageLayout(device, depthImage->getImage(), depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
     }
     
     VkSurfaceFormatKHR VKSwapchain::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)

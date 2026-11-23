@@ -25,12 +25,6 @@ layout (set = 0, binding = 1, std140) uniform Lights
 	layout (offset = max_lights * 2 * 16) vec3 intensity[max_lights];
 } lights;
 
-layout (set = 0, binding = 2, std140) uniform LightConditions
-{
-	layout (offset = 0) float exposure;
-	layout (offset = 4) float gamma;
-};
-
 layout (set = 2, binding = 1, std140) uniform Materials
 {
     layout (offset = 00) vec3 colour;	
@@ -107,9 +101,6 @@ void main()
     vec3 ambient = vec3(0.03);
 
     vec3 colour = ambient * albedoColour + Lo;
-
-    colour = 1.0 - exp(-colour * exposure);
-	colour = pow(colour, vec3(1.0 / gamma));
 
     outColour = vec4(colour, 1.0);
 }
