@@ -7,7 +7,7 @@
 
 #include "prehistoric/application/Application.h"
 
-#include "platform/opengl/buffer/GLUniformBufferObject.h"
+#include "platform/opengl/rendering/GLRenderer.h"
 
 namespace Prehistoric
 {
@@ -63,8 +63,6 @@ namespace Prehistoric
 		AddUniform("highDetailRange");
 	}
 
-	extern UniformBufferObject* _matrices;
-
 	void GLTerrainShadowShader::UpdateGlobalUniforms(Renderer* renderer) const
 	{
 		Camera* camera = renderer->getCamera();
@@ -75,7 +73,7 @@ namespace Prehistoric
 
 		SetUniformi("highDetailRange", __EngineConfig.rendererHighDetailRange);
 
-		_matrices->BindBase(nullptr, 0);
+		static_cast<GLRenderer*>(renderer)->getShadowDepthPass()->BindMatrices();
 		SetUniformBlock("LightSpaceMatrices", 0);
 
 		//Some other stuff that is terrain-related

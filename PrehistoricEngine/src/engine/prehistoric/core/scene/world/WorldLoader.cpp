@@ -679,11 +679,9 @@ namespace Prehistoric {
                     std::string sun_name = world_object["sun"];
                     if (sun_name.empty())
                     {
-                        sun = new GameObject();
-                        sun->AddComponent(LIGHT_COMPONENT,
-                                          new Light(Vector3f(1, 0.95f, 0.87f), 100.0f, 50000.0f, true, true));
-                        Atmosphere::sunMoveFunction(sun, 0.0f);
-                        root->AddChild("sun", sun);
+                        auto orbitingSun = Atmosphere::CreateSun();
+                        sun = orbitingSun.get();
+                        root->AddChild("sun", orbitingSun.release());
                     }
                     else
                     {

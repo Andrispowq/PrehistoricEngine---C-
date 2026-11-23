@@ -21,7 +21,7 @@ namespace Prehistoric
 		virtual void OnResized() override;
 		virtual void Render() override;
 
-		void UpdateLightBuffer();
+		static uint32_t TileCount(uint32_t pixels) { return (pixels + 15) / 16; }
 
 		GLShaderStorageBuffer* getLightBuffer() const { return lightBuffer.get(); }
 		GLShaderStorageBuffer* getVisibleLightIndicesBuffer() const { return visibleLightIndicesBuffer.get(); }

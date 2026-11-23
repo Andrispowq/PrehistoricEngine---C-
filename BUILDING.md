@@ -380,7 +380,9 @@ repairs are listed in the [rendering backlog](docs/RENDERING_BACKLOG.md).
 
 A JSON world with a `scattering_atmosphere` object and scattering enabled draws
 a fullscreen sky into the linear HDR scene. The sun field can name a light in
-the scene root. An empty sun field uses the sample's fixed sun position.
+the scene root. An empty sun field creates a sun that rises from the +X horizon and completes
+a full orbit in 120 seconds. The visible sky follows the orbit each frame, and
+the default lighting refresh interval is 10 seconds.
 Both backends use the Rayleigh/Mie integration and disk profile in
 `shaders/shared/atmosphere/scattering.glsl`. Vulkan applies exposure in its
 final HDR pass. In worlds without an active scattering atmosphere, the HDR

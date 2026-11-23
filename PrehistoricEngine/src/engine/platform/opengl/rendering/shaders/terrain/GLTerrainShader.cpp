@@ -6,6 +6,7 @@
 #include "prehistoric/core/model/material/Material.h"
 
 #include "prehistoric/application/Application.h"
+#include "platform/opengl/rendering/renderStage/GLLightCullingPass.h"
 
 namespace Prehistoric
 {
@@ -83,7 +84,7 @@ namespace Prehistoric
 		BindEnvironmentLighting(renderer, 0);
 
 		//TODO: This is ugly!!!! 
-		SetUniformi("numberOfTilesX", __FrameworkConfig.windowWidth / 16);
+		SetUniformi("numberOfTilesX", GLLightCullingPass::TileCount(renderer->getWindow()->getWidth()));
 		SetUniformf("max_reflection_lod", __EnvironmentMapConfig.prefilterLevels - 1.0f);
 
 		//Some other stuff that is terrain-related

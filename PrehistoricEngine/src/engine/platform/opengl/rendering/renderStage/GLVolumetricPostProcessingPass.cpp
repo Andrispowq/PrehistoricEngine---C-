@@ -70,7 +70,7 @@ namespace Prehistoric
 			rend->getMainPass()->getColourImage().pointer,
 				rend->getMainPass()->getPositionMetallicImage().pointer,
 				rend->getMainPass()->getAlbedoRoughnessImage().pointer,
-				rend->getMainPass()->getNormalImage().pointer, renderer->getCamera(), rend->getLights());
+				rend->getMainPass()->getNormalImage().pointer, renderer);
 		renderPipeline->RenderPipeline();
 		renderPipeline->UnbindPipeline();
 	}

@@ -22,23 +22,13 @@
 
 namespace Prehistoric
 {
-	UniformBufferObject* _matrices = nullptr;
-	Texture* _shadowMap = nullptr;
-	std::vector<float> cascadeDistances;
-
 	GLShadowDepthPass::GLShadowDepthPass(Renderer* renderer)
 		: RenderStage(renderer), framebuffer{ nullptr }
 	{
-		uint32_t width = window->getWidth();
-		uint32_t height = window->getHeight();
-
-		//TODO
 		float farPlane = __EngineConfig.rendererFarPlane;
-		shadowCascadeLevels = std::vector<float>{ farPlane / 250.0f, farPlane / 100.0f, farPlane / 50.0f, farPlane / 25.0f, farPlane / 10.0f, farPlane / 2.0f};
-		cascadeDistances = shadowCascadeLevels;
+		shadowCascadeLevels = { farPlane / 250.0f, farPlane / 100.0f, farPlane / 50.0f, farPlane / 25.0f, farPlane / 10.0f, farPlane / 2.0f};
 
-		matrices = new GLUniformBufferObject(window, nullptr, 16 * 16 * sizeof(float));
-		_matrices = matrices;
+		matrices = std::make_unique<GLUniformBufferObject>(window, nullptr, 16 * 16 * sizeof(float));
 
 		AssetManager* man = manager->getAssetManager();
 		depthTexture = man->storeTexture(GLTexture::Storage2DArray((uint32_t)SIZE, (uint32_t)SIZE, (int)shadowCascadeLevels.size() + 1, D32_LINEAR, Bilinear, ClampToEdge, false));
@@ -61,20 +51,9 @@ namespace Prehistoric
 		man->removeReference<Texture>(depthTexture.handle);
 	}
 
-	void GLShadowDepthPass::OnResized()
+	void GLShadowDepthPass::BindMatrices() const
 	{
-		uint32_t width = window->getWidth();
-		uint32_t height = window->getHeight();
-
-		AssetManager* man = manager->getAssetManager();
-		man->removeReference<Texture>(depthTexture.handle);
-		depthTexture = man->storeTexture(GLTexture::Storage2DArray((uint32_t)SIZE, (uint32_t)SIZE, (int)shadowCascadeLevels.size() + 1, D32_LINEAR, Bilinear, ClampToEdge, false));
-		man->addReference<Texture>(depthTexture.handle);
-
-		framebuffer->Bind();
-		framebuffer->addColourAttachment2D(depthTexture.pointer);
-		framebuffer->Check();
-		framebuffer->Unbind();
+		matrices->BindBase(nullptr, 0);
 	}
 
 	void GLShadowDepthPass::Render()
@@ -97,6 +76,7 @@ namespace Prehistoric
 
 		if (sun == nullptr)
 		{
+			rendered = false;
 			return;
 		}
 
@@ -104,7 +84,6 @@ namespace Prehistoric
 		Vector3f sunPos = sun->getParent()->getWorldTransform().getPosition();
 		std::vector<Matrix4f> lightMatrices = GetLightSpaceMatrices(sunPos.normalise());
 
-		_shadowMap = depthTexture.pointer;
 
 		matrices->Bind(0);
 		matrices->MapBuffer();
@@ -125,7 +104,7 @@ namespace Prehistoric
 		window->getSwapchain()->SetWindowSize((uint32_t)SIZE, (uint32_t)SIZE);
 
 		depthShader->Bind(nullptr);
-		dynamic_cast<GLShadowDepthPassShader*>(depthShader.pointer)->UpdateGlobalUniforms(matrices);
+		dynamic_cast<GLShadowDepthPassShader*>(depthShader.pointer)->UpdateGlobalUniforms(matrices.get());
 
 		for (auto pipeline : rend->getModels3D())
 		{
@@ -154,7 +133,7 @@ namespace Prehistoric
 					pl->UnbindPipeline();
 
 					depthShader->Bind(nullptr);
-					dynamic_cast<GLShadowDepthPassShader*>(depthShader.pointer)->UpdateGlobalUniforms(matrices);
+					dynamic_cast<GLShadowDepthPassShader*>(depthShader.pointer)->UpdateGlobalUniforms(matrices.get());
 				}
 				else
 				{
@@ -178,6 +157,7 @@ namespace Prehistoric
 
 		window->getSwapchain()->SetWindowSize(width, height);
 
+		rendered = true;
 		depthShader->Unbind();
 		framebuffer->Unbind();
 	}
@@ -222,7 +202,7 @@ namespace Prehistoric
 		}
 		centre /= float(corners.size());
 
-		Vector3f up = Vector3f(0, 1, 0);
+		Vector3f up = std::abs(lightDir.y) > 0.9999f ? Vector3f(0, 0, 1) : Vector3f(0, 1, 0);
 		Vector3f right = lightDir.cross(up).normalise();
 		up = right.cross(lightDir).normalise();
 		Matrix4f lightView = Matrix4f::View(lightDir, up);

@@ -1,15 +1,11 @@
 #include "Includes.hpp"
 #include "GLPBRShader.h"
 
-#include "prehistoric/common/buffer/UniformBufferObject.h"
+#include "platform/opengl/rendering/GLRenderer.h"
 #include "prehistoric/application/Application.h"
 
 namespace Prehistoric
 {
-	extern UniformBufferObject* _matrices;
-	extern Texture* _shadowMap;
-	extern std::vector<float> cascadeDistances;
-
 	GLPBRShader::GLPBRShader() : GLShader()
 	{
 		AddShader(ResourceLoader::LoadShaderGL("opengl/pbr/pbr_VS.glsl"), VERTEX_SHADER);
@@ -43,15 +39,8 @@ namespace Prehistoric
 		AddUniform("sunColour");
 		AddUniform("sunIndex");
 
-		AddUniformBlock("LightSpaceMatrices");
-		AddUniform("cascadeCount");
-		AddUniform("farPlane");
-		AddUniform("shadowMap");
-
+		AddShadowUniforms();
 		AddUniform("time");
-
-		for(uint32_t i = 0; i < cascadeDistances.size(); i++)
-			AddUniform("cascadePlaneDistances[" + std::to_string(i) + "]");
 	}
 
 	void GLPBRShader::UpdateGlobalUniforms(Renderer* renderer) const
@@ -66,31 +55,24 @@ namespace Prehistoric
 
 		BindEnvironmentLighting(renderer, 4);
 
-		SetUniformi("numberOfTilesX", __FrameworkConfig.windowWidth / 16);
+		SetUniformi("numberOfTilesX", GLLightCullingPass::TileCount(renderer->getWindow()->getWidth()));
 		SetUniformf("max_reflection_lod", __EnvironmentMapConfig.prefilterLevels - 1.0f);
 
-		for (size_t i = 0; i <lights.size(); i++)
+		SetUniformi("sunIndex", -1);
+		for (size_t i = 0; i < lights.size(); ++i)
 		{
 			Light* light = lights[i];
 			if (light->castShadows())
 			{
 				SetUniform("sunPosition", light->getParent()->getWorldTransform().getPosition());
 				SetUniform("sunColour", light->getColour());
-				SetUniformi("sunIndex", (int)i);
+				if (static_cast<GLRenderer*>(renderer)->getShadowDepthPass()->hasShadowMap()) SetUniformi("sunIndex", static_cast<int>(i));
+				break;
 			}
 		}
 
-		_matrices->BindBase(nullptr, 0);
-		SetUniformBlock("LightSpaceMatrices", 0);
-		SetUniformi("cascadeCount", (int)cascadeDistances.size());
-		SetUniformf("farPlane", __EngineConfig.rendererFarPlane);
-		if(_shadowMap) _shadowMap->Bind(3);
-		SetUniformi("shadowMap", 3);
-
+		BindShadowUniforms(renderer, 3);
 		SetUniformf("time", (float)Time::getTimeFromStart());
-
-		for (uint32_t i = 0; i < cascadeDistances.size(); i++)
-			SetUniformf("cascadePlaneDistances[" + std::to_string(i) + "]", cascadeDistances[i]);
 	}
 
 	void GLPBRShader::UpdateMaterialUniforms(Material* material, uint32_t descriptor_index) const

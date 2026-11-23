@@ -8,10 +8,6 @@
 
 namespace Prehistoric
 {
-	extern UniformBufferObject* _matrices;
-	extern Texture* _shadowMap;
-	extern std::vector<float> cascadeDistances;
-
 	GLVolumetricPostProcessingShader::GLVolumetricPostProcessingShader()
 	{
 		AddShader(ResourceLoader::LoadShaderGL("opengl/postProcessing/volumetric_CS.glsl"), COMPUTE_SHADER);
@@ -21,7 +17,7 @@ namespace Prehistoric
 		AddUniform("positionMetallicImage");
 		AddUniform("albedoRoughnessImage");
 		AddUniform("normalImage");
-		AddUniform("shadowMap");
+		AddShadowUniforms();
 
 		AddUniform("resolution");
 		AddUniform("cameraPosition");
@@ -29,20 +25,16 @@ namespace Prehistoric
 		AddUniform("sunPosition");
 		AddUniform("sunColour");
 
-		AddUniform("cascadeCount");
-		AddUniform("farPlane");
 
 		AddUniform("m_view");
-		AddUniform("LightSpaceMatrices");
 
-		for (uint32_t i = 0; i < cascadeDistances.size(); i++)
-			AddUniform("cascadePlaneDistances[" + std::to_string(i) + "]");
 	}
 
 	void GLVolumetricPostProcessingShader::UpdateUniforms(Texture* scene,
 		Texture* positionMetallic, Texture* albedoRoughness, Texture* normal,
-		Camera* camera, const std::vector<Light*>& lights) const
+		Renderer* renderer) const
 	{
+		Camera* camera = renderer->getCamera();
 		scene->Bind(0);
 		SetUniformi("scene", 0);
 		positionMetallic->Bind(1);
@@ -51,13 +43,12 @@ namespace Prehistoric
 		SetUniformi("albedoRoughnessImage", 2);
 		normal->Bind(3);
 		SetUniformi("normalImage", 3);
-		if(_shadowMap) _shadowMap->Bind(4);
-		SetUniformi("shadowMap", 4);
+		BindShadowUniforms(renderer, 4);
 
 		SetUniform("resolution", Vector2f((float)__FrameworkConfig.windowWidth, (float)__FrameworkConfig.windowHeight));
 		SetUniform("cameraPosition", camera->getPosition());
 
-		for (auto light : lights)
+		for (auto light : renderer->getLights())
 		{
 			if (light->castShadows())
 			{
@@ -66,14 +57,6 @@ namespace Prehistoric
 			}
 		}
 
-		SetUniformi("cascadeCount", (int)cascadeDistances.size());
-		SetUniformf("farPlane", __EngineConfig.rendererFarPlane);
-
-		_matrices->BindBase(nullptr, 0);
 		SetUniform("m_view", camera->getViewMatrix());
-		SetUniformi("LightSpaceMatrices", 0);
-
-		for (uint32_t i = 0; i < cascadeDistances.size(); i++)
-			SetUniformf("cascadePlaneDistances[" + std::to_string(i) + "]", cascadeDistances[i]);
- 	}
-};
+	}
+}

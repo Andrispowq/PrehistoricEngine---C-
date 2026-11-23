@@ -15,7 +15,7 @@ namespace Prehistoric
 
 		void UpdateUniforms(Texture* scene,
 			Texture* positionMetallic, Texture* albedoRoughness, Texture* normal,
-			Camera* camera, const std::vector<Light*>& lights) const;
+			Renderer* renderer) const;
 	};
 };
 

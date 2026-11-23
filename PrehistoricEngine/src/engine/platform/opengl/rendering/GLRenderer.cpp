@@ -61,7 +61,6 @@ namespace Prehistoric
 			uint32_t height = window->getHeight();
 
 			depthPass->OnResized();
-			shadowDepthPass->OnResized();
 			lightCullingPass->OnResized();
 			mainPass->OnResized();
 			bloomPass->OnResized();

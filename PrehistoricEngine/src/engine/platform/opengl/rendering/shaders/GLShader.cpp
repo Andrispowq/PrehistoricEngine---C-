@@ -1,10 +1,37 @@
 #include "Includes.hpp"
 #include "prehistoric/core/resources/EngineResources.h"
 #include "GLShader.h"
+#include "prehistoric/application/Application.h"
 #include "platform/opengl/rendering/GLRenderer.h"
 #include "prehistoric/core/modules/environmentMapRenderer/EnvironmentMapRenderer.h"
 
 namespace Prehistoric {
+    void GLShader::AddShadowUniforms()
+    {
+        AddUniform("cascadeCount");
+        AddUniform("farPlane");
+        AddUniform("shadowMap");
+        for (size_t i = 0; i < GLShadowDepthPass::CascadeCount; ++i)
+        {
+            AddUniform("cascadePlaneDistances[" + std::to_string(i) + "]");
+        }
+    }
+
+    void GLShader::BindShadowUniforms(Renderer* renderer, uint32_t textureUnit) const
+    {
+        const auto* shadows = static_cast<GLRenderer*>(renderer)->getShadowDepthPass();
+        shadows->BindMatrices();
+        shadows->getDepthTexture()->Bind(textureUnit);
+        SetUniformi("shadowMap", textureUnit);
+        const auto& distances = shadows->getCascadeDistances();
+        SetUniformi("cascadeCount", static_cast<int>(distances.size()));
+        SetUniformf("farPlane", __EngineConfig.rendererFarPlane);
+        for (size_t i = 0; i < distances.size(); ++i)
+        {
+            SetUniformf("cascadePlaneDistances[" + std::to_string(i) + "]", distances[i]);
+        }
+    }
+
     void GLShader::BindEnvironmentLighting(Renderer* renderer, uint32_t firstUnit) const
     {
         const auto& lighting = static_cast<GLRenderer*>(renderer)->getEnvironmentLighting();

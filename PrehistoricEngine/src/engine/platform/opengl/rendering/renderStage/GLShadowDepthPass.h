@@ -19,9 +19,14 @@ namespace Prehistoric
 		GLShadowDepthPass(Renderer* renderer);
 		virtual ~GLShadowDepthPass();
 
-		virtual void OnResized() override;
+		// Shadow resolution is independent of the window extent.
+		void OnResized() override {}
 		virtual void Render() override;
 
+		static constexpr size_t CascadeCount = 6;
+		const std::array<float, CascadeCount>& getCascadeDistances() const { return shadowCascadeLevels; }
+		void BindMatrices() const;
+		bool hasShadowMap() const { return rendered; }
 		TextureHandle getDepthTexture() const { return depthTexture; }
 	private:
 		std::vector<Vector4f> GetFrustumCornersWorldSpace(Matrix4f proj, Matrix4f view);
@@ -33,8 +38,9 @@ namespace Prehistoric
 		ShaderHandle depthShader;
 		TextureHandle depthTexture;
 
-		std::vector<float> shadowCascadeLevels;
-		UniformBufferObject* matrices;
+		std::array<float, CascadeCount> shadowCascadeLevels;
+		bool rendered = false;
+		std::unique_ptr<UniformBufferObject> matrices;
 	};
 };
 

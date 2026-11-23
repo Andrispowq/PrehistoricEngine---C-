@@ -16,7 +16,7 @@ namespace Prehistoric
 		inline Light* getSun() const { return sun; }
 		inline void setSun(Light* sun) { this->sun = sun; sun->setIlluminate(false); }
 
-		static void sunMoveFunction(Prehistoric::GameObject* object, float frameTime);
+		static std::unique_ptr<GameObject> CreateSun();
 
 	private:
 		Light* sun = nullptr;

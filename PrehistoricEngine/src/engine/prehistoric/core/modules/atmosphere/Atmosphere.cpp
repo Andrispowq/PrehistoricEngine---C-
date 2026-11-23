@@ -89,17 +89,42 @@ namespace Prehistoric
         GameObject::PreRender(renderer);
     }
 
-    //We go around in a circle, from -range to range on the y and z axes
-    void Atmosphere::sunMoveFunction(Prehistoric::GameObject *object, float frameTime) {
-        constexpr float range = 32000.0f;
-        constexpr float anglesPerSecond = 0.5f;
+    namespace
+    {
+        class OrbitingSun final : public GameObject
+        {
+        public:
+            OrbitingSun()
+            {
+                UpdatePosition(0.0);
+                AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0.95f, 0.87f), 100.0f, 50000.0f, true, true));
+            }
 
-        static float angle = 130.0f;
+            void PreUpdate(CoreEngine* engine) override
+            {
+                if (!isEnabled()) return;
+                const auto now = Clock::now();
+                if (!sunrise) sunrise = now;
+                UpdatePosition(std::chrono::duration<double>(now - *sunrise).count());
+                GameObject::PreUpdate(engine);
+            }
 
-        float x = cos(ToRadians(angle)) * range;
-        float y = sin(ToRadians(angle)) * range;
-        angle -= (anglesPerSecond * frameTime);
+        private:
+            using Clock = std::chrono::steady_clock;
+            std::optional<Clock::time_point> sunrise;
 
-        object->SetPosition({x, y, 0});
+            void UpdatePosition(double elapsed)
+            {
+                constexpr double period = 120.0;
+                constexpr double distance = 32000.0;
+                double angle = 2.0 * PI * std::fmod(elapsed, period) / period;
+                SetPosition({float(distance * std::cos(angle)), float(distance * std::sin(angle)), 0});
+            }
+        };
     }
-};
+
+    std::unique_ptr<GameObject> Atmosphere::CreateSun()
+    {
+        return std::make_unique<OrbitingSun>();
+    }
+}
