@@ -24,6 +24,8 @@
 
 namespace Prehistoric
 {
+	class Water;
+
 	class GLRenderer : public Renderer
 	{
 	public:
@@ -37,6 +39,8 @@ namespace Prehistoric
 
 		virtual Texture* getOutputTexture() const override { return hdrPass->getOutputImage().pointer; }
 
+        void RegisterWater(Water* water) { waters.push_back(water); }
+        void DrawModelBatches(const ModelBatches& batches);
 		GLAtmospherePass& getAtmospherePass() { return atmospherePass; }
 		GLDepthPass* getDepthPass() const { return depthPass; }
 		GLShadowDepthPass* getShadowDepthPass() const { return shadowDepthPass; }
@@ -50,6 +54,7 @@ namespace Prehistoric
 		GLRayTracingPass* getRayTracingPass() const { return rtxPass; }
 
 	protected:
+		std::vector<Water*> waters;
 		GLAtmospherePass atmospherePass;
 		GLDepthPass* depthPass;
 		GLShadowDepthPass* shadowDepthPass;

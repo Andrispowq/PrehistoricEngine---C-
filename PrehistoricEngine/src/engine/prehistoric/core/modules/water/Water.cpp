@@ -69,6 +69,20 @@ namespace Prehistoric {
         texData->motion = motion;
         texData->underwater = cameraUnderwater;
 
+        static_cast<GLRenderer*>(renderer)->RegisterWater(this);
+        //FFT stuff
+        fft->Render();
+        normalMapRenderer->Render(fft->getDyTexture());
+
+        texData->normalMap = normalMapRenderer->getNormalmap().pointer;
+
+        //Water rendering
+        UpdateQuadtree();
+        Node::PreRender(renderer);
+    }
+
+    void Water::RenderCaptures(Renderer* renderer)
+    {
         uint32_t width = window->getWidth();
         uint32_t height = window->getHeight();
 
@@ -88,7 +102,6 @@ namespace Prehistoric {
         reflectionFbo->Bind();
         reflectionFbo->Clear(0.0f);
         window->getSwapchain()->SetWindowSize(refl_size, refl_size);
-        renderer->PrepareRendering();
         glFrontFace(GL_CCW);
         __WaterConfig.stage = WaterRenderStage::Reflection;
 
@@ -108,7 +121,6 @@ namespace Prehistoric {
         refractionFbo->Bind();
         refractionFbo->Clear(0.0f);
         window->getSwapchain()->SetWindowSize(refr_size, refr_size);
-        renderer->PrepareRendering();
         __WaterConfig.stage = WaterRenderStage::Refraction;
 
         RenderObjects(renderer);
@@ -120,15 +132,6 @@ namespace Prehistoric {
         //glDisable(GL_CLIP_DISTANCE0);
         __WaterConfig.stage = WaterRenderStage::Default;
 
-        //FFT stuff
-        fft->Render();
-        normalMapRenderer->Render(fft->getDyTexture());
-
-        texData->normalMap = normalMapRenderer->getNormalmap().pointer;
-
-        //Water rendering
-        UpdateQuadtree();
-        Node::PreRender(renderer);
     }
 
     void Water::UpdateQuadtree() {
@@ -148,28 +151,6 @@ namespace Prehistoric {
             EnvironmentMapRenderer::instance->RenderCube(camera);
         }
 
-        for (auto pipeline: rend->getModelsWater()) {
-            Pipeline *pl = pipeline.first;
-
-            pl->BindPipeline(nullptr);
-            pl->getShader()->UpdateGlobalUniforms(rend);
-
-            GLLightCullingPass *lightCullingPass = rend->getLightCullingPass();
-            lightCullingPass->getLightBuffer()->BindBase(nullptr, 0);
-            lightCullingPass->getVisibleLightIndicesBuffer()->BindBase(nullptr, 1);
-
-            for (auto material: pipeline.second) {
-                pl->getShader()->UpdateMaterialUniforms(material.first, 0);
-
-                for (auto renderer: material.second) {
-                    renderer->BatchRender();
-                }
-            }
-
-            lightCullingPass->getVisibleLightIndicesBuffer()->UnbindBase(1);
-            lightCullingPass->getLightBuffer()->UnbindBase(0);
-
-            pl->UnbindPipeline();
-        }
+        rend->DrawModelBatches(rend->getModelsWater());
     }
 }

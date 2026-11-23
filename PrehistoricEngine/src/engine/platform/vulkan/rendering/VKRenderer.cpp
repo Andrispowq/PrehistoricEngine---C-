@@ -46,18 +46,13 @@ namespace Prehistoric {
 
     void VKRenderer::UpdateEnvironmentLighting()
     {
-        bool captureSky = atmosphere != nullptr;
-        if (environmentLighting && atmosphereLighting == captureSky) return;
-
+        auto capture = EnvironmentCaptureSource::FromScene(__AtmosphereConfig.scatteringEnabled ? atmosphere : nullptr, 0);
+        if (!environmentCapture.NeedsBake(capture, __EnvironmentMapConfig.atmosphereRefreshSeconds)) return;
+        bool captureSky = capture.scattering;
         auto* device = static_cast<VKDevice*>(window->getContext()->getDevices());
         VkDescriptorImageInfo source{};
         std::unique_ptr<VKTexture> fallback;
-        VKAtmosphereParameters sky{};
-        if (captureSky)
-        {
-            sky = GetAtmosphereParameters(*atmosphere);
-        }
-        else
+        if (!captureSky)
         {
             source = background->LoadSource(window);
             if (!source.imageView)
@@ -79,8 +74,8 @@ namespace Prehistoric {
             device->getQueueFamilyIndices().graphicsFamily, source, irradianceSize, prefilterSize, levels,
             __EnvironmentMapConfig.environmentMapResolution, ResourceLoader::LoadShaderVK(captureShader),
             ResourceLoader::LoadShaderVK("vulkan/ibl/ibl_CS.spv"), VKEnvironmentLighting::DefaultLutSize,
-            VKEnvironmentLighting::DefaultSamples, captureSky ? &sky : nullptr);
-        atmosphereLighting = captureSky;
+            VKEnvironmentLighting::DefaultSamples, captureSky ? &capture.sky : nullptr, environmentLighting.get());
+        environmentCapture.Complete(capture);
         if (!captureSky && !fallback) background->SetPrefilter(environmentLighting->getPrefilter());
     }
 
@@ -127,13 +122,7 @@ namespace Prehistoric {
                 commandPool->AddCommandBuffer();
             }
 
-            //Recreate the pipelines
-            std::vector<Pipeline *> pipes = manager->get<Pipeline>();
-            for (Pipeline *pipe: pipes) {
-                pipe->setViewportSize({(float) width, (float) height});
-                pipe->setScissorSize({width, height});
-                pipe->RecreatePipeline();
-            }
+            ResizePipelines(width, height);
 
             background->RecreatePipeline();
 
@@ -166,12 +155,7 @@ namespace Prehistoric {
             }
         }
 
-        //Clear the lists
-        atmosphere = nullptr;
-        models_3d.clear();
-        models_transparency.clear();
-        models_2d.clear();
-        lights.clear();
+        ClearFrameSubmissions();
     }
 
     void VKRenderer::Render() {
@@ -182,118 +166,74 @@ namespace Prehistoric {
 
         PR_PROFILE("Update uniforms");
 
-        VKSwapchain *swapchain = (VKSwapchain *) window->getSwapchain();
+        ProcessDraws(nullptr);
+
+        auto* swapchain = static_cast<VKSwapchain*>(window->getSwapchain());
         uint32_t index = swapchain->getAquiredImageIndex();
-        VKCommandBuffer *buffer = commandPool->getCommandBuffer(index);
-
-        uint32_t matIdx = 0;
-        uint32_t instIdx = 0;
-        for (auto pipeline: models_3d) {
-            Pipeline *pl = pipeline.first;
-            pl->getShader()->UpdateGlobalUniforms(this);
-
-            for (auto material: pipeline.second) {
-                pl->getShader()->UpdateMaterialUniforms(material.first, (uint32_t) matIdx++);
-
-                //instIdx = 0;
-                for (size_t i = 0; i < material.second.size(); i++) {
-                    pl->getShader()->UpdateObjectUniforms(material.second[i]->getParent(), (uint32_t) instIdx++);
-                }
-            }
-        }
-
-        //TODO: enable alpha blending
-        for (auto pipeline: models_transparency) {
-            Pipeline *pl = pipeline.first;
-            pl->getShader()->UpdateGlobalUniforms(this);
-
-            for (auto material: pipeline.second) {
-                pl->getShader()->UpdateMaterialUniforms(material.first, (uint32_t) matIdx++);
-
-                for (size_t i = 0; i < material.second.size(); i++) {
-                    pl->getShader()->UpdateObjectUniforms(material.second[i]->getParent(), (uint32_t) instIdx++);
-                }
-            }
-        }
-
-        //TODO: disable alpha blending and depth testing
-        for (auto pipeline: models_2d) {
-            Pipeline *pl = pipeline.first;
-
-            instIdx = 0;
-            for (size_t i = 0; i < pipeline.second.size(); i++) {
-                pl->getShader()->UpdateObjectUniforms(pipeline.second[i]->getParent(), instIdx++);
-            }
-        }
-
-        BuildCommandBuffers();
+        VKCommandBuffer* buffer = commandPool->getCommandBuffer(index);
+        buffer->BindBuffer();
+        renderpass->BeginRenderpass(buffer, primaryFramebuffers[index].get(), swapchain->getSwapchainExtent(),
+                                    swapchain->getClearColour());
+        background->Draw(buffer->getCommandBuffer(), camera, __AtmosphereConfig.scatteringEnabled ? atmosphere : nullptr);
+        ProcessDraws(buffer);
+        renderpass->EndRenderpass(buffer);
+        buffer->UnbindBuffer();
     }
 
-    void VKRenderer::BuildCommandBuffers() {
-        PR_PROFILE("Recording command buffers");
-
-        VKSwapchain *swapchain = (VKSwapchain *) window->getSwapchain();
-        for (uint32_t i = 0; i < swapchain->getSwapchainImages().size(); i++) {
-            VKCommandBuffer *buffer = commandPool->getCommandBuffer(i);
-
-            buffer->BindBuffer();
-            renderpass->BeginRenderpass(buffer, primaryFramebuffers[i].get(), swapchain->getSwapchainExtent(),
-                                        swapchain->getClearColour());
-            background->Draw(buffer->getCommandBuffer(), camera, atmosphere);
-
-            uint32_t matIdx = 0;
-            uint32_t instIdx = 0;
-            for (auto pipeline: models_3d) {
-                Pipeline *pl = pipeline.first;
-                pl->BindPipeline(buffer);
-                ((VKShader *) pl->getShader())->BindGlobalSets();
-
-                for (auto material: pipeline.second) {
-                    ((VKShader *) pl->getShader())->BindTextureSets(matIdx++);
-
-                    //instIdx = 0;
-                    for (size_t i = 0; i < material.second.size(); i++) {
-                        ((VKShader *) pl->getShader())->BindObjectSets(instIdx++);
-                        pl->RenderPipeline();
-                    }
-                }
-
-                pl->UnbindPipeline();
+    void VKRenderer::ProcessDraws(VKCommandBuffer* buffer)
+    {
+        // Each shader owns its descriptor pool. Both traversals assign the same slots.
+        struct Slots
+        {
+            uint32_t material = 0;
+            uint32_t object = 0;
+        };
+        std::unordered_map<VKShader*, Slots> shaderSlots;
+        Slots* slots = nullptr;
+        VKShader* shader = nullptr;
+        auto begin = [&](Pipeline* pipeline)
+        {
+            shader = static_cast<VKShader*>(pipeline->getShader());
+            slots = &shaderSlots[shader];
+            if (buffer) pipeline->BindPipeline(buffer);
+        };
+        auto beginScene = [&](Pipeline* pipeline)
+        {
+            begin(pipeline);
+            if (buffer) shader->BindGlobalSets();
+            else shader->UpdateGlobalUniforms(this);
+        };
+        auto material = [&](Pipeline*, Material* material)
+        {
+            if (buffer) shader->BindTextureSets(slots->material++);
+            else shader->UpdateMaterialUniforms(material, slots->material++);
+        };
+        auto object = [&](Pipeline* pipeline, RenderableComponent* renderable)
+        {
+            if (buffer)
+            {
+                shader->BindObjectSets(slots->object++);
+                pipeline->RenderPipeline();
             }
-
-            //TODO: enable alpha blending
-            for (auto pipeline: models_transparency) {
-                Pipeline *pl = pipeline.first;
-                pl->BindPipeline(buffer);
-                ((VKShader *) pl->getShader())->BindGlobalSets();
-
-                for (auto material: pipeline.second) {
-                    ((VKShader *) pl->getShader())->BindTextureSets(matIdx++);
-
-                    for (size_t i = 0; i < material.second.size(); i++) {
-                        ((VKShader *) pl->getShader())->BindObjectSets(instIdx++);
-                        pl->RenderPipeline();
-                    }
-                }
-
-                pl->UnbindPipeline();
+            else
+            {
+                shader->UpdateObjectUniforms(renderable->getParent(), slots->object++);
             }
-
-            //TODO: disable alpha blending and depth testing
-            for (auto pipeline: models_2d) {
-                Pipeline *pl = pipeline.first;
-                pl->BindPipeline(buffer);
-
-                for (size_t i = 0; i < pipeline.second.size(); i++) {
-                    ((VKShader *) pl->getShader())->BindObjectSets(instIdx++);
-                    pl->RenderPipeline();
-                }
-
-                pl->UnbindPipeline();
+        };
+        auto end = [&](Pipeline* pipeline)
+        {
+            if (buffer) pipeline->UnbindPipeline();
+        };
+        VisitBatches(models_3d, beginScene, material, object, end);
+        VisitBatches(models_transparency, beginScene, material, object, end);
+        for (const auto& [pipeline, objects] : models_2d)
+        {
+            begin(pipeline);
+            for (RenderableComponent* renderable : objects)
+            {
+                object(pipeline, renderable);
             }
-
-            renderpass->EndRenderpass(buffer);
-            buffer->UnbindBuffer();
+            end(pipeline);
         }
     }
-};
+}

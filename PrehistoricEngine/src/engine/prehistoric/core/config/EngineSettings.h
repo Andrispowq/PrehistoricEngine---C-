@@ -62,6 +62,7 @@ namespace Prehistoric
         uint32_t irradianceMapResolution = 0;
         uint32_t prefilterMapResolution = 0;
         uint32_t prefilterLevels = 0;
+        float atmosphereRefreshSeconds = 10.0f;
 
         Texture* environmentMap = nullptr;
         Texture* irradianceMap = nullptr;

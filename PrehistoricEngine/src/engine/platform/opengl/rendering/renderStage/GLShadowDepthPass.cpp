@@ -174,27 +174,7 @@ namespace Prehistoric
 		}
 
 		//TODO: enable alpha blending
-		for (auto pipeline : rend->getModelsTransparency())
-		{
-			Pipeline* pl = pipeline.first;
-			VertexBuffer* vbo = static_cast<GLGraphicsPipeline*>(pl)->getVertexBuffer();
-			vbo->Bind(nullptr);
-
-			for (auto material : pipeline.second)
-			{
-				for (auto renderer_ : material.second)
-				{
-					depthShader->UpdateObjectUniforms(renderer_->getParent());
-
-					for (uint32_t i = 0; i < vbo->getSubmeshCount(); i++)
-					{
-						vbo->Draw(nullptr, i);
-					}
-				}
-			}
-
-			static_cast<GLGraphicsPipeline*>(pl)->getVertexBuffer()->Unbind();
-		}
+		GLDepthPass::DrawBatches(rend->getModelsTransparency(), *depthShader.pointer);
 
 		window->getSwapchain()->SetWindowSize(width, height);
 

@@ -111,6 +111,7 @@ namespace Prehistoric
 				environmentMapConfig.irradianceMapResolution = environment_map_json["irradianceMapResolution"];
 				environmentMapConfig.prefilterMapResolution = environment_map_json["prefilterMapResolution"];
 				environmentMapConfig.prefilterLevels = environment_map_json["prefilterMapLevels"];
+				environmentMapConfig.atmosphereRefreshSeconds = (std::max)(0.0f, environment_map_json.value("atmosphereRefreshSeconds", 10.0f));
 			}
 
 			{

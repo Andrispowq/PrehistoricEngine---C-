@@ -222,6 +222,7 @@ static void RunIBL(VkPhysicalDevice gpu, uint32_t family, const std::vector<char
     pipelineInfo.layout = resources.layout;
     Check(vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &resources.pipeline));
 
+    std::unique_ptr<VKEnvironmentLighting> previousLighting;
     for (int pass = 0; pass < 5; ++pass) {
         // Black, constant HDR, analytic directional environment, then the actual
         // sample HDR with its small, bright sun. Exercise every source mip.
@@ -260,17 +261,21 @@ static void RunIBL(VkPhysicalDevice gpu, uint32_t family, const std::vector<char
         VKRecordImageMipmaps(command, resources.image, width, height, mipLevels);
         submit();
 
-        const VKAtmosphereParameters sky
+        const AtmosphereParameters sky
         {
             {0, 1, 0, 0.14f}, {1, 0.79f, 0.43f, 48}, {5.5e-6f, 13e-6f, 22.4e-6f, 21e-6f},
             {6371000, 6471000, 8000, 1200}, {0.758f, 0}
         };
         bool captureSky = pass == 4;
         VkDescriptorImageInfo panorama{resources.sampler, resources.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
-        VKEnvironmentLighting lighting(gpu, device, queue, family,
+        VkImageView previousLut = previousLighting ? previousLighting->getBRDF().imageView : VK_NULL_HANDLE;
+        auto nextLighting = std::make_unique<VKEnvironmentLighting>(gpu, device, queue, family,
                                        captureSky ? VkDescriptorImageInfo{} : panorama,
                                        16, 32, 4, 128, captureSky ? capture : conversion, code, 32, 512,
-                                       captureSky ? &sky : nullptr);
+                                       captureSky ? &sky : nullptr, previousLighting.get());
+        previousLighting = std::move(nextLighting);
+        const auto& lighting = *previousLighting;
+        if (previousLut && previousLut != lighting.getBRDF().imageView) throw std::runtime_error("Source change replaced BRDF LUT");
         if (lighting.getMaxReflectionLOD() != 3) throw std::runtime_error("Incorrect reflection mip range");
         VkDescriptorImageInfo images[] = {lighting.getIrradiance(), lighting.getPrefilter(), lighting.getBRDF()};
         VkDescriptorImageInfo source = lighting.getEnvironment();

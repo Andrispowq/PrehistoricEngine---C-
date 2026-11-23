@@ -2,6 +2,7 @@
 #define VK_ENVIRONMENT_BACKGROUND_H
 
 #include <memory>
+#include <string>
 #include <vulkan/vulkan.h>
 
 namespace Prehistoric {
@@ -30,6 +31,7 @@ namespace Prehistoric {
         VKDevice *device;
         VKSwapchain *swapchain;
 
+        std::string sourceLocation;
         std::unique_ptr<VKTexture> texture;
         VkSampler sampler = VK_NULL_HANDLE;
 

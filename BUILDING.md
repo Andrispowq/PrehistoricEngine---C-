@@ -377,17 +377,29 @@ final HDR pass. In worlds without an active scattering atmosphere, the HDR
 environment background is used when configured. Vulkan bakes the registered scattering atmosphere into a linear
 HDR cubemap
 before the first PBR draw, including the bright solar core used in OpenGL captures.
-The existing irradiance and GGX prefilter stages consume that cube. Switching
-between atmosphere and panorama selects a new bake. Moving the sun within the
-same atmosphere leaves the lighting snapshot in place.
+The existing irradiance and GGX prefilter stages consume that cube.
 
-The scene owns the atmosphere and its sun binding. Each frame, an enabled
-atmosphere with a sun registers with the renderer. OpenGL's renderer owns the
-sky sphere and pipelines, and Vulkan's renderer owns its fullscreen background
-pipeline. For the initial OpenGL environment bake, the sample and editor look
-up the atmosphere in the loaded scene before the first frame. Editor regeneration
-repeats that lookup, while loading an HDR file explicitly bakes the file.
-Moving the sun updates the visible sky without scheduling an environment rebake.
+### Atmosphere capture timing
+
+Both renderers choose the lighting source after the scene has submitted its sky,
+lights, and draw batches. The first rendered frame and a switch between sources
+trigger a complete bake before scene draws. OpenGL water reflections and
+refractions also run after this decision. Each bake uses one snapshot for all
+six faces and publishes the environment, irradiance, and reflection maps together.
+The source-independent BRDF LUT survives refreshes.
+
+The visible sky follows the sun every frame. For lighting, both backends compare
+the current sun direction and scattering parameters with the last completed
+capture. OpenGL also compares exposure because its capture shader applies it.
+Changes accumulate until at least `environmentMap.atmosphereRefreshSeconds` have
+elapsed since completion (default 10 seconds). The next eligible frame bakes
+the latest state. A stationary sky, camera movement, or window resize alone
+leaves the maps intact. Setting the interval to zero refreshes on each changed
+frame. Baking is synchronous and can make that frame longer.
+
+In the OpenGL editor, loading an HDR file selects it as the lighting source.
+Regenerate returns to the scene source. Both actions request a bake on the next
+rendered frame and bypass the refresh interval.
 
 ## CPU math tests and CI
 

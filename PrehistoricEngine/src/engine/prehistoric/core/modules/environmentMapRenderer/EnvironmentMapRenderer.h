@@ -14,6 +14,7 @@
 #include "platform/opengl/rendering/shaders/environmentMap/GLPrefilterShader.h"
 
 #include "prehistoric/core/modules/atmosphere/Atmosphere.h"
+#include "prehistoric/core/modules/atmosphere/AtmosphereCapture.h"
 
 namespace Prehistoric
 {
@@ -26,7 +27,8 @@ namespace Prehistoric
 		EnvironmentMapRenderer(Window* window, AssembledAssetManager* manager, GLAtmospherePass& atmospherePass);
 		virtual ~EnvironmentMapRenderer();
 
-		void GenerateEnvironmentMap(const Atmosphere* atmosphere);
+		void UpdateEnvironment(const Atmosphere* atmosphere);
+		void RequestBake(bool usePanorama);
 		void RenderCube(Camera* camera);
 
 		Texture* getEnvironmentMap() const { return environmentMap.pointer; }
@@ -40,6 +42,11 @@ namespace Prehistoric
 
 
 	private:
+        void GenerateEnvironmentMap(const EnvironmentCaptureSource& source);
+        AtmosphereCapture capture;
+        bool panoramaOverride = false;
+        bool requested = false;
+        uint32_t captureDepthSize = 0;
 		GLAtmospherePass& atmospherePass;
 		Window* window;
 		AssembledAssetManager* manager;

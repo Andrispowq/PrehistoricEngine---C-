@@ -3,25 +3,6 @@
 
 namespace Prehistoric
 {
-	static const Atmosphere* FindEnabledAtmosphere(const Node& node)
-	{
-		if (!node.isEnabled()) return nullptr;
-		if (const auto* sky = dynamic_cast<const Atmosphere*>(&node))
-		{
-			if (sky->getSun()) return sky;
-		}
-		for (const auto& child : node.getChildrenByID())
-		{
-			if (const Atmosphere* sky = FindEnabledAtmosphere(*child.second)) return sky;
-		}
-		return nullptr;
-	}
-
-	const Atmosphere* Scene::FindAtmosphere() const
-	{
-		return FindEnabledAtmosphere(*sceneRoot);
-	}
-
 	Scene::Scene(const std::string& worldFile, Window* window, Camera* camera, AssembledAssetManager* manager)
 		: window(window), camera(camera), manager(manager)
 	{

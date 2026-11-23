@@ -19,6 +19,7 @@ namespace Prehistoric
 		virtual ~Water();
 
 		void PreRender(Renderer* renderer) override;
+		void RenderCaptures(Renderer* renderer);
 		void UpdateQuadtree();
 
 		Texture* getReflectionTexture() const { return reflectionTexture.pointer; }

@@ -26,6 +26,8 @@ namespace Prehistoric
 		int index;
 	};
 
+	using ModelBatches = std::unordered_map<Pipeline*, std::unordered_map<Material*, std::vector<RenderableComponent*>>>;
+
 	class Renderer
 	{
 	public:
@@ -55,30 +57,51 @@ namespace Prehistoric
 
 		void setCamera(Camera* camera) { this->camera = camera; }
 
-		inline std::vector<Light*> getLights() const { return lights; }
+		inline const std::vector<Light*>& getLights() const { return lights; }
 
 		inline bool isWireframeMode() const { return wireframeMode; }
 		inline bool isShadowMode() const { return renderingShadow; }
 		inline void setWireframeMode(bool wire) { this->wireframeMode = wire; }
 
-		const std::unordered_map<Pipeline*, std::unordered_map<Material*, std::vector<RenderableComponent*>>>& getModels3D() const{ return models_3d; }
-		const std::unordered_map<Pipeline*, std::unordered_map<Material*, std::vector<RenderableComponent*>>>& getModelsTransparency() const{ return models_transparency; }
+		const ModelBatches& getModels3D() const{ return models_3d; }
+		const ModelBatches& getModelsTransparency() const{ return models_transparency; }
 		const std::unordered_map<Pipeline*, std::vector<RenderableComponent*>>& getModels2D() const{ return models_2d; }
 
-		const std::unordered_map<Pipeline*, std::unordered_map<Material*, std::vector<RenderableComponent*>>>& getModelsWater() const { return models_water; }
+		const ModelBatches& getModelsWater() const { return models_water; }
+
+        template<typename Begin, typename MaterialBatch, typename Object, typename End>
+        static void VisitBatches(const ModelBatches& batches, Begin begin, MaterialBatch materialBatch, Object object, End end)
+        {
+            for (const auto& [pipeline, materials] : batches)
+            {
+                begin(pipeline);
+                for (const auto& [material, renderables] : materials)
+                {
+                    materialBatch(pipeline, material);
+                    for (RenderableComponent* renderable : renderables)
+                    {
+                        object(pipeline, renderable);
+                    }
+                }
+                end(pipeline);
+            }
+        }
 
 	protected:
+		void ClearFrameSubmissions();
+		void ResizePipelines(uint32_t width, uint32_t height);
+
 		AssembledAssetManager* manager;
 
 		Window* window;
 		Camera* camera;
 
 		//The rendering context
-		std::unordered_map<Pipeline*, std::unordered_map<Material*, std::vector<RenderableComponent*>>> models_3d;
-		std::unordered_map<Pipeline*, std::unordered_map<Material*, std::vector<RenderableComponent*>>> models_transparency;
+		ModelBatches models_3d;
+		ModelBatches models_transparency;
 		std::unordered_map<Pipeline*, std::vector<RenderableComponent*>> models_2d;
 
-		std::unordered_map<Pipeline*, std::unordered_map<Material*, std::vector<RenderableComponent*>>> models_water;
+		ModelBatches models_water;
 
 		std::vector<Light*> lights;
 		const Atmosphere* atmosphere = nullptr;

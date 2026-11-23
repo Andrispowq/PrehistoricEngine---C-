@@ -9,13 +9,14 @@
 
 namespace Prehistoric
 {
+	struct EnvironmentCaptureSource;
 	class GLAtmosphereScatteringShader : public GLShader
 	{
 	public:
 		GLAtmosphereScatteringShader();
 		virtual ~GLAtmosphereScatteringShader() {}
 
-		void UpdateUniforms(const Vector3f& sun, const Matrix4f& transform, const Matrix4f& view,
+		void UpdateUniforms(const EnvironmentCaptureSource& source, const Matrix4f& transform, const Matrix4f& view,
 			const Matrix4f& projection, bool capture) const;
 	};
 };

@@ -5,6 +5,7 @@
 namespace Prehistoric
 {
 	class Atmosphere;
+	struct EnvironmentCaptureSource;
 	class GLDepthPassShader;
 	class Camera;
 
@@ -15,11 +16,11 @@ namespace Prehistoric
 		~GLAtmospherePass();
 
 		void DrawScene(const Atmosphere& atmosphere, const Camera& camera);
-		void DrawCapture(const Atmosphere& atmosphere, const Matrix4f& view, const Matrix4f& projection);
+		void DrawCapture(const EnvironmentCaptureSource& source, const Matrix4f& view, const Matrix4f& projection);
 		void DrawDepth(const Atmosphere& atmosphere, const GLDepthPassShader& shader);
 
 	private:
-		void Draw(const Atmosphere& atmosphere, const Matrix4f& view, const Matrix4f& projection, bool capture);
+		void Draw(const EnvironmentCaptureSource& source, const Matrix4f& transform, const Matrix4f& view, const Matrix4f& projection, bool capture);
 		Pipeline* GetPipeline();
 
 		AssembledAssetManager& manager;

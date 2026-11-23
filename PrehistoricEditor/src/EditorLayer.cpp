@@ -124,13 +124,13 @@ void EditorLayer::ImGUIRender()
 		if (path)
 		{
 			__EnvironmentMapConfig.environmentMapLocation = *path;
-			Prehistoric::EnvironmentMapRenderer::instance->GenerateEnvironmentMap(nullptr);
+			Prehistoric::EnvironmentMapRenderer::instance->RequestBake(true);
 		}
 	}
 
 	if (ImGui::Button("Regenerate environment map"))
 	{
-		Prehistoric::EnvironmentMapRenderer::instance->GenerateEnvironmentMap(scene->FindAtmosphere());
+		Prehistoric::EnvironmentMapRenderer::instance->RequestBake(false);
 	}
 
 	float max = (float)__EnvironmentMapConfig.prefilterLevels;

@@ -6,7 +6,7 @@
 
 namespace Prehistoric
 {
-    struct VKAtmosphereParameters;
+    struct AtmosphereParameters;
 
     // Owns immutable, linear HDR IBL maps. Baking completes before scene rendering.
     class VKEnvironmentLighting
@@ -20,7 +20,7 @@ namespace Prehistoric
                               uint32_t irradianceSize, uint32_t prefilterSize, uint32_t levels,
                               uint32_t cubeSize, const std::vector<char>& conversion, const std::vector<char>& shader,
                               uint32_t lutSize = DefaultLutSize, uint32_t samples = DefaultSamples,
-                              const VKAtmosphereParameters* sky = nullptr);
+                              const AtmosphereParameters* sky = nullptr, VKEnvironmentLighting* reuseLutFrom = nullptr);
 
         ~VKEnvironmentLighting();
 
@@ -51,7 +51,7 @@ namespace Prehistoric
         void DestroyMap(Map &map);
         void Bake(VkQueue queue, uint32_t queueFamily, VkDescriptorImageInfo source,
                   const std::vector<char>& conversion, const std::vector<char>& shader, uint32_t samples,
-                  const VKAtmosphereParameters* sky);
+                  const AtmosphereParameters* sky);
 
         VkPhysicalDevice physicalDevice;
         VkDevice device;
@@ -60,6 +60,7 @@ namespace Prehistoric
         Map irradiance;
         Map prefilter;
         Map brdf;
+        uint32_t lutSamples;
     };
 }
 

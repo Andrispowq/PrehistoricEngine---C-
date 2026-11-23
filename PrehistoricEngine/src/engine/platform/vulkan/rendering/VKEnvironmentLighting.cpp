@@ -45,8 +45,8 @@ namespace Prehistoric {
                                                  uint32_t queueFamily, VkDescriptorImageInfo source,
                                                  uint32_t irradianceSize, uint32_t prefilterSize, uint32_t levels,
                                                  uint32_t cubeSize, const std::vector<char>& conversion, const std::vector<char>& shader, uint32_t lutSize, uint32_t samples,
-                                                 const VKAtmosphereParameters* sky)
-        : physicalDevice(physicalDevice), device(device) 
+                                                 const AtmosphereParameters* sky, VKEnvironmentLighting* reuseLutFrom)
+        : physicalDevice(physicalDevice), device(device), lutSamples(samples)
     {
         if (!cubeSize || !irradianceSize || !prefilterSize || !levels || !lutSize || !samples)
             throw std::invalid_argument("Vulkan IBL dimensions and sample count must be positive");
@@ -67,7 +67,9 @@ namespace Prehistoric {
             CreateMap(environment, cubeSize, cubeLevels, 6);
             CreateMap(irradiance, irradianceSize, 1, 6);
             CreateMap(prefilter, prefilterSize, levels, 6);
-            CreateMap(brdf, lutSize, 1, 1);
+            bool reuseLut = reuseLutFrom && reuseLutFrom->device == device && reuseLutFrom->brdf.size == lutSize &&
+                reuseLutFrom->lutSamples == samples;
+            if (!reuseLut) CreateMap(brdf, lutSize, 1, 1);
 
             VkSamplerCreateInfo samplerInfo{VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
             bool linear = properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
@@ -78,6 +80,7 @@ namespace Prehistoric {
             samplerInfo.maxLod = float((std::max)(levels, environment.levels) - 1);
             Check(vkCreateSampler(device, &samplerInfo, nullptr, &sampler));
             Bake(queue, queueFamily, source, conversion, shader, samples, sky);
+            if (reuseLut) std::swap(brdf, reuseLutFrom->brdf);
         } 
         catch (...)
         {
@@ -192,7 +195,7 @@ namespace Prehistoric {
 
     void VKEnvironmentLighting::Bake(VkQueue queue, uint32_t queueFamily, VkDescriptorImageInfo source,
                                      const std::vector<char>& conversion, const std::vector<char>& shader, uint32_t samples,
-                                     const VKAtmosphereParameters* sky)
+                                     const AtmosphereParameters* sky)
     {
         BakeResources resources{device};
         VkDescriptorSetLayoutBinding bindings[2]{};
@@ -211,7 +214,7 @@ namespace Prehistoric {
         };
         static_assert(sizeof(Parameters) == 16);
 
-        VkPushConstantRange push{VK_SHADER_STAGE_COMPUTE_BIT, 0, sky ? uint32_t(VKAtmosphereParameters::PushOffset + sizeof(*sky)) : uint32_t(sizeof(Parameters))};
+        VkPushConstantRange push{VK_SHADER_STAGE_COMPUTE_BIT, 0, sky ? uint32_t(AtmospherePushOffset + sizeof(*sky)) : uint32_t(sizeof(Parameters))};
         VkPipelineLayoutCreateInfo layoutInfo{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
         layoutInfo.setLayoutCount = 1;
         layoutInfo.pSetLayouts = &resources.setLayout;
@@ -283,7 +286,7 @@ namespace Prehistoric {
         Map* maps[] = {&environment, &irradiance, &prefilter, &brdf};
         uint32_t setIndex = 0;
         VkDescriptorImageInfo cubeSource{sampler, environment.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
-        for (int mode = -1; mode < 3; ++mode) 
+        for (int mode = -1; mode < (brdf.image ? 3 : 2); ++mode)
         {
             bool converting = mode == -1;
             Map& map = *maps[mode + 1];
@@ -327,7 +330,7 @@ namespace Prehistoric {
                 if (converting && sky)
                 {
                     vkCmdPushConstants(command, resources.pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT,
-                                       VKAtmosphereParameters::PushOffset, sizeof(*sky), sky);
+                                       AtmospherePushOffset, sizeof(*sky), sky);
                 }
                 else
                 {

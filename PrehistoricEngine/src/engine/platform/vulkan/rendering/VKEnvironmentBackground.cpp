@@ -21,10 +21,10 @@ namespace Prehistoric
             float rayX[4];
             float rayY[4];
             float rayCenter[4];
-            VKAtmosphereParameters sky;
+            AtmosphereParameters sky;
         };
 
-        static_assert(offsetof(BackgroundConstants, sky) == VKAtmosphereParameters::PushOffset);
+        static_assert(offsetof(BackgroundConstants, sky) == AtmospherePushOffset);
         static_assert(sizeof(BackgroundConstants) == 120);
 
         void Check(VkResult result) 
@@ -32,29 +32,6 @@ namespace Prehistoric
             if (result != VK_SUCCESS)
                 PR_LOG_RUNTIME_ERROR("Failed to create Vulkan environment background (VkResult %d)!\n", result);
         }
-    }
-
-    VKAtmosphereParameters GetAtmosphereParameters(const Atmosphere& atmosphere)
-    {
-        VKAtmosphereParameters sky{};
-        const auto& settings = __AtmosphereConfig;
-        auto pack = [](float (&values)[4], const Vector3f& xyz, float w)
-        {
-            values[0] = xyz.x;
-            values[1] = xyz.y;
-            values[2] = xyz.z;
-            values[3] = w;
-        };
-        pack(sky.sunPositionRadius, atmosphere.getSunPosition(), settings.sunRadius);
-        pack(sky.sunColourIntensity, settings.sunColour, settings.sunIntensity);
-        pack(sky.rayleighMie, settings.rayleigh, settings.mie);
-        sky.radiiAndScaleHeights[0] = settings.planetRadius;
-        sky.radiiAndScaleHeights[1] = settings.atmosphereRadius;
-        sky.radiiAndScaleHeights[2] = settings.rayleighHeightScale;
-        sky.radiiAndScaleHeights[3] = settings.mieHeightScale;
-        sky.anisotropyAndShift[0] = settings.mieDirection;
-        sky.anisotropyAndShift[1] = settings.horizontalVerticalShift;
-        return sky;
     }
 
     VKEnvironmentBackground::VKEnvironmentBackground(Window *window)
@@ -111,6 +88,13 @@ namespace Prehistoric
     VkDescriptorImageInfo VKEnvironmentBackground::LoadSource(Window* window)
     {
         const auto& location = __EnvironmentMapConfig.environmentMapLocation;
+        if (location != sourceLocation)
+        {
+            texture.reset();
+            vkDestroySampler(device->getDevice(), sampler, nullptr);
+            sampler = VK_NULL_HANDLE;
+            sourceLocation = location;
+        }
         if (!texture && !location.empty())
         {
             texture.reset(static_cast<VKTexture*>(TextureLoader::LoadTexture(window, location, Bilinear, ClampToEdge)));

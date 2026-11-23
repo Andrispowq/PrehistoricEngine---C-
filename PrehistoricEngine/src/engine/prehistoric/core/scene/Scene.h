@@ -34,7 +34,6 @@ namespace Prehistoric
 		void RemoveGameObject(GameObject* object);
 
 		std::string getName() const { return name; }
-		const Atmosphere* FindAtmosphere() const;
 		GameObject* getSceneRoot() const { return sceneRoot; }
 
 	protected:

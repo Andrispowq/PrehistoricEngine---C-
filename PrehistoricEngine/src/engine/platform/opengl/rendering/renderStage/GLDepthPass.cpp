@@ -53,6 +53,26 @@ namespace Prehistoric
 		framebuffer->Unbind();
 	}
 
+    void GLDepthPass::DrawBatches(const ModelBatches& batches, Shader& shader)
+    {
+        VertexBuffer* vertices = nullptr;
+        Renderer::VisitBatches(batches, [&](Pipeline* pipeline)
+        {
+            vertices = static_cast<GLGraphicsPipeline*>(pipeline)->getVertexBuffer();
+            vertices->Bind(nullptr);
+        }, [](Pipeline*, Material*) {}, [&](Pipeline*, RenderableComponent* object)
+        {
+            shader.UpdateObjectUniforms(object->getParent());
+            for (uint32_t i = 0; i < vertices->getSubmeshCount(); ++i)
+            {
+                vertices->Draw(nullptr, i);
+            }
+        }, [&](Pipeline*)
+        {
+            vertices->Unbind();
+        });
+    }
+
 	void GLDepthPass::Render()
 	{
 		PR_PROFILE("Depth pass");
@@ -74,50 +94,8 @@ namespace Prehistoric
 		{
 			rend->getAtmospherePass().DrawDepth(*rend->getAtmosphere(), *static_cast<GLDepthPassShader*>(depthShader.pointer));
 		}
-		for (auto pipeline : rend->getModels3D())
-		{
-			Pipeline* pl = pipeline.first;
-			VertexBuffer* vbo = static_cast<GLGraphicsPipeline*>(pl)->getVertexBuffer();
-			vbo->Bind(nullptr);
-
-			for (auto material : pipeline.second)
-			{
-				for (auto renderer_ : material.second)
-				{
-					depthShader->UpdateObjectUniforms(renderer_->getParent());
-
-					for (uint32_t i = 0; i < vbo->getSubmeshCount(); i++)
-					{
-						vbo->Draw(nullptr, i);
-					}
-				}
-			}
-
-			static_cast<GLGraphicsPipeline*>(pl)->getVertexBuffer()->Unbind();
-		}
-
-		//TODO: enable alpha blending
-		for (auto pipeline : rend->getModelsTransparency())
-		{
-			Pipeline* pl = pipeline.first;
-			VertexBuffer* vbo = static_cast<GLGraphicsPipeline*>(pl)->getVertexBuffer();
-			vbo->Bind(nullptr);
-
-			for (auto material : pipeline.second)
-			{
-				for (auto renderer_ : material.second)
-				{
-					depthShader->UpdateObjectUniforms(renderer_->getParent());
-
-					for (uint32_t i = 0; i < vbo->getSubmeshCount(); i++)
-					{
-						vbo->Draw(nullptr, i);
-					}
-				}
-			}
-
-			static_cast<GLGraphicsPipeline*>(pl)->getVertexBuffer()->Unbind();
-		}
+		DrawBatches(rend->getModels3D(), *depthShader.pointer);
+		DrawBatches(rend->getModelsTransparency(), *depthShader.pointer);
 
 		depthShader->Unbind();
 		framebuffer->Unbind();

@@ -48,12 +48,7 @@ namespace Prehistoric {
         manager->addReference<Pipeline>(backgroundPipeline.handle);
 
         //Create the framebuffer
-        uint32_t size = __EnvironmentMapConfig.environmentMapResolution;
-
         framebuffer = new GLFramebuffer(window);
-        framebuffer->Bind();
-        framebuffer->addDepthAttachment(size, size);
-        framebuffer->Unbind();
 
         //Create the matrices
         projectionMatrix = Matrix4f::PerspectiveProjection(90, 1, .1f, 100.0f);
@@ -66,7 +61,7 @@ namespace Prehistoric {
         viewMatrices[5] = Matrix4f::View(Vector3f(0, 0, -1), Vector3f(0, -1, 0));
 
         //Creating the BRDF map
-        size = 512;
+        uint32_t size = 512;
         brdfMap = man->storeTexture(GLTexture::Storage2D(size, size, 1, R16G16_LINEAR, Bilinear, ClampToEdge));
         manager->addReference<Texture>(brdfMap.handle);
         static_cast<GLComputePipeline *>(brdfIntegratePipeline.pointer)->setInvocationSize({size / 16, size / 16, 1});
@@ -102,43 +97,41 @@ namespace Prehistoric {
         manager->removeReference<Pipeline>(backgroundPipeline.handle);
     }
 
-    void EnvironmentMapRenderer::GenerateEnvironmentMap(const Atmosphere* atmosphere) {
-        AssetManager *man = manager->getAssetManager();
+    void EnvironmentMapRenderer::RequestBake(bool usePanorama)
+    {
+        panoramaOverride = usePanorama;
+        requested = true;
+    }
 
-        if (environmentMap.pointer != nullptr) {
-            man->removeReference<Texture>(environmentMap.handle);
-            man->removeReference<Texture>(irradianceMap.handle);
-            man->removeReference<Texture>(prefilterMap.handle);
+    void EnvironmentMapRenderer::UpdateEnvironment(const Atmosphere* atmosphere)
+    {
+        auto source = EnvironmentCaptureSource::FromScene(panoramaOverride ? nullptr : atmosphere, __EngineConfig.rendererExposure);
+        if (!requested && !capture.NeedsBake(source, __EnvironmentMapConfig.atmosphereRefreshSeconds)) return;
+        GenerateEnvironmentMap(source);
+        capture.Complete(source);
+        requested = false;
+    }
 
-            static_cast<GLComputePipeline *>(environmentMapPipeline.pointer)->removeTextureBinding(0);
-            static_cast<GLComputePipeline *>(environmentMapPipeline.pointer)->removeTextureBinding(1);
-
-            static_cast<GLComputePipeline *>(irradiancePipeline.pointer)->removeTextureBinding(0);
-            static_cast<GLComputePipeline *>(prefilterPipeline.pointer)->removeTextureBinding(0);
-        }
-
-        if (atmosphere == nullptr) {
-            {
-                PR_PROFILE("Creating the equirectangular map");
-
-                if (mapCache.empty()) {
-                    equirectangularMap = man->loadTexture(__EnvironmentMapConfig.environmentMapLocation, Bilinear,
-                                                          ClampToEdge).value();
-                } else {
-                    if (mapCache != __EnvironmentMapConfig.environmentMapLocation) {
-                        if (equirectangularMap.pointer != nullptr) {
-                            man->removeReference<Texture>(equirectangularMap.handle);
-                        }
-
-                        equirectangularMap = man->loadTexture(__EnvironmentMapConfig.environmentMapLocation, Bilinear,
-                                                              ClampToEdge).value();
-                    }
-                }
-
-                man->addReference<Texture>(equirectangularMap.handle);
-
-                mapCache = __EnvironmentMapConfig.environmentMapLocation;
-            }
+    void EnvironmentMapRenderer::GenerateEnvironmentMap(const EnvironmentCaptureSource& source)
+    {
+        AssetManager* man = manager->getAssetManager();
+        const Atmosphere* atmosphere = source.atmosphere;
+        TextureHandle previousEnvironment = environmentMap;
+        TextureHandle previousIrradiance = irradianceMap;
+        TextureHandle previousPrefilter = prefilterMap;
+       
+        auto* conversion = static_cast<GLComputePipeline*>(environmentMapPipeline.pointer);
+        conversion->ResetBindings();
+        static_cast<GLComputePipeline*>(irradiancePipeline.pointer)->ResetBindings();
+        static_cast<GLComputePipeline*>(prefilterPipeline.pointer)->ResetBindings();
+        if (!atmosphere && (!equirectangularMap.pointer || mapCache != source.panorama))
+        {
+            auto next = man->loadTexture(source.panorama.empty() ? "engine://textures/default.png" : source.panorama,
+                Bilinear, ClampToEdge).value();
+            man->addReference<Texture>(next.handle);
+            if (equirectangularMap.pointer) man->removeReference<Texture>(equirectangularMap.handle);
+            equirectangularMap = next;
+            mapCache = source.panorama;
         }
 
         {
@@ -155,13 +148,12 @@ namespace Prehistoric {
             {
                 PR_PROFILE("Creating the textures");
                 man->addReference<Texture>(environmentMap.handle);
-                static_cast<GLComputePipeline *>(environmentMapPipeline.pointer)->setInvocationSize({
-                    size / 16, size / 16, 6
-                });
-                static_cast<GLComputePipeline *>(environmentMapPipeline.pointer)->addTextureBinding(
-                    0, environmentMap.pointer, (AccessMask) ComputeAccessFlags::WRITE_ONLY);
-                static_cast<GLComputePipeline *>(environmentMapPipeline.pointer)->addTextureBinding(
-                    1, equirectangularMap.pointer, (AccessMask) ComputeAccessFlags::READ_ONLY);
+                if (!atmosphere)
+                {
+                    conversion->setInvocationSize({size / 16, size / 16, 6});
+                    conversion->addTextureBinding(0, environmentMap.pointer, (AccessMask) ComputeAccessFlags::WRITE_ONLY);
+                    conversion->addTextureBinding(1, equirectangularMap.pointer, (AccessMask) ComputeAccessFlags::READ_ONLY);
+                }
 
                 size = __EnvironmentMapConfig.irradianceMapResolution;
                 irradianceMap = man->storeTexture(
@@ -186,13 +178,18 @@ namespace Prehistoric {
             if (atmosphere != nullptr) {
                 uint32_t size = __EnvironmentMapConfig.environmentMapResolution;
                 framebuffer->Bind();
+                if (captureDepthSize != size)
+                {
+                    framebuffer->addDepthAttachment(size, size);
+                    captureDepthSize = size;
+                }
                 window->getSwapchain()->SetWindowSize(size, size);
 
                 for (uint32_t i = 0; i < 6; ++i)
                 {
                     framebuffer->addColourAttachment3D(environmentMap.pointer, i);
                     framebuffer->Clear(0.0f);
-                    atmospherePass.DrawCapture(*atmosphere, viewMatrices[i], projectionMatrix);
+                    atmospherePass.DrawCapture(source, viewMatrices[i], projectionMatrix);
                 }
 
                 window->getSwapchain()->SetWindowSize(window->getWidth(), window->getHeight());
@@ -249,6 +246,12 @@ namespace Prehistoric {
         __EnvironmentMapConfig.environmentMap = environmentMap.pointer;
         __EnvironmentMapConfig.irradianceMap = irradianceMap.pointer;
         __EnvironmentMapConfig.prefilterMap = prefilterMap.pointer;
+        if (previousEnvironment.pointer)
+        {
+            man->removeReference<Texture>(previousEnvironment.handle);
+            man->removeReference<Texture>(previousIrradiance.handle);
+            man->removeReference<Texture>(previousPrefilter.handle);
+        }
     }
 
     void EnvironmentMapRenderer::RenderCube(Camera *camera) {

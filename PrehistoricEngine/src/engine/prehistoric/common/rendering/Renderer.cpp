@@ -18,93 +18,31 @@ namespace Prehistoric
 	{
 	}
 
-	void register_model(std::unordered_map<Pipeline*, std::unordered_map<Material*, std::vector<RenderableComponent*>>>& map, RenderableComponent* renderable)
-	{
-		RendererComponent* comp = dynamic_cast<RendererComponent*>(renderable);
-		if (!comp)
-			return;
+    void register_model(ModelBatches& batches, RenderableComponent* renderable)
+    {
+        auto* component = dynamic_cast<RendererComponent*>(renderable);
+        if (!component) return;
+        batches[renderable->getPipeline()][component->getMaterial()].push_back(renderable);
+    }
 
-		Pipeline* pipeline = renderable->getPipeline();
-		Material* material = comp->getMaterial();
-		
-		uint64_t h0 = 0;
-		if (material != nullptr)
-			h0 = material->GetHash();
-
-		auto index = map.find(pipeline);
-		if (index == map.end())
-		{
-			std::vector<RenderableComponent*> renderers = { renderable };
-			std::unordered_map<Material*, std::vector<RenderableComponent*>> matRend;
-			matRend.emplace(material, renderers);
-			map.emplace(pipeline, matRend);
-		}
-		else
-		{
-			auto& list = index->second;
-			for (auto& mat : list)
-			{
-				Material* curr_mat = mat.first;
-				uint64_t h1 = 0;
-				if (curr_mat != nullptr)
-					h1 = curr_mat->GetHash();
-
-				if (h0 == h1)
-				{
-					mat.second.push_back(renderable);
-					break;
-				}
-			}
-
-			std::vector<RenderableComponent*> renderers = { renderable };
-			auto& matRend = index->second;
-			matRend.emplace(material, renderers);
-		}
-	}
-
-	void unregister_model(std::unordered_map<Pipeline*, std::unordered_map<Material*, std::vector<RenderableComponent*>>>& map, RenderableComponent* renderable)
-	{
-		RendererComponent* comp = dynamic_cast<RendererComponent*>(renderable);
-		if (!comp)
-			return;
-
-		Pipeline* pipeline = renderable->getPipeline();
-		Material* material = comp->getMaterial();
-
-		auto index = map.find(pipeline);
-		if (index != map.end())
-		{
-			auto& list = index->second;
-			auto matIdx = list.find(material);
-
-			if (matIdx != list.end())
-			{
-				auto& rend = matIdx->second;
-				auto rendIdx = std::find(rend.begin(), rend.end(), renderable);
-
-				if (rendIdx != rend.end())
-				{
-					rend.erase(rendIdx);
-				}
-			}
-		}
-	}
+    void unregister_model(ModelBatches& batches, RenderableComponent* renderable)
+    {
+        auto group = batches.find(renderable->getPipeline());
+        if (group == batches.end()) return;
+        auto* component = dynamic_cast<RendererComponent*>(renderable);
+        if (!component) return;
+        auto batch = group->second.find(component->getMaterial());
+        if (batch == group->second.end()) return;
+        auto& objects = batch->second;
+        auto object = std::find(objects.begin(), objects.end(), renderable);
+        if (object != objects.end()) objects.erase(object);
+        if (objects.empty()) group->second.erase(batch);
+        if (group->second.empty()) batches.erase(group);
+    }
 
 	void register_2d_model(std::unordered_map<Pipeline*, std::vector<RenderableComponent*>>& map, RenderableComponent* renderable)
 	{
-		Pipeline* pipeline = renderable->getPipeline();
-		auto pipeIdx = map.find(pipeline);
-
-		if (pipeIdx != map.end())
-		{
-			auto& renderables = pipeIdx->second;
-			renderables.push_back(renderable);
-		}
-		else
-		{
-			std::vector<RenderableComponent*> renderers = { renderable };
-			map.insert(std::make_pair(pipeline, renderers));
-		}
+		map[renderable->getPipeline()].push_back(renderable);
 	}
 
 	void unregister_2d_model(std::unordered_map<Pipeline*, std::vector<RenderableComponent*>>& map, RenderableComponent* renderable)
@@ -117,9 +55,29 @@ namespace Prehistoric
 			auto& renderables = pipeIdx->second;
 			auto rendIdx = std::find(renderables.begin(), renderables.end(), renderable);
 	
-			renderables.erase(rendIdx);
+			if (rendIdx != renderables.end()) renderables.erase(rendIdx);
 		}
 	}
+
+    void Renderer::ClearFrameSubmissions()
+    {
+        models_3d.clear();
+        models_transparency.clear();
+        models_water.clear();
+        models_2d.clear();
+        lights.clear();
+        atmosphere = nullptr;
+    }
+
+    void Renderer::ResizePipelines(uint32_t width, uint32_t height)
+    {
+        for (Pipeline* pipeline : manager->get<Pipeline>())
+        {
+            pipeline->setViewportSize({float(width), float(height)});
+            pipeline->setScissorSize({width, height});
+            pipeline->RecreatePipeline();
+        }
+    }
 
 	void Renderer::RegisterModel(RenderableComponent* renderable)
 	{
@@ -155,6 +113,7 @@ namespace Prehistoric
 		{
 		case RenderPriority::_3D:
 			unregister_model(models_3d, renderable);
+			unregister_model(models_water, renderable);
 			break;
 		case RenderPriority::_TRANSPARENCY:
 			unregister_model(models_transparency, renderable);

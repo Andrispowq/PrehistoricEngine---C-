@@ -1,5 +1,6 @@
 #include "Includes.hpp"
 #include "GLRenderer.h"
+#include "prehistoric/core/modules/water/Water.h"
 
 #include "prehistoric/core/node/component/renderer/RenderableComponent.h"
 #include "prehistoric/core/modules/gui/GUIElement.h"
@@ -89,14 +90,7 @@ namespace Prehistoric
 
 			window->getSwapchain()->SetWindowSize(width, height);
 
-			//Recreate the pipelines
-			std::vector<Pipeline*> pipes = manager->get<Pipeline>();
-			for (Pipeline* pipe : pipes)
-			{
-				pipe->setViewportSize({ (float)width, (float)height });
-				pipe->setScissorSize({ width, height });
-				pipe->RecreatePipeline();
-			}
+			ResizePipelines(width, height);
 
 			window->setResized(false);
 		}
@@ -106,19 +100,42 @@ namespace Prehistoric
 	{
 		window->Render(nullptr);
 
-		//Clear the lists
-		models_3d.clear();
-		models_transparency.clear();
-		models_2d.clear();
-		models_water.clear();
-		lights.clear();
-		atmosphere = nullptr;
+		ClearFrameSubmissions();
+		waters.clear();
 	}
+
+    void GLRenderer::DrawModelBatches(const ModelBatches& batches)
+    {
+        VisitBatches(batches, [this](Pipeline* pipeline)
+        {
+            pipeline->BindPipeline(nullptr);
+            pipeline->getShader()->UpdateGlobalUniforms(this);
+            lightCullingPass->getLightBuffer()->BindBase(nullptr, 0);
+            lightCullingPass->getVisibleLightIndicesBuffer()->BindBase(nullptr, 1);
+        }, [](Pipeline* pipeline, Material* material)
+        {
+            pipeline->getShader()->UpdateMaterialUniforms(material, 0);
+        }, [](Pipeline*, RenderableComponent* object)
+        {
+            object->BatchRender();
+        }, [this](Pipeline* pipeline)
+        {
+            lightCullingPass->getVisibleLightIndicesBuffer()->UnbindBase(1);
+            lightCullingPass->getLightBuffer()->UnbindBase(0);
+            pipeline->UnbindPipeline();
+        });
+    }
 
 	void GLRenderer::Render()
 	{ 
 		uint32_t width = window->getWidth();
 		uint32_t height = window->getHeight();
+
+        if (EnvironmentMapRenderer::instance) EnvironmentMapRenderer::instance->UpdateEnvironment(atmosphere);
+        for (Water* water : waters)
+        {
+            water->RenderCaptures(this);
+        }
 
 		depthPass->Render();
 		

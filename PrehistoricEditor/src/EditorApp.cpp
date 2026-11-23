@@ -58,12 +58,6 @@ EditorApp::EditorApp()
 				static_cast<GLRenderer*>(engineLayer->getRenderingEngine()->getRenderer())->getAtmospherePass());
 		}
 
-
-		{
-			PR_PROFILE("Environment map generation - Cubemap, Irradiance, Prefilter map");
-			EnvironmentMapRenderer::instance->GenerateEnvironmentMap(scene->FindAtmosphere());
-		}
-
 		EnvironmentMapRenderer::instance->enabled = true;
 	}
 

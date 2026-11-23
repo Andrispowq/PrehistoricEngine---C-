@@ -2,6 +2,7 @@
 #define VK_RENDERER_H
 
 #include "prehistoric/common/rendering/Renderer.h"
+#include "prehistoric/core/modules/atmosphere/AtmosphereCapture.h"
 
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan.hpp>
@@ -25,7 +26,6 @@ namespace Prehistoric {
 
         virtual void Render() override;
 
-        void BuildCommandBuffers();
 
         virtual CommandBuffer* getDrawCommandBuffer() const {
             return (CommandBuffer*) commandPool->getCommandBuffer(window->getSwapchain()->getAquiredImageIndex());
@@ -44,8 +44,9 @@ namespace Prehistoric {
         std::unique_ptr<VKEnvironmentBackground> background;
         std::unique_ptr<VKEnvironmentLighting> environmentLighting;
 
+        void ProcessDraws(VKCommandBuffer* buffer);
         void UpdateEnvironmentLighting();
-        bool atmosphereLighting = false;
+        AtmosphereCapture environmentCapture;
         bool frameReady = false;
     };
 };

@@ -3,7 +3,7 @@
 
 #include "prehistoric/core/node/GameObject.h"
 
-#include "prehistoric/core/modules/atmosphere/Atmosphere.h"
+#include "prehistoric/core/modules/atmosphere/AtmosphereCapture.h"
 #include "prehistoric/application/Application.h"
 
 namespace Prehistoric
@@ -41,35 +41,37 @@ namespace Prehistoric
 		AddUniform("exposure");
 	}
 
-	void GLAtmosphereScatteringShader::UpdateUniforms(const Vector3f& sun, const Matrix4f& transform, const Matrix4f& view,
+	void GLAtmosphereScatteringShader::UpdateUniforms(const EnvironmentCaptureSource& source, const Matrix4f& transform, const Matrix4f& view,
 		const Matrix4f& projection, bool capture) const
 	{
 		SetUniform("m_transform", transform);
-		SetUniform("sunPosition", sun);
+		const auto& sky = source.sky;
+		auto xyz = [](const std::array<float, 4>& v) { return Vector3f(v[0], v[1], v[2]); };
+		SetUniform("sunPosition", xyz(sky.sunPositionRadius));
 
 		SetUniform("m_view", view);
 		SetUniform("m_projection", projection);
 
-		SetUniformf("sunRadius", __AtmosphereConfig.sunRadius);
-		SetUniform("sunColour", __AtmosphereConfig.sunColour);
-		SetUniformf("sunIntensity", __AtmosphereConfig.sunIntensity);
+		SetUniformf("sunRadius", sky.sunPositionRadius[3]);
+		SetUniform("sunColour", xyz(sky.sunColourIntensity));
+		SetUniformf("sunIntensity", sky.sunColourIntensity[3]);
 
-		SetUniformf("planetRadius", __AtmosphereConfig.planetRadius);
-		SetUniformf("atmosphereRadius", __AtmosphereConfig.atmosphereRadius);
+		SetUniformf("planetRadius", sky.radiiAndScaleHeights[0]);
+		SetUniformf("atmosphereRadius", sky.radiiAndScaleHeights[1]);
 
-		SetUniform("rayleigh", __AtmosphereConfig.rayleigh);
-		SetUniformf("rayleighHeightScale", __AtmosphereConfig.rayleighHeightScale);
-		SetUniformf("mie", __AtmosphereConfig.mie);
-		SetUniformf("mieHeightScale", __AtmosphereConfig.mieHeightScale);
-		SetUniformf("mieDirection", __AtmosphereConfig.mieDirection);
+		SetUniform("rayleigh", xyz(sky.rayleighMie));
+		SetUniformf("rayleighHeightScale", sky.radiiAndScaleHeights[2]);
+		SetUniformf("mie", sky.rayleighMie[3]);
+		SetUniformf("mieHeightScale", sky.radiiAndScaleHeights[3]);
+		SetUniformf("mieDirection", sky.anisotropyAndShift[0]);
 
-		SetUniformf("horizontalVerticalShift", __AtmosphereConfig.horizontalVerticalShift);
+		SetUniformf("horizontalVerticalShift", sky.anisotropyAndShift[1]);
 		SetUniformi("width", __FrameworkConfig.windowWidth);
 		SetUniformi("height", __FrameworkConfig.windowHeight);
-		SetUniformi("isReflection", capture && __WaterConfig.stage == WaterRenderStage::Reflection ? 1 : 0);
+		SetUniformi("isReflection", !capture && __WaterConfig.stage == WaterRenderStage::Reflection ? 1 : 0);
 		SetUniformi("isCubemap", capture);
 
-		SetUniformf("exposure", __EngineConfig.rendererExposure);
+		SetUniformf("exposure", source.exposure);
 	}
 
 }

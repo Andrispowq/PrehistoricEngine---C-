@@ -1,21 +1,10 @@
 #pragma once
 
+#include "prehistoric/core/modules/atmosphere/AtmosphereCapture.h"
+
 namespace Prehistoric
 {
-    class Atmosphere;
-
-    struct VKAtmosphereParameters
-    {
-        // The fullscreen vertex shader uses the first three vec4 slots for camera rays.
-        static constexpr unsigned PushOffset = 48;
-
-        float sunPositionRadius[4];
-        float sunColourIntensity[4];
-        float rayleighMie[4];
-        float radiiAndScaleHeights[4];
-        float anisotropyAndShift[2];
-    };
-
-    static_assert(sizeof(VKAtmosphereParameters) == 72);
-    VKAtmosphereParameters GetAtmosphereParameters(const Atmosphere& atmosphere);
+    // Three vec4 camera rays precede the atmosphere block in fullscreen draws.
+    constexpr unsigned AtmospherePushOffset = 48;
+    static_assert(sizeof(AtmosphereParameters) == 72);
 }

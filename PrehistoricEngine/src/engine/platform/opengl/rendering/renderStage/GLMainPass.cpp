@@ -122,61 +122,8 @@ namespace Prehistoric
 			EnvironmentMapRenderer::instance->RenderCube(rend->getCamera());
 		}
 
-		const auto& lights = rend->getLights();
-		auto lightCullingPass = rend->getLightCullingPass();
-
-		for (auto pipeline : rend->getModels3D())
-		{
-			Pipeline* pl = pipeline.first;
-
-			pl->BindPipeline(nullptr);
-			pl->getShader()->UpdateGlobalUniforms(rend);
-
-			lightCullingPass->getLightBuffer()->BindBase(nullptr, 0);
-			lightCullingPass->getVisibleLightIndicesBuffer()->BindBase(nullptr, 1);
-
-			for (auto material : pipeline.second)
-			{
-				pl->getShader()->UpdateMaterialUniforms(material.first, 0);
-
-				for (auto renderer : material.second)
-				{
-					renderer->BatchRender();
-				}
-			}
-
-			lightCullingPass->getVisibleLightIndicesBuffer()->UnbindBase(1);
-			lightCullingPass->getLightBuffer()->UnbindBase(0);
-
-			pl->UnbindPipeline();
-		}
-
-		//TODO: enable alpha blending
-		for (auto pipeline : rend->getModelsTransparency())
-		{
-			Pipeline* pl = pipeline.first;
-
-			pl->BindPipeline(nullptr);
-			pl->getShader()->UpdateGlobalUniforms(rend);
-
-			lightCullingPass->getLightBuffer()->BindBase(nullptr, 0);
-			lightCullingPass->getVisibleLightIndicesBuffer()->BindBase(nullptr, 1);
-
-			for (auto material : pipeline.second)
-			{
-				pl->getShader()->UpdateMaterialUniforms(material.first, 0);
-
-				for (auto renderer : material.second)
-				{
-					renderer->BatchRender();
-				}
-			}
-
-			lightCullingPass->getVisibleLightIndicesBuffer()->UnbindBase(1);
-			lightCullingPass->getLightBuffer()->UnbindBase(0);
-
-			pl->UnbindPipeline();
-		}
+		rend->DrawModelBatches(rend->getModels3D());
+		rend->DrawModelBatches(rend->getModelsTransparency());
 
 		multisampleFBO->Unbind();
 		multisampleFBO->Blit(colourFBO.get(), window->getWidth(), window->getHeight(), 0, 0);

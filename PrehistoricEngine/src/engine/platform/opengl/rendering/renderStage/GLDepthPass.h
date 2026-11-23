@@ -2,6 +2,7 @@
 #define GL_DEPTH_PASS_H
 
 #include "prehistoric/common/rendering/renderStage/RenderStage.h"
+#include "prehistoric/common/rendering/Renderer.h"
 
 #include "platform/opengl/rendering/framebuffer/GLFramebuffer.h"
 
@@ -18,6 +19,8 @@ namespace Prehistoric
 
 		virtual void OnResized() override;
 		virtual void Render() override;
+
+		static void DrawBatches(const ModelBatches& batches, Shader& shader);
 
 		TextureHandle getDepthTexture() const { return depthTexture; }
 	private:
