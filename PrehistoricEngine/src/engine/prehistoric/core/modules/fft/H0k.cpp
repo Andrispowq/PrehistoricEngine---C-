@@ -3,68 +3,68 @@
 
 #include "platform/opengl/rendering/shaders/fft/GLH0kShader.h"
 
-namespace Prehistoric
-{
-	H0k::H0k(AssembledAssetManager* manager, Window* window, int N, int L, float amplitude, Vector2f direction, float alignment, float intensity, float capillarSupressFactor)
-		: manager(manager), window(window), N(N), L(L), direction(direction),
-		amplitude(amplitude), intensity(intensity), capillarSupressFactor(capillarSupressFactor),
-		alignment(alignment)
-	{
-		AssetManager* man = manager->getAssetManager();
-		shader = man->loadShader(ShaderName::H0k).value();
+namespace Prehistoric {
+    H0k::H0k(AssembledAssetManager *manager, Window *window, int N, int L, float amplitude, Vector2f direction,
+             float alignment, float intensity, float capillarSupressFactor)
+        : manager(manager), window(window), N(N), L(L), direction(direction),
+          amplitude(amplitude), intensity(intensity), capillarSupressFactor(capillarSupressFactor),
+          alignment(alignment) {
+        AssetManager *man = manager->getAssetManager();
+        shader = man->loadShader(ShaderName::H0k).value();
 
-		imageH0k = man->storeTexture(GLTexture::Storage2D(N, N, 1, R8G8B8A8_LINEAR, Bilinear));
-		imageH0minusK = man->storeTexture(GLTexture::Storage2D(N, N, 1, R8G8B8A8_LINEAR, Bilinear));
-	
-		noise0 = man->loadTexture("res/textures/noise/noise256_0.jpg").value();
-		noise1 = man->loadTexture("res/textures/noise/noise256_1.jpg").value();
-		noise2 = man->loadTexture("res/textures/noise/noise256_2.jpg").value();
-		noise3 = man->loadTexture("res/textures/noise/noise256_3.jpg").value();
+        imageH0k = man->storeTexture(GLTexture::Storage2D(N, N, 1, R8G8B8A8_LINEAR, Bilinear));
+        imageH0minusK = man->storeTexture(GLTexture::Storage2D(N, N, 1, R8G8B8A8_LINEAR, Bilinear));
 
-		man->addReference<Texture>(imageH0k.handle);
-		man->addReference<Texture>(imageH0minusK.handle);
+        noise0 = man->loadTexture("engine://textures/noise/noise256_0.jpg").value();
+        noise1 = man->loadTexture("engine://textures/noise/noise256_1.jpg").value();
+        noise2 = man->loadTexture("engine://textures/noise/noise256_2.jpg").value();
+        noise3 = man->loadTexture("engine://textures/noise/noise256_3.jpg").value();
 
-		man->addReference<Texture>(noise0.handle);
-		man->addReference<Texture>(noise1.handle);
-		man->addReference<Texture>(noise2.handle);
-		man->addReference<Texture>(noise3.handle);
+        man->addReference<Texture>(imageH0k.handle);
+        man->addReference<Texture>(imageH0minusK.handle);
 
-		uint32_t invocation_size = (uint32_t)N / 16;
+        man->addReference<Texture>(noise0.handle);
+        man->addReference<Texture>(noise1.handle);
+        man->addReference<Texture>(noise2.handle);
+        man->addReference<Texture>(noise3.handle);
 
-		pipeline = manager->createPipeline(PipelineTypeHashFlags::Compute, shader);
-		manager->addReference<Pipeline>(pipeline.handle);
-		dynamic_cast<GLComputePipeline*>(pipeline.pointer)->addTextureBinding(0, imageH0k.pointer, (AccessMask)ComputeAccessFlags::WRITE_ONLY);
-		dynamic_cast<GLComputePipeline*>(pipeline.pointer)->addTextureBinding(1, imageH0minusK.pointer, (AccessMask)ComputeAccessFlags::WRITE_ONLY);
-		dynamic_cast<GLComputePipeline*>(pipeline.pointer)->setInvocationSize({ invocation_size, invocation_size, 1 });
-	}
+        uint32_t invocation_size = (uint32_t) N / 16;
 
-	H0k::~H0k()
-	{
-		manager->removeReference<Pipeline>(pipeline.handle);
+        pipeline = manager->createPipeline(PipelineTypeHashFlags::Compute, shader);
+        manager->addReference<Pipeline>(pipeline.handle);
+        dynamic_cast<GLComputePipeline *>(pipeline.pointer)->addTextureBinding(
+            0, imageH0k.pointer, (AccessMask) ComputeAccessFlags::WRITE_ONLY);
+        dynamic_cast<GLComputePipeline *>(pipeline.pointer)->addTextureBinding(
+            1, imageH0minusK.pointer, (AccessMask) ComputeAccessFlags::WRITE_ONLY);
+        dynamic_cast<GLComputePipeline *>(pipeline.pointer)->setInvocationSize({invocation_size, invocation_size, 1});
+    }
 
-		AssetManager* man = manager->getAssetManager();
-		man->removeReference<Texture>(imageH0k.handle);
-		man->removeReference<Texture>(imageH0minusK.handle);
+    H0k::~H0k() {
+        manager->removeReference<Pipeline>(pipeline.handle);
 
-		man->removeReference<Texture>(noise0.handle);
-		man->removeReference<Texture>(noise1.handle);
-		man->removeReference<Texture>(noise2.handle);
-		man->removeReference<Texture>(noise3.handle);
-	}
+        AssetManager *man = manager->getAssetManager();
+        man->removeReference<Texture>(imageH0k.handle);
+        man->removeReference<Texture>(imageH0minusK.handle);
 
-	void H0k::Render()
-	{
-		pipeline->BindPipeline(nullptr);
-		
-		noise0->Bind(0);
-		noise1->Bind(1);
-		noise2->Bind(2);
-		noise3->Bind(3);
+        man->removeReference<Texture>(noise0.handle);
+        man->removeReference<Texture>(noise1.handle);
+        man->removeReference<Texture>(noise2.handle);
+        man->removeReference<Texture>(noise3.handle);
+    }
 
-		dynamic_cast<GLH0kShader*>(shader.pointer)->UpdateUniforms(N, L, amplitude, direction, alignment, intensity, capillarSupressFactor);
-		dynamic_cast<GLH0kShader*>(shader.pointer)->UpdateUniformsTextures(0, 1, 2, 3);
+    void H0k::Render() {
+        pipeline->BindPipeline(nullptr);
 
-		pipeline->RenderPipeline();
-		pipeline->UnbindPipeline();
-	}
+        noise0->Bind(0);
+        noise1->Bind(1);
+        noise2->Bind(2);
+        noise3->Bind(3);
+
+        dynamic_cast<GLH0kShader *>(shader.pointer)->UpdateUniforms(N, L, amplitude, direction, alignment, intensity,
+                                                                    capillarSupressFactor);
+        dynamic_cast<GLH0kShader *>(shader.pointer)->UpdateUniformsTextures(0, 1, 2, 3);
+
+        pipeline->RenderPipeline();
+        pipeline->UnbindPipeline();
+    }
 }

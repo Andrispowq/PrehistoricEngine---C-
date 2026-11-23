@@ -1,4 +1,5 @@
  #include "Includes.hpp"
+#include <stdexcept>
 #include "VKSwapchain.h"
 
 #include "platform/vulkan/framework/context/VKContext.h"
@@ -73,6 +74,7 @@ namespace Prehistoric
 
         swapchainImageFormat = surfaceFormat.format;
         swapchainExtent = extent;
+        imagesInFlight.assign(NumImages, VK_NULL_HANDLE);
 
         swapchainImages.resize(NumImages);
         for (size_t i = 0; i < NumImages; i++)
@@ -102,7 +104,6 @@ namespace Prehistoric
         imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
         renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
         inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-        imagesInFlight.resize(NumImages, VK_NULL_HANDLE);
 
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
         {
@@ -144,11 +145,16 @@ namespace Prehistoric
 
         VkResult res = vkAcquireNextImageKHR(device->getDevice(), swapchain, UINT64_MAX, imageAvailableSemaphores[currentFrame]->getSemaphore(), VK_NULL_HANDLE, &aquiredImageIndex);
 
-        if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR)
+        if (res == VK_ERROR_OUT_OF_DATE_KHR)
         {
-            SetWindowSize(window->getWidth(), window->getHeight());
+            window->setResized(true);
             return false;
         }
+
+        if (res == VK_SUBOPTIMAL_KHR)
+            window->setResized(true);
+        else if (res != VK_SUCCESS)
+            throw std::runtime_error("Failed to acquire the next swapchain image!");
 
         if (imagesInFlight[aquiredImageIndex] != VK_NULL_HANDLE)
         {
@@ -195,7 +201,11 @@ namespace Prehistoric
         presentInfo.pImageIndices = &aquiredImageIndex;
         presentInfo.pResults = nullptr; // Optional
 
-        vkQueuePresentKHR(device->getPresentQueue().getQueue(), &presentInfo);
+        VkResult result = vkQueuePresentKHR(device->getPresentQueue().getQueue(), &presentInfo);
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+            window->setResized(true);
+        else if (result != VK_SUCCESS)
+            throw std::runtime_error("Failed to present the swapchain image!");
         vkQueueWaitIdle(device->getPresentQueue().getQueue());
 
         currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
@@ -293,6 +303,7 @@ namespace Prehistoric
 
         swapchainImageFormat = surfaceFormat.format;
         swapchainExtent = extent;
+        imagesInFlight.assign(NumImages, VK_NULL_HANDLE);
 
         swapchainImages.resize(NumImages);
         for (size_t i = 0; i < NumImages; i++)
@@ -353,8 +364,9 @@ namespace Prehistoric
         }
         else
         {
-            VkExtent2D actualExtent = { __FrameworkConfig.windowWidth, 
-                __FrameworkConfig.windowHeight };
+            int width, height;
+            glfwGetFramebufferSize((GLFWwindow*)window->getWindowHandle(), &width, &height);
+            VkExtent2D actualExtent = { (uint32_t)width, (uint32_t)height };
 
             actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
             actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));

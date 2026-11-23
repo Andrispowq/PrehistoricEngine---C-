@@ -1,318 +1,314 @@
 #include "Includes.hpp"
+#include "prehistoric/core/resources/EngineResources.h"
 #include <glad/glad.h>
 #include "VkShader.h"
 
-namespace Prehistoric
-{
-	namespace ResourceLoader
-	{
-		std::vector<char> ResourceLoader::LoadShaderVK(const std::string& path)
-		{
-			const std::string SHADER_LOC = "res/shaders/";
+namespace Prehistoric {
+    namespace ResourceLoader {
+        std::vector<char> ResourceLoader::LoadShaderVK(const std::string &path) {
+            std::ifstream file;
+            file.open(EngineResourcePath("shaders/" + path).c_str(), std::ios::ate | std::ios::binary);
 
-			std::ifstream file;
-			file.open((SHADER_LOC + path).c_str(), std::ios::ate | std::ios::binary);
+            if (file.is_open()) {
+                size_t fileSize = (size_t) file.tellg();
+                std::vector<char> buffer(fileSize);
 
-			if (file.is_open())
-			{
-				size_t fileSize = (size_t)file.tellg();
-				std::vector<char> buffer(fileSize);
+                file.seekg(0);
+                file.read(buffer.data(), fileSize);
 
-				file.seekg(0);
-				file.read(buffer.data(), fileSize);
+                file.close();
+                return buffer;
+            } else {
+                PR_LOG_ERROR("Unable to load shader: %s\n", path.c_str());
+            }
 
-				file.close();
-				return buffer;
-			}
-			else
-			{
-				PR_LOG_ERROR("Unable to load shader: %s\n", path.c_str());
-			}
+            return {-1};
+        }
+    };
 
-			return { -1 };
-		}
-	};
+    VKShader::VKShader(Context *context, Swapchain *swapchain, const std::vector<char> *files, uint32_t length) {
+        modules = new VkShaderModule[5];
+        shaderStages = new VkPipelineShaderStageCreateInfo[5];
 
-	VKShader::VKShader(Context* context, Swapchain* swapchain, const std::vector<char>* files, uint32_t length)
-	{
-		modules = new VkShaderModule[5];
-		shaderStages = new VkPipelineShaderStageCreateInfo[5];
+        this->device = (VKDevice *) context->getDevices();
+        counter = 0;
 
-		this->device = (VKDevice*)context->getDevices();
-		counter = 0;
+        if (length == 1) //Compute shader
+        {
+            if (!AddShader(files[0], COMPUTE_SHADER))
+                PR_LOG_RUNTIME_ERROR("Compute shader couldn't be added\n");
+        } else if (length == 2) // Vertex + fragment shader
+        {
+            if (!AddShader(files[0], VERTEX_SHADER))
+                PR_LOG_RUNTIME_ERROR("Vertex shader couldn't be added!");
+            if (!AddShader(files[1], FRAGMENT_SHADER))
+                PR_LOG_RUNTIME_ERROR("Fragment shader couldn't be added!");
+        } else if (length == 3) //Vertex + geometry + fragment shader
+        {
+            if (!AddShader(files[0], VERTEX_SHADER))
+                PR_LOG_RUNTIME_ERROR("Vertex shader couldn't be added!");
+            if (!AddShader(files[1], GEOMETRY_SHADER))
+                PR_LOG_RUNTIME_ERROR("Geometry shader couldn't be added!");
+            if (!AddShader(files[2], FRAGMENT_SHADER))
+                PR_LOG_RUNTIME_ERROR("Fragment shader couldn't be added!");
+        } else if (length == 5) //Vertex + tessellation control + tessellation evaluation + geomtry + fragment shader
+        {
+            if (!AddShader(files[0], VERTEX_SHADER))
+                PR_LOG_RUNTIME_ERROR("Vertex shader couldn't be added!");
+            if (!AddShader(files[1], TESSELLATION_CONTROL_SHADER))
+                PR_LOG_RUNTIME_ERROR("Tessellation control shader couldn't be added!");
+            if (!AddShader(files[2], TESSELLATION_EVALUATION_SHADER))
+                PR_LOG_RUNTIME_ERROR("Tessellation evaluation shader couldn't be added!");
+            if (!AddShader(files[3], GEOMETRY_SHADER))
+                PR_LOG_RUNTIME_ERROR("Geometry shader couldn't be added!");
+            if (!AddShader(files[4], FRAGMENT_SHADER))
+                PR_LOG_RUNTIME_ERROR("Fragment shader couldn't be added!");
+        }
 
-		if (length == 1) //Compute shader
-		{
-			if (!AddShader(files[0], COMPUTE_SHADER))
-				PR_LOG_RUNTIME_ERROR("Compute shader couldn't be added\n");
-		}
-		else if (length == 2) // Vertex + fragment shader
-		{
-			if (!AddShader(files[0], VERTEX_SHADER))
-				PR_LOG_RUNTIME_ERROR("Vertex shader couldn't be added!");
-			if (!AddShader(files[1], FRAGMENT_SHADER))
-				PR_LOG_RUNTIME_ERROR("Fragment shader couldn't be added!");
-		}
-		else if (length == 3) //Vertex + geometry + fragment shader
-		{
-			if (!AddShader(files[0], VERTEX_SHADER))
-				PR_LOG_RUNTIME_ERROR("Vertex shader couldn't be added!");
-			if (!AddShader(files[1], GEOMETRY_SHADER))
-				PR_LOG_RUNTIME_ERROR("Geometry shader couldn't be added!");
-			if (!AddShader(files[2], FRAGMENT_SHADER))
-				PR_LOG_RUNTIME_ERROR("Fragment shader couldn't be added!");
-		}
-		else if (length == 5) //Vertex + tessellation control + tessellation evaluation + geomtry + fragment shader
-		{
-			if (!AddShader(files[0], VERTEX_SHADER))
-				PR_LOG_RUNTIME_ERROR("Vertex shader couldn't be added!");
-			if (!AddShader(files[1], TESSELLATION_CONTROL_SHADER))
-				PR_LOG_RUNTIME_ERROR("Tessellation control shader couldn't be added!");
-			if (!AddShader(files[2], TESSELLATION_EVALUATION_SHADER))
-				PR_LOG_RUNTIME_ERROR("Tessellation evaluation shader couldn't be added!");
-			if (!AddShader(files[3], GEOMETRY_SHADER))
-				PR_LOG_RUNTIME_ERROR("Geometry shader couldn't be added!");
-			if (!AddShader(files[4], FRAGMENT_SHADER))
-				PR_LOG_RUNTIME_ERROR("Fragment shader couldn't be added!");
-		}
+        this->swapchain = (VKSwapchain *) swapchain;
+        this->descriptorPool = new VKDescriptorPool(device, this->swapchain);
+    }
 
-		this->swapchain = (VKSwapchain*)swapchain;
-		this->descriptorPool = new VKDescriptorPool(device, this->swapchain);
-	}
+    VKShader::VKShader(Context *context, Swapchain *swapchain) {
+        modules = new VkShaderModule[5];
+        shaderStages = new VkPipelineShaderStageCreateInfo[5];
 
-	VKShader::VKShader(Context* context, Swapchain* swapchain)
-	{
-		modules = new VkShaderModule[5];
-		shaderStages = new VkPipelineShaderStageCreateInfo[5];
+        this->device = (VKDevice *) context->getDevices();
+        counter = 0;
 
-		this->device = (VKDevice*)context->getDevices();
-		counter = 0;
+        this->swapchain = (VKSwapchain *) swapchain;
+        this->descriptorPool = new VKDescriptorPool(device, this->swapchain);
+    }
 
-		this->swapchain = (VKSwapchain*)swapchain;
-		this->descriptorPool = new VKDescriptorPool(device, this->swapchain);
-	}
+    VKShader::~VKShader() {
+        vkDestroyPipelineLayout(device->getDevice(), pipelineLayout, nullptr);
 
-	VKShader::~VKShader()
-	{
-		vkDestroyPipelineLayout(device->getDevice(), pipelineLayout, nullptr);
+        delete descriptorPool;
 
-		delete descriptorPool;
+        for (size_t i = 0; i < counter; i++) {
+            vkDestroyShaderModule(device->getDevice(), modules[i], nullptr);
+        }
 
-		for (size_t i = 0; i < counter; i++)
-		{
-			vkDestroyShaderModule(device->getDevice(), modules[i], nullptr);
-		}
+        delete[] modules;
+        delete[] shaderStages;
+    }
 
-		delete[] modules;
-		delete[] shaderStages;
-	}
-
-	/*
+    /*
 		We only add every uniform once, so we could use the index 0 everywhere, but upon creation the instance_counter is 0, so we'll use that
 	*/
-	bool VKShader::AddUniform(const std::string& name, uint32_t stages, UniformType type, uint32_t set, uint32_t binding, size_t size, Texture* texture)
-	{
-		descriptorPool->addUniform(name, stages, type, set, binding, (uint32_t)size, texture);
+    bool VKShader::AddUniform(const std::string &name, uint32_t stages, UniformType type, uint32_t set,
+                              uint32_t binding, size_t size, Texture *texture) {
+        descriptorPool->addUniform(name, stages, type, set, binding, (uint32_t) size, texture);
 
-		return true;
-	}
+        return true;
+    }
 
-	bool VKShader::AddShader(const std::vector<char>& code, ShaderType type)
-	{
-		VkShaderModule module = CreateShaderModule(code);
-		VkPipelineShaderStageCreateInfo info = {};
+    bool VKShader::AddShader(const std::vector<char> &code, ShaderType type) {
+        VkShaderModule module = CreateShaderModule(code);
+        VkPipelineShaderStageCreateInfo info = {};
 
-		VkShaderStageFlagBits flag;
+        VkShaderStageFlagBits flag;
 
-		switch (type)
-		{
-		case VERTEX_SHADER:
-			flag = VK_SHADER_STAGE_VERTEX_BIT;
-			break;
-		case TESSELLATION_CONTROL_SHADER:
-			flag = VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
-			break;
-		case TESSELLATION_EVALUATION_SHADER:
-			flag = VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
-			break;
-		case GEOMETRY_SHADER:
-			flag = VK_SHADER_STAGE_GEOMETRY_BIT;
-			break;
-		case FRAGMENT_SHADER:
-			flag = VK_SHADER_STAGE_FRAGMENT_BIT;
-			break;
-		case COMPUTE_SHADER:
-			flag = VK_SHADER_STAGE_COMPUTE_BIT;
-			break;
-		case TASK_SHADER_NV:
-			flag = VK_SHADER_STAGE_TASK_BIT_NV;
-			break;
-		case MESH_SHADER_NV:
-			flag = VK_SHADER_STAGE_MESH_BIT_NV;
-			break;
-		case RAY_GENERATION_SHADER_KHR:
-			flag = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
-			break;
-		case RAY_HIT_SHADER_KHR:
-			flag = VK_SHADER_STAGE_ANY_HIT_BIT_KHR;
-			break;
-		case RAY_CLOSEST_HIT_SHADER_KHR:
-			flag = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
-			break;
-		case RAY_MISS_SHADER_KHR:
-			flag = VK_SHADER_STAGE_MISS_BIT_KHR;
-			break;
-		case RAY_INTERSECTION_SHADER_KHR:
-			flag = VK_SHADER_STAGE_INTERSECTION_BIT_KHR;
-			break;
-		case RAY_CALLABLE_SHADER_KHR:
-			flag = VK_SHADER_STAGE_CALLABLE_BIT_KHR;
-			break;
-		default:
-			return false;
-		}
+        switch (type) {
+            case VERTEX_SHADER:
+                flag = VK_SHADER_STAGE_VERTEX_BIT;
+                break;
+            case TESSELLATION_CONTROL_SHADER:
+                flag = VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+                break;
+            case TESSELLATION_EVALUATION_SHADER:
+                flag = VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+                break;
+            case GEOMETRY_SHADER:
+                flag = VK_SHADER_STAGE_GEOMETRY_BIT;
+                break;
+            case FRAGMENT_SHADER:
+                flag = VK_SHADER_STAGE_FRAGMENT_BIT;
+                break;
+            case COMPUTE_SHADER:
+                flag = VK_SHADER_STAGE_COMPUTE_BIT;
+                break;
+            case TASK_SHADER_NV:
+                flag = VK_SHADER_STAGE_TASK_BIT_NV;
+                break;
+            case MESH_SHADER_NV:
+                flag = VK_SHADER_STAGE_MESH_BIT_NV;
+                break;
+            case RAY_GENERATION_SHADER_KHR:
+                flag = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+                break;
+            case RAY_HIT_SHADER_KHR:
+                flag = VK_SHADER_STAGE_ANY_HIT_BIT_KHR;
+                break;
+            case RAY_CLOSEST_HIT_SHADER_KHR:
+                flag = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+                break;
+            case RAY_MISS_SHADER_KHR:
+                flag = VK_SHADER_STAGE_MISS_BIT_KHR;
+                break;
+            case RAY_INTERSECTION_SHADER_KHR:
+                flag = VK_SHADER_STAGE_INTERSECTION_BIT_KHR;
+                break;
+            case RAY_CALLABLE_SHADER_KHR:
+                flag = VK_SHADER_STAGE_CALLABLE_BIT_KHR;
+                break;
+            default:
+                return false;
+        }
 
-		CreateStageInfo(info, module, "main", flag);
+        CreateStageInfo(info, module, "main", flag);
 
-		modules[counter] = module;
-		shaderStages[counter++] = info;
+        modules[counter] = module;
+        shaderStages[counter++] = info;
 
-		return true;
-	}
+        return true;
+    }
 
-	void VKShader::BindSets(CommandBuffer* commandBuffer, uint32_t first, uint32_t set_count, uint32_t instance_index) const
-	{
-		//if (set >= descriptorPool->getNumberOfSets() || instance_index >= instance_counter)
-		//	PR_LOG_RUNTIME_ERROR("Tried to bind set %i, with instance index %i, but only 0 to %i sets and instance indices 0 to %i are valid!\n", set, instance_index, descriptorPool->getNumberOfSets(), instance_counter - 1);
+    void VKShader::BindSets(CommandBuffer *commandBuffer, uint32_t first, uint32_t set_count,
+                            uint32_t instance_index) const {
+        //if (set >= descriptorPool->getNumberOfSets() || instance_index >= instance_counter)
+        //	PR_LOG_RUNTIME_ERROR("Tried to bind set %i, with instance index %i, but only 0 to %i sets and instance indices 0 to %i are valid!\n", set, instance_index, descriptorPool->getNumberOfSets(), instance_counter - 1);
 
-		VKCommandBuffer* vkcmdbuff = reinterpret_cast<VKCommandBuffer*>(commandBuffer);
+        VKCommandBuffer *vkcmdbuff = reinterpret_cast<VKCommandBuffer *>(commandBuffer);
 
-		std::vector<VkDescriptorSet> sets(set_count);
+        std::vector<VkDescriptorSet> sets(set_count);
 
-		uint32_t index = swapchain->getAquiredImageIndex();
-		for (uint32_t i = 0; i < set_count; i++)
-		{
-			sets[i] = descriptorPool->getSet(i + first, instance_index)->getSets()[index];
-		}
+        uint32_t index = swapchain->getAquiredImageIndex();
+        for (uint32_t i = 0; i < set_count; i++) {
+            sets[i] = descriptorPool->getSet(i + first, instance_index)->getSets()[index];
+        }
 
-		VkPipelineBindPoint bindPoint = counter == 1 && shaderStages[0].stage == VK_SHADER_STAGE_COMPUTE_BIT ? VK_PIPELINE_BIND_POINT_COMPUTE : VK_PIPELINE_BIND_POINT_GRAPHICS;
-		vkCmdBindDescriptorSets(vkcmdbuff->getCommandBuffer(), bindPoint, pipelineLayout, first, set_count, sets.data(), 0, nullptr);
-	}
+        VkPipelineBindPoint bindPoint = counter == 1 && shaderStages[0].stage == VK_SHADER_STAGE_COMPUTE_BIT
+                                            ? VK_PIPELINE_BIND_POINT_COMPUTE
+                                            : VK_PIPELINE_BIND_POINT_GRAPHICS;
+        vkCmdBindDescriptorSets(vkcmdbuff->getCommandBuffer(), bindPoint, pipelineLayout, first, set_count, sets.data(),
+                                0, nullptr);
+    }
 
-	void VKShader::SetUniformi(const std::string& name, int value, size_t offset, uint32_t instance_index) const
-	{
-		VKBuffer* buff = descriptorPool->getUniform(name, instance_index)->getBuffer();
-		buff->MapMemory(offset, sizeof(int));
-		buff->Store(&value);
-		buff->UnmapMemory();
-	}
+    void VKShader::SetUniformi(const std::string &name, int value, size_t offset, uint32_t instance_index) const {
+        VKBuffer *buff = descriptorPool->getUniform(name, instance_index)->getBuffer();
+        buff->MapMemory(offset, sizeof(int));
+        buff->Store(&value);
+        buff->UnmapMemory();
+    }
 
-	void VKShader::SetUniformf(const std::string& name, float value, size_t offset, uint32_t instance_index) const
-	{
-		VKBuffer* buff = descriptorPool->getUniform(name, instance_index)->getBuffer();
-		buff->MapMemory(offset, sizeof(float));
-		buff->Store(&value);
-		buff->UnmapMemory();
-	}
+    void VKShader::SetUniformf(const std::string &name, float value, size_t offset, uint32_t instance_index) const {
+        VKBuffer *buff = descriptorPool->getUniform(name, instance_index)->getBuffer();
+        buff->MapMemory(offset, sizeof(float));
+        buff->Store(&value);
+        buff->UnmapMemory();
+    }
 
-	void VKShader::SetUniform(const std::string& name, const Vector2f& value, size_t offset, uint32_t instance_index) const
-	{
-		VKBuffer* buff = descriptorPool->getUniform(name, instance_index)->getBuffer();
-		buff->MapMemory(offset, Vector2f::size());
-		buff->Store((void*)&value);
-		buff->UnmapMemory();
-	}
+    void VKShader::SetUniform(const std::string &name, const Vector2f &value, size_t offset,
+                              uint32_t instance_index) const {
+        VKBuffer *buff = descriptorPool->getUniform(name, instance_index)->getBuffer();
+        buff->MapMemory(offset, Vector2f::size());
+        buff->Store((void *) &value);
+        buff->UnmapMemory();
+    }
 
-	void VKShader::SetUniform(const std::string& name, const Vector3f& value, size_t offset, uint32_t instance_index) const
-	{
-		VKBuffer* buff = descriptorPool->getUniform(name, instance_index)->getBuffer();
-		buff->MapMemory(offset, Vector3f::size());
-		buff->Store((void*)&value);
-		buff->UnmapMemory();
-	}
+    void VKShader::SetUniform(const std::string &name, const Vector3f &value, size_t offset,
+                              uint32_t instance_index) const {
+        VKBuffer *buff = descriptorPool->getUniform(name, instance_index)->getBuffer();
+        buff->MapMemory(offset, Vector3f::size());
+        buff->Store((void *) &value);
+        buff->UnmapMemory();
+    }
 
-	void VKShader::SetUniform(const std::string& name, const Vector4f& value, size_t offset, uint32_t instance_index) const
-	{
-		VKBuffer* buff = descriptorPool->getUniform(name, instance_index)->getBuffer();
-		buff->MapMemory(offset, Vector4f::size());
-		buff->Store((void*)&value);
-		buff->UnmapMemory();
-	}
+    void VKShader::SetUniform(const std::string &name, const Vector4f &value, size_t offset,
+                              uint32_t instance_index) const {
+        VKBuffer *buff = descriptorPool->getUniform(name, instance_index)->getBuffer();
+        buff->MapMemory(offset, Vector4f::size());
+        buff->Store((void *) &value);
+        buff->UnmapMemory();
+    }
 
-	void VKShader::SetUniform(const std::string& name, const Matrix4f& value, size_t offset, uint32_t instance_index) const
-	{
-		VKBuffer* buff = descriptorPool->getUniform(name, instance_index)->getBuffer();
-		buff->MapMemory(offset, sizeof(float) * 16);
-		buff->Store(value.m);
-		buff->UnmapMemory();
-	}
+    void VKShader::SetUniform(const std::string &name, const Matrix4f &value, size_t offset,
+                              uint32_t instance_index) const {
+        VKBuffer *buff = descriptorPool->getUniform(name, instance_index)->getBuffer();
+        buff->MapMemory(offset, sizeof(float) * 16);
+        buff->Store(value.m);
+        buff->UnmapMemory();
+    }
 
-	void VKShader::SetTexture(const std::string& name, Texture* value, uint32_t instance_index) const
-	{
-		VKTexture* tex = (VKTexture*)value;
-		descriptorPool->getUniform(name, instance_index)->setTexture(tex);
+    void VKShader::SetTexture(const std::string &name, Texture *value, uint32_t instance_index) const {
+        VKTexture *tex = (VKTexture *) value;
+        descriptorPool->getUniform(name, instance_index)->setTexture(tex);
 
-		std::pair<uint32_t, uint32_t> location = descriptorPool->getUniformLocation(name);
+        std::pair<uint32_t, uint32_t> location = descriptorPool->getUniformLocation(name);
 
-		std::vector<VkWriteDescriptorSet> sets(swapchain->getSwapchainImages().size());
+        std::vector<VkWriteDescriptorSet> sets(swapchain->getSwapchainImages().size());
 
-		VkDescriptorType type = descriptorPool->getUniform(name, instance_index)->getBinding().descriptorType;
-		VkDescriptorImageInfo imageInfo = {};
-		imageInfo.imageLayout = type == VK_DESCRIPTOR_TYPE_STORAGE_IMAGE ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		imageInfo.imageView = tex->getImage()->getImageView();
-		imageInfo.sampler = type == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER ? tex->getSampler() : VK_NULL_HANDLE;
+        VkDescriptorType type = descriptorPool->getUniform(name, instance_index)->getBinding().descriptorType;
+        VkDescriptorImageInfo imageInfo = {};
+        imageInfo.imageLayout = type == VK_DESCRIPTOR_TYPE_STORAGE_IMAGE
+                                    ? VK_IMAGE_LAYOUT_GENERAL
+                                    : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageInfo.imageView = tex->getImage()->getImageView();
+        imageInfo.sampler = type == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER ? tex->getSampler() : VK_NULL_HANDLE;
 
-		for (size_t i = 0; i < sets.size(); i++)
-		{
-			sets[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			sets[i].dstSet = descriptorPool->getSet(location.first, instance_index)->getSets()[i];
-			sets[i].dstBinding = location.second;
-			sets[i].dstArrayElement = 0;
-			sets[i].descriptorType = type;
-			sets[i].descriptorCount = 1;
-			sets[i].pImageInfo = &imageInfo;
-		}
+        for (size_t i = 0; i < sets.size(); i++) {
+            sets[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            sets[i].dstSet = descriptorPool->getSet(location.first, instance_index)->getSets()[i];
+            sets[i].dstBinding = location.second;
+            sets[i].dstArrayElement = 0;
+            sets[i].descriptorType = type;
+            sets[i].descriptorCount = 1;
+            sets[i].pImageInfo = &imageInfo;
+        }
 
-		vkUpdateDescriptorSets(device->getDevice(), (uint32_t)sets.size(), sets.data(), 0, nullptr);
-	}
+        vkUpdateDescriptorSets(device->getDevice(), (uint32_t) sets.size(), sets.data(), 0, nullptr);
+    }
 
-	void VKShader::SetUniform(const std::string& name, const void* value, size_t size, size_t offset, uint32_t instance_index) const
-	{
-		void* data;
-		const VkDeviceMemory& mem = descriptorPool->getUniform(name, instance_index)->getBuffer()->getMemory();
+    void VKShader::SetUniform(const std::string &name, const void *value, size_t size, size_t offset,
+                              uint32_t instance_index) const {
+        void *data;
+        const VkDeviceMemory &mem = descriptorPool->getUniform(name, instance_index)->getBuffer()->getMemory();
 
-		vkMapMemory(device->getDevice(), mem, offset, size, 0, &data);
-		memcpy(data, value, size);
-		vkUnmapMemory(device->getDevice(), mem);
-	}
+        vkMapMemory(device->getDevice(), mem, offset, size, 0, &data);
+        memcpy(data, value, size);
+        vkUnmapMemory(device->getDevice(), mem);
+    }
 
-	void VKShader::RegisterInstance()
-	{
-		descriptorPool->registerInstance();
-	}
+    void VKShader::SetSampledImage(const std::string &name, const VkDescriptorImageInfo &image) const {
+        auto location = descriptorPool->getUniformLocation(name);
+        const auto &sets = descriptorPool->getSet(location.first, 0)->getSets();
+        std::vector<VkWriteDescriptorSet> writes(sets.size());
+        for (size_t i = 0; i < sets.size(); ++i) {
+            writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            writes[i].dstSet = sets[i];
+            writes[i].dstBinding = location.second;
+            writes[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            writes[i].descriptorCount = 1;
+            writes[i].pImageInfo = &image;
+        }
+        vkUpdateDescriptorSets(device->getDevice(), uint32_t(writes.size()), writes.data(), 0, nullptr);
+    }
 
-	VkShaderModule VKShader::CreateShaderModule(const std::vector<char>& code) const
-	{
-		VkShaderModuleCreateInfo createInfo = {};
-		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-		createInfo.codeSize = code.size();
-		createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+    void VKShader::RegisterInstance() {
+        descriptorPool->registerInstance();
+    }
 
-		VkShaderModule shaderModule;
-		if (vkCreateShaderModule(device->getDevice(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
-		{
-			PR_LOG_RUNTIME_ERROR("Failed to create shader module!\n");
-			return VK_NULL_HANDLE;
-		}
+    VkShaderModule VKShader::CreateShaderModule(const std::vector<char> &code) const {
+        VkShaderModuleCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        createInfo.codeSize = code.size();
+        createInfo.pCode = reinterpret_cast<const uint32_t *>(code.data());
 
-		return shaderModule;
-	}
+        VkShaderModule shaderModule;
+        if (vkCreateShaderModule(device->getDevice(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+            PR_LOG_RUNTIME_ERROR("Failed to create shader module!\n");
+            return VK_NULL_HANDLE;
+        }
 
-	void VKShader::CreateStageInfo(VkPipelineShaderStageCreateInfo& info, VkShaderModule module, const char* main, VkShaderStageFlagBits type)
-	{
-		info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		info.stage = type;
-		info.module = module;
-		info.pName = main;
-	}
+        return shaderModule;
+    }
+
+    void VKShader::CreateStageInfo(VkPipelineShaderStageCreateInfo &info, VkShaderModule module, const char *main,
+                                   VkShaderStageFlagBits type) {
+        info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        info.stage = type;
+        info.module = module;
+        info.pName = main;
+    }
 };

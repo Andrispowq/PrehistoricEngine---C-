@@ -1,0 +1,59 @@
+#ifndef VK_ENVIRONMENT_LIGHTING_H
+#define VK_ENVIRONMENT_LIGHTING_H
+
+#include <vulkan/vulkan.h>
+#include <vector>
+
+namespace Prehistoric {
+    // Owns immutable, linear HDR IBL maps. Baking completes before scene rendering.
+    class VKEnvironmentLighting {
+    public:
+        VKEnvironmentLighting(VkPhysicalDevice physicalDevice, VkDevice device, VkQueue queue,
+                              uint32_t queueFamily, VkDescriptorImageInfo source,
+                              uint32_t irradianceSize, uint32_t prefilterSize, uint32_t levels,
+                              const std::vector<char> &shader, uint32_t lutSize = 256, uint32_t samples = 512);
+
+        ~VKEnvironmentLighting();
+
+        VKEnvironmentLighting(const VKEnvironmentLighting &) = delete;
+
+        VKEnvironmentLighting &operator=(const VKEnvironmentLighting &) = delete;
+
+        VkDescriptorImageInfo getIrradiance() const;
+
+        VkDescriptorImageInfo getPrefilter() const;
+
+        VkDescriptorImageInfo getBRDF() const;
+
+        float getMaxReflectionLOD() const {
+            return float(prefilter.levels - 1);
+        }
+
+    private:
+        struct Map {
+            VkImage image = VK_NULL_HANDLE;
+            VkDeviceMemory memory = VK_NULL_HANDLE;
+            VkImageView view = VK_NULL_HANDLE;
+            std::vector<VkImageView> storageViews;
+            uint32_t size = 0;
+            uint32_t levels = 0;
+            uint32_t layers = 0;
+        };
+
+        void CreateMap(Map &map, uint32_t size, uint32_t levels, uint32_t layers);
+
+        void DestroyMap(Map &map);
+
+        void Bake(VkQueue queue, uint32_t queueFamily, VkDescriptorImageInfo source,
+                  const std::vector<char> &shader, uint32_t samples);
+
+        VkPhysicalDevice physicalDevice;
+        VkDevice device;
+        VkSampler sampler = VK_NULL_HANDLE;
+        Map irradiance;
+        Map prefilter;
+        Map brdf;
+    };
+}
+
+#endif

@@ -15,7 +15,6 @@
 
 #define MODEL_PATH "res/models/"
 #define TEXTURE_PATH "res/textures/"
-#define SHADER_PATH "res/shaders/"
 
 #define HANDLE_OF(type) typedef struct type##_handle_t { type* pointer = nullptr; size_t handle = -1; type* operator->() { return pointer;}; type* const operator->() const { return pointer;} } type##Handle
 

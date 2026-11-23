@@ -46,7 +46,7 @@ Visual Studio actions remain available. The exporter does not translate arbitrar
 Premake post-build commands or deployment rules; deployment must be configured separately.
 
 **The macOS application targets build; full renderer support is still in progress.**
-[MACOS_PORT.md](MACOS_PORT.md) records the original port investigation and may
+[macOS port assessment](docs/MACOS_PORT.md) records the original port investigation and may
 include issues already resolved. To build just the core dependencies:
 
 ```sh
@@ -84,7 +84,7 @@ OpenAL headers and static-link requirements from its target.
 
 For an offline source checkout, pass
 `-DFETCHCONTENT_SOURCE_DIR_OPENAL_SOFT=/absolute/path/to/openal-soft-1.24.2`
-at configure time. The full engine still needs the other changes in MACOS_PORT.md.
+at configure time. The full engine still needs the other changes in [the macOS port assessment](docs/MACOS_PORT.md).
 
 ## Vulkan compute on macOS
 
@@ -162,3 +162,320 @@ Next work is ordered as follows:
 
 Application changes stay with the project author. Codex handles merge integration,
 tests, CI/CD and supporting maintenance, with feature development kept separate.
+
+## Shared fonts and shaders
+
+Fonts and shader sources now live only in `PrehistoricEngine/res/fonts` and
+`PrehistoricEngine/res/shaders`. The shared Vulkan PBR fragment shader retains the
+sample application's edited geometry term, `(roughness + 1)^2 / 2`.
+
+Install CMake 3.21+ and `glslc` from the Vulkan SDK. The resource build finds `glslc`
+on `PATH` or under `VULKAN_SDK/bin` (`Bin` on Windows). You can select it explicitly
+with `-DPREHISTORIC_GLSLC=/absolute/path/to/glslc` when configuring. A missing compiler
+fails configuration instead of silently using old checked-in SPIR-V.
+
+Regenerate and reload CMake after pulling this change:
+
+```sh
+premake5 cmake
+cmake --preset debug
+cmake --build --preset debug --target Prehistoric PrehistoricEditor --parallel 4
+```
+
+Both application targets depend on `EngineResources`. For resource-only work:
+
+```sh
+cmake --build --preset debug --target EngineResources
+# Or compile only the active Vulkan shaders:
+cmake --build --preset debug --target Shaders
+```
+
+The CMake build stages fonts, OpenGL GLSL and generated Vulkan SPIR-V under
+`<build>/bin/engine-resources/`. Vulkan basic/PBR vertex and fragment shaders compile
+incrementally for Vulkan 1.1. Entrypoint edits rebuild that shader; changes to
+other files in the Vulkan shader tree conservatively rebuild all active shaders
+so includes remain tracked even with SDK depfile bugs affecting paths with spaces.
+OpenGL continues to compile GLSL at runtime. Shader compilation failures fail the
+build. Do not check generated `.spv` files into the source resource tree.
+
+Native Premake Visual Studio builds use an `EngineResources` Utility project that
+invokes the same standalone CMake resource build. Both apps depend on this project,
+so shader-only edits are processed without requiring a C++ relink. CMake and `glslc`
+must also be available to Visual Studio. Resources are shared at
+`bin/<configuration>-<system>-<architecture>/engine-resources`, alongside the
+application output folders. Regenerate the solution with the existing batch script.
+The resource CMake generator follows the installed CMake default; its build tree is
+under `build/resources-<configuration>-<system>-<architecture>`.
+
+The loader searches `engine-resources` next to the executable, then its parent
+(the Premake layout). Set `PREHISTORIC_ENGINE_RESOURCES` to an explicit resource
+package directory to override discovery. An explicit override is authoritative;
+missing files produce an error rather than falling back to old application copies.
+Both fonts and shaders use this resolver, including OpenGL shader includes.
+Application working directories still need to be `Prehistoric/` or
+`PrehistoricEditor/` for the remaining project assets.
+
+A standalone resource build does not configure the engine or download OpenAL:
+
+```sh
+cmake -S scripts/resources -B build/resources -G Ninja
+cmake --build build/resources --target EngineResources
+cmake --install build/resources --prefix build/resource-package
+```
+
+Copy the installed `engine-resources` directory next to the deployed executable.
+Both Windows installers now include the generated resource directory; they default
+to `bin/Distribution-windows-x86_64/engine-resources` and accept an Inno Setup
+`/DEngineResourceDir=...` override. Build resources before packaging. Other app
+resources remain in their existing `res/` directories.
+
+The editor-only experimental Vulkan environment-map sources are preserved in the
+shared tree. `-DPREHISTORIC_EXPERIMENTAL_SHADERS=ON` additionally compiles
+`environmentMap.comp`; it does not enable or complete that rendering pipeline.
+Other unfinished environment shader variants remain source-only.
+
+Run `python3 tests/resource_pipeline.py` for isolated build/lookup checks. It needs
+CMake, Ninja, `glslc`, and a C++17 compiler, but no GPU. It checks no-op builds,
+shader/include edits, compiler errors, staged installation, both executable layouts,
+explicit overrides and missing resources. Full rendering still needs runtime checks.
+
+## Shared engine default models and textures
+
+`PrehistoricEngine/res/models/` now owns cube, quad, and sphere OBJ files plus their
+existing PMF variants under `models/prehistoric/`. The shared texture set contains
+`default.png`, `logo.png`, all eight FFT noise images (256/512), water `dudv1.jpg`,
+and their existing PRT variants. Noise filenames use lowercase consistently.
+`EngineResources` stages these files in the same package as fonts and shaders;
+both CMake and Premake application builds and the installers use that package.
+
+Code and saved asset IDs use `engine://models/cube.obj` or
+`engine://textures/default.png`. The asset manager canonicalizes the old paths for
+these specific defaults, so existing JSON and text worlds still load without
+rewriting scene files. The world loader accepts engine IDs even when a scene sets
+`res/models/` or `res/textures/` as its base directory. Physical executable-relative
+paths are resolved only when reading files, not stored in serialized asset IDs.
+
+Legacy aliases are an explicit list of migrated defaults, including the old
+capitalized noise filenames and converted PMF/PRT paths. Other project paths are
+not redirected. These legacy default names are reserved aliases; give custom
+project assets distinct names. Missing engine resources fail explicitly rather
+than substituting a project asset.
+
+Shared Sponza, dome, `myscene`, terrain textures, floor materials and environment
+images now belong to the separate sample package described below. Unique grass,
+converted assets and water caustics stay app-specific. Project working-directory
+requirements remain unchanged for app settings, worlds and unique assets.
+
+Immediate and queued loads of shared defaults skip the existing automatic PMF/PRT
+export. Loading a built-in no longer recreates copies under application `res/`
+folders or requires writing to the shared package. Existing project asset import
+and export behavior remains unchanged. The checked-in converted defaults are
+preserved as inputs, not regenerated during a read.
+
+`python3 tests/resource_pipeline.py` also verifies all default models/textures in
+both executable layouts, legacy aliases, engine IDs with world directory prefixes,
+and that scene-specific references stay project-local.
+
+## Shared sample resources
+
+Shared sample content now lives in `samples/res/`, separately from engine defaults:
+5 model files (dome OBJ, myscene OBJ/MTL, Sponza OBJ/MTL), 88 texture/support files,
+and 5 WAV files. Matching paths were compared byte-for-byte before consolidating
+both application copies. Associated texture documentation is preserved.
+
+Both applications build `SampleResources` through their existing `EngineResources`
+dependency. CMake stages the package at `<build>/bin/sample-resources`; native
+Premake stages it beside `engine-resources` in the configuration output directory.
+Rebuild just sample content with:
+
+```sh
+cmake --build cmake-build-debug --target SampleResources
+```
+
+The standalone `scripts/resources` build and install now produce both
+`engine-resources` and `sample-resources`. Deploy both directories beside the apps
+(or in the common parent directory for Premake's separate application folders).
+`PREHISTORIC_SAMPLE_OUTPUT` selects the sample staging destination at configure time;
+its default is beside `PREHISTORIC_RESOURCE_OUTPUT`. Windows installers include the
+sample package and accept `/DSampleResourceDir=...` for an alternative build layout.
+
+Runtime IDs use `sample://models/sponza.obj`, `sample://textures/oakFloor/oakFloor_DIF.png`
+and `sample://sounds/_Closer.wav`. `PREHISTORIC_SAMPLE_RESOURCES` overrides the
+sample package location independently of `PREHISTORIC_ENGINE_RESOURCES`. Explicit
+missing overrides fail rather than falling back to another package. The manifest
+in `SharedSampleAssets.h` maps only the migrated legacy `res/...` paths to sample
+IDs, so existing worlds and configurations do not need rewriting. The world loader
+accepts sample IDs alongside its per-scene directory prefixes; saved IDs remain
+portable. Model material files are located relative to the model's parent directory.
+
+Sample model and texture reads skip automatic PMF/PRT export, just like engine
+assets. Unique converted PMF/PRT files, the sample app's grass pack and caustics
+remain application-owned. Settings, terrain configurations, worlds, scripts,
+fonts/shader ownership and engine defaults are unchanged by this consolidation.
+Legacy shared filenames are reserved aliases; use distinct names for new private
+project assets. An identical filename alone never triggers automatic sharing.
+
+The resource regression script checks both packages and app layouts, aliases,
+missing overrides, and incremental sample updates without shader rebuilds. Build
+and path tests do not establish full scene rendering or audio playback correctness.
+
+## Vulkan PBR emission and output encoding
+
+Vulkan PBR uses the same scalar `emission` material property as OpenGL. Missing or
+negative emission means zero; positive emission is tinted by albedo with OpenGL's
+existing minimum tint and emission factor. There is no Vulkan PBR emission-map
+binding, so a missing map cannot pick an unrelated material texture.
+
+PBR output uses the actual colour-attachment format each frame. For sRGB attachments,
+the shader leaves tone-mapped output linear and the attachment encodes it once.
+For non-sRGB attachments, the shader retains the configured gamma encoding. Exposure
+and the BRDF geometry divisor `/ 2.0` are unchanged; background rendering is separate.
+Rebuild the app normally to regenerate the SPIR-V and update the descriptor layout
+alongside the C++ code.
+
+`python3 tests/vulkan_pbr_contract.py` compiles and validates the fragment shader,
+checks its scalar emission layout and texture bindings, and tests production
+sRGB/UNORM format selection numerically. It requires `glslc`, `spirv-val`,
+`spirv-dis`, and a C++17 compiler (`CXX`, default `c++`). It does not perform GPU
+frame rendering or visual comparison.
+
+## Vulkan HDR background
+
+Vulkan draws the configured `environmentMap.location` directly as an
+equirectangular background. Both apps select
+`sample://textures/environmentMaps/cape_hill_2k.hdr`; use the original HDR
+(north-to-south image rows), rather than the older vertically flipped `.prt`
+conversion. An empty location keeps the window clear colour.
+
+The fullscreen triangle follows camera rotation and projection, ignores camera
+translation, and leaves depth untouched. It uses the PBR exposure and output
+encoding, including hardware sRGB conversion where applicable. HDR data is
+expanded to RGBA floats and uploaded without 8-bit clipping. The sampler repeats
+at the longitude seam and clamps at the poles; devices without float linear
+filtering use nearest filtering. Resize recreates the pipeline for the new render
+pass. The two background shaders are part of the normal portable resource build.
+The background remains independent of the IBL maps. Procedural atmosphere is still deferred.
+
+Run `python3 tests/vulkan_background_contract.py` to check compiled shader
+interfaces and resource selection, and `python3 tests/resource_pipeline.py` to
+check shader staging/install and incremental builds. These are not visual tests.
+
+## Vulkan image-based lighting
+
+Vulkan now bakes diffuse irradiance, a GGX-prefiltered reflection cubemap, and a
+split-sum BRDF lookup table from the same HDR source as the background. PBR uses
+these maps for its ambient term, including metallic Fresnel weighting, material
+occlusion, the perturbed normal and reflection direction. The existing direct
+light `/2.0` geometry term, scalar emission and output encoding remain in place.
+Diffuse convolution stores irradiance divided by PI, so a constant white
+surrounding environment produces unit diffuse radiance before material weighting.
+
+The bake runs once during renderer initialization on a graphics queue that also
+supports compute. Explicit image barriers and a completion fence precede PBR
+sampling; the generated maps survive window resizing. Changing the environment
+configuration requires restarting the renderer. An empty environment location
+uses black IBL while preserving the background clear-colour behavior.
+
+To bound startup work, Vulkan caps the configured irradiance resolution at 64
+and reflection resolution at 256, with 512 samples per convolution/LUT texel and
+a 256-square BRDF LUT. Reflection mip count uses `prefilterMapLevels`, clamped to
+the valid chain (at least two levels); PBR derives its maximum LOD from that
+chain. Maps remain linear RGBA32F. The HDR source now has a full mip chain on
+hardware supporting linear float blits. Convolution chooses the source LOD from
+the sample PDF and the equirectangular footprint, using its major axis to avoid
+longitude discontinuities at the poles. The background and mirror reflection
+still sample the sharp base level. Hardware lacking float blit/filter support
+retains the single-level/nearest fallback and does not receive the full filtering
+quality improvement.
+
+Two analytic sampling frames cover the sphere. Their convolution results blend
+smoothly across an equatorial overlap, removing hard sample-pattern switches
+without introducing a new seam at the opposite pole. The overlap evaluates both
+frames, adding startup bake work but no per-frame rendering cost. Finite sampling
+can still produce residual variation; this is not a guarantee of noise-free IBL.
+
+Run `python3 tests/vulkan_ibl_smoke.py` with the Vulkan SDK installed (`VULKAN_SDK`
+can specify its root). This headless test executes the production baker and reads
+back sampled maps for black, constant-HDR, directional and actual Cape Hill HDR
+environments. It exercises the production source-mip recording helper, energy,
+cube orientation, diffuse normalization, roughness filtering, BRDF values and
+nearby samples straddling the old basis switch, the new blend boundaries, and all
+12 cube edges. It also verifies source mip availability and sharp mirror sampling
+under Vulkan validation. It does not require or inspect a window. On macOS,
+the process needs access to Metal; a sandbox that hides GPUs cannot run it.
+`python3 tests/vulkan_pbr_contract.py` also checks the compiled global IBL bindings.
+
+## CPU math tests and CI
+
+The first unit-test milestone uses Catch2 3.8.1 and CTest. Generate the build graph
+on the current host from a recursive checkout (Premake reads the vendor project
+files), then use the isolated test presets:
+
+```sh
+premake5 cmake
+cmake --preset tests
+cmake --build --preset tests --parallel 4
+ctest --preset tests
+```
+
+Use `tests-release` in place of `tests` in all three CMake/CTest commands to test
+optimized code. These configurations set `PREHISTORIC_TESTS_ONLY=ON` and return
+before configuring the engine, Vulkan, shaders, OpenAL, or application resources.
+They compile the production `Math.cpp`, `Math.h`, and `MathT.h` directly, without a
+window, GPU, audio device, engine PCH, or scene. Existing application presets are
+unchanged. CMake 3.21+, Ninja and a C++17 compiler are required; Windows Ninja
+builds should run from an x64 Visual Studio developer shell.
+
+The first configure downloads a SHA-256-pinned Catch2 source archive. For offline
+use, supply an extracted copy of that same release:
+
+```sh
+cmake --preset tests -DFETCHCONTENT_SOURCE_DIR_CATCH2=/absolute/path/to/Catch2-3.8.1
+```
+
+`MathTestsScalar` runs on macOS and Windows. MSVC x64 also builds
+`MathTestsSIMD`, compiling the same contracts and production source separately
+with `PR_FAST_MATH`. This keeps incompatible scalar/SIMD types out of the same
+executable. CTest discovers individual cases, gives each a timeout, and the test
+presets fail if no tests are found.
+
+Coverage includes vector arithmetic and normalization, cross products,
+reflection, interpolation, axis rotation, quaternion products and conjugates,
+matrix storage/copy/move construction, transform order, invertible transforms,
+perspective mapping and view-basis conventions. Float comparisons combine
+absolute and relative tolerances; inputs are deterministic. Zero normalization,
+singular inverse policy, invalid projection arguments, and exhaustive template
+instantiations are not specified by this initial suite.
+
+Run the correctness contracts with `ctest --preset tests -L contract`.
+The four initially reproduced scalar defects are now normal passing contracts:
+
+- Vector4 and quaternion `(Vector2, z, w)` constructors preserve all components,
+  in both scalar and SIMD implementations.
+- Scalar orthographic projection uses column-major translation and matches SIMD:
+  view-space `-near` maps to depth -1 and `-far` to +1, as with perspective.
+- All four scalar Vector2 ordering operators compare matching components.
+
+One separate Windows SIMD defect remains: scalar interpolation does not apply its
+weight to every component (the reproducer exercises Vector3's `y`). On Windows,
+`ctest --preset tests -L known-defect -V` runs this Catch2 `!shouldfail` case.
+The expected assertion failure satisfies that tracker; an unexpected pass fails
+it so the marker must be removed when fixed. It is not a passing correctness
+contract. CI runs this separate report only on Windows; macOS has no remaining
+expected-failure cases.
+
+The testing setup also includes compilation/linkage prerequisites: explicit
+math/C-string includes, template definitions included by Math.cpp, external
+linkage for its out-of-line methods, and the duplicate SIMD texture-coordinate
+member name (`p` names the third texture coordinate; `r` remains the first colour
+coordinate).
+
+`.github/workflows/math-tests.yml` runs Debug and Release on macOS 14 and Windows
+2022 for pull requests and pushes to `master`, plus manual dispatch. It installs
+checksum-pinned Premake 5.0.0-beta8, generates CMake on each host, and uploads
+separate contract/known-defect JUnit reports and CTest logs even on failure.
+Windows uses the Visual Studio 2022 x64 generator to avoid requiring an activated
+Ninja toolchain shell. The workflow does not build or validate the full engine,
+renderer, camera, events, or frame loop. Branch-protection settings must be applied
+in GitHub after the workflow has run successfully; this file alone does not make
+checks required.

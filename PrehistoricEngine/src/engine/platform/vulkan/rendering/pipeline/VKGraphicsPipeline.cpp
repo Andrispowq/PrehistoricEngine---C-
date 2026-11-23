@@ -85,14 +85,14 @@ namespace Prehistoric
 		VkViewport viewport = {};
 		viewport.x = Pipeline::viewportStart.x;
 		viewport.y = Pipeline::viewportStart.y;
-		viewport.width = Pipeline::viewportStart.x + Pipeline::viewportSize.x;
-		viewport.height = Pipeline::viewportStart.y + Pipeline::viewportSize.y;
+		viewport.width = Pipeline::viewportSize.x;
+		viewport.height = Pipeline::viewportSize.y;
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
 
 		VkRect2D scissor = {};
 		scissor.offset = { (int32_t)Pipeline::scissorStart.x, (int32_t)Pipeline::scissorStart.y };
-		scissor.extent = { Pipeline::scissorStart.x + Pipeline::scissorSize.x, Pipeline::scissorStart.y + Pipeline::scissorSize.y };
+		scissor.extent = { Pipeline::scissorSize.x, Pipeline::scissorSize.y };
 
 		VkPipelineViewportStateCreateInfo viewportState = {};
 		viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;

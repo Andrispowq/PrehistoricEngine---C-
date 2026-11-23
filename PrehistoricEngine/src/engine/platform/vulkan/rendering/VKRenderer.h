@@ -9,30 +9,44 @@
 #include "platform/vulkan/rendering/command/VKCommandPool.h"
 #include "platform/vulkan/rendering/renderpass/VKRenderpass.h"
 
-namespace Prehistoric
-{
-	class VKRenderer : public Renderer
-	{
-	public:
-		VKRenderer(Window* window, Camera* camera, AssembledAssetManager* manager);
-		virtual ~VKRenderer() {}
+namespace Prehistoric {
+    class VKEnvironmentBackground;
+    class VKEnvironmentLighting;
 
-		virtual void PrepareRendering();
-		virtual void EndRendering();
+    class VKRenderer : public Renderer {
+    public:
+        VKRenderer(Window *window, Camera *camera, AssembledAssetManager *manager);
 
-		virtual void Render() override;
+        virtual ~VKRenderer();
 
-		void BuildCommandBuffers();
+        virtual void PrepareRendering();
 
-		virtual CommandBuffer* getDrawCommandBuffer() const { return (CommandBuffer*)commandPool->getCommandBuffer(window->getSwapchain()->getAquiredImageIndex()); }
-	private:
-		std::unique_ptr<VKCommandPool> commandPool;
-		std::unique_ptr<VKRenderpass> renderpass;
+        virtual void EndRendering();
 
-		std::vector<std::unique_ptr<VKFramebuffer>> primaryFramebuffers;
+        virtual void Render() override;
 
-		bool commandBuffersReady = false;
-	};
+        void BuildCommandBuffers();
+
+        virtual CommandBuffer *getDrawCommandBuffer() const {
+            return (CommandBuffer *) commandPool->getCommandBuffer(window->getSwapchain()->getAquiredImageIndex());
+        }
+
+        VKEnvironmentLighting *getEnvironmentLighting() const {
+            return environmentLighting.get();
+        }
+
+    private:
+        std::unique_ptr<VKCommandPool> commandPool;
+        std::unique_ptr<VKRenderpass> renderpass;
+
+        std::vector<std::unique_ptr<VKFramebuffer> > primaryFramebuffers;
+
+        std::unique_ptr<VKEnvironmentBackground> background;
+        std::unique_ptr<VKEnvironmentLighting> environmentLighting;
+
+        bool commandBuffersReady = false;
+        bool frameReady = false;
+    };
 };
 
 #endif

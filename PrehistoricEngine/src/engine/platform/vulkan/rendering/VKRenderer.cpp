@@ -1,5 +1,10 @@
 #include "Includes.hpp"
 #include "VKRenderer.h"
+#include "VKEnvironmentBackground.h"
+#include "VKEnvironmentLighting.h"
+#include "platform/vulkan/texture/VKTexture.h"
+#include "prehistoric/application/Application.h"
+#include "prehistoric/core/resources/loaders/TextureLoader.h"
 
 #include "prehistoric/core/node/component/renderer/RenderableComponent.h"
 
@@ -9,272 +14,291 @@
 
 #include "prehistoric/core/resources/AssetManager.h"
 
-namespace Prehistoric
-{
-	VKRenderer::VKRenderer(Window* window, Camera* camera, AssembledAssetManager* manager)
-		: Renderer(window, camera, manager), commandPool(nullptr), renderpass(nullptr)
-	{
-		VKContext* context = (VKContext*)window->getContext();
-		VKSwapchain* swapchain = (VKSwapchain*)window->getSwapchain();
+namespace Prehistoric {
+    VKRenderer::VKRenderer(Window *window, Camera *camera, AssembledAssetManager *manager)
+        : Renderer(window, camera, manager), commandPool(nullptr), renderpass(nullptr) {
+        VKContext *context = (VKContext *) window->getContext();
+        VKSwapchain *swapchain = (VKSwapchain *) window->getSwapchain();
 
-		VKDevice* device = (VKDevice*)context->getDevices();
+        VKDevice *device = (VKDevice *) context->getDevices();
 
-		renderpass = std::make_unique<VKRenderpass>(device, swapchain);
+        renderpass = std::make_unique<VKRenderpass>(device, swapchain);
 
-		size_t NumImages = swapchain->getSwapchainImages().size();
-		primaryFramebuffers.resize(NumImages);
+        size_t NumImages = swapchain->getSwapchainImages().size();
+        primaryFramebuffers.resize(NumImages);
 
-		for (size_t i = 0; i < NumImages; i++)
-		{
-			VkImageView attachments[] =
-			{
-				swapchain->getColourImage()->getImageView(),
-				swapchain->getDepthImage()->getImageView(),
-				swapchain->getSwapchainImages()[i]->getImageView()
-			};
+        for (size_t i = 0; i < NumImages; i++) {
+            VkImageView attachments[] =
+            {
+                swapchain->getColourImage()->getImageView(),
+                swapchain->getDepthImage()->getImageView(),
+                swapchain->getSwapchainImages()[i]->getImageView()
+            };
 
-			primaryFramebuffers[i] = std::make_unique<VKFramebuffer>(device->getDevice(), renderpass->getRenderPass(), swapchain->getSwapchainExtent().width,
-				swapchain->getSwapchainExtent().height, 3, attachments);
-		}
+            primaryFramebuffers[i] = std::make_unique<VKFramebuffer>(device->getDevice(), renderpass->getRenderPass(),
+                                                                     swapchain->getSwapchainExtent().width,
+                                                                     swapchain->getSwapchainExtent().height, 3,
+                                                                     attachments);
+        }
 
-		//Create command pool
-		commandPool = std::make_unique<VKCommandPool>(device);
+        //Create command pool
+        commandPool = std::make_unique<VKCommandPool>(device);
 
-		for (size_t i = 0; i < NumImages; i++)
-		{
-			commandPool->AddCommandBuffer();
-		}
+        for (size_t i = 0; i < NumImages; i++) {
+            commandPool->AddCommandBuffer();
+        }
 
-		swapchain->setRenderpass(renderpass.get()); //A nastly little cheat to avoid modifying everything in the Pipeline system because the Vulkan Graphics Pipelines require the renderpass
-	}
+        swapchain->setRenderpass(renderpass.get());
+        //A nastly little cheat to avoid modifying everything in the Pipeline system because the Vulkan Graphics Pipelines require the renderpass
+        background = std::make_unique<VKEnvironmentBackground>(window);
 
-	void VKRenderer::PrepareRendering()
-	{
-		VKSwapchain* swapchain = (VKSwapchain*)window->getSwapchain();
-		swapchain->GetNextImageIndex();
+        VkDescriptorImageInfo source = background->getSource();
+        std::unique_ptr<VKTexture> fallback;
+        if (!source.imageView) {
+            fallback.reset(
+                (VKTexture *)
+                TextureLoader::LoadTexture(window, "engine://textures/default.png", Bilinear, ClampToEdge));
+            source = {
+                fallback->getSampler(), fallback->getImage()->getImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+            };
+        }
 
-		if (window->isResized())
-		{
-			PR_PROFILE("Resizing window");
+        // Cap startup work independently of the more expensive OpenGL bake settings.
+        // Maps are immutable and survive swapchain recreation.
+        uint32_t irradianceSize = std::clamp(uint32_t(__EnvironmentMapConfig.irradianceMapResolution), 1u, 64u);
+        uint32_t prefilterSize = std::clamp(uint32_t(__EnvironmentMapConfig.prefilterMapResolution), 2u, 256u);
+        uint32_t levels = std::clamp(uint32_t(__EnvironmentMapConfig.prefilterLevels), 2u, 9u);
+        environmentLighting = std::make_unique<VKEnvironmentLighting>(device->getPhysicalDevice(), device->getDevice(),
+                                                                      device->getGraphicsQueue().getQueue(),
+                                                                      device->getQueueFamilyIndices().graphicsFamily,
+                                                                      source,
+                                                                      irradianceSize, prefilterSize, levels,
+                                                                      ResourceLoader::LoadShaderVK(
+                                                                          "vulkan/ibl/ibl_CS.spv"));
+    }
 
-			delete renderpass.release();
-			primaryFramebuffers.clear();
+    VKRenderer::~VKRenderer() {
+        vkDeviceWaitIdle(((VKDevice *) window->getContext()->getDevices())->getDevice());
+    }
 
-			uint32_t width = window->getWidth();
-			uint32_t height = window->getHeight();
+    void VKRenderer::PrepareRendering() {
+        VKSwapchain *swapchain = (VKSwapchain *) window->getSwapchain();
+        frameReady = false;
+        int framebufferWidth, framebufferHeight;
+        glfwGetFramebufferSize((GLFWwindow *) window->getWindowHandle(), &framebufferWidth, &framebufferHeight);
+        if (framebufferWidth == 0 || framebufferHeight == 0)
+            return;
 
-			VKContext* context = (VKContext*)window->getContext();
-			VKSwapchain* swapchain = (VKSwapchain*)window->getSwapchain();
+        if (window->isResized()) {
+            PR_PROFILE("Resizing window");
 
-			camera->SetProjection(camera->getFov(), (float)width, (float)height);
-			swapchain->SetWindowSize(width, height);
+            VKContext *context = (VKContext *) window->getContext();
+            VKDevice *device = (VKDevice *) context->getDevices();
+            vkDeviceWaitIdle(device->getDevice());
 
-			VKDevice* device = (VKDevice*)context->getDevices();
+            primaryFramebuffers.clear();
+            delete renderpass.release();
 
-			renderpass = std::make_unique<VKRenderpass>(device, swapchain);
-			swapchain->setRenderpass(renderpass.get());
+            swapchain->SetWindowSize((uint32_t) framebufferWidth, (uint32_t) framebufferHeight);
+            VkExtent2D extent = swapchain->getSwapchainExtent();
+            uint32_t width = extent.width;
+            uint32_t height = extent.height;
+            camera->SetProjection(camera->getFov(), (float) width, (float) height);
 
-			size_t NumImages = swapchain->getSwapchainImages().size();
-			primaryFramebuffers.resize(NumImages);
-			for (size_t i = 0; i < NumImages; i++)
-			{
-				VkImageView attachments[] =
-				{
-					swapchain->getColourImage()->getImageView(),
-					swapchain->getDepthImage()->getImageView(),
-					swapchain->getSwapchainImages()[i]->getImageView()
-				};
+            renderpass = std::make_unique<VKRenderpass>(device, swapchain);
+            swapchain->setRenderpass(renderpass.get());
 
-				primaryFramebuffers[i] = std::make_unique<VKFramebuffer>(device->getDevice(), renderpass->getRenderPass(), swapchain->getSwapchainExtent().width,
-					swapchain->getSwapchainExtent().height, 3, attachments);
-			}
+            size_t NumImages = swapchain->getSwapchainImages().size();
+            primaryFramebuffers.resize(NumImages);
+            for (size_t i = 0; i < NumImages; i++) {
+                VkImageView attachments[] =
+                {
+                    swapchain->getColourImage()->getImageView(),
+                    swapchain->getDepthImage()->getImageView(),
+                    swapchain->getSwapchainImages()[i]->getImageView()
+                };
 
-			//Create command pool
-			commandPool->DeleteCommandBuffers();
-			for (size_t i = 0; i < NumImages; i++)
-			{
-				commandPool->AddCommandBuffer();
-			}
+                primaryFramebuffers[i] = std::make_unique<VKFramebuffer>(
+                    device->getDevice(), renderpass->getRenderPass(), swapchain->getSwapchainExtent().width,
+                    swapchain->getSwapchainExtent().height, 3, attachments);
+            }
 
-			//Recreate the pipelines
-			std::vector<Pipeline*> pipes = manager->get<Pipeline>();
-			for (Pipeline* pipe : pipes)
-			{
-				pipe->setViewportSize({ (float)width, (float)height });
-				pipe->setScissorSize({ width, height });
-				pipe->RecreatePipeline();
-			}
+            //Create command pool
+            commandPool->DeleteCommandBuffers();
+            for (size_t i = 0; i < NumImages; i++) {
+                commandPool->AddCommandBuffer();
+            }
 
-			window->setResized(false);
-			commandBuffersReady = false;
-		}
+            //Recreate the pipelines
+            std::vector<Pipeline *> pipes = manager->get<Pipeline>();
+            for (Pipeline *pipe: pipes) {
+                pipe->setViewportSize({(float) width, (float) height});
+                pipe->setScissorSize({width, height});
+                pipe->RecreatePipeline();
+            }
 
-		if (!commandBuffersReady)
-		{
-			BuildCommandBuffers();
-			commandBuffersReady = true;
-		}
+            background->RecreatePipeline();
 
-		/*uint32_t index = swapchain->getAquiredImageIndex();
+            window->setResized(false);
+            commandBuffersReady = false;
+        }
+
+        if (!swapchain->GetNextImageIndex())
+            return;
+        frameReady = true;
+
+        if (!commandBuffersReady) {
+            BuildCommandBuffers();
+            commandBuffersReady = true;
+        }
+
+        /*uint32_t index = swapchain->getAquiredImageIndex();
 		VKCommandBuffer* buffer = commandPool->getCommandBuffer(index);
 
 		buffer->BindBuffer();
 		renderpass->BeginRenderpass(buffer, primaryFramebuffers[index].get(), swapchain->getSwapchainExtent(), swapchain->getClearColour());*/
-	}
+    }
 
-	void VKRenderer::EndRendering()
-	{
-		VKSwapchain* swapchain = (VKSwapchain*)window->getSwapchain();
-		uint32_t index = swapchain->getAquiredImageIndex();
-		VKCommandBuffer* buffer = commandPool->getCommandBuffer(index);
+    void VKRenderer::EndRendering() {
+        if (frameReady) {
+            VKSwapchain *swapchain = (VKSwapchain *) window->getSwapchain();
+            uint32_t index = swapchain->getAquiredImageIndex();
+            VKCommandBuffer *buffer = commandPool->getCommandBuffer(index);
 
-		/*renderpass->EndRenderpass(buffer);
-		buffer->UnbindBuffer();*/
+            /*renderpass->EndRenderpass(buffer);
+			buffer->UnbindBuffer();*/
 
-		{
-			PR_PROFILE("Submitting");
-			window->Render(buffer);
-		}
+            {
+                PR_PROFILE("Submitting");
+                window->Render(buffer);
+            }
+        }
 
-		//Clear the lists
-		models_3d.clear();
-		models_transparency.clear();
-		models_2d.clear();
-		lights.clear();
-	}
+        //Clear the lists
+        models_3d.clear();
+        models_transparency.clear();
+        models_2d.clear();
+        lights.clear();
+    }
 
-	void VKRenderer::Render()
-	{
-		PR_PROFILE("Update uniforms");
+    void VKRenderer::Render() {
+        if (!frameReady)
+            return;
 
-		VKSwapchain* swapchain = (VKSwapchain*)window->getSwapchain();
-		uint32_t index = swapchain->getAquiredImageIndex();
-		VKCommandBuffer* buffer = commandPool->getCommandBuffer(index);
+        PR_PROFILE("Update uniforms");
 
-		uint32_t matIdx = 0;
-		uint32_t instIdx = 0;
-		for (auto pipeline : models_3d)
-		{
-			Pipeline* pl = pipeline.first;
-			pl->getShader()->UpdateGlobalUniforms(this);
+        VKSwapchain *swapchain = (VKSwapchain *) window->getSwapchain();
+        uint32_t index = swapchain->getAquiredImageIndex();
+        VKCommandBuffer *buffer = commandPool->getCommandBuffer(index);
 
-			for (auto material : pipeline.second)
-			{
-				pl->getShader()->UpdateMaterialUniforms(material.first, (uint32_t)matIdx++);
+        uint32_t matIdx = 0;
+        uint32_t instIdx = 0;
+        for (auto pipeline: models_3d) {
+            Pipeline *pl = pipeline.first;
+            pl->getShader()->UpdateGlobalUniforms(this);
 
-				//instIdx = 0;
-				for (size_t i = 0; i < material.second.size(); i++)
-				{
-					pl->getShader()->UpdateObjectUniforms(material.second[i]->getParent(), (uint32_t)instIdx++);
-				}
-			}
-		}
+            for (auto material: pipeline.second) {
+                pl->getShader()->UpdateMaterialUniforms(material.first, (uint32_t) matIdx++);
 
-		//TODO: enable alpha blending
-		for (auto pipeline : models_transparency)
-		{
-			Pipeline* pl = pipeline.first;
-			pl->getShader()->UpdateGlobalUniforms(this);
+                //instIdx = 0;
+                for (size_t i = 0; i < material.second.size(); i++) {
+                    pl->getShader()->UpdateObjectUniforms(material.second[i]->getParent(), (uint32_t) instIdx++);
+                }
+            }
+        }
 
-			for (auto material : pipeline.second)
-			{
-				pl->getShader()->UpdateMaterialUniforms(material.first, (uint32_t)matIdx++);
+        //TODO: enable alpha blending
+        for (auto pipeline: models_transparency) {
+            Pipeline *pl = pipeline.first;
+            pl->getShader()->UpdateGlobalUniforms(this);
 
-				for (size_t i = 0; i < material.second.size(); i++)
-				{
-					pl->getShader()->UpdateObjectUniforms(material.second[i]->getParent(), (uint32_t)instIdx++);
-				}
-			}
-		}
+            for (auto material: pipeline.second) {
+                pl->getShader()->UpdateMaterialUniforms(material.first, (uint32_t) matIdx++);
 
-		//TODO: disable alpha blending and depth testing
-		for (auto pipeline : models_2d)
-		{
-			Pipeline* pl = pipeline.first;
+                for (size_t i = 0; i < material.second.size(); i++) {
+                    pl->getShader()->UpdateObjectUniforms(material.second[i]->getParent(), (uint32_t) instIdx++);
+                }
+            }
+        }
 
-			instIdx = 0;
-			for (size_t i = 0; i < pipeline.second.size(); i++)
-			{
-				pl->getShader()->UpdateObjectUniforms(pipeline.second[i]->getParent(), instIdx++);
-			}
-		}
+        //TODO: disable alpha blending and depth testing
+        for (auto pipeline: models_2d) {
+            Pipeline *pl = pipeline.first;
 
-		BuildCommandBuffers();
-	}
+            instIdx = 0;
+            for (size_t i = 0; i < pipeline.second.size(); i++) {
+                pl->getShader()->UpdateObjectUniforms(pipeline.second[i]->getParent(), instIdx++);
+            }
+        }
 
-	void VKRenderer::BuildCommandBuffers()
-	{
-		PR_PROFILE("Recording command buffers");
+        BuildCommandBuffers();
+    }
 
-		VKSwapchain* swapchain = (VKSwapchain*)window->getSwapchain();
-		for (uint32_t i = 0; i < swapchain->getSwapchainImages().size(); i++)
-		{
-			VKCommandBuffer* buffer = commandPool->getCommandBuffer(i);
+    void VKRenderer::BuildCommandBuffers() {
+        PR_PROFILE("Recording command buffers");
 
-			buffer->BindBuffer();
-			renderpass->BeginRenderpass(buffer, primaryFramebuffers[i].get(), swapchain->getSwapchainExtent(), swapchain->getClearColour());
+        VKSwapchain *swapchain = (VKSwapchain *) window->getSwapchain();
+        for (uint32_t i = 0; i < swapchain->getSwapchainImages().size(); i++) {
+            VKCommandBuffer *buffer = commandPool->getCommandBuffer(i);
 
-			uint32_t matIdx = 0;
-			uint32_t instIdx = 0;
-			for (auto pipeline : models_3d)
-			{
-				Pipeline* pl = pipeline.first;
-				pl->BindPipeline(buffer);
-				((VKShader*)pl->getShader())->BindGlobalSets();
+            buffer->BindBuffer();
+            renderpass->BeginRenderpass(buffer, primaryFramebuffers[i].get(), swapchain->getSwapchainExtent(),
+                                        swapchain->getClearColour());
+            background->Draw(buffer->getCommandBuffer(), camera);
 
-				for (auto material : pipeline.second)
-				{
-					((VKShader*)pl->getShader())->BindTextureSets(matIdx++);
+            uint32_t matIdx = 0;
+            uint32_t instIdx = 0;
+            for (auto pipeline: models_3d) {
+                Pipeline *pl = pipeline.first;
+                pl->BindPipeline(buffer);
+                ((VKShader *) pl->getShader())->BindGlobalSets();
 
-					//instIdx = 0;
-					for (size_t i = 0; i < material.second.size(); i++)
-					{
-						((VKShader*)pl->getShader())->BindObjectSets(instIdx++);
-						pl->RenderPipeline();
-					}
-				}
+                for (auto material: pipeline.second) {
+                    ((VKShader *) pl->getShader())->BindTextureSets(matIdx++);
 
-				pl->UnbindPipeline();
-			}
+                    //instIdx = 0;
+                    for (size_t i = 0; i < material.second.size(); i++) {
+                        ((VKShader *) pl->getShader())->BindObjectSets(instIdx++);
+                        pl->RenderPipeline();
+                    }
+                }
 
-			//TODO: enable alpha blending
-			for (auto pipeline : models_transparency)
-			{
-				Pipeline* pl = pipeline.first;
-				pl->BindPipeline(buffer);
-				((VKShader*)pl->getShader())->BindGlobalSets();
+                pl->UnbindPipeline();
+            }
 
-				for (auto material : pipeline.second)
-				{
-					((VKShader*)pl->getShader())->BindTextureSets(matIdx++);
+            //TODO: enable alpha blending
+            for (auto pipeline: models_transparency) {
+                Pipeline *pl = pipeline.first;
+                pl->BindPipeline(buffer);
+                ((VKShader *) pl->getShader())->BindGlobalSets();
 
-					for (size_t i = 0; i < material.second.size(); i++)
-					{
-						((VKShader*)pl->getShader())->BindObjectSets(instIdx++);
-						pl->RenderPipeline();
-					}
-				}
+                for (auto material: pipeline.second) {
+                    ((VKShader *) pl->getShader())->BindTextureSets(matIdx++);
 
-				pl->UnbindPipeline();
-			}
+                    for (size_t i = 0; i < material.second.size(); i++) {
+                        ((VKShader *) pl->getShader())->BindObjectSets(instIdx++);
+                        pl->RenderPipeline();
+                    }
+                }
 
-			//TODO: disable alpha blending and depth testing
-			for (auto pipeline : models_2d)
-			{
-				Pipeline* pl = pipeline.first;
-				pl->BindPipeline(buffer);
+                pl->UnbindPipeline();
+            }
 
-				for (size_t i = 0; i < pipeline.second.size(); i++)
-				{
-					((VKShader*)pl->getShader())->BindObjectSets(instIdx++);
-					pl->RenderPipeline();
-				}
+            //TODO: disable alpha blending and depth testing
+            for (auto pipeline: models_2d) {
+                Pipeline *pl = pipeline.first;
+                pl->BindPipeline(buffer);
 
-				pl->UnbindPipeline();
-			}
+                for (size_t i = 0; i < pipeline.second.size(); i++) {
+                    ((VKShader *) pl->getShader())->BindObjectSets(instIdx++);
+                    pl->RenderPipeline();
+                }
 
-			renderpass->EndRenderpass(buffer);
-			buffer->UnbindBuffer();
-		}
-	}
+                pl->UnbindPipeline();
+            }
+
+            renderpass->EndRenderpass(buffer);
+            buffer->UnbindBuffer();
+        }
+    }
 };

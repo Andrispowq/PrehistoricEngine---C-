@@ -14,262 +14,226 @@
 
 #include "prehistoric/application/Application.h"
 
-namespace Prehistoric
-{
-	static bool window_size_callback(WindowResizeEvent& event)
-	{
-		if (event.getWidth() == 0 || event.getHeight() == 0)
-		{
-			return false;
-		}
+namespace Prehistoric {
+    static bool window_size_callback(WindowResizeEvent &event) {
+        if (event.getWidth() == 0 || event.getHeight() == 0) {
+            return false;
+        }
 
-		Window* window = (Window*)glfwGetWindowUserPointer((GLFWwindow*)event.getHandle());
-		window->setResized(true);
-		return true;
-	}
+        Window *window = (Window *) glfwGetWindowUserPointer((GLFWwindow *) event.getHandle());
+        window->setResized(true);
+        return true;
+    }
 
-	static bool window_close_callback(WindowCloseEvent& event)
-	{
-		Window* window = (Window*)glfwGetWindowUserPointer((GLFWwindow*)event.getHandle());
-		window->setClosed(true);
-		return true;
-	}
+    static bool window_close_callback(WindowCloseEvent &event) {
+        Window *window = (Window *) glfwGetWindowUserPointer((GLFWwindow *) event.getHandle());
+        window->setClosed(true);
+        return true;
+    }
 
-	static bool window_focus_callback(WindowFocusEvent& event)
-	{
-		InputInstance.setPauseRendering(false);
-		return true;
-	}
+    static bool window_focus_callback(WindowFocusEvent &event) {
+        InputInstance.setPauseRendering(false);
+        return true;
+    }
 
-	static bool window_focus_lost_callback(WindowLostFocusEvent& event)
-	{
-		InputInstance.setPauseRendering(true);
-		return true;
-	}
+    static bool window_focus_lost_callback(WindowLostFocusEvent &event) {
+        InputInstance.setPauseRendering(true);
+        return true;
+    }
 
-	static bool window_iconified_callback(WindowIconifiedEvent& event)
-	{
-		InputInstance.setPause(true);
-		return true;
-	}
+    static bool window_iconified_callback(WindowIconifiedEvent &event) {
+        InputInstance.setPause(true);
+        return true;
+    }
 
-	static bool window_restored_callback(WindowRestoredEvent& event)
-	{
-		InputInstance.setPause(false);
-		return true;
-	}
+    static bool window_restored_callback(WindowRestoredEvent &event) {
+        InputInstance.setPause(false);
+        return true;
+    }
 
-	static void error_callback(int error, const char* description)
-	{
-		PR_LOG_ERROR("Error: %s\n", description);
-	}
+    static void error_callback(int error, const char *description) {
+        PR_LOG_ERROR("Error: %s\n", description);
+    }
 
-	WindowsWindow::~WindowsWindow()
-	{
-		glfwDestroyWindow(window);
-		glfwTerminate();
-	}
+    WindowsWindow::~WindowsWindow() {
+        glfwDestroyWindow(window);
+        glfwTerminate();
+    }
 
-	bool WindowsWindow::Create()
-	{
-		//Initialisation of GLFW
-		if (!initGLFW())
-		{
-			return false;
-		}
+    bool WindowsWindow::Create() {
+        //Initialisation of GLFW
+        if (!initGLFW()) {
+            return false;
+        }
 
-		//Setting error callback
-		glfwSetErrorCallback(error_callback);
+        //Setting error callback
+        glfwSetErrorCallback(error_callback);
 
-		//Setting window properties and creating the window
-		if (__FrameworkConfig.api == OpenGL)
-		{
-			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        //Setting window properties and creating the window
+        if (__FrameworkConfig.api == OpenGL) {
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #if defined(PR_PLATFORM_MACOS)
-			glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 #endif
-		}
-		else
-		{
-			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		}
+        } else {
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        }
 
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, __FrameworkConfig.apiVersion.x);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, __FrameworkConfig.apiVersion.y);
-		glfwWindowHint(GLFW_RESIZABLE, __FrameworkConfig.windowResizable);
-		glfwWindowHint(GLFW_SAMPLES, __FrameworkConfig.windowNumSamples);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, __FrameworkConfig.apiVersion.x);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, __FrameworkConfig.apiVersion.y);
+        glfwWindowHint(GLFW_RESIZABLE, __FrameworkConfig.windowResizable);
+        glfwWindowHint(GLFW_SAMPLES, __FrameworkConfig.windowNumSamples);
 
-		window = glfwCreateWindow(width, height, title, fullscreen ? glfwGetPrimaryMonitor() : NULL, NULL);
+        window = glfwCreateWindow(width, height, title, fullscreen ? glfwGetPrimaryMonitor() : NULL, NULL);
 
-		//Checking if a valid window was created
-		if (window == NULL)
-		{
-			PR_LOG_ERROR("The creation of the window has failed!\n");
+        //Checking if a valid window was created
+        if (window == NULL) {
+            PR_LOG_ERROR("The creation of the window has failed!\n");
 
-			glfwTerminate();
-			return false;
-		}
-		closed = false;
+            glfwTerminate();
+            return false;
+        }
+        closed = false;
 
-		if (__FrameworkConfig.api == OpenGL)
-		{
-			context = std::make_unique<GLContext>(this);
-			swapchain = std::make_unique<GLSwapchain>(this);
-		}
-		else if (__FrameworkConfig.api == Vulkan)
-		{
-			context = std::make_unique<VKContext>(this);
-			swapchain = std::make_unique<VKSwapchain>(this);
-		}
+        if (__FrameworkConfig.api == OpenGL) {
+            context = std::make_unique<GLContext>(this);
+            swapchain = std::make_unique<GLSwapchain>(this);
+        } else if (__FrameworkConfig.api == Vulkan) {
+            context = std::make_unique<VKContext>(this);
+            swapchain = std::make_unique<VKSwapchain>(this);
+        }
 
-		//Input is static so we can use it in the callbacks, but window is not, so we need a way to get it
-		//For the joystick callbacks, we can't access the window, so we use this hack by setting the primary monitor's user pointer to the Window
-		glfwSetWindowUserPointer(window, (void*)this);
-		glfwSetMonitorUserPointer(glfwGetPrimaryMonitor(), (void*)this);
+        //Input is static so we can use it in the callbacks, but window is not, so we need a way to get it
+        //For the joystick callbacks, we can't access the window, so we use this hack by setting the primary monitor's user pointer to the Window
+        glfwSetWindowUserPointer(window, (void *) this);
+        glfwSetMonitorUserPointer(glfwGetPrimaryMonitor(), (void *) this);
 
-		ImageData data = TextureLoader::LoadTextureData("res/textures/logo.png");
+        ImageData data = TextureLoader::LoadTextureData("engine://textures/logo.png");
 
-		GLFWimage image;
-		image.width = data.width;
-		image.height = data.height;
-		image.pixels = data.ptr.dataUC;
+        GLFWimage image;
+        image.width = data.width;
+        image.height = data.height;
+        image.pixels = data.ptr.dataUC;
 
-		glfwSetWindowIcon(window, 1, &image);
+        glfwSetWindowIcon(window, 1, &image);
 
-		delete[] data.ptr.dataUC;
+        delete[] data.ptr.dataUC;
 
-		glfwShowWindow(window);
-		SetVSync(__FrameworkConfig.windowVSync); 
+        glfwShowWindow(window);
+        SetVSync(__FrameworkConfig.windowVSync);
 
-		glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int height)
-		{
-			Window* wnd = (Window*)glfwGetWindowUserPointer(window);
-			wnd->setWidth(width);
-			wnd->setHeight(height);
+        glfwSetWindowSizeCallback(window, [](GLFWwindow *window, int width, int height) {
+            Window *wnd = (Window *) glfwGetWindowUserPointer(window);
+            wnd->setWidth(width);
+            wnd->setHeight(height);
 
-			WindowResizeEvent ev(width, height, window);
-			wnd->getEventCallback()((Event&)ev);
-		});
+            WindowResizeEvent ev(width, height, window);
+            wnd->getEventCallback()((Event &) ev);
+        });
 
-		glfwSetWindowCloseCallback(window, [](GLFWwindow* window)
-		{
-			Window* wnd = (Window*)glfwGetWindowUserPointer(window);
+        glfwSetFramebufferSizeCallback(window, [](GLFWwindow *window, int width, int height) {
+            Window *wnd = (Window *) glfwGetWindowUserPointer(window);
+            wnd->setResized(true);
+        });
 
-			WindowCloseEvent ev(window);
-			wnd->getEventCallback()((Event&)ev);
-		});
+        glfwSetWindowCloseCallback(window, [](GLFWwindow *window) {
+            Window *wnd = (Window *) glfwGetWindowUserPointer(window);
 
-		glfwSetWindowFocusCallback(window, [](GLFWwindow* window, int focused)
-		{
-			Window* wnd = (Window*)glfwGetWindowUserPointer(window);
+            WindowCloseEvent ev(window);
+            wnd->getEventCallback()((Event &) ev);
+        });
 
-			if (focused == GLFW_TRUE)
-			{
-				WindowFocusEvent ev(window);
-				wnd->getEventCallback()((Event&)ev);
-			}
-			else
-			{
-				WindowLostFocusEvent ev(window);
-				wnd->getEventCallback()((Event&)ev);
-			}
-		});
+        glfwSetWindowFocusCallback(window, [](GLFWwindow *window, int focused) {
+            Window *wnd = (Window *) glfwGetWindowUserPointer(window);
 
-		glfwSetWindowIconifyCallback(window, [](GLFWwindow* window, int iconified)
-		{
-			Window* wnd = (Window*)glfwGetWindowUserPointer(window);
+            if (focused == GLFW_TRUE) {
+                WindowFocusEvent ev(window);
+                wnd->getEventCallback()((Event &) ev);
+            } else {
+                WindowLostFocusEvent ev(window);
+                wnd->getEventCallback()((Event &) ev);
+            }
+        });
 
-			if (iconified == GLFW_TRUE)
-			{
-				WindowIconifiedEvent ev(window);
-				wnd->getEventCallback()((Event&)ev);
-			}
-			else
-			{
-				WindowRestoredEvent ev(window);
-				wnd->getEventCallback()((Event&)ev);
-			}
-		});
+        glfwSetWindowIconifyCallback(window, [](GLFWwindow *window, int iconified) {
+            Window *wnd = (Window *) glfwGetWindowUserPointer(window);
 
-		return true;
-	}
+            if (iconified == GLFW_TRUE) {
+                WindowIconifiedEvent ev(window);
+                wnd->getEventCallback()((Event &) ev);
+            } else {
+                WindowRestoredEvent ev(window);
+                wnd->getEventCallback()((Event &) ev);
+            }
+        });
 
-	bool WindowsWindow::initGLFW() const
-	{
-		if (!glfwInit())
-		{
-			PR_LOG_ERROR("The initialisiation of OpenGL Framework (GLFW) has failed!\n");
-			return false;
-		}
+        return true;
+    }
 
-		return true;
-	}
+    bool WindowsWindow::initGLFW() const {
+        if (!glfwInit()) {
+            PR_LOG_ERROR("The initialisiation of OpenGL Framework (GLFW) has failed!\n");
+            return false;
+        }
 
-	void WindowsWindow::Input()
-	{
-		glfwPollEvents();
-	}
+        return true;
+    }
 
-	void WindowsWindow::Render(CommandBuffer* buffer) const
-	{
-		swapchain->SwapBuffers(buffer);
-	}
+    void WindowsWindow::Input() {
+        glfwPollEvents();
+    }
 
-	void WindowsWindow::OnEvent(Event& event)
-	{
-		EventDispatcher d(event);
-		d.Dispatch<WindowResizeEvent>(window_size_callback);
-		d.Dispatch<WindowCloseEvent>(window_close_callback);
-		d.Dispatch<WindowFocusEvent>(window_focus_callback);
-		d.Dispatch<WindowLostFocusEvent>(window_focus_lost_callback);
-		d.Dispatch<WindowIconifiedEvent>(window_iconified_callback);
-		d.Dispatch<WindowRestoredEvent>(window_restored_callback);
+    void WindowsWindow::Render(CommandBuffer *buffer) const {
+        swapchain->SwapBuffers(buffer);
+    }
 
-		InputInstance.OnEvent(event);
-	}
+    void WindowsWindow::OnEvent(Event &event) {
+        EventDispatcher d(event);
+        d.Dispatch<WindowResizeEvent>(window_size_callback);
+        d.Dispatch<WindowCloseEvent>(window_close_callback);
+        d.Dispatch<WindowFocusEvent>(window_focus_callback);
+        d.Dispatch<WindowLostFocusEvent>(window_focus_lost_callback);
+        d.Dispatch<WindowIconifiedEvent>(window_iconified_callback);
+        d.Dispatch<WindowRestoredEvent>(window_restored_callback);
 
-	void WindowsWindow::SetFullscreen(bool fullscreen)
-	{
-		if (IsFullscreen() == fullscreen)
-		{
-			return;
-		}
+        InputInstance.OnEvent(event);
+    }
 
-		if (fullscreen)
-		{
-			glfwGetWindowPos(window, &oldX, &oldY);
-			glfwGetWindowSize(window, &oldWidth, &oldHeight);
+    void WindowsWindow::SetFullscreen(bool fullscreen) {
+        if (IsFullscreen() == fullscreen) {
+            return;
+        }
 
-			GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-			const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+        if (fullscreen) {
+            glfwGetWindowPos(window, &oldX, &oldY);
+            glfwGetWindowSize(window, &oldWidth, &oldHeight);
 
-			width = mode->width;
-			height = mode->height;
+            GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+            const GLFWvidmode *mode = glfwGetVideoMode(monitor);
 
-			glfwSetWindowMonitor(window, monitor, 0, 0, width, height, mode->refreshRate);
-		}
-		else
-		{
-			width = oldWidth;
-			height = oldHeight;
+            width = mode->width;
+            height = mode->height;
 
-			GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-			const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+            glfwSetWindowMonitor(window, monitor, 0, 0, width, height, mode->refreshRate);
+        } else {
+            width = oldWidth;
+            height = oldHeight;
 
-			glfwSetWindowMonitor(window, nullptr, oldX, oldY, width, height, mode->refreshRate);
-		}
+            GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+            const GLFWvidmode *mode = glfwGetVideoMode(monitor);
 
-		this->fullscreen = fullscreen;
-		this->resized = true;
-	}
+            glfwSetWindowMonitor(window, nullptr, oldX, oldY, width, height, mode->refreshRate);
+        }
 
-	bool WindowsWindow::IsFullscreen() const
-	{
-		return fullscreen;
-	}
+        this->fullscreen = fullscreen;
+        this->resized = true;
+    }
 
-	bool WindowsWindow::ShouldClose() const
-	{
-		return glfwWindowShouldClose(window) || closed;
-	}
+    bool WindowsWindow::IsFullscreen() const {
+        return fullscreen;
+    }
+
+    bool WindowsWindow::ShouldClose() const {
+        return glfwWindowShouldClose(window) || closed;
+    }
 };

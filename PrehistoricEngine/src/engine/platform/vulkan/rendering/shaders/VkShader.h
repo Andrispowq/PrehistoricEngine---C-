@@ -8,81 +8,127 @@
 
 #include "platform/vulkan/rendering/descriptors/VKDescriptorPool.h"
 
-#include "prehistoric/core/node/GameObject.h"
 #include "Includes.hpp"
 
 #include "prehistoric/core/model/material/Material.h"
 
-namespace Prehistoric
-{
-	class VKShader : public Shader
-	{
-	public:
-		VKShader(Context* context, Swapchain* swapchain, const std::vector<char>* files, uint32_t length);
-		VKShader(Context* context, Swapchain* swapchain);
+namespace Prehistoric {
+    class VKShader : public Shader {
+    public:
+        VKShader(Context *context, Swapchain *swapchain, const std::vector<char> *files, uint32_t length);
 
-		virtual ~VKShader();
+        VKShader(Context *context, Swapchain *swapchain);
 
-		virtual void Bind(CommandBuffer* commandBuffer) const override { this->commandBuffer = commandBuffer; }
-		virtual void Unbind() const override {}
+        virtual ~VKShader();
 
-		void BindSets(CommandBuffer* commandBuffer, uint32_t first, uint32_t set_count, uint32_t instance_index = 0) const;
+        virtual void Bind(CommandBuffer *commandBuffer) const override {
+            this->commandBuffer = commandBuffer;
+        }
 
-		virtual bool AddUniform(const std::string& name, uint32_t stages, UniformType type, uint32_t set, uint32_t binding, size_t size, Texture* texture = nullptr) override;
-		virtual bool AddUniformBlock(const std::string& name, uint32_t stages, UniformType type, uint32_t set, uint32_t binding, size_t size, Texture* texture = nullptr) override { return true; }
+        virtual void Unbind() const override {
+        }
 
-		virtual bool AddShader(const std::vector<char>& code, ShaderType type) override;
-		virtual bool CompileShader() const override { return true; }
+        void BindSets(CommandBuffer *commandBuffer, uint32_t first, uint32_t set_count,
+                      uint32_t instance_index = 0) const;
 
-		//Uniform handling
-		virtual void SetUniformi(const std::string& name, int value, size_t offset = 0, uint32_t instance_index = 0) const override;
-		virtual void SetUniformf(const std::string& name, float value, size_t offset = 0, uint32_t instance_index = 0) const override;
+        virtual bool AddUniform(const std::string &name, uint32_t stages, UniformType type, uint32_t set,
+                                uint32_t binding, size_t size, Texture *texture = nullptr) override;
 
-		virtual void SetUniform(const std::string& name, const Vector2f& value, size_t offset = 0, uint32_t instance_index = 0) const override;
-		virtual void SetUniform(const std::string& name, const Vector3f& value, size_t offset = 0, uint32_t instance_index = 0) const override;
-		virtual void SetUniform(const std::string& name, const Vector4f& value, size_t offset = 0, uint32_t instance_index = 0) const override;
-		virtual void SetUniform(const std::string& name, const Matrix4f& value, size_t offset = 0, uint32_t instance_index = 0) const override;
+        virtual bool AddUniformBlock(const std::string &name, uint32_t stages, UniformType type, uint32_t set,
+                                     uint32_t binding, size_t size, Texture *texture = nullptr) override {
+            return true;
+        }
 
-		virtual void SetUniformBlock(const std::string& name, int value, size_t offset = 0, uint32_t instance_index = 0) const override {};
+        virtual bool AddShader(const std::vector<char> &code, ShaderType type) override;
 
-		virtual void SetTexture(const std::string& name, Texture* value, uint32_t instance_index = 0) const override;
+        virtual bool CompileShader() const override {
+            return true;
+        }
 
-		virtual void SetUniform(const std::string& name, const void* value, size_t size, size_t offset = 0, uint32_t instance_index = 0) const override;
+        //Uniform handling
+        virtual void SetUniformi(const std::string &name, int value, size_t offset = 0,
+                                 uint32_t instance_index = 0) const override;
 
-		virtual void BindUniformBlock(const std::string& name, uint32_t binding, uint32_t instance_index = 0) const override {}
+        virtual void SetUniformf(const std::string &name, float value, size_t offset = 0,
+                                 uint32_t instance_index = 0) const override;
 
-		virtual void BindGlobalSets() const = 0;
-		virtual void BindTextureSets(uint32_t descriptor_index = 0) const = 0;
-		virtual void BindObjectSets(uint32_t instance_index = 0) const = 0;
+        virtual void SetUniform(const std::string &name, const Vector2f &value, size_t offset = 0,
+                                uint32_t instance_index = 0) const override;
 
-		virtual void UpdateGlobalUniforms(Renderer* renderer) const override {}
-		virtual void UpdateMaterialUniforms(Material* material, uint32_t descriptor_index = 0) const override {}
-		virtual void UpdateObjectUniforms(GameObject* object, uint32_t instance_index = 0) const override {}
+        virtual void SetUniform(const std::string &name, const Vector3f &value, size_t offset = 0,
+                                uint32_t instance_index = 0) const override;
 
-		VkPipelineShaderStageCreateInfo* GetShaderStages() { return shaderStages; }
-		VkPipelineLayout& GetPipelineLayout() { return pipelineLayout; }
-		uint32_t getModuleCount() { return counter; }
+        virtual void SetUniform(const std::string &name, const Vector4f &value, size_t offset = 0,
+                                uint32_t instance_index = 0) const override;
 
-		void RegisterInstance();
-	private:
-		VkShaderModule CreateShaderModule(const std::vector<char>& code) const;
-		void CreateStageInfo(VkPipelineShaderStageCreateInfo& info, VkShaderModule module, const char* main, VkShaderStageFlagBits type);
+        virtual void SetUniform(const std::string &name, const Matrix4f &value, size_t offset = 0,
+                                uint32_t instance_index = 0) const override;
 
-	protected:
-		//Outside data
-		VKDevice* device;
-		VKSwapchain* swapchain;
+        virtual void SetUniformBlock(const std::string &name, int value, size_t offset = 0,
+                                     uint32_t instance_index = 0) const override {
+        };
 
-		//Module data
-		VkShaderModule* modules;
-		VkPipelineShaderStageCreateInfo* shaderStages;
+        virtual void SetTexture(const std::string &name, Texture *value, uint32_t instance_index = 0) const override;
 
-		mutable CommandBuffer* commandBuffer = nullptr;
+        virtual void SetUniform(const std::string &name, const void *value, size_t size, size_t offset = 0,
+                                uint32_t instance_index = 0) const override;
 
-		//Pipeline data
-		VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
-		VKDescriptorPool* descriptorPool;
-	};
+        virtual void BindUniformBlock(const std::string &name, uint32_t binding,
+                                      uint32_t instance_index = 0) const override {
+        }
+
+        virtual void BindGlobalSets() const = 0;
+
+        virtual void BindTextureSets(uint32_t descriptor_index = 0) const = 0;
+
+        virtual void BindObjectSets(uint32_t instance_index = 0) const = 0;
+
+        virtual void UpdateGlobalUniforms(Renderer *renderer) const override {
+        }
+
+        virtual void UpdateMaterialUniforms(Material *material, uint32_t descriptor_index = 0) const override {
+        }
+
+        virtual void UpdateObjectUniforms(GameObject *object, uint32_t instance_index = 0) const override {
+        }
+
+        VkPipelineShaderStageCreateInfo *GetShaderStages() {
+            return shaderStages;
+        }
+
+        VkPipelineLayout &GetPipelineLayout() {
+            return pipelineLayout;
+        }
+
+        uint32_t getModuleCount() {
+            return counter;
+        }
+
+        void SetSampledImage(const std::string &name, const VkDescriptorImageInfo &image) const;
+
+        void RegisterInstance();
+
+    private:
+        VkShaderModule CreateShaderModule(const std::vector<char> &code) const;
+
+        void CreateStageInfo(VkPipelineShaderStageCreateInfo &info, VkShaderModule module, const char *main,
+                             VkShaderStageFlagBits type);
+
+    protected:
+        //Outside data
+        VKDevice *device;
+        VKSwapchain *swapchain;
+
+        //Module data
+        VkShaderModule *modules;
+        VkPipelineShaderStageCreateInfo *shaderStages;
+
+        mutable CommandBuffer *commandBuffer = nullptr;
+
+        //Pipeline data
+        VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+        VKDescriptorPool *descriptorPool;
+    };
 };
 
 #endif
