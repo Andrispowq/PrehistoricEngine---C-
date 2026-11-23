@@ -148,10 +148,10 @@ world objects are skipped by the Vulkan loader. Spotify remains
 removed. Generated Visual Studio projects are no longer tracked: regenerate them
 with Premake so they match the source and dependency graph.
 
-Beta's Mono scripting integration is Windows-only: its sources, engine hooks,
-import library and DLL copy step are excluded on macOS. The Windows implementation
-still expects its existing Mono installation/runtime layout. A macOS Mono port is
-separate work. Windows execution has not yet been verified on this host.
+Mono scripting is Windows-only. The Windows build copies `mono-2.0-sgen.dll`
+and the runtime from `PrehistoricEngine/Dependencies/lib/Mono` beside both
+executables. Keep the DLL and the `Mono` directory beside the executable when
+moving or packaging a build.
 
 Next work is ordered as follows:
 

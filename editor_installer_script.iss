@@ -40,6 +40,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
+Source: "bin\Distribution-windows-x86_64\PrehistoricEditor\mono-2.0-sgen.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "bin\Distribution-windows-x86_64\PrehistoricEditor\Mono\*"; DestDir: "{app}\Mono"; Flags: ignoreversion recursesubdirs
 Source: "F:\Prehistoric - C++\Visual Studio Projects\Projects\PrehistoricEngine\bin\Distribution-windows-x86_64\PrehistoricEditor\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "F:\Prehistoric - C++\Visual Studio Projects\Projects\PrehistoricEngine\PrehistoricEngine\Dependencies\redist\*"; DestDir: "{app}\redist\"; Flags: ignoreversion
 Source: "F:\Prehistoric - C++\Visual Studio Projects\Projects\PrehistoricEngine\PrehistoricEngine\Dependencies\shared_libraries\Windows_x64\*"; DestDir: "{app}";

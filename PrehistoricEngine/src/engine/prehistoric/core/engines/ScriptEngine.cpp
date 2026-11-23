@@ -5,6 +5,7 @@
 #include "mono/metadata/debug-helpers.h"
 
 #include <filesystem>
+#include <stdexcept>
 
 #include "prehistoric/core/node/component/scripting/InternalCalls.h"
 
@@ -14,8 +15,23 @@ namespace Prehistoric
 {
 	ScriptEngine::ScriptEngine()
 	{
-		mono_set_dirs("C:\\Program Files\\Mono\\lib",
-			"C:\\Program Files\\Mono\\etc");
+		std::wstring executablePath(MAX_PATH, L'\0');
+		DWORD length = GetModuleFileNameW(nullptr, executablePath.data(),
+			static_cast<DWORD>(executablePath.size()));
+		while (length == executablePath.size())
+		{
+			executablePath.resize(executablePath.size() * 2);
+			length = GetModuleFileNameW(nullptr, executablePath.data(),
+				static_cast<DWORD>(executablePath.size()));
+		}
+		if (length == 0)
+			throw std::runtime_error("Could not locate the executable to initialize Mono.");
+
+		executablePath.resize(length);
+		const auto runtimeDir = std::filesystem::path(executablePath).parent_path() / "Mono";
+		const auto libraryDir = (runtimeDir / "lib").u8string();
+		const auto configDir = (runtimeDir / "etc").u8string();
+		mono_set_dirs(libraryDir.c_str(), configDir.c_str());
 		rootDomain = mono_jit_init("Prehistoric");
 	}
 

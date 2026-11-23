@@ -24,6 +24,13 @@ workspace "PrehistoricEngine"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
+local monoRuntimeCommands = {
+    '{COPY} "%{wks.location}/PrehistoricEngine/Dependencies/lib/Mono/mono-2.0-sgen.dll" "%{cfg.targetdir}"',
+    'robocopy "%{wks.location}/PrehistoricEngine/Dependencies/lib/Mono/runtime" "%{cfg.targetdir}/Mono" /E /R:2 /W:1 /NFL /NDL /NJH /NJS /NP',
+    'if errorlevel 8 exit /b 1',
+    'exit /b 0'
+}
+
 IncludeDir = {}
 IncludeDir["GLFW"] = "%{wks.location}/PrehistoricEngine/vendor/GLFW/include"
 IncludeDir["GLAD"] = "%{wks.location}/PrehistoricEngine/vendor/GLAD/include"
@@ -201,7 +208,7 @@ project "PrehistoricEditor"
 
     filter "system:windows"
         systemversion "latest"
-        postbuildcommands { '{COPY} "%{wks.location}/PrehistoricEngine/Dependencies/lib/Mono/mono-2.0-sgen.dll" "%{cfg.targetdir}"' }
+        postbuildcommands(monoRuntimeCommands)
 
         defines
         {
@@ -269,7 +276,7 @@ project "Prehistoric"
 
     filter "system:windows"
         systemversion "latest"
-        postbuildcommands { '{COPY} "%{wks.location}/PrehistoricEngine/Dependencies/lib/Mono/mono-2.0-sgen.dll" "%{cfg.targetdir}"' }
+        postbuildcommands(monoRuntimeCommands)
 
         defines
         {
