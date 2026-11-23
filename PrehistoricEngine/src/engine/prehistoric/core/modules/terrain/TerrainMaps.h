@@ -41,6 +41,7 @@ namespace Prehistoric
 		TextureHandle normalmap;
 		TextureHandle splatmap;
 
+		std::vector<float> vulkanHeights;
 		float* heights = nullptr;
 
 		NormalMapRenderer* normalmapRendererComponent = nullptr;

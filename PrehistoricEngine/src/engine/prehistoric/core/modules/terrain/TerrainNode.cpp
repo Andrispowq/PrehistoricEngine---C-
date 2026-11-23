@@ -24,12 +24,14 @@ namespace Prehistoric
 		worldTransform.setScaling({ __TerrainConfig.scaleXZ, __TerrainConfig.scaleY, __TerrainConfig.scaleXZ });
 		worldTransform.setPosition(Vector3f{ -__TerrainConfig.scaleXZ / 2.0f, 0, -__TerrainConfig.scaleXZ / 2.0f } + maps->getPosition());
 
-		rendererComponent = new RendererComponent(window, manager, pipeline, material);
-		wireframeRendererComponent = new RendererComponent(window, manager, wireframePipeline, material);
-		shadowComponent = new RendererComponent(window, manager, shadowPipeline, material);
-		
-		AddComponent(RENDERER_COMPONENT, rendererComponent);
-		AddComponent(WIREFRAME_RENDERER_COMPONENT, wireframeRendererComponent);
+		if (pipeline.pointer)
+		{
+			rendererComponent = new RendererComponent(window, manager, pipeline, material);
+			wireframeRendererComponent = new RendererComponent(window, manager, wireframePipeline, material);
+			shadowComponent = new RendererComponent(window, manager, shadowPipeline, material);
+			AddComponent(RENDERER_COMPONENT, rendererComponent);
+			AddComponent(WIREFRAME_RENDERER_COMPONENT, wireframeRendererComponent);
+		}
 
 		ComputeWorldPosition();
 		UpdateQuadtree();
@@ -44,10 +46,12 @@ namespace Prehistoric
 		}
 
 		children.clear();
+		delete shadowComponent;
 	}
 
 	void TerrainNode::PreRender(Renderer* renderer)
 	{
+		if (!rendererComponent) return;
 		if (leaf)
 		{
 			if (renderer->isShadowMode())
@@ -90,7 +94,7 @@ namespace Prehistoric
 	{
 		float distance = (camera->getPosition() - worldPosition).length();
 
-		if (distance < __TerrainConfig.lodRanges[lod])
+		if (size_t(lod) < __TerrainConfig.lodRanges.size() && distance < __TerrainConfig.lodRanges[lod])
 		{
 			AddChildNodes(lod + 1);
 		}
@@ -121,8 +125,8 @@ namespace Prehistoric
 					ss << ", lod: ";
 					ss << lod;
 
-					AddChild(ss.str(), new(*factory) TerrainNode(factory, window, camera, manager, maps, material, rendererComponent->getPipelineHandle(), wireframeRendererComponent->getPipelineHandle(),
-						shadowComponent->getPipelineHandle(), location + Vector2f(float(i), float(j)) * (gap / 2.f), lod, { float(i), float(j) }));
+					AddChild(ss.str(), new(*factory) TerrainNode(factory, window, camera, manager, maps, material, rendererComponent ? rendererComponent->getPipelineHandle() : PipelineHandle{}, wireframeRendererComponent ? wireframeRendererComponent->getPipelineHandle() : PipelineHandle{},
+						shadowComponent ? shadowComponent->getPipelineHandle() : PipelineHandle{}, location + Vector2f(float(i), float(j)) * (gap / 2.f), lod, { float(i), float(j) }));
 				}
 			}
 		}
@@ -146,11 +150,23 @@ namespace Prehistoric
 		}
 	}
 
+	void TerrainNode::CollectLeaves(std::vector<TerrainPatch>& leaves) const
+	{
+		if (leaf)
+		{
+			float morph = lod ? float(__TerrainConfig.lodMorphingAreas[lod - 1]) : 0.0f;
+			leaves.push_back({{location.x, location.y, gap, morph}, {index.x, index.y, float(lod), 0}});
+			return;
+		}
+		for (const auto& child : children)
+			static_cast<const TerrainNode*>(child.second.get())->CollectLeaves(leaves);
+	}
+
 	void TerrainNode::ComputeWorldPosition()
 	{
 		Vector2f loc = (location + gap / 2.0f) * __TerrainConfig.scaleXZ - __TerrainConfig.scaleXZ / 2.0f;
 		float height = getTerrainHeight(loc);
-		this->worldPosition = { loc.x, height, loc.y };
+		this->worldPosition = Vector3f(loc.x, height, loc.y) + maps->getPosition();
 	}
 
 	float TerrainNode::getTerrainHeight(const Vector2f& location) const
@@ -170,9 +186,9 @@ namespace Prehistoric
 		position *= float(width);
 
 		int x0 = (int)std::floor(position.x);
-		int x1 = x0 + 1;
+		int x1 = (x0 + 1) % width;
 		int z0 = (int)std::floor(position.y);
-		int z1 = z0 + 1;
+		int z1 = (z0 + 1) % width;
 
 		float h0 = heights[width * z0 + x0];
 		float h1 = heights[width * z0 + x1];

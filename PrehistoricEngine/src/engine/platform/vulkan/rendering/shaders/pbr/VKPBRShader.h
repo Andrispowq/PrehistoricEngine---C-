@@ -28,6 +28,7 @@ namespace Prehistoric
 
 	private:
 		bool terrain;
+		bool terrainGeometry = false;
 		void* lightData = nullptr;
 	};
 };

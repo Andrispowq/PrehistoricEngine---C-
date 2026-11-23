@@ -95,10 +95,10 @@ namespace Prehistoric
 		}
 
 		RenderingEngine::getStats().drawcalls += 1;
-		RenderingEngine::getStats().vertexCount += vertices[submesh];
-		RenderingEngine::getStats().indexCount += sizes[submesh];
+		RenderingEngine::getStats().vertexCount += vertices[submesh] * instanceCount;
+		RenderingEngine::getStats().indexCount += sizes[submesh] * instanceCount;
 
-		vkCmdDrawIndexed(((VKCommandBuffer*)commandBuffer)->getCommandBuffer(), (uint32_t)sizes[submesh], 1, (uint32_t)index_offsets[submesh], 0, 0);
+		vkCmdDrawIndexed(((VKCommandBuffer*)commandBuffer)->getCommandBuffer(), (uint32_t)sizes[submesh], instanceCount, (uint32_t)index_offsets[submesh], 0, 0);
 	}
 
 	VkVertexInputBindingDescription VKMeshVertexBuffer::getBindingDescription() const

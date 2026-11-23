@@ -1,5 +1,6 @@
 #include "Includes.hpp"
 #include "TerrainMaps.h"
+#include "platform/vulkan/rendering/VKTerrain.h"
 
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 #include "prehistoric/core/model/material/Material.h"
@@ -18,7 +19,12 @@ namespace Prehistoric
 		heightmap = manager->getAssetManager()->loadTexture(heightmapLocation).value();
 		manager->getAssetManager()->addReference<Texture>(heightmap.handle);
 
-		if (__FrameworkConfig.api == Vulkan) return;
+		if (__FrameworkConfig.api == Vulkan)
+		{
+			BakeVulkanTerrainMaps(window, manager, heightmap, normalmap, splatmap, vulkanHeights);
+			heights = vulkanHeights.data();
+			return;
+		}
 
 		this->normalmapRendererComponent = new NormalMapRenderer(window, manager, normalStrength, heightmap->getWidth());
 		normalmapRendererComponent->Render(heightmap.pointer);
@@ -44,6 +50,11 @@ namespace Prehistoric
 			manager->removeReference<Material>(mat.handle);
 		}
 
+		if (!vulkanHeights.empty())
+		{
+			man->removeReference<Texture>(normalmap.handle);
+			man->removeReference<Texture>(splatmap.handle);
+		}
 		delete normalmapRendererComponent;
 		delete splatmapRendererComponent;
 		delete query;

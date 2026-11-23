@@ -45,6 +45,7 @@ in vec2 mapCoord_FS;
 in vec3 tangent_FS;
 
 uniform Material materials[3];
+uniform vec3 emissionEnabled;
 
 uniform sampler2D normalmap;
 uniform sampler2D heightmap;
@@ -64,6 +65,8 @@ const float PI = 3.141592653589793;
 const float emissionFactor = 3;
 
 #include "shared/pbr/lighting.glsl"
+#include "shared/terrain/lighting.glsl"
+#include "shared/terrain/detail.glsl"
 
 void main()
 {
@@ -79,22 +82,14 @@ void main()
 	float[4] blendValueArray = float[](blendValues.r, blendValues.g, blendValues.b, blendValues.a);	
 	if(dist < highDetailRange - 50)
 	{
-		float attenuation = clamp(-dist / (highDetailRange - 50) + 1, 0, 1);
-		
-		vec3 bitangent = normalize(cross(tangent_FS, N));
-		mat3 tbn = mat3(tangent_FS, N, bitangent);
-		
-		vec3 bumpNormal;
+		vec3 bumpNormal = vec3(0);
 		for(int i = 0; i < 3; i++)
 		{
 			bumpNormal += (2 * texture(materials[i].normalMap, mapCoord_FS * materials[i].horizontalScale).rbg - 1)
 				* blendValueArray[i];
 		}
 		
-		bumpNormal = normalize(bumpNormal);
-		bumpNormal.xz *= attenuation;
-		
-		N = normalize(tbn * bumpNormal);
+		N = terrainDetailNormal(N, tangent_FS, bumpNormal, dist, highDetailRange);
 	}
 	
 	vec3 albedoColour = vec3(0);
@@ -104,13 +99,13 @@ void main()
 	float roughness;
 	float occlusion;
 	
-	vec4 mrot;
+	vec4 mrot = vec4(0);
 	for(int i = 0; i < 3; i++)
 	{
 		vec2 texCoords = mapCoord_FS * materials[i].horizontalScale;
 
 		albedoColour += pow(texture(materials[i].albedoMap, texCoords).rgb, vec3(2.2)) * blendValueArray[i];
-		emissionColour += pow(texture(materials[i].emissionMap, texCoords).rgb, vec3(2.2)) * blendValueArray[i];
+		emissionColour += emissionEnabled[i] * pow(texture(materials[i].emissionMap, texCoords).rgb, vec3(2.2)) * blendValueArray[i];
 
 		vec4 mrot_i = materials[i].mrot;
 		vec4 mrotMap = texture(materials[i].mrotMap, texCoords);
@@ -139,7 +134,6 @@ void main()
 	occlusion = mrot.b;
 
     vec3 V = normalize(cameraPosition - position_FS);
-    vec3 R = normalize(reflect(-V, N));
 
     vec3 F0 = vec3(0.04);
     F0 = mix(F0, albedoColour, metallic);
@@ -151,33 +145,12 @@ void main()
 		uint lightIndex = visibleLightIndicesBuffer.data[offset + i].index;
 		PointLight light = lightBuffer.data[lightIndex];
 		
-		vec3 lightPos = light.position.xyz;
-		
-		vec3 L = normalize(lightPos - position_FS);
-
-		float dist = length(lightPos - position_FS);
-		float attenuation = clamp(dist / light.intensity_radius.g, 0, 1);
-		attenuation = 1 - pow(attenuation, 2);
-		vec3 radiance = light.colour.rgb * light.intensity_radius.r * attenuation;
-
-        Lo += directPbrLight(N, V, L, F0, albedoColour, metallic, roughness, radiance);
+		Lo += terrainLight(N, V, F0, albedoColour, metallic, roughness,
+			light.position.xyz - position_FS, light.colour.rgb, light.intensity_radius.rg);
     }
 
-    vec3 F = FresnelSchlickRoughness(max(dot(N, V), 0), F0, roughness);
-
-    vec3 kS = F;
-    vec3 kD = 1.0 - kS;
-    kD *= 1.0 - metallic;
-
-    vec3 irradiance = texture(irradianceMap, N).rgb;
-    vec3 diffuse = irradiance * albedoColour;
-
-    float lod = roughness * max_reflection_lod;
-    vec3 prefilteredColour = textureLod(prefilterMap, R, lod).rgb;
-    vec2 envBRDF = texture(brdfLUT, vec2(max(dot(N, V), 0.01), roughness)).rg;
-    vec3 specular = prefilteredColour * (F * envBRDF.x + envBRDF.y);
-
-    vec3 ambient = (kD * diffuse + specular) * occlusion;
+    vec3 ambient = terrainAmbient(N, V, F0, albedoColour, metallic, roughness, occlusion,
+        irradianceMap, prefilterMap, brdfLUT, max_reflection_lod);
     vec3 colour = ambient + Lo + emissionColour * emissionFactor;
 
 	if (isnan(colour.r))

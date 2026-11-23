@@ -18,12 +18,14 @@ namespace Prehistoric
 		void PreRender(Renderer* renderer) override;
 		void UpdateQuadtree();
 
+		TerrainQuadtree* getQuadtree() const { return quadtree; }
 		TerrainMaps* getMaps() const { return maps.get(); }
 
 		Terrain(const Terrain&) = default;
 	private:
 		Window* window;
 		Camera* camera;
+		Vector3f lastLodCameraPosition;
 
 		TerrainQuadtree* quadtree = nullptr;
 

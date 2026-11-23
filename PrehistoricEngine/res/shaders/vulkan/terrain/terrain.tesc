@@ -1,26 +1,21 @@
 #version 450
 #extension GL_GOOGLE_include_directive : require
-#include "patch.glsl"
+#include "../pbr/camera.glsl"
 #include "params.glsl"
+layout (vertices = 16) out;
+
+layout(location=0) in vec2 mapCoord_TC[];
+
+layout(location=0) out vec2 mapCoord_TE[];
+
+const int AB = 2;
+const int BC = 3;
+const int CD = 0;
+const int DA = 1;
+
 #include "../../shared/terrain/tessellation.glsl"
-layout(vertices=3) out;
-
-float edgeLevel(int a, int b)
+float LodFactor(float dist)
 {
-	vec4 midpoint = 0.5 * (gl_in[a].gl_Position + gl_in[b].gl_Position);
-	midpoint.y = heightAt(midpoint.xz + 0.5);
-	float d = distance((m_transform * midpoint).xyz, cameraPosition);
-	return mix(1.0, float(gl_MaxTessGenLevel), terrainLodFactor(d, tessellation.x, tessellation.y, tessellation.z));
+	return terrainLodFactor(dist, tessellation.x, tessellation.y, tessellation.z);
 }
-
-void main()
-{
-	gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
-	if (gl_InvocationID == 0)
-	{
-		gl_TessLevelOuter[0] = edgeLevel(1, 2);
-		gl_TessLevelOuter[1] = edgeLevel(2, 0);
-		gl_TessLevelOuter[2] = edgeLevel(0, 1);
-		gl_TessLevelInner[0] = max(gl_TessLevelOuter[0], max(gl_TessLevelOuter[1], gl_TessLevelOuter[2]));
-	}
-}
+#include "../../shared/terrain/quadControl.glsl"

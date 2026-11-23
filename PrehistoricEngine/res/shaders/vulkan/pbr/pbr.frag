@@ -1,5 +1,7 @@
 #version 450
 #include "scene.glsl"
+layout(location=2) in vec3 normal_FS;
+#include "shade.glsl"
 layout(set = 2, binding = 1, std140) uniform Material
 {
 	layout(offset = 00) vec4 mrot;

@@ -14,6 +14,12 @@
 
 namespace Prehistoric
 {
+	struct TerrainPatch
+	{
+		Vector4f locationGapMorph;
+		Vector4f quadrant;
+	};
+
 	class TerrainNode : public GameObject
 	{
 	public:
@@ -32,6 +38,7 @@ namespace Prehistoric
 		void RemoveChildNodes();
 
 		void ComputeWorldPosition();
+		void CollectLeaves(std::vector<TerrainPatch>& leaves) const;
 		float getTerrainHeight(const Vector2f& location) const;
 
 		TerrainMaps* getMaps() const { return maps; }
@@ -88,16 +95,16 @@ namespace Prehistoric
 
 		TerrainMaps* maps;
 
-		bool leaf;
+		bool leaf = true;
 		int lod;
 		Vector2f location;
 		Vector3f worldPosition;
 		Vector2f index;
 		float gap;
 
-		RendererComponent* rendererComponent;
-		RendererComponent* wireframeRendererComponent;
-		RendererComponent* shadowComponent;
+		RendererComponent* rendererComponent = nullptr;
+		RendererComponent* wireframeRendererComponent = nullptr;
+		RendererComponent* shadowComponent = nullptr;
 		MaterialHandle material;
 
 		Transform localTransform;

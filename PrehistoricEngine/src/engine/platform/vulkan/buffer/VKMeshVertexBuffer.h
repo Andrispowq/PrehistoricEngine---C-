@@ -21,6 +21,7 @@ namespace Prehistoric
 		VKMeshVertexBuffer(Window* window, const Model& model);
 		virtual ~VKMeshVertexBuffer() {}
 
+		void setInstanceCount(uint32_t count) { instanceCount = count; }
 		void Bind(CommandBuffer* commandBuffer) const override;
 		void Draw(CommandBuffer* commandBuffer, uint32_t submesh) const override;
 		void Unbind() const override {}
@@ -31,6 +32,7 @@ namespace Prehistoric
 		std::unique_ptr<VKBuffer> vertexBuffer;
 		std::unique_ptr<VKBuffer> indexBuffer;
 
+		uint32_t instanceCount = 1;
 		VKDevice* device;
 		VKSwapchain* swapchain;
 	};

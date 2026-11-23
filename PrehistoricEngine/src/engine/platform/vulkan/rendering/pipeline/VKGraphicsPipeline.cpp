@@ -82,7 +82,7 @@ namespace Prehistoric
 		inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		VkPipelineTessellationStateCreateInfo tessellation{};
 		tessellation.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
-		tessellation.patchControlPoints = 3;
+		tessellation.patchControlPoints = 16;
 		for (uint32_t i = 0; i < shader->getModuleCount(); ++i)
 		{
 			if (shader->GetShaderStages()[i].stage == VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT)

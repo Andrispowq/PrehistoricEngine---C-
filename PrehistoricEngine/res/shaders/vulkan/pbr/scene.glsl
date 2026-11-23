@@ -7,7 +7,6 @@ const float emissionFactor = 3.0;
 
 layout (location = 0) in vec3 position_FS;
 layout (location = 1) in vec2 texture_FS;
-layout (location = 2) in vec3 normal_FS;
 layout (location = 3) in vec3 tangent_FS;
 
 #include "camera.glsl"
@@ -35,5 +34,3 @@ layout(set = 0, binding = 6, std140) uniform Environment
 };
 
 #include "../../shared/pbr/lighting.glsl"
-#include "shade.glsl"
-

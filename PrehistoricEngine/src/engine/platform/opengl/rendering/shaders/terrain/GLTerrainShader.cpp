@@ -47,6 +47,7 @@ namespace Prehistoric
 
 		AddUniform("normalmap");
 		AddUniform("splatmap");
+		AddUniform("emissionEnabled");
 
 		for (unsigned int i = 0; i < 3; i++)
 		{
@@ -112,6 +113,7 @@ namespace Prehistoric
 		SetUniformi("splatmap", 5);
 
 		uint32_t texUnit = 6;
+		float emissionEnabled[3]{};
 
 		for (unsigned int i = 0; i < 3; i++)
 		{
@@ -133,6 +135,7 @@ namespace Prehistoric
 			SetUniformi(uniformName + MROT_MAP, texUnit);
 			texUnit++;
 
+			emissionEnabled[i] = material->exists(EMISSION_MAP) ? 1.0f : 0.0f;
 			material->getTexture(EMISSION_MAP)->Bind(texUnit);
 			SetUniformi(uniformName + EMISSION_MAP, texUnit);
 			texUnit++;
@@ -141,6 +144,7 @@ namespace Prehistoric
 			SetUniformf(uniformName + HORIZONTAL_SCALE, material->getFloat(HORIZONTAL_SCALE));
 			SetUniform(uniformName + MROT, material->getVector4f(MROT));
 		}
+		SetUniform("emissionEnabled", Vector3f(emissionEnabled[0], emissionEnabled[1], emissionEnabled[2]));
 	}
 
 	void GLTerrainShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const

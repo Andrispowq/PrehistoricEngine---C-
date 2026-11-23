@@ -17,6 +17,20 @@ namespace Prehistoric {
         : device(device) {
     }
 
+    std::unique_ptr<VKTexture> VKTexture::CreateStorageMap(VKDevice* device, uint32_t width, uint32_t height)
+    {
+        auto texture = std::make_unique<VKTexture>(device);
+        texture->width = width;
+        texture->height = height;
+        texture->format = R8G8B8A8_LINEAR;
+        texture->type = TEXTURE_2D;
+        texture->image = std::make_unique<VKImage>(device, width, height, 1, VK_FORMAT_R8G8B8A8_UNORM,
+            VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_SAMPLE_COUNT_1_BIT,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
+        texture->SamplerProperties(Bilinear, Repeat, false);
+        return texture;
+    }
+
     VKTexture::~VKTexture() {
         vkDestroySampler(device->getDevice(), sampler, nullptr);
     }

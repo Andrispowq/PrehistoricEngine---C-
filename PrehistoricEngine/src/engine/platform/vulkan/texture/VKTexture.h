@@ -16,6 +16,7 @@ namespace Prehistoric
 	public:
 		VKTexture(VKDevice* device, uint32_t width, uint32_t height, ImageFormat format = R8G8B8A8_LINEAR, ImageType type = TEXTURE_2D);
 		VKTexture(VKDevice* device);
+		static std::unique_ptr<VKTexture> CreateStorageMap(VKDevice* device, uint32_t width, uint32_t height);
 
 		virtual ~VKTexture();
 
@@ -33,7 +34,7 @@ namespace Prehistoric
 		VKDevice* device;
 		
 		std::unique_ptr<VKImage> image;
-		VkSampler sampler;
+		VkSampler sampler = VK_NULL_HANDLE;
 	};
 };
 
