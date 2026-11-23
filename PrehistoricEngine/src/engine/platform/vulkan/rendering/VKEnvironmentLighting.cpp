@@ -1,5 +1,6 @@
 #include "Includes.hpp"
 #include "VKEnvironmentLighting.h"
+#include "VKAtmosphereParameters.h"
 
 #include "platform/vulkan/texture/VKImageMipmaps.h"
 #include <algorithm>
@@ -43,7 +44,8 @@ namespace Prehistoric {
     VKEnvironmentLighting::VKEnvironmentLighting(VkPhysicalDevice physicalDevice, VkDevice device, VkQueue queue,
                                                  uint32_t queueFamily, VkDescriptorImageInfo source,
                                                  uint32_t irradianceSize, uint32_t prefilterSize, uint32_t levels,
-                                                 uint32_t cubeSize, const std::vector<char>& conversion, const std::vector<char>& shader, uint32_t lutSize, uint32_t samples)
+                                                 uint32_t cubeSize, const std::vector<char>& conversion, const std::vector<char>& shader, uint32_t lutSize, uint32_t samples,
+                                                 const VKAtmosphereParameters* sky)
         : physicalDevice(physicalDevice), device(device) 
     {
         if (!cubeSize || !irradianceSize || !prefilterSize || !levels || !lutSize || !samples)
@@ -75,7 +77,7 @@ namespace Prehistoric {
                                        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
             samplerInfo.maxLod = float((std::max)(levels, environment.levels) - 1);
             Check(vkCreateSampler(device, &samplerInfo, nullptr, &sampler));
-            Bake(queue, queueFamily, source, conversion, shader, samples);
+            Bake(queue, queueFamily, source, conversion, shader, samples, sky);
         } 
         catch (...)
         {
@@ -189,7 +191,8 @@ namespace Prehistoric {
     }
 
     void VKEnvironmentLighting::Bake(VkQueue queue, uint32_t queueFamily, VkDescriptorImageInfo source,
-                                     const std::vector<char>& conversion, const std::vector<char>& shader, uint32_t samples) 
+                                     const std::vector<char>& conversion, const std::vector<char>& shader, uint32_t samples,
+                                     const VKAtmosphereParameters* sky)
     {
         BakeResources resources{device};
         VkDescriptorSetLayoutBinding bindings[2]{};
@@ -208,7 +211,7 @@ namespace Prehistoric {
         };
         static_assert(sizeof(Parameters) == 16);
 
-        VkPushConstantRange push{VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(Parameters)};
+        VkPushConstantRange push{VK_SHADER_STAGE_COMPUTE_BIT, 0, sky ? uint32_t(VKAtmosphereParameters::PushOffset + sizeof(*sky)) : uint32_t(sizeof(Parameters))};
         VkPipelineLayoutCreateInfo layoutInfo{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
         layoutInfo.setLayoutCount = 1;
         layoutInfo.pSetLayouts = &resources.setLayout;
@@ -312,7 +315,8 @@ namespace Prehistoric {
 
                 // Each mip owns its descriptor set; no recorded dispatch observes
                 // a later update intended for another mip.
-                vkUpdateDescriptorSets(device, 2, writes, 0, nullptr);
+                uint32_t firstBinding = converting && sky ? 1 : 0;
+                vkUpdateDescriptorSets(device, 2 - firstBinding, writes + firstBinding, 0, nullptr);
                 vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_COMPUTE, resources.pipelineLayout,
                                         0, 1, &sets[setIndex++], 0, nullptr);
                 uint32_t size = (std::max)(map.size >> level, 1u);
@@ -320,8 +324,15 @@ namespace Prehistoric {
                 {
                     mode, int(size), map.levels > 1 ? float(level) / float(map.levels - 1) : 0.0f, int(samples)
                 };
-                vkCmdPushConstants(command, resources.pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0,
-                                   sizeof(parameters), &parameters);
+                if (converting && sky)
+                {
+                    vkCmdPushConstants(command, resources.pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT,
+                                       VKAtmosphereParameters::PushOffset, sizeof(*sky), sky);
+                }
+                else
+                {
+                    vkCmdPushConstants(command, resources.pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(parameters), &parameters);
+                }
                 vkCmdDispatch(command, (size + 7) / 8, (size + 7) / 8, map.layers);
             }
 

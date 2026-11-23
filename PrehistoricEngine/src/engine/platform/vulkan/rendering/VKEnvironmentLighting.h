@@ -4,14 +4,23 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
-namespace Prehistoric {
+namespace Prehistoric
+{
+    struct VKAtmosphereParameters;
+
     // Owns immutable, linear HDR IBL maps. Baking completes before scene rendering.
-    class VKEnvironmentLighting {
+    class VKEnvironmentLighting
+    {
     public:
+        static constexpr uint32_t DefaultLutSize = 256;
+        static constexpr uint32_t DefaultSamples = 512;
+
         VKEnvironmentLighting(VkPhysicalDevice physicalDevice, VkDevice device, VkQueue queue,
                               uint32_t queueFamily, VkDescriptorImageInfo source,
                               uint32_t irradianceSize, uint32_t prefilterSize, uint32_t levels,
-                              uint32_t cubeSize, const std::vector<char>& conversion, const std::vector<char>& shader, uint32_t lutSize = 256, uint32_t samples = 512);
+                              uint32_t cubeSize, const std::vector<char>& conversion, const std::vector<char>& shader,
+                              uint32_t lutSize = DefaultLutSize, uint32_t samples = DefaultSamples,
+                              const VKAtmosphereParameters* sky = nullptr);
 
         ~VKEnvironmentLighting();
 
@@ -41,7 +50,8 @@ namespace Prehistoric {
         void CreateMap(Map &map, uint32_t size, uint32_t levels, uint32_t layers);
         void DestroyMap(Map &map);
         void Bake(VkQueue queue, uint32_t queueFamily, VkDescriptorImageInfo source,
-                  const std::vector<char>& conversion, const std::vector<char>& shader, uint32_t samples);
+                  const std::vector<char>& conversion, const std::vector<char>& shader, uint32_t samples,
+                  const VKAtmosphereParameters* sky);
 
         VkPhysicalDevice physicalDevice;
         VkDevice device;

@@ -1,4 +1,5 @@
 #include "platform/vulkan/rendering/VKEnvironmentLighting.h"
+#include "platform/vulkan/rendering/VKAtmosphereParameters.h"
 #include "platform/vulkan/texture/VKImageMipmaps.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
@@ -83,7 +84,7 @@ struct Resources {
 };
 
 static void RunIBL(VkPhysicalDevice gpu, uint32_t family, const std::vector<char>& conversion, const std::vector<char>& code,
-                   const std::vector<char> &probe, const char *hdrPath) {
+                   const std::vector<char>& probe, const std::vector<char>& capture, const char* hdrPath) {
     Resources resources;
     uint32_t count;
     Check(vkEnumerateDeviceExtensionProperties(gpu, nullptr, &count, nullptr));
@@ -221,7 +222,7 @@ static void RunIBL(VkPhysicalDevice gpu, uint32_t family, const std::vector<char
     pipelineInfo.layout = resources.layout;
     Check(vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &resources.pipeline));
 
-    for (int pass = 0; pass < 4; ++pass) {
+    for (int pass = 0; pass < 5; ++pass) {
         // Black, constant HDR, analytic directional environment, then the actual
         // sample HDR with its small, bright sun. Exercise every source mip.
         float *mapped;
@@ -259,9 +260,17 @@ static void RunIBL(VkPhysicalDevice gpu, uint32_t family, const std::vector<char
         VKRecordImageMipmaps(command, resources.image, width, height, mipLevels);
         submit();
 
+        const VKAtmosphereParameters sky
+        {
+            {0, 1, 0, 0.14f}, {1, 0.79f, 0.43f, 48}, {5.5e-6f, 13e-6f, 22.4e-6f, 21e-6f},
+            {6371000, 6471000, 8000, 1200}, {0.758f, 0}
+        };
+        bool captureSky = pass == 4;
+        VkDescriptorImageInfo panorama{resources.sampler, resources.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
         VKEnvironmentLighting lighting(gpu, device, queue, family,
-                                       {resources.sampler, resources.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
-                                       16, 32, 4, 128, conversion, code, 32, 512);
+                                       captureSky ? VkDescriptorImageInfo{} : panorama,
+                                       16, 32, 4, 128, captureSky ? capture : conversion, code, 32, 512,
+                                       captureSky ? &sky : nullptr);
         if (lighting.getMaxReflectionLOD() != 3) throw std::runtime_error("Incorrect reflection mip range");
         VkDescriptorImageInfo images[] = {lighting.getIrradiance(), lighting.getPrefilter(), lighting.getBRDF()};
         VkDescriptorImageInfo source = lighting.getEnvironment();
@@ -312,6 +321,15 @@ static void RunIBL(VkPhysicalDevice gpu, uint32_t family, const std::vector<char
         if (mapped[30 * 4] < 0.1f) throw std::runtime_error("BRDF integration returned zero");
         if (pass == 2 && mapped[24 * 4] >= mapped[6 * 4] - 0.15f)
             throw std::runtime_error("Roughness did not broaden reflections");
+        if (captureSky)
+        {
+            float mirrorSun = mapped[8 * 4];
+            float roughSun = mapped[26 * 4];
+            if (mirrorSun < 10 || roughSun >= mirrorSun || mapped[2 * 4] <= 0)
+            {
+                throw std::runtime_error("Sky capture lost solar energy, diffuse lighting, or roughness response");
+            }
+        }
         float worstBasis = 0.0f, worstCube = 0.0f;
         for (int pair = 0; pair < 288; ++pair) {
             float *a = mapped + (64 + pair * 2) * 4;
@@ -335,7 +353,7 @@ static void RunIBL(VkPhysicalDevice gpu, uint32_t family, const std::vector<char
                 throw std::runtime_error("Mirror reflection no longer samples the sharp source");
         vkUnmapMemory(device, resources.memory);
     }
-    printf("PASS: black/HDR energy, six cube faces, diffuse convolution, roughness mips, and BRDF LUT\n");
+    printf("PASS: panorama and atmosphere IBL, six cube faces, diffuse convolution, roughness mips, and BRDF LUT\n");
 }
 
 int main(int argc, char **argv) {
@@ -343,8 +361,8 @@ int main(int argc, char **argv) {
     VkDebugUtilsMessengerEXT messenger = VK_NULL_HANDLE;
     int result = 0;
     try {
-        if (argc != 5)
-            throw std::runtime_error("Usage: VulkanIBLSmoke ibl.spv probe.spv convert.spv environment.hdr");
+        if (argc != 6)
+            throw std::runtime_error("Usage: VulkanIBLSmoke ibl.spv probe.spv convert.spv capture.spv environment.hdr");
         auto code = ReadShader(argv[1]);
         auto probe = ReadShader(argv[2]);
 
@@ -402,7 +420,7 @@ int main(int argc, char **argv) {
             for (uint32_t i = 0; i < count; i++) {
                 if (families[i].queueCount && ((families[i].queueFlags & (VK_QUEUE_COMPUTE_BIT | VK_QUEUE_GRAPHICS_BIT))
                                                == (VK_QUEUE_COMPUTE_BIT | VK_QUEUE_GRAPHICS_BIT))) {
-                    RunIBL(gpu, i, ReadShader(argv[3]), code, probe, argv[4]);
+                    RunIBL(gpu, i, ReadShader(argv[3]), code, probe, ReadShader(argv[4]), argv[5]);
                     tested++;
                     break;
                 }

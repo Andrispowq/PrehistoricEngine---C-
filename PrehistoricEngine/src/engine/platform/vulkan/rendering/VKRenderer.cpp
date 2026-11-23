@@ -1,6 +1,7 @@
 #include "Includes.hpp"
 #include "VKRenderer.h"
 #include "VKEnvironmentBackground.h"
+#include "VKAtmosphereParameters.h"
 #include "VKEnvironmentLighting.h"
 #include "platform/vulkan/texture/VKTexture.h"
 #include "prehistoric/application/Application.h"
@@ -41,16 +42,30 @@ namespace Prehistoric {
         swapchain->setRenderpass(renderpass.get());
         //A nastly little cheat to avoid modifying everything in the Pipeline system because the Vulkan Graphics Pipelines require the renderpass
         background = std::make_unique<VKEnvironmentBackground>(window);
+    }
 
-        VkDescriptorImageInfo source = background->getSource();
+    void VKRenderer::UpdateEnvironmentLighting()
+    {
+        bool captureSky = atmosphere != nullptr;
+        if (environmentLighting && atmosphereLighting == captureSky) return;
+
+        auto* device = static_cast<VKDevice*>(window->getContext()->getDevices());
+        VkDescriptorImageInfo source{};
         std::unique_ptr<VKTexture> fallback;
-        if (!source.imageView) {
-            fallback.reset(
-                (VKTexture *)
-                TextureLoader::LoadTexture(window, "engine://textures/default.png", Bilinear, ClampToEdge));
-            source = {
-                fallback->getSampler(), fallback->getImage()->getImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-            };
+        VKAtmosphereParameters sky{};
+        if (captureSky)
+        {
+            sky = GetAtmosphereParameters(*atmosphere);
+        }
+        else
+        {
+            source = background->LoadSource(window);
+            if (!source.imageView)
+            {
+                fallback.reset(static_cast<VKTexture*>(TextureLoader::LoadTexture(window,
+                    "engine://textures/default.png", Bilinear, ClampToEdge)));
+                source = {fallback->getSampler(), fallback->getImage()->getImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+            }
         }
 
         // Cap startup work independently of the more expensive OpenGL bake settings.
@@ -58,16 +73,15 @@ namespace Prehistoric {
         uint32_t irradianceSize = std::clamp(uint32_t(__EnvironmentMapConfig.irradianceMapResolution), 1u, 64u);
         uint32_t prefilterSize = std::clamp(uint32_t(__EnvironmentMapConfig.prefilterMapResolution), 2u, 256u);
         uint32_t levels = std::clamp(uint32_t(__EnvironmentMapConfig.prefilterLevels), 2u, 9u);
-        environmentLighting = std::make_unique<VKEnvironmentLighting>(device->getPhysicalDevice(), device->getDevice(),
-                                                                      device->getGraphicsQueue().getQueue(),
-                                                                      device->getQueueFamilyIndices().graphicsFamily,
-                                                                      source,
-                                                                      irradianceSize, prefilterSize, levels,
-                                                                      __EnvironmentMapConfig.environmentMapResolution,
-                                                                      ResourceLoader::LoadShaderVK("vulkan/ibl/convert_CS.spv"),
-                                                                      ResourceLoader::LoadShaderVK(
-                                                                          "vulkan/ibl/ibl_CS.spv"));
-        if (background->getSource().imageView) background->SetPrefilter(environmentLighting->getPrefilter());
+        const char* captureShader = captureSky ? "vulkan/atmosphere/capture_CS.spv" : "vulkan/ibl/convert_CS.spv";
+        environmentLighting = std::make_unique<VKEnvironmentLighting>(
+            device->getPhysicalDevice(), device->getDevice(), device->getGraphicsQueue().getQueue(),
+            device->getQueueFamilyIndices().graphicsFamily, source, irradianceSize, prefilterSize, levels,
+            __EnvironmentMapConfig.environmentMapResolution, ResourceLoader::LoadShaderVK(captureShader),
+            ResourceLoader::LoadShaderVK("vulkan/ibl/ibl_CS.spv"), VKEnvironmentLighting::DefaultLutSize,
+            VKEnvironmentLighting::DefaultSamples, captureSky ? &sky : nullptr);
+        atmosphereLighting = captureSky;
+        if (!captureSky && !fallback) background->SetPrefilter(environmentLighting->getPrefilter());
     }
 
     VKRenderer::~VKRenderer() {
@@ -124,17 +138,11 @@ namespace Prehistoric {
             background->RecreatePipeline();
 
             window->setResized(false);
-            commandBuffersReady = false;
         }
 
         if (!swapchain->GetNextImageIndex())
             return;
         frameReady = true;
-
-        if (!commandBuffersReady) {
-            BuildCommandBuffers();
-            commandBuffersReady = true;
-        }
 
         /*uint32_t index = swapchain->getAquiredImageIndex();
 		VKCommandBuffer* buffer = commandPool->getCommandBuffer(index);
@@ -169,6 +177,8 @@ namespace Prehistoric {
     void VKRenderer::Render() {
         if (!frameReady)
             return;
+
+        UpdateEnvironmentLighting();
 
         PR_PROFILE("Update uniforms");
 

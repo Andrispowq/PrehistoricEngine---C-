@@ -44,7 +44,8 @@ namespace Prehistoric {
         std::unique_ptr<VKEnvironmentBackground> background;
         std::unique_ptr<VKEnvironmentLighting> environmentLighting;
 
-        bool commandBuffersReady = false;
+        void UpdateEnvironmentLighting();
+        bool atmosphereLighting = false;
         bool frameReady = false;
     };
 };

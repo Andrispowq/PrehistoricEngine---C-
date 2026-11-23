@@ -24,7 +24,7 @@ namespace Prehistoric {
 
         void Draw(VkCommandBuffer commandBuffer, const Camera* camera, const Atmosphere* atmosphere) const;
 
-        VkDescriptorImageInfo getSource() const;
+        VkDescriptorImageInfo LoadSource(Window* window);
 
     private:
         VKDevice *device;

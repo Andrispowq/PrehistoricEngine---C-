@@ -114,3 +114,9 @@ float SunDiskWeight(float distanceToSun, float radius)
     if (distanceToSun >= radius) return 0.0;
     return smoothstep(0.0, 1.0, 0.1 * radius / max(distanceToSun, 1e-8) - 0.1);
 }
+
+float SunCaptureIntensity(float distanceToSun, float radius)
+{
+    if (distanceToSun >= radius) return 0.0;
+    return 1000.0 * smoothstep(0.0, 1.0, 0.18 * radius / max(distanceToSun, 1e-8) - 0.2);
+}

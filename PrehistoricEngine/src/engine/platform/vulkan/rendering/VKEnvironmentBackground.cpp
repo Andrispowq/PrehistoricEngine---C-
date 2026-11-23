@@ -1,5 +1,6 @@
 #include "Includes.hpp"
 #include "VKEnvironmentBackground.h"
+#include "VKAtmosphereParameters.h"
 #include "prehistoric/core/modules/atmosphere/Atmosphere.h"
 #include "platform/vulkan/framework/context/VKContext.h"
 #include "platform/vulkan/framework/swapchain/VKSwapchain.h"
@@ -20,14 +21,10 @@ namespace Prehistoric
             float rayX[4];
             float rayY[4];
             float rayCenter[4];
-            float sunPositionRadius[4];
-            float sunColourIntensity[4];
-            float rayleighMie[4];
-            float radiiAndScaleHeights[4];
-            float anisotropyAndShift[2];
+            VKAtmosphereParameters sky;
         };
 
-        static_assert(offsetof(BackgroundConstants, sunPositionRadius) == 48);
+        static_assert(offsetof(BackgroundConstants, sky) == VKAtmosphereParameters::PushOffset);
         static_assert(sizeof(BackgroundConstants) == 120);
 
         void Check(VkResult result) 
@@ -37,32 +34,33 @@ namespace Prehistoric
         }
     }
 
+    VKAtmosphereParameters GetAtmosphereParameters(const Atmosphere& atmosphere)
+    {
+        VKAtmosphereParameters sky{};
+        const auto& settings = __AtmosphereConfig;
+        auto pack = [](float (&values)[4], const Vector3f& xyz, float w)
+        {
+            values[0] = xyz.x;
+            values[1] = xyz.y;
+            values[2] = xyz.z;
+            values[3] = w;
+        };
+        pack(sky.sunPositionRadius, atmosphere.getSunPosition(), settings.sunRadius);
+        pack(sky.sunColourIntensity, settings.sunColour, settings.sunIntensity);
+        pack(sky.rayleighMie, settings.rayleigh, settings.mie);
+        sky.radiiAndScaleHeights[0] = settings.planetRadius;
+        sky.radiiAndScaleHeights[1] = settings.atmosphereRadius;
+        sky.radiiAndScaleHeights[2] = settings.rayleighHeightScale;
+        sky.radiiAndScaleHeights[3] = settings.mieHeightScale;
+        sky.anisotropyAndShift[0] = settings.mieDirection;
+        sky.anisotropyAndShift[1] = settings.horizontalVerticalShift;
+        return sky;
+    }
+
     VKEnvironmentBackground::VKEnvironmentBackground(Window *window)
         : device((VKDevice *) window->getContext()->getDevices()),
           swapchain((VKSwapchain *) window->getSwapchain()) 
     {
-        const auto &location = __EnvironmentMapConfig.environmentMapLocation;
-        if (!location.empty())
-        {
-            texture.reset((VKTexture *) TextureLoader::LoadTexture(window, location, Bilinear, ClampToEdge));
-
-            VkSamplerCreateInfo samplerInfo{VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
-            VkFormatProperties properties{};
-            vkGetPhysicalDeviceFormatProperties(device->getPhysicalDevice(), texture->getImage()->getImageFormat(),
-                                                &properties);
-            samplerInfo.magFilter = samplerInfo.minFilter =
-                                    properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT
-                                        ? VK_FILTER_LINEAR
-                                        : VK_FILTER_NEAREST;
-            samplerInfo.mipmapMode = samplerInfo.minFilter == VK_FILTER_LINEAR
-                                         ? VK_SAMPLER_MIPMAP_MODE_LINEAR
-                                         : VK_SAMPLER_MIPMAP_MODE_NEAREST;
-            samplerInfo.maxLod = float(texture->getImage()->getMipLevels() - 1);
-            samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-            samplerInfo.addressModeV = samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-            Check(vkCreateSampler(device->getDevice(), &samplerInfo, nullptr, &sampler));
-        }
-
         VkDescriptorSetLayoutBinding binding{};
         binding.binding = 0;
         binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -110,8 +108,29 @@ namespace Prehistoric
         vkUpdateDescriptorSets(device->getDevice(), 1, &write, 0, nullptr);
     }
 
-    VkDescriptorImageInfo VKEnvironmentBackground::getSource() const
+    VkDescriptorImageInfo VKEnvironmentBackground::LoadSource(Window* window)
     {
+        const auto& location = __EnvironmentMapConfig.environmentMapLocation;
+        if (!texture && !location.empty())
+        {
+            texture.reset(static_cast<VKTexture*>(TextureLoader::LoadTexture(window, location, Bilinear, ClampToEdge)));
+
+            VkSamplerCreateInfo samplerInfo{VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
+            VkFormatProperties properties{};
+            vkGetPhysicalDeviceFormatProperties(device->getPhysicalDevice(), texture->getImage()->getImageFormat(),
+                                                &properties);
+            samplerInfo.magFilter = samplerInfo.minFilter =
+                                    properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT
+                                        ? VK_FILTER_LINEAR
+                                        : VK_FILTER_NEAREST;
+            samplerInfo.mipmapMode = samplerInfo.minFilter == VK_FILTER_LINEAR
+                                         ? VK_SAMPLER_MIPMAP_MODE_LINEAR
+                                         : VK_SAMPLER_MIPMAP_MODE_NEAREST;
+            samplerInfo.maxLod = float(texture->getImage()->getMipLevels() - 1);
+            samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+            samplerInfo.addressModeV = samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            Check(vkCreateSampler(device->getDevice(), &samplerInfo, nullptr, &sampler));
+        }
         return 
         {
             sampler, texture ? texture->getImage()->getImageView() : VK_NULL_HANDLE,
@@ -137,7 +156,6 @@ namespace Prehistoric
 
         atmospherePipeline = swapchain->getRenderpass()->CreateFullscreenPipeline("vulkan/background/background_VS.spv",
             "vulkan/atmosphere/scattering_FS.spv", pipelineLayout, 0);
-        if (!texture) return;
         pipeline = swapchain->getRenderpass()->CreateFullscreenPipeline("vulkan/background/background_VS.spv",
             "vulkan/background/background_FS.spv", pipelineLayout, 0);
     }
@@ -145,7 +163,7 @@ namespace Prehistoric
     void VKEnvironmentBackground::Draw(VkCommandBuffer commandBuffer, const Camera* camera, const Atmosphere* atmosphere) const
     {
         VkPipeline selected = atmosphere ? atmospherePipeline : pipeline;
-        if (!selected) return;
+        if (!atmosphere && !texture) return;
         // Remove translation from the actual view matrix, retaining camera rotation.
         Matrix4f view = camera->getViewMatrix();
         view.m[12] = view.m[13] = view.m[14] = 0.0f;
@@ -160,23 +178,7 @@ namespace Prehistoric
         }
         if (atmosphere)
         {
-            const auto& settings = __AtmosphereConfig;
-            auto pack = [](float (&values)[4], const Vector3f& xyz, float w)
-            {
-                values[0] = xyz.x;
-                values[1] = xyz.y;
-                values[2] = xyz.z;
-                values[3] = w;
-            };
-            pack(constants.sunPositionRadius, atmosphere->getSunPosition(), settings.sunRadius);
-            pack(constants.sunColourIntensity, settings.sunColour, settings.sunIntensity);
-            pack(constants.rayleighMie, settings.rayleigh, settings.mie);
-            constants.radiiAndScaleHeights[0] = settings.planetRadius;
-            constants.radiiAndScaleHeights[1] = settings.atmosphereRadius;
-            constants.radiiAndScaleHeights[2] = settings.rayleighHeightScale;
-            constants.radiiAndScaleHeights[3] = settings.mieHeightScale;
-            constants.anisotropyAndShift[0] = settings.mieDirection;
-            constants.anisotropyAndShift[1] = settings.horizontalVerticalShift;
+            constants.sky = GetAtmosphereParameters(*atmosphere);
         }
         auto extent = swapchain->getSwapchainExtent();
         VkViewport viewport{0, 0, (float) extent.width, (float) extent.height, 0, 1};

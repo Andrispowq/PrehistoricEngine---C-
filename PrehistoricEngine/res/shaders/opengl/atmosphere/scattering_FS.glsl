@@ -52,7 +52,7 @@ void main()
 	
 	ray_world.y += horizontalVerticalShift;
 	
-	vec3 out_LightScattering = vec3(0);
+
 
     vec3 out_Colour = atmosphere(
         normalize(ray_world),        	        // normalized ray direction
@@ -76,15 +76,10 @@ void main()
 	if(sunradius < sunRadius)
 	{
 		float smoothRadius = SunDiskWeight(sunradius, sunRadius);
-		sunradius /= sunRadius;
         out_Colour = mix(out_Colour, sunColour * 4, smoothRadius);
-		
-		smoothRadius = smoothstep(0, 1, 0.18f / sunradius - 0.2f);
-		out_LightScattering = mix(vec3(0), sunColour, smoothRadius);
-
         if (isCubemap != 0)
         {
-            out_Colour += out_LightScattering * 1000;
+            out_Colour += sunColour * SunCaptureIntensity(sunradius, sunRadius);
         }
 	}
 	

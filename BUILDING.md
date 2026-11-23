@@ -351,18 +351,18 @@ The BRDF LUT depends only on view angle and roughness.
 
 Vulkan draws the background into the HDR scene using a fullscreen triangle. OpenGL draws a cube and applies its HDR post
 process. Both applications configure the original Cape Hill HDR. An empty
-Vulkan environment location keeps the window clear colour. Vulkan uses a
+Vulkan environment location keeps the window clear colour when the scene has no atmosphere. Vulkan uses a
 single source cube level on hardware lacking float linear blits.
 
 Vulkan retains its startup budget of 512 integration samples, up to 64 texels
 per irradiance face edge, up to 256 per reflection face edge, and a 256-square
 BRDF LUT. OpenGL uses the configured cube dimensions, 16,384 diffuse samples,
 2,048 reflection samples, and a 512-square LUT with 1,024 samples.
-Vulkan records the bake once and retains the resulting maps across resizes.
+Vulkan retains the baked maps across resizes.
 
 Run `python3 tests/vulkan_background_contract.py` for the background shader
 interface and `python3 tests/vulkan_ibl_smoke.py` for headless GPU readback
-using black, constant, directional, and Cape Hill environments. The latter
+using black, constant, directional, Cape Hill, and procedural sky environments. The latter
 requires a Vulkan SDK, a C++17 compiler and a Vulkan device with validation
 layers. Use `python3 tests/resource_pipeline.py` to check staging and install.
 
@@ -374,8 +374,12 @@ the scene root. An empty sun field uses the sample's fixed sun position.
 Both backends use the Rayleigh/Mie integration and disk profile in
 `shaders/shared/atmosphere/scattering.glsl`. Vulkan applies exposure in its
 final HDR pass. In worlds without an active scattering atmosphere, the HDR
-environment background is used when configured. Vulkan material lighting still
-comes from the configured HDR environment bake.
+environment background is used when configured. Vulkan bakes the registered scattering atmosphere into a linear
+HDR cubemap
+before the first PBR draw, including the bright solar core used in OpenGL captures.
+The existing irradiance and GGX prefilter stages consume that cube. Switching
+between atmosphere and panorama selects a new bake. Moving the sun within the
+same atmosphere leaves the lighting snapshot in place.
 
 The scene owns the atmosphere and its sun binding. Each frame, an enabled
 atmosphere with a sun registers with the renderer. OpenGL's renderer owns the

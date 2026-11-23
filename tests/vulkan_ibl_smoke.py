@@ -16,7 +16,8 @@ with tempfile.TemporaryDirectory(prefix='vulkan-ibl-') as temporary:
     binaries = []
     for source in (root / 'PrehistoricEngine/res/shaders/vulkan/ibl/ibl.comp',
                    root / 'tests/shaders/vulkan_ibl_probe.comp',
-                   root / 'PrehistoricEngine/res/shaders/vulkan/ibl/convert.comp'):
+                   root / 'PrehistoricEngine/res/shaders/vulkan/ibl/convert.comp',
+                   root / 'PrehistoricEngine/res/shaders/vulkan/atmosphere/capture.comp'):
         binary = work / (source.stem + '.spv')
         subprocess.run(
             ['glslc', '--target-env=vulkan1.1', '-I' + str(root / 'PrehistoricEngine/res/shaders/vulkan'), str(source),
