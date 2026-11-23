@@ -16,6 +16,12 @@ workspace "PrehistoricEngine"
 		"MultiProcessorCompile"
 	}
 
+    filter "system:windows"
+        defines { "NOMINMAX" }
+    filter "action:vs2022"
+        toolset "msc-v145"
+    filter {}
+
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
