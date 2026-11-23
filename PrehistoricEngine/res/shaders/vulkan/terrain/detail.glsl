@@ -5,6 +5,7 @@ layout(set=1, binding=6) uniform sampler2D mrot1;
 layout(set=1, binding=9) uniform sampler2D mrot2;
 layout(set=1, binding=11) uniform texture2D terrainSplat;
 layout(set=1, binding=15) uniform sampler mapSampler;
+
 float terrainOffset(vec2 uv, float dist)
 {
 	vec2 tiled = vec2(uv.x, -uv.y);
