@@ -154,13 +154,13 @@ void main()
 	kD *= 1.0 - metallic;
 
 	vec3 irradiance = texture(irradianceMap, N).rgb;
-	vec3 diffuse = irradiance * albedoColour;
+	vec3 diffuse = irradiance * albedoColour * occlusion;
 
 	vec3 prefilteredColor = textureLod(prefilterMap, R, roughness * maxReflectionLOD).rgb;
-	vec2 envBRDF = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
+	vec2 envBRDF = texture(brdfLUT, vec2(max(dot(N, V), 0.01), roughness)).rg;
 	vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
 
-	vec3 ambient = (kD * diffuse + specular) * occlusion;
+	vec3 ambient = kD * diffuse + specular;
 	
 	// Match OpenGL: scalar emission strength tinted by the material albedo.
 	vec3 colour = ambient + Lo + clamp(albedoColour, vec3(0.05), vec3(1.0)) * emission * emissionFactor;

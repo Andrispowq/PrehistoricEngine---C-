@@ -14,7 +14,6 @@ namespace Prehistoric
 		AddUniform("environmentMap");
 		AddUniform("roughness");
 		AddUniform("resolution");
-		AddUniform("resolution_environmentMap");
 	}
 
 	void GLPrefilterShader::UpdateUniforms(Texture* texture, float roughness, float resolution) const
@@ -24,6 +23,5 @@ namespace Prehistoric
 
 		SetUniformf("roughness", roughness);
 		SetUniformf("resolution", resolution);
-		SetUniformf("resolution_environmentMap", (float)__EnvironmentMapConfig.environmentMapResolution);
 	}
 };

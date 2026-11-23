@@ -11,13 +11,14 @@ namespace Prehistoric {
     class VKTexture;
     class VKSwapchain;
 
-    // Direct equirectangular background; no cubemap conversion or IBL resources.
+    // Owns the HDR input and draws the baked reflection cubemap.
     class VKEnvironmentBackground {
     public:
         explicit VKEnvironmentBackground(Window *window);
 
         ~VKEnvironmentBackground();
 
+        void SetPrefilter(const VkDescriptorImageInfo& imageInfo);
         void RecreatePipeline();
 
         void Draw(VkCommandBuffer commandBuffer, const Camera *camera) const;

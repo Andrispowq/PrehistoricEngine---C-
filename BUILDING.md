@@ -339,71 +339,33 @@ sRGB/UNORM format selection numerically. It requires `glslc`, `spirv-val`,
 `spirv-dis`, and a C++17 compiler (`CXX`, default `c++`). It does not perform GPU
 frame rendering or visual comparison.
 
-## Vulkan HDR background
+## HDR environment maps in OpenGL and Vulkan
 
-Vulkan draws the configured `environmentMap.location` directly as an
-equirectangular background. Both apps select
-`sample://textures/environmentMaps/cape_hill_2k.hdr`; use the original HDR
-(north-to-south image rows), rather than the older vertically flipped `.prt`
-conversion. An empty location keeps the window clear colour.
+Both HDR paths convert the configured panorama into a floating-point cubemap at
+`environmentMapResolution`, generate its mip chain, and bake irradiance and GGX
+reflection cubemaps. They draw the background from the reflection map at LOD zero
+by default. The shared GLSL in `opengl/environmentMap/shared/` defines face
+orientation, panorama texels, angular sampling, source LOD, and the split-sum
+BRDF integral. A constant white environment produces diffuse irradiance of PI.
+The BRDF LUT depends only on view angle and roughness.
 
-The fullscreen triangle follows camera rotation and projection, ignores camera
-translation, and leaves depth untouched. It uses the PBR exposure and output
-encoding, including hardware sRGB conversion where applicable. HDR data is
-expanded to RGBA floats and uploaded without 8-bit clipping. The sampler repeats
-at the longitude seam and clamps at the poles; devices without float linear
-filtering use nearest filtering. Resize recreates the pipeline for the new render
-pass. The two background shaders are part of the normal portable resource build.
-The background remains independent of the IBL maps. Procedural atmosphere is still deferred.
+Vulkan uses a fullscreen triangle and applies exposure and output encoding in
+the background fragment shader. OpenGL draws a cube and applies its HDR post
+process. Both applications configure the original Cape Hill HDR. An empty
+Vulkan environment location keeps the window clear colour. Vulkan uses a
+single source cube level on hardware lacking float linear blits.
 
-Run `python3 tests/vulkan_background_contract.py` to check compiled shader
-interfaces and resource selection, and `python3 tests/resource_pipeline.py` to
-check shader staging/install and incremental builds. These are not visual tests.
+Vulkan retains its startup budget of 512 integration samples, up to 64 texels
+per irradiance face edge, up to 256 per reflection face edge, and a 256-square
+BRDF LUT. OpenGL uses the configured cube dimensions, 16,384 diffuse samples,
+2,048 reflection samples, and a 512-square LUT with 1,024 samples.
+Vulkan records the bake once and retains the resulting maps across resizes.
 
-## Vulkan image-based lighting
-
-Vulkan now bakes diffuse irradiance, a GGX-prefiltered reflection cubemap, and a
-split-sum BRDF lookup table from the same HDR source as the background. PBR uses
-these maps for its ambient term, including metallic Fresnel weighting, material
-occlusion, the perturbed normal and reflection direction. The existing direct
-light `/2.0` geometry term, scalar emission and output encoding remain in place.
-Diffuse convolution stores irradiance divided by PI, so a constant white
-surrounding environment produces unit diffuse radiance before material weighting.
-
-The bake runs once during renderer initialization on a graphics queue that also
-supports compute. Explicit image barriers and a completion fence precede PBR
-sampling; the generated maps survive window resizing. Changing the environment
-configuration requires restarting the renderer. An empty environment location
-uses black IBL while preserving the background clear-colour behavior.
-
-To bound startup work, Vulkan caps the configured irradiance resolution at 64
-and reflection resolution at 256, with 512 samples per convolution/LUT texel and
-a 256-square BRDF LUT. Reflection mip count uses `prefilterMapLevels`, clamped to
-the valid chain (at least two levels); PBR derives its maximum LOD from that
-chain. Maps remain linear RGBA32F. The HDR source now has a full mip chain on
-hardware supporting linear float blits. Convolution chooses the source LOD from
-the sample PDF and the equirectangular footprint, using its major axis to avoid
-longitude discontinuities at the poles. The background and mirror reflection
-still sample the sharp base level. Hardware lacking float blit/filter support
-retains the single-level/nearest fallback and does not receive the full filtering
-quality improvement.
-
-Two analytic sampling frames cover the sphere. Their convolution results blend
-smoothly across an equatorial overlap, removing hard sample-pattern switches
-without introducing a new seam at the opposite pole. The overlap evaluates both
-frames, adding startup bake work but no per-frame rendering cost. Finite sampling
-can still produce residual variation; this is not a guarantee of noise-free IBL.
-
-Run `python3 tests/vulkan_ibl_smoke.py` with the Vulkan SDK installed (`VULKAN_SDK`
-can specify its root). This headless test executes the production baker and reads
-back sampled maps for black, constant-HDR, directional and actual Cape Hill HDR
-environments. It exercises the production source-mip recording helper, energy,
-cube orientation, diffuse normalization, roughness filtering, BRDF values and
-nearby samples straddling the old basis switch, the new blend boundaries, and all
-12 cube edges. It also verifies source mip availability and sharp mirror sampling
-under Vulkan validation. It does not require or inspect a window. On macOS,
-the process needs access to Metal; a sandbox that hides GPUs cannot run it.
-`python3 tests/vulkan_pbr_contract.py` also checks the compiled global IBL bindings.
+Run `python3 tests/vulkan_background_contract.py` for the background shader
+interface and `python3 tests/vulkan_ibl_smoke.py` for headless GPU readback
+using black, constant, directional, and Cape Hill environments. The latter
+requires a Vulkan SDK, a C++17 compiler and a Vulkan device with validation
+layers. Use `python3 tests/resource_pipeline.py` to check staging and install.
 
 ## CPU math tests and CI
 

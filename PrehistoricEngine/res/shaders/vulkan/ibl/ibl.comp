@@ -1,7 +1,7 @@
 #version 450
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
-layout(set = 0, binding = 0) uniform sampler2D environmentMap;
+layout(set = 0, binding = 0) uniform samplerCube environmentMap;
 layout(set = 0, binding = 1, rgba32f) uniform writeonly image2DArray outputMap;
 
 layout(push_constant) uniform Parameters
@@ -14,23 +14,9 @@ layout(push_constant) uniform Parameters
 
 #include "sampling.glsl"
 
-vec3 CubeDirection(ivec3 pixel)
-{
-    vec2 uv = (vec2(pixel.xy) + 0.5) / float(parameters.resolution) * 2.0 - 1.0;
-    // Vulkan cube layer order: +X, -X, +Y, -Y, +Z, -Z.
-    if (pixel.z == 0) return normalize(vec3(1.0, -uv.y, -uv.x));
-    if (pixel.z == 1) return normalize(vec3(-1.0, -uv.y, uv.x));
-    if (pixel.z == 2) return normalize(vec3(uv.x, 1.0, uv.y));
-    if (pixel.z == 3) return normalize(vec3(uv.x, -1.0, -uv.y));
-    if (pixel.z == 4) return normalize(vec3(uv.x, -uv.y, 1.0));
-    return normalize(vec3(-uv.x, -uv.y, -1.0));
-}
+#include "../../opengl/environmentMap/shared/cubeDirection.glsl"
 
-float GeometrySchlickGGX(float cosine, float roughness)
-{
-    float k = roughness * roughness / 2.0;
-    return cosine / max(cosine * (1.0 - k) + k, 0.00001);
-}
+#include "../../opengl/environmentMap/shared/brdf.glsl"
 
 void main()
 {
@@ -40,33 +26,12 @@ void main()
 
     if (parameters.mode == 2)
     {
-        vec2 uv = (vec2(pixel.xy) + 0.5) / float(parameters.resolution);
-        float NdotV = uv.x;
-        float roughness = uv.y;
-        vec3 V = vec3(sqrt(1.0 - NdotV * NdotV), 0.0, NdotV);
-        vec2 integrated = vec2(0.0);
-
-        for (uint i = 0; i < count; ++i)
-        {
-            vec3 H = ImportanceSampleGGX(Hammersley(i, count), roughness);
-            vec3 L = normalize(2.0 * dot(V, H) * H - V);
-            float NdotL = max(L.z, 0.0);
-            float VdotH = max(dot(V, H), 0.0);
-
-            if (NdotL > 0.0)
-            {
-                float G = GeometrySchlickGGX(NdotV, roughness) * GeometrySchlickGGX(NdotL, roughness);
-                float visibility = G * VdotH / max(H.z * NdotV, 0.00001);
-                float fresnel = pow(1.0 - VdotH, 5.0);
-                integrated += vec2(1.0 - fresnel, fresnel) * visibility;
-            }
-        }
-
-        imageStore(outputMap, pixel, vec4(integrated / float(count), 0.0, 1.0));
+        vec2 uv = vec2(pixel.xy) / float(parameters.resolution);
+        imageStore(outputMap, pixel, vec4(IntegrateBRDF(uv.x, uv.y, count), 0.0, 1.0));
         return;
     }
 
-    vec3 N = CubeDirection(pixel);
+    vec3 N = CubeDirection(pixel, parameters.resolution);
     vec3 colour = ConvolveEnvironment(N, parameters.roughness, count, parameters.mode == 0);
     imageStore(outputMap, pixel, vec4(colour, 1.0));
 }

@@ -11,18 +11,14 @@ layout(push_constant) uniform Background
     float gamma;
 } sky;
 
-layout(set = 0, binding = 0) uniform sampler2D environmentMap;
+layout(set = 0, binding = 0) uniform samplerCube environmentMap;
 
 const float PI = 3.14159265359;
 
 void main()
 {
     vec3 ray = normalize(direction);
-    // Source HDR rows run from the north pole to the south pole.
-    vec2 uv = vec2(atan(ray.z, ray.x) / (2.0 * PI) + 0.5,
-            0.5 - asin(clamp(ray.y, -1.0, 1.0)) / PI);
-
-    vec3 colour = max(textureLod(environmentMap, uv, 0.0).rgb, vec3(0.0));
+    vec3 colour = textureLod(environmentMap, ray, 0.0).rgb;
     colour = 1.0 - exp(-colour * sky.exposure);
     if (sky.gamma != 1.0)
     {

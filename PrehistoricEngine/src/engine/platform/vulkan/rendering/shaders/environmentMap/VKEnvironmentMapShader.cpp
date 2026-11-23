@@ -3,9 +3,11 @@
 
 #include "prehistoric/application/Application.h"
 
-namespace Prehistoric {
-    VKEnvironmentMapShader::VKEnvironmentMapShader(Window *window) : VKShader(
-        window->getContext(), window->getSwapchain()) {
+namespace Prehistoric 
+{
+    VKEnvironmentMapShader::VKEnvironmentMapShader(Window *window) :
+        VKShader(window->getContext(), window->getSwapchain()) 
+    {
         AddShader(ResourceLoader::LoadShaderVK("vulkan/environmentMap/environmentMap_CS.spv"), COMPUTE_SHADER);
 
         AddUniform("data", COMPUTE_SHADER, UniformBuffer, 1, 0, 2 * Vector2f::size());
@@ -16,19 +18,24 @@ namespace Prehistoric {
         descriptorPool->finalise(pipelineLayout);
     }
 
-    void VKEnvironmentMapShader::BindGlobalSets() const {
-        if (commandBuffer) {
+    void VKEnvironmentMapShader::BindGlobalSets() const 
+    {
+        if (commandBuffer) 
+        {
             BindSets(commandBuffer, 1, 1);
         }
     }
 
-    void VKEnvironmentMapShader::BindTextureSets(uint32_t descriptor_index) const {
-        if (commandBuffer) {
+    void VKEnvironmentMapShader::BindTextureSets(uint32_t descriptor_index) const 
+    {
+        if (commandBuffer) 
+        {
             BindSets(commandBuffer, 0, 1, descriptor_index);
         }
     }
 
-    void VKEnvironmentMapShader::UpdateUniforms(Vector2f equirectMapRes) const {
+    void VKEnvironmentMapShader::UpdateUniforms(Vector2f equirectMapRes) const
+    {
         SetUniform("data", equirectMapRes, Vector2f::size() * 0);
         SetUniformf("data", (float) __EnvironmentMapConfig.environmentMapResolution, Vector2f::size() * 1);
     }

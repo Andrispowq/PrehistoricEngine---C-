@@ -73,8 +73,11 @@ namespace Prehistoric {
                                                                       device->getQueueFamilyIndices().graphicsFamily,
                                                                       source,
                                                                       irradianceSize, prefilterSize, levels,
+                                                                      __EnvironmentMapConfig.environmentMapResolution,
+                                                                      ResourceLoader::LoadShaderVK("vulkan/ibl/convert_CS.spv"),
                                                                       ResourceLoader::LoadShaderVK(
                                                                           "vulkan/ibl/ibl_CS.spv"));
+        if (background->getSource().imageView) background->SetPrefilter(environmentLighting->getPrefilter());
     }
 
     VKRenderer::~VKRenderer() {

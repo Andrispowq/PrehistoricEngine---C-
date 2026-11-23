@@ -15,7 +15,7 @@ namespace Prehistoric {
 
     class VKRenderer : public Renderer {
     public:
-        VKRenderer(Window *window, Camera *camera, AssembledAssetManager *manager);
+        VKRenderer(Window* window, Camera* camera, AssembledAssetManager* manager);
 
         virtual ~VKRenderer();
 
@@ -27,11 +27,11 @@ namespace Prehistoric {
 
         void BuildCommandBuffers();
 
-        virtual CommandBuffer *getDrawCommandBuffer() const {
-            return (CommandBuffer *) commandPool->getCommandBuffer(window->getSwapchain()->getAquiredImageIndex());
+        virtual CommandBuffer* getDrawCommandBuffer() const {
+            return (CommandBuffer*) commandPool->getCommandBuffer(window->getSwapchain()->getAquiredImageIndex());
         }
 
-        VKEnvironmentLighting *getEnvironmentLighting() const {
+        VKEnvironmentLighting* getEnvironmentLighting() const {
             return environmentLighting.get();
         }
 
@@ -39,7 +39,7 @@ namespace Prehistoric {
         std::unique_ptr<VKCommandPool> commandPool;
         std::unique_ptr<VKRenderpass> renderpass;
 
-        std::vector<std::unique_ptr<VKFramebuffer> > primaryFramebuffers;
+        std::vector<std::unique_ptr<VKFramebuffer>> primaryFramebuffers;
 
         std::unique_ptr<VKEnvironmentBackground> background;
         std::unique_ptr<VKEnvironmentLighting> environmentLighting;

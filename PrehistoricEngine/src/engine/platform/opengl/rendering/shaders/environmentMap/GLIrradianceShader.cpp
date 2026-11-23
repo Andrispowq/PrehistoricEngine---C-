@@ -12,7 +12,6 @@ namespace Prehistoric
 		CompileShader();
 
 		AddUniform("environmentMap");
-		AddUniform("resolution");
 		AddUniform("resolution_irradianceMap");
 	}
 
@@ -21,7 +20,6 @@ namespace Prehistoric
 		texture->Bind();
 		SetUniformi("environmentMap", 0);
 
-		SetUniformf("resolution", (float)__EnvironmentMapConfig.environmentMapResolution);
 		SetUniformf("resolution_irradianceMap", (float)__EnvironmentMapConfig.irradianceMapResolution);
 	}
 };

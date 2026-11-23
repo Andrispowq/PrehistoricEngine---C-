@@ -9,11 +9,14 @@
 #include "prehistoric/core/resources/loaders/TextureLoader.h"
 #include "prehistoric/common/rendering/shaders/Shader.h"
 
-namespace Prehistoric {
-    namespace {
+namespace Prehistoric 
+{
+    namespace 
+    {
         constexpr VkShaderStageFlags stages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
-        struct BackgroundConstants {
+        struct BackgroundConstants 
+        {
             float inverseViewProjection[16];
             float exposure;
             float gamma;
@@ -21,7 +24,8 @@ namespace Prehistoric {
 
         static_assert(sizeof(BackgroundConstants) == 72);
 
-        void Check(VkResult result) {
+        void Check(VkResult result) 
+        {
             if (result != VK_SUCCESS)
                 PR_LOG_RUNTIME_ERROR("Failed to create Vulkan environment background (VkResult %d)!\n", result);
         }
@@ -29,7 +33,8 @@ namespace Prehistoric {
 
     VKEnvironmentBackground::VKEnvironmentBackground(Window *window)
         : device((VKDevice *) window->getContext()->getDevices()),
-          swapchain((VKSwapchain *) window->getSwapchain()) {
+          swapchain((VKSwapchain *) window->getSwapchain()) 
+    {
         const auto &location = __EnvironmentMapConfig.environmentMapLocation;
         if (location.empty())return;
         texture.reset((VKTexture *) TextureLoader::LoadTexture(window, location, Bilinear, ClampToEdge));
@@ -74,18 +79,6 @@ namespace Prehistoric {
         allocation.pSetLayouts = &descriptorLayout;
         Check(vkAllocateDescriptorSets(device->getDevice(), &allocation, &descriptorSet));
 
-        VkDescriptorImageInfo imageInfo{
-            sampler, texture->getImage()->getImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-        };
-        VkWriteDescriptorSet write{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
-        write.dstSet = descriptorSet;
-        write.dstBinding = 0;
-        write.descriptorCount = 1;
-        write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        write.pImageInfo = &imageInfo;
-
-        vkUpdateDescriptorSets(device->getDevice(), 1, &write, 0, nullptr);
-
         VkPushConstantRange constants{stages, 0, sizeof(BackgroundConstants)};
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
         pipelineLayoutInfo.setLayoutCount = 1;
@@ -97,14 +90,29 @@ namespace Prehistoric {
         RecreatePipeline();
     }
 
-    VkDescriptorImageInfo VKEnvironmentBackground::getSource() const {
-        return {
+    void VKEnvironmentBackground::SetPrefilter(const VkDescriptorImageInfo& imageInfo)
+    {
+        VkWriteDescriptorSet write{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
+        write.dstSet = descriptorSet;
+        write.dstBinding = 0;
+        write.descriptorCount = 1;
+        write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        write.pImageInfo = &imageInfo;
+
+        vkUpdateDescriptorSets(device->getDevice(), 1, &write, 0, nullptr);
+    }
+
+    VkDescriptorImageInfo VKEnvironmentBackground::getSource() const
+    {
+        return 
+        {
             sampler, texture ? texture->getImage()->getImageView() : VK_NULL_HANDLE,
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
         };
     }
 
-    VKEnvironmentBackground::~VKEnvironmentBackground() {
+    VKEnvironmentBackground::~VKEnvironmentBackground() 
+    {
         vkDestroyPipeline(device->getDevice(), pipeline, nullptr);
         vkDestroyPipelineLayout(device->getDevice(), pipelineLayout, nullptr);
         vkDestroyDescriptorPool(device->getDevice(), descriptorPool, nullptr);
@@ -112,14 +120,18 @@ namespace Prehistoric {
         vkDestroySampler(device->getDevice(), sampler, nullptr);
     }
 
-    void VKEnvironmentBackground::RecreatePipeline() {
+    void VKEnvironmentBackground::RecreatePipeline() 
+    {
         if (!texture) return;
         vkDestroyPipeline(device->getDevice(), pipeline, nullptr);
         pipeline = VK_NULL_HANDLE;
+
         VkShaderModule modules[2]{};
         VkPipelineShaderStageCreateInfo shaderStages[2]{};
         const char *paths[] = {"vulkan/background/background_VS.spv", "vulkan/background/background_FS.spv"};
-        for (size_t i = 0; i < 2; ++i) {
+
+        for (size_t i = 0; i < 2; ++i) 
+        {
             auto code = ResourceLoader::LoadShaderVK(paths[i]);
             VkShaderModuleCreateInfo moduleInfo{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
             moduleInfo.codeSize = code.size();
@@ -181,19 +193,22 @@ namespace Prehistoric {
         const VkResult result = vkCreateGraphicsPipelines(device->getDevice(), VK_NULL_HANDLE, 1, &info, nullptr,
                                                           &pipeline);
 
-        for (auto module: modules) {
+        for (auto module: modules)
+        {
             vkDestroyShaderModule(device->getDevice(), module, nullptr);
         }
         Check(result);
     }
 
-    void VKEnvironmentBackground::Draw(VkCommandBuffer commandBuffer, const Camera *camera) const {
+    void VKEnvironmentBackground::Draw(VkCommandBuffer commandBuffer, const Camera *camera) const 
+    {
         if (!pipeline) return;
         // Remove translation from the actual view matrix, retaining camera rotation.
         Matrix4f view = camera->getViewMatrix();
         view.m[12] = view.m[13] = view.m[14] = 0.0f;
         Matrix4f inverse = (camera->getProjectionMatrix() * view).Invert();
         BackgroundConstants constants{};
+
         memcpy(constants.inverseViewProjection, inverse.m, sizeof(constants.inverseViewProjection));
         constants.exposure = __EngineConfig.rendererExposure;
         constants.gamma = VKPBRShaderGamma(swapchain->getColourImage()->getImageFormat(), __EngineConfig.rendererGamma);

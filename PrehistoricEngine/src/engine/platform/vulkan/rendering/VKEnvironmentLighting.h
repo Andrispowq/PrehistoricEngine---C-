@@ -11,18 +11,16 @@ namespace Prehistoric {
         VKEnvironmentLighting(VkPhysicalDevice physicalDevice, VkDevice device, VkQueue queue,
                               uint32_t queueFamily, VkDescriptorImageInfo source,
                               uint32_t irradianceSize, uint32_t prefilterSize, uint32_t levels,
-                              const std::vector<char> &shader, uint32_t lutSize = 256, uint32_t samples = 512);
+                              uint32_t cubeSize, const std::vector<char>& conversion, const std::vector<char>& shader, uint32_t lutSize = 256, uint32_t samples = 512);
 
         ~VKEnvironmentLighting();
 
         VKEnvironmentLighting(const VKEnvironmentLighting &) = delete;
-
         VKEnvironmentLighting &operator=(const VKEnvironmentLighting &) = delete;
 
+        VkDescriptorImageInfo getEnvironment() const;
         VkDescriptorImageInfo getIrradiance() const;
-
         VkDescriptorImageInfo getPrefilter() const;
-
         VkDescriptorImageInfo getBRDF() const;
 
         float getMaxReflectionLOD() const {
@@ -41,15 +39,14 @@ namespace Prehistoric {
         };
 
         void CreateMap(Map &map, uint32_t size, uint32_t levels, uint32_t layers);
-
         void DestroyMap(Map &map);
-
         void Bake(VkQueue queue, uint32_t queueFamily, VkDescriptorImageInfo source,
-                  const std::vector<char> &shader, uint32_t samples);
+                  const std::vector<char>& conversion, const std::vector<char>& shader, uint32_t samples);
 
         VkPhysicalDevice physicalDevice;
         VkDevice device;
         VkSampler sampler = VK_NULL_HANDLE;
+        Map environment;
         Map irradiance;
         Map prefilter;
         Map brdf;

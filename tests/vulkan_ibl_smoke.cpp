@@ -82,7 +82,7 @@ struct Resources {
     }
 };
 
-static void RunIBL(VkPhysicalDevice gpu, uint32_t family, const std::vector<char> &code,
+static void RunIBL(VkPhysicalDevice gpu, uint32_t family, const std::vector<char>& conversion, const std::vector<char>& code,
                    const std::vector<char> &probe, const char *hdrPath) {
     Resources resources;
     uint32_t count;
@@ -261,10 +261,10 @@ static void RunIBL(VkPhysicalDevice gpu, uint32_t family, const std::vector<char
 
         VKEnvironmentLighting lighting(gpu, device, queue, family,
                                        {resources.sampler, resources.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
-                                       16, 32, 4, code, 32, 512);
+                                       16, 32, 4, 128, conversion, code, 32, 512);
         if (lighting.getMaxReflectionLOD() != 3) throw std::runtime_error("Incorrect reflection mip range");
         VkDescriptorImageInfo images[] = {lighting.getIrradiance(), lighting.getPrefilter(), lighting.getBRDF()};
-        VkDescriptorImageInfo source{resources.sampler, resources.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+        VkDescriptorImageInfo source = lighting.getEnvironment();
         VkDescriptorBufferInfo buffer{resources.buffer, 0, bytes};
         VkWriteDescriptorSet writes[5]{};
         for (uint32_t i = 0; i < 5; ++i) {
@@ -296,12 +296,14 @@ static void RunIBL(VkPhysicalDevice gpu, uint32_t family, const std::vector<char
                 if (i >= 30) {
                     if (value > 1.05f) throw std::runtime_error("BRDF LUT outside expected range");
                 } else if (pass < 2) {
-                    if (fabsf(value - (pass == 0 ? 0 : float(2 + c))) > 0.015f)
+                    if (fabsf(value - (pass == 0 ? 0 : float(2 + c) * (i < 6 ? 3.14159265f : 1.0f))) > 0.015f)
                         throw std::runtime_error("Constant HDR energy not preserved");
                 } else if (pass == 2 && i < 12) {
                     int face = i % 6;
                     float direction = face / 2 == c ? (face % 2 ? -1.0f : 1.0f) : 0.0f;
-                    float expected = float(2 + c) + direction * (i < 6 ? 2.0f / 3.0f : 1.0f);
+                    if (c == 2) direction = -direction;
+                    float expected = float(2 + c) + direction * (i < 6 ? 0.75f : 1.0f);
+                    if (i < 6) value /= 3.14159265f;
                     if (fabsf(value - expected) > 0.09f)
                         throw std::runtime_error("Directional environment orientation/convolution mismatch");
                 }
@@ -326,7 +328,7 @@ static void RunIBL(VkPhysicalDevice gpu, uint32_t family, const std::vector<char
         }
         printf("Environment %d: basis boundary %.6f%%, cube edge %.6f%%\n", pass, worstBasis * 100, worstCube * 100);
         if (worstBasis > 0.01f || worstCube > 0.01f) throw std::runtime_error("IBL sampling seam exceeds 1% tolerance");
-        if (mapped[640 * 4] != float(mipLevels) || mapped[641 * 4] < 1.0f)
+        if (mapped[640 * 4] != 8.0f || mapped[641 * 4] < 1.0f)
             throw std::runtime_error("Filtered integration is not using the source mip chain");
         for (int c = 0; c < 3; ++c)
             if (fabsf(mapped[642 * 4 + c] - mapped[643 * 4 + c]) > 0.00001f)
@@ -341,8 +343,8 @@ int main(int argc, char **argv) {
     VkDebugUtilsMessengerEXT messenger = VK_NULL_HANDLE;
     int result = 0;
     try {
-        if (argc != 4)
-            throw std::runtime_error("Usage: VulkanIBLSmoke ibl.spv probe.spv environment.hdr");
+        if (argc != 5)
+            throw std::runtime_error("Usage: VulkanIBLSmoke ibl.spv probe.spv convert.spv environment.hdr");
         auto code = ReadShader(argv[1]);
         auto probe = ReadShader(argv[2]);
 
@@ -400,7 +402,7 @@ int main(int argc, char **argv) {
             for (uint32_t i = 0; i < count; i++) {
                 if (families[i].queueCount && ((families[i].queueFlags & (VK_QUEUE_COMPUTE_BIT | VK_QUEUE_GRAPHICS_BIT))
                                                == (VK_QUEUE_COMPUTE_BIT | VK_QUEUE_GRAPHICS_BIT))) {
-                    RunIBL(gpu, i, code, probe, argv[3]);
+                    RunIBL(gpu, i, ReadShader(argv[3]), code, probe, argv[4]);
                     tested++;
                     break;
                 }

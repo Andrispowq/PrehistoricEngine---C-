@@ -21,7 +21,7 @@ namespace Prehistoric {
                     includeFile = includeFile.substr(1, includeFile.size() - 2);
 
                     std::vector<char> toAppend = LoadShaderGL(includeFile);
-                    output.append(toAppend.data());
+                    output.append(toAppend.begin(), toAppend.end());
                     output.append("\n");
                 }
             }

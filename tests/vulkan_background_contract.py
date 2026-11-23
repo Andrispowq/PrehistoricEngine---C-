@@ -23,6 +23,7 @@ with tempfile.TemporaryDirectory(prefix='vulkan-background-') as temporary:
             sampler = re.search(r'OpName\s+(%\S+)\s+"environmentMap"', assembly).group(1)
             assert re.search(r'OpDecorate\s+' + re.escape(sampler) + r'\s+DescriptorSet\s+0\b', assembly)
             assert re.search(r'OpDecorate\s+' + re.escape(sampler) + r'\s+Binding\s+0\b', assembly)
+            assert re.search(r'OpTypeImage\s+%\S+\s+Cube\b', assembly)
             assert 'OpImageSampleExplicitLod' in assembly
     for app in ('Prehistoric', 'PrehistoricEditor'):
         config = json.loads((ROOT / app / 'res/config/settings.json').read_text())
