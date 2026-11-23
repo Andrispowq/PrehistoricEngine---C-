@@ -26,11 +26,6 @@ namespace Prehistoric {
         renderpass = std::make_unique<VKRenderpass>(device, swapchain);
 
         size_t NumImages = swapchain->getSwapchainImages().size();
-        primaryFramebuffers.resize(NumImages);
-
-        for (size_t i = 0; i < NumImages; i++) {
-            primaryFramebuffers[i] = renderpass->CreateFramebuffer(static_cast<uint32_t>(i));
-        }
 
         //Create command pool
         commandPool = std::make_unique<VKCommandPool>(device);
@@ -98,7 +93,6 @@ namespace Prehistoric {
             VKDevice *device = (VKDevice *) context->getDevices();
             vkDeviceWaitIdle(device->getDevice());
 
-            primaryFramebuffers.clear();
             renderpass.reset();
 
             swapchain->SetWindowSize((uint32_t) framebufferWidth, (uint32_t) framebufferHeight);
@@ -111,10 +105,6 @@ namespace Prehistoric {
             swapchain->setRenderpass(renderpass.get());
 
             size_t NumImages = swapchain->getSwapchainImages().size();
-            primaryFramebuffers.resize(NumImages);
-            for (size_t i = 0; i < NumImages; i++) {
-                primaryFramebuffers[i] = renderpass->CreateFramebuffer(static_cast<uint32_t>(i));
-            }
 
             //Create command pool
             commandPool->DeleteCommandBuffers();
@@ -152,15 +142,14 @@ namespace Prehistoric {
         uint32_t index = swapchain->getAquiredImageIndex();
         VKCommandBuffer* buffer = commandPool->getCommandBuffer(index);
         buffer->BindBuffer();
-        renderpass->BeginRenderpass(buffer, primaryFramebuffers[index].get(), swapchain->getSwapchainExtent(),
-                                    swapchain->getClearColour());
+        renderpass->BeginRenderpass(buffer, swapchain->getClearColour());
         background->Draw(buffer->getCommandBuffer(), camera, __AtmosphereConfig.scatteringEnabled ? atmosphere : nullptr);
         ProcessDraws(buffer);
     }
 
     void VKRenderer::RenderHDR()
     {
-        renderpass->RenderHDR(getDrawCommandBuffer());
+        renderpass->RenderHDR(getDrawCommandBuffer(), bloomEnabled);
     }
 
     void VKRenderer::FinishFrame()

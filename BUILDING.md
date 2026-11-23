@@ -372,7 +372,9 @@ After scene registration and successful frame preparation, both renderers update
 environment lighting, draw the scene, run HDR processing, and finish the output.
 OpenGL runs its water captures, depth, shadow, and light-culling passes before
 main colour, then runs optional bloom and volumetric processing before tone mapping.
-Vulkan records scene colour and tone mapping as successive native subpasses.
+Vulkan renders scene colour and material emission into separate floating-point attachments.
+With bloom enabled (K toggles it), fullscreen passes blur emission at up to eight resolutions
+and add the levels together. The presentation pass combines bloom with scene colour before tone mapping.
 The renderer owns the passes and baked maps for its backend. Outstanding rendering
 repairs are listed in the [rendering backlog](docs/RENDERING_BACKLOG.md).
 

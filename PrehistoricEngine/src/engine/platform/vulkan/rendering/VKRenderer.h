@@ -39,8 +39,6 @@ namespace Prehistoric {
         std::unique_ptr<VKCommandPool> commandPool;
         std::unique_ptr<VKRenderpass> renderpass;
 
-        std::vector<std::unique_ptr<VKFramebuffer>> primaryFramebuffers;
-
         std::unique_ptr<VKEnvironmentBackground> background;
         std::unique_ptr<VKEnvironmentLighting> environmentLighting;
 

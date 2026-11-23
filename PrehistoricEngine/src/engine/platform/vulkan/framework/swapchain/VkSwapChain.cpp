@@ -100,9 +100,10 @@ namespace Prehistoric
 
     void VKSwapchain::CreateSceneAttachments()
     {
-        constexpr VkFormat format = VK_FORMAT_R16G16B16A16_SFLOAT;
+        VkFormat format = FindSupportedFormat({ VK_FORMAT_R16G16B16A16_SFLOAT }, VK_IMAGE_TILING_OPTIMAL,
+            VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT);
         VkImageFormatProperties properties{};
-        auto usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+        auto usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
         if (vkGetPhysicalDeviceImageFormatProperties(device->getPhysicalDevice(), format, VK_IMAGE_TYPE_2D,
             VK_IMAGE_TILING_OPTIMAL, usage, 0, &properties) != VK_SUCCESS)
         {

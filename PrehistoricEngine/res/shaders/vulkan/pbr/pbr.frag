@@ -2,6 +2,7 @@
 #extension GL_KHR_vulkan_glsl : enable
 
 layout (location = 0) out vec4 outColour;
+layout(location = 1) out vec4 outBloom;
 
 const int max_lights = 1000;
 const float PI = 3.141592653589793;
@@ -157,7 +158,8 @@ void main()
 	vec3 ambient = kD * diffuse + specular;
 	
 	// Match OpenGL: scalar emission strength tinted by the material albedo.
-	vec3 colour = ambient + Lo + clamp(albedoColour, vec3(0.05), vec3(1.0)) * emission * emissionFactor;
+	vec3 emissive = clamp(albedoColour, vec3(0.05), vec3(1.0)) * emission * emissionFactor;
 	
-	outColour = vec4(colour, 1);
+	outColour = vec4(ambient + Lo + emissive, 1);
+	outBloom = vec4(emissive, 0);
 }

@@ -139,9 +139,9 @@ namespace Prehistoric
         pipeline = VK_NULL_HANDLE;
 
         atmospherePipeline = swapchain->getRenderpass()->CreateFullscreenPipeline("vulkan/background/background_VS.spv",
-            "vulkan/atmosphere/scattering_FS.spv", pipelineLayout, 0);
+            "vulkan/atmosphere/scattering_FS.spv", pipelineLayout);
         pipeline = swapchain->getRenderpass()->CreateFullscreenPipeline("vulkan/background/background_VS.spv",
-            "vulkan/background/background_FS.spv", pipelineLayout, 0);
+            "vulkan/background/background_FS.spv", pipelineLayout);
     }
 
     void VKEnvironmentBackground::Draw(VkCommandBuffer commandBuffer, const Camera* camera, const Atmosphere* atmosphere) const

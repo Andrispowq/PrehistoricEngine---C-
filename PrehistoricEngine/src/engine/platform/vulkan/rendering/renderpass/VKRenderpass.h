@@ -10,6 +10,7 @@
 namespace Prehistoric
 {
 	class VKSwapchain;
+	class VKImage;
 
 	class VKRenderpass
 	{
@@ -17,19 +18,45 @@ namespace Prehistoric
 		VKRenderpass(VKDevice* device, VKSwapchain* swapchain);
 		virtual ~VKRenderpass();
 
-		std::unique_ptr<VKFramebuffer> CreateFramebuffer(uint32_t imageIndex) const;
-		void BeginRenderpass(VKCommandBuffer* commandBuffer, VKFramebuffer* framebuffer, VkExtent2D swapchainExtent, Vector4f clearColour);
-		void RenderHDR(VKCommandBuffer* commandBuffer);
+		void BeginRenderpass(VKCommandBuffer* commandBuffer, Vector4f clearColour);
+		void RenderHDR(VKCommandBuffer* commandBuffer, bool bloomEnabled);
 
-		VkPipeline CreateFullscreenPipeline(const char* vertexPath, const char* fragmentPath, VkPipelineLayout layout, uint32_t subpass);
+		VkPipeline CreateFullscreenPipeline(const char* vertexPath, const char* fragmentPath, VkPipelineLayout layout,
+			VkRenderPass postPass = VK_NULL_HANDLE);
 		VkRenderPass getRenderPass() const { return renderpass; }
+
 	private:
-		VkRenderPass renderpass;
+		struct BloomDraw
+		{
+			VkFramebuffer framebuffer;
+			VkExtent2D extent;
+			VkDescriptorSet inputs;
+			float settings[3];
+		};
+
+		void CreateScenePass();
+		void CreatePostProcessing();
+		VkRenderPass CreateOutputPass(VkFormat format, VkImageLayout finalLayout);
+		VkDescriptorSet CreateInputs(VkImageView source, VkImageView second);
+		VKImage* CreateImage(VkExtent2D extent, VkSampleCountFlagBits samples);
+		VKFramebuffer* CreateFramebuffer(VkRenderPass pass, VkExtent2D extent, uint32_t count, VkImageView* views);
+
+		VkRenderPass renderpass{};
+		VkRenderPass bloomPass{};
+		VkRenderPass presentPass{};
 		VkDescriptorSetLayout hdrSetLayout{};
 		VkDescriptorPool hdrPool{};
-		VkDescriptorSet hdrSet{};
+		VkSampler sampler{};
 		VkPipelineLayout hdrLayout{};
 		VkPipeline hdrPipeline{};
+		VkPipeline bloomPipeline{};
+		VkDescriptorSet hdrInputs[2]{};
+		VKImage* emission{};
+		VKFramebuffer* sceneFramebuffer{};
+		std::vector<std::unique_ptr<VKImage>> images;
+		std::vector<std::unique_ptr<VKFramebuffer>> framebuffers;
+		std::vector<VkFramebuffer> presentFramebuffers;
+		std::vector<BloomDraw> bloomDraws;
 
 		VKDevice* device;
 		VKSwapchain* swapchain;
