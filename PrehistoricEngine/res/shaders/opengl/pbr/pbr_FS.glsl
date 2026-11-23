@@ -77,11 +77,7 @@ uniform float cascadePlaneDistances[16];
 uniform float farPlane;
 uniform sampler2DArray shadowMap;
 
-float DistributionGGX(vec3 N, vec3 H, float roughness);
-float GeometrySchlickGGX(float NdotV, float roughness);
-float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
-vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness);
-vec3 FresnelSchlick(float cosTheta, vec3 F0);
+#include "shared/pbr/lighting.glsl"
 
 
 float getShadow(vec3 fragPosWorldSpace, vec3 lightDir, vec3 normal)
@@ -311,50 +307,4 @@ void main()
 	outAlbedoRoughness = vec4(albedoColour, roughness);
 	outNormal = vec4(N, 1);
 	outBloom = vec4(clamp(albedoColour, vec3(0.05), vec3(1.0)) * max(emission, 0.0) * emissionFactor, 0);
-}
-
-float DistributionGGX(vec3 N, vec3 H, float roughness)
-{
-    float a = roughness * roughness;
-    float a2 = a * a;
-    float NdotH = max(dot(N, H), 0.0);
-    float NdotH2 = NdotH * NdotH;
-
-    float num = a2;
-    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
-    denom = PI * denom * denom;
-
-    return num / denom;
-}
-
-float GeometrySchlickGGX(float NdotV, float roughness)
-{
-    float r = (roughness + 1.0);
-    float k = (r * r) / 2.0;
-
-    float num = NdotV;
-    float denom = NdotV * (1.0 - k) + k;
-
-    return num / denom;
-}
-
-float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
-{
-    float NdotV = max(dot(N, V), 0.0);
-    float NdotL = max(dot(N, L), 0.0);
-
-    float ggx2 = GeometrySchlickGGX(NdotV, roughness);
-    float ggx1 = GeometrySchlickGGX(NdotL, roughness);
-
-    return ggx1 * ggx2;
-}
-
-vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
-{
-    return F0 + (max(vec3(1 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
-}
-
-vec3 FresnelSchlick(float cosTheta, vec3 F0)
-{
-    return F0 + (1 - F0) * pow(1.0 - cosTheta, 5.0);
 }

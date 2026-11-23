@@ -8,9 +8,9 @@ uniform samplerCube environmentMap;
 uniform float roughness;
 uniform float resolution;
 
-#include "opengl/environmentMap/shared/ggx.glsl"
-#include "opengl/environmentMap/shared/convolution.glsl"
-#include "opengl/environmentMap/shared/cubeDirection.glsl"
+#include "shared/environmentMap/ggx.glsl"
+#include "shared/environmentMap/convolution.glsl"
+#include "shared/environmentMap/cubeDirection.glsl"
 
 void main()
 {

@@ -7,9 +7,9 @@ layout(binding = 0, rgba32f) uniform writeonly imageCube irradianceMap;
 uniform samplerCube environmentMap;
 uniform float resolution_irradianceMap;
 
-#include "opengl/environmentMap/shared/ggx.glsl"
-#include "opengl/environmentMap/shared/convolution.glsl"
-#include "opengl/environmentMap/shared/cubeDirection.glsl"
+#include "shared/environmentMap/ggx.glsl"
+#include "shared/environmentMap/convolution.glsl"
+#include "shared/environmentMap/cubeDirection.glsl"
 
 void main()
 {

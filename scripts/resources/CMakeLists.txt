@@ -14,7 +14,7 @@ option(PREHISTORIC_EXPERIMENTAL_SHADERS "Compile the unfinished Vulkan environme
 
 # Runtime inputs are copied incrementally; shader source additions trigger reconfigure.
 file(GLOB_RECURSE runtime_inputs CONFIGURE_DEPENDS RELATIVE "${resource_source}"
-        "${resource_source}/fonts/*" "${resource_source}/shaders/opengl/*"
+        "${resource_source}/fonts/*" "${resource_source}/shaders/opengl/*" "${resource_source}/shaders/shared/*"
         "${resource_source}/models/*" "${resource_source}/textures/*")
 set(runtime_outputs)
 foreach (relative IN LISTS runtime_inputs)
@@ -31,7 +31,7 @@ endforeach ()
 # depend on all non-entrypoint Vulkan files instead; entrypoint edits stay local,
 # while include additions/edits rebuild the shader set. No Python/shell required.
 file(GLOB_RECURSE shader_includes CONFIGURE_DEPENDS "${resource_source}/shaders/vulkan/*"
-        "${resource_source}/shaders/opengl/environmentMap/shared/*.glsl")
+        "${resource_source}/shaders/shared/*.glsl")
 foreach (entry basic/basic.vert basic/basic.frag pbr/pbr.vert pbr/pbr.frag background/background.vert background/background.frag ibl/ibl.comp ibl/convert.comp environmentMap/environmentMap.comp)
     list(REMOVE_ITEM shader_includes "${resource_source}/shaders/vulkan/${entry}")
 endforeach ()

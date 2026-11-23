@@ -8,7 +8,7 @@ layout(binding = 1, rgba32f) uniform readonly image2D equirectangularMap;
 uniform vec2 equirectangularMapResolution;
 uniform float resolution;
 
-#include "opengl/environmentMap/shared/cubeDirection.glsl"
+#include "shared/environmentMap/cubeDirection.glsl"
 
 void main()
 {

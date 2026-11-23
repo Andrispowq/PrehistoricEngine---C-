@@ -4,8 +4,8 @@ layout(local_size_x = 16, local_size_y = 16) in;
 
 layout(binding = 0, rg32f) uniform writeonly image2D brdfLUT;
 
-#include "opengl/environmentMap/shared/ggx.glsl"
-#include "opengl/environmentMap/shared/brdf.glsl"
+#include "shared/environmentMap/ggx.glsl"
+#include "shared/environmentMap/brdf.glsl"
 
 void main()
 {

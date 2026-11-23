@@ -50,8 +50,8 @@ with tempfile.TemporaryDirectory(prefix='vulkan-pbr-contract-') as temporary:
         assert re.search(re.escape(image) + r'\s*=\s*OpTypeImage\s+%\S+\s+' + dimension + r'\b', assembly)
     assert 'OpImageSampleExplicitLod' in assembly
 
-    assert re.search(r'float k\s*=\s*\(r\s*\*\s*r\)\s*/\s*2\.0',
-                     shader.read_text()), 'Preserve the requested BRDF geometry term'
+    assert re.search(r'float k\s*=\s*\(\s*r\s*\*\s*r\s*\)\s*/\s*8\.0',
+                     run('glslc', '-E', shader)), 'Check the analytic-light Schlick-GGX geometry term'
 
     # Exercise production format selection, including a simulated swapchain format
     # change. A linear 0.5 fragment must be encoded exactly once on sRGB output.
@@ -85,4 +85,4 @@ int main() {
     run(os.environ.get('CXX', 'c++'), '-std=c++17', '-I', ENGINE,
         '-I', ROOT / 'PrehistoricEngine/Dependencies/include/Vulkan', source, '-o', executable)
     run(executable)
-    print('PASS: compiled PBR scalar emission layout, texture bindings, sRGB/UNORM encoding, and /2.0 BRDF preserved')
+    print('PASS: compiled PBR scalar emission layout, texture bindings, sRGB/UNORM encoding, and direct-light Schlick-GGX geometry')

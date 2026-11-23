@@ -14,9 +14,9 @@ layout(push_constant) uniform Parameters
 
 #include "sampling.glsl"
 
-#include "../../opengl/environmentMap/shared/cubeDirection.glsl"
+#include "../../shared/environmentMap/cubeDirection.glsl"
 
-#include "../../opengl/environmentMap/shared/brdf.glsl"
+#include "../../shared/environmentMap/brdf.glsl"
 
 void main()
 {

@@ -1,2 +1,2 @@
-#include "../../opengl/environmentMap/shared/ggx.glsl"
-#include "../../opengl/environmentMap/shared/convolution.glsl"
+#include "../../shared/environmentMap/ggx.glsl"
+#include "../../shared/environmentMap/convolution.glsl"

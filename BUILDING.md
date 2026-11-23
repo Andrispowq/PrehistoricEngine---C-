@@ -328,8 +328,8 @@ binding, so a missing map cannot pick an unrelated material texture.
 
 PBR output uses the actual colour-attachment format each frame. For sRGB attachments,
 the shader leaves tone-mapped output linear and the attachment encodes it once.
-For non-sRGB attachments, the shader retains the configured gamma encoding. Exposure
-and the BRDF geometry divisor `/ 2.0` are unchanged; background rendering is separate.
+For non-sRGB attachments, the shader retains the configured gamma encoding. Direct lights use the shared
+Schlick-GGX geometry term with `k = (roughness + 1)^2 / 8`.
 Rebuild the app normally to regenerate the SPIR-V and update the descriptor layout
 alongside the C++ code.
 
@@ -344,7 +344,7 @@ frame rendering or visual comparison.
 Both HDR paths convert the configured panorama into a floating-point cubemap at
 `environmentMapResolution`, generate its mip chain, and bake irradiance and GGX
 reflection cubemaps. They draw the background from the reflection map at LOD zero
-by default. The shared GLSL in `opengl/environmentMap/shared/` defines face
+by default. The shared GLSL in `shared/environmentMap/` defines face
 orientation, panorama texels, angular sampling, source LOD, and the split-sum
 BRDF integral. A constant white environment produces diffuse irradiance of PI.
 The BRDF LUT depends only on view angle and roughness.
