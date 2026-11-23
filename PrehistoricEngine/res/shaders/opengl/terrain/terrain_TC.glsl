@@ -16,9 +16,11 @@ uniform float tessellationSlope;
 uniform float tessellationShift;
 uniform vec3 cameraPosition;
 
+#include "shared/terrain/tessellation.glsl"
+
 float LodFactor(float dist)
 {
-	return max(0.0, tessellationFactor / pow(dist, tessellationSlope) + tessellationShift);
+	return terrainLodFactor(dist, tessellationFactor, tessellationSlope, tessellationShift);
 }
 
 void main()

@@ -7,7 +7,7 @@ layout (binding = 0, rgba16f) uniform writeonly image2D splatmap;
 uniform sampler2D normalmap;
 uniform int N;
 
-const float blendVal = 1;
+#include "shared/terrain/layers.glsl"
 
 void main(void)
 {
@@ -15,22 +15,5 @@ void main(void)
 	vec2 texCoord = gl_GlobalInvocationID.xy / float(N);
 	
 	vec3 normal = texture(normalmap, texCoord).rgb * 2 - 1;
-	normalize(normal);
-	
-	float slopeFactor = normal.z;
-	
-	vec4 blendValues = vec4(0, 0, 0, 0);
-	
-	if (slopeFactor > 0.5)
-	{
-		blendValues.x = blendVal;
-	} else if (slopeFactor > 0.35)
-	{
-		blendValues.y = blendVal;
-	} else 
-	{
-		blendValues.z = blendVal;
-	}
-	
-	imageStore(splatmap, x, blendValues);
+	imageStore(splatmap, x, vec4(terrainLayerWeights(normal.z), 0));
 }

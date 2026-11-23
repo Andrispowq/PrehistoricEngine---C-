@@ -18,7 +18,9 @@ namespace Prehistoric
 		heightmap = manager->getAssetManager()->loadTexture(heightmapLocation).value();
 		manager->getAssetManager()->addReference<Texture>(heightmap.handle);
 
-		this->normalmapRendererComponent = new NormalMapRenderer(window, manager, 60, heightmap->getWidth());
+		if (__FrameworkConfig.api == Vulkan) return;
+
+		this->normalmapRendererComponent = new NormalMapRenderer(window, manager, normalStrength, heightmap->getWidth());
 		normalmapRendererComponent->Render(heightmap.pointer);
 		this->normalmap = normalmapRendererComponent->getNormalmap();
 
@@ -52,7 +54,6 @@ namespace Prehistoric
 		std::ifstream file;
 		file.open(terrainConfigFile.c_str(), std::ios::ate);
 
-		size_t textureCount = 0;
 		AssetManager* man = manager->getAssetManager();
 
 		if (file.is_open())
@@ -94,9 +95,7 @@ namespace Prehistoric
 							else
 								filter = Trilinear;
 
-							textureLocations.emplace_back(materials.size(), name + "Map");
-							textureCount++;
-							man->loadTexture(value, filter, Repeat, BatchSettings::QueuedLoad);
+							material->addTexture(name + "Map", man->loadTexture(value, filter, Repeat).value());
 						}
 						else if (type == "vec4")
 						{
@@ -133,25 +132,6 @@ namespace Prehistoric
 		{
 			PR_LOG_ERROR("Could not open world file %s!\n", terrainConfigFile.c_str());
 		}
-
-		man->getTextureLoader()->ForceLoadQueue();
-
-		size_t count;
-		Texture** pointers = (Texture**)man->getTextureLoader()->GetLoadedPointers(count);
-
-		if (count != textureCount)
-		{
-			PR_LOG_ERROR("The loaded texture count isn't equal to the requested texture count!\n");
-		}
-
-		for (int i = 0; i < textureCount; i++)
-		{
-			auto entry = textureLocations[i];
-			TextureHandle h = man->storeTexture(pointers[i]);
-			materials[entry.first]->addTexture(entry.second, h);
-		}
-
-		man->getTextureLoader()->FlushPointers();
 
 		for (auto elem : materials)
 		{

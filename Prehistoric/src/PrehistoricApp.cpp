@@ -26,7 +26,9 @@ PrehistoricApp::PrehistoricApp()
     Camera *cam = engineLayer->getRenderingEngine()->getCamera();
 
     if (__FrameworkConfig.api != OpenGL) {
-        cam->setPosition(Vector3f(0, 5, -2));
+        cam->setPosition(Vector3f(0, 360, 450));
+        cam->setForward(Vector3f(0, 0.24f, 1).normalise());
+        cam->setUp(Vector3f(0, 1, -0.24f).normalise());
     }
 
     cam->Update(engineLayer->getRenderingEngine()->getWindow(), 0.0f);

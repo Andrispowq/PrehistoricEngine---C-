@@ -697,7 +697,7 @@ namespace Prehistoric {
                     atmosphere->setSun(sun->GetComponent<Light>());
                     root->AddChild(name, atmosphere);
                 }
-                else if (type == "terrain" && __FrameworkConfig.api == OpenGL)
+                else if (type == "terrain")
                 {
                     std::string config = world_object["config"];
 

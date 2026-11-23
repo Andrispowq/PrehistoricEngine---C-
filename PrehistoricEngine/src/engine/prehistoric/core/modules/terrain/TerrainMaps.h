@@ -13,6 +13,8 @@ namespace Prehistoric
 	class TerrainMaps
 	{
 	public:
+		static constexpr float normalStrength = 60.0f;
+
 		TerrainMaps(Window* window, AssembledAssetManager* manager, const std::string& terrainConfigFile);
 		virtual ~TerrainMaps();
 
@@ -39,17 +41,16 @@ namespace Prehistoric
 		TextureHandle normalmap;
 		TextureHandle splatmap;
 
-		float* heights;
+		float* heights = nullptr;
 
-		NormalMapRenderer* normalmapRendererComponent;
-		SplatMapRenderer* splatmapRendererComponent;
-		TerrainHeightsQuery* query;
+		NormalMapRenderer* normalmapRendererComponent = nullptr;
+		SplatMapRenderer* splatmapRendererComponent = nullptr;
+		TerrainHeightsQuery* query = nullptr;
 
 		Vector3f position;
 
 		std::string heightmapLocation;
 		std::vector<MaterialHandle> materials;
-		std::vector<std::pair<size_t, std::string>> textureLocations;
 	};
 };
 

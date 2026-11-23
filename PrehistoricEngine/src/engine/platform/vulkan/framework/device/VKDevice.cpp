@@ -94,6 +94,7 @@ namespace Prehistoric {
         VkPhysicalDeviceFeatures supportedFeatures = {};
         vkGetPhysicalDeviceFeatures(physicalDevice, &supportedFeatures);
         deviceFeatures.sampleRateShading = supportedFeatures.sampleRateShading;
+        deviceFeatures.tessellationShader = supportedFeatures.tessellationShader;
         deviceFeatures.geometryShader = supportedFeatures.geometryShader;
 
         //Portability devices require this extension when they advertise it.

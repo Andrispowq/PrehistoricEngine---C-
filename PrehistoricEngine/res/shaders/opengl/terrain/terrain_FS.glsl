@@ -154,26 +154,13 @@ void main()
 		vec3 lightPos = light.position.xyz;
 		
 		vec3 L = normalize(lightPos - position_FS);
-		vec3 H = normalize(V + L);
+
 		float dist = length(lightPos - position_FS);
 		float attenuation = clamp(dist / light.intensity_radius.g, 0, 1);
 		attenuation = 1 - pow(attenuation, 2);
 		vec3 radiance = light.colour.rgb * light.intensity_radius.r * attenuation;
 
-        float NDF = DistributionGGX(N, H, roughness);
-        float G = GeometrySmith(N, V, L, roughness);
-        vec3 F = FresnelSchlick(max(dot(H, V), 0), F0);
-
-        vec3 kS = F;
-        vec3 kD = vec3(1) - kS;
-        kD *= 1 - metallic;
-
-        vec3 numerator = NDF * G * F;
-        float denominator = 4 * max(dot(N, V), 0) * max(dot(N, L), 0);
-        vec3 specular = numerator / max(denominator, 0.001);
-
-        float NdotL = max(dot(N, L), 0);
-        Lo += (kD * albedoColour / PI + specular) * radiance * NdotL;
+        Lo += directPbrLight(N, V, L, F0, albedoColour, metallic, roughness, radiance);
     }
 
     vec3 F = FresnelSchlickRoughness(max(dot(N, V), 0), F0, roughness);

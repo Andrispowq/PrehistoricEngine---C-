@@ -161,6 +161,10 @@ namespace Prehistoric
 			{
 				shader = new VKPBRShader(window);
 			}
+			else if (path == "terrain")
+			{
+				shader = new VKPBRShader(window, true);
+			}
 			else if (path == "basic")
 			{
 				shader = new VKBasicShader(window);

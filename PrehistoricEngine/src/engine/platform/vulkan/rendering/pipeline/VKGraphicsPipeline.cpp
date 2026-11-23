@@ -80,6 +80,18 @@ namespace Prehistoric
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
 		inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 		inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		VkPipelineTessellationStateCreateInfo tessellation{};
+		tessellation.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
+		tessellation.patchControlPoints = 3;
+		for (uint32_t i = 0; i < shader->getModuleCount(); ++i)
+		{
+			if (shader->GetShaderStages()[i].stage == VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT)
+			{
+				// Terrain control points use only the position from the mesh layout.
+				vertexInputInfo.vertexAttributeDescriptionCount = 1;
+				inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_PATCH_LIST;
+			}
+		}
 		inputAssembly.primitiveRestartEnable = VK_FALSE;
 
 		VkViewport viewport = {};
@@ -164,7 +176,7 @@ namespace Prehistoric
 		pipelineInfo.pStages = shader->GetShaderStages();
 		pipelineInfo.pVertexInputState = &vertexInputInfo;
 		pipelineInfo.pInputAssemblyState = &inputAssembly;
-		pipelineInfo.pTessellationState = nullptr;
+		pipelineInfo.pTessellationState = inputAssembly.topology == VK_PRIMITIVE_TOPOLOGY_PATCH_LIST ? &tessellation : nullptr;
 		pipelineInfo.pViewportState = &viewportState;
 		pipelineInfo.pRasterizationState = &rasterizer;
 		pipelineInfo.pMultisampleState = &multisampling;

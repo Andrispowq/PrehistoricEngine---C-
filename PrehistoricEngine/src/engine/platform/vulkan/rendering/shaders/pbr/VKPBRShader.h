@@ -15,7 +15,7 @@ namespace Prehistoric
 	class VKPBRShader : public VKShader
 	{
 	public:
-		VKPBRShader(Window* window);
+		VKPBRShader(Window* window, bool terrain = false);
 		virtual ~VKPBRShader();
 
 		virtual void BindGlobalSets() const;
@@ -27,6 +27,7 @@ namespace Prehistoric
 		virtual void UpdateObjectUniforms(GameObject* object, uint32_t instance_index = 0) const override;
 
 	private:
+		bool terrain;
 		void* lightData = nullptr;
 	};
 };

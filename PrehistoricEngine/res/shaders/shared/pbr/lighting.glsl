@@ -43,3 +43,14 @@ vec3 FresnelSchlick(float cosTheta, vec3 F0)
 {
     return F0 + (1 - F0) * pow(1.0 - cosTheta, 5.0);
 }
+
+vec3 directPbrLight(vec3 N, vec3 V, vec3 L, vec3 F0, vec3 albedo, float metallic, float roughness, vec3 radiance)
+{
+    vec3 H = normalize(V + L);
+    float NdotL = max(dot(N, L), 0.0);
+    vec3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
+    vec3 diffuse = (1.0 - F) * (1.0 - metallic) * albedo / PI;
+    float denominator = max(4.0 * max(dot(N, V), 0.0) * NdotL, 0.001);
+    vec3 specular = DistributionGGX(N, H, roughness) * GeometrySmith(N, V, L, roughness) * F / denominator;
+    return (diffuse + specular) * radiance * NdotL;
+}

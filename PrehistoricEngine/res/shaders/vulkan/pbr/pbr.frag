@@ -1,38 +1,5 @@
 #version 450
-#extension GL_KHR_vulkan_glsl : enable
-
-layout (location = 0) out vec4 outColour;
-layout(location = 1) out vec4 outBloom;
-
-const int max_lights = 1000;
-const float PI = 3.141592653589793;
-const float emissionFactor = 3.0;
-
-layout (location = 0) in vec3 position_FS;
-layout (location = 1) in vec2 texture_FS;
-layout (location = 2) in vec3 normal_FS;
-layout (location = 3) in vec3 tangent_FS;
-
-layout(set = 0, binding = 0, std140) uniform Camera
-{
-	layout(offset = 0) mat4 m_view;
-	layout(offset = 64) mat4 m_projection;
-	layout(offset = 128) vec3 cameraPosition;
-};
-
-layout(set = 0, binding = 1, std140) uniform LightConditions
-{
-	layout(offset = 0) int highDetailRange;
-	layout(offset = 4) int numberOfLights;
-};
-
-layout(set = 0, binding = 2, std140) uniform Lights
-{
-	layout(offset = max_lights * 0 * 16) vec4 position[max_lights];
-	layout(offset = max_lights * 1 * 16) vec4 colour[max_lights];
-	layout(offset = max_lights * 2 * 16) vec4 intensity[max_lights];
-} lights;
-
+#include "scene.glsl"
 layout(set = 2, binding = 1, std140) uniform Material
 {
 	layout(offset = 00) vec4 mrot;
@@ -44,17 +11,6 @@ layout(set = 2, binding = 1, std140) uniform Material
 layout (set = 1, binding = 0) uniform sampler2D albedoMap;
 layout (set = 1, binding = 1) uniform sampler2D normalMap;
 layout (set = 1, binding = 2) uniform sampler2D mrotMap;
-
-layout (set = 0, binding = 3) uniform samplerCube irradianceMap;
-layout (set = 0, binding = 4) uniform samplerCube prefilterMap;
-layout (set = 0, binding = 5) uniform sampler2D brdfLUT;
-
-layout(set = 0, binding = 6, std140) uniform Environment
-{
-	layout(offset = 0) float maxReflectionLOD;
-};
-
-#include "../../shared/pbr/lighting.glsl"
 
 void main()
 {
@@ -106,60 +62,5 @@ void main()
 	}
 	
 	vec3 N = normalize(normal);
-	vec3 V = normalize(cameraPosition - position_FS);
-	vec3 R = reflect(-V, N);
-	
-	vec3 F0 = vec3(0.04); 
-    F0 = mix(F0, albedoColour, metallic);
-	
-    vec3 Lo = vec3(0);
-	
-    // reflectance equation
-	for(int i = 0; i < numberOfLights; ++i)
-    {
-        // calculate per-light radiance
-        vec3 L = normalize(lights.position[i].xyz - position_FS);
-        vec3 H = normalize(V + L);
-        float dist = length(lights.position[i].xyz - position_FS);
-        float attenuation = 1 / pow(dist, 2);
-        vec3 radiance = lights.colour[i].rgb * lights.intensity[i].r * attenuation;
-        
-        // cook-torrance brdf
-        float NDF = DistributionGGX(N, H, roughness);
-        float G = GeometrySmith(N, V, L, roughness);
-        vec3 F = FresnelSchlick(max(dot(H, V), 0), F0);
-        
-        vec3 kS = F;
-        vec3 kD = vec3(1) - kS;
-        kD *= 1 - metallic;
-        
-        vec3 numerator = NDF * G * F;
-        float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
-        vec3 specular = numerator / max(denominator, 0.001);
-        
-        // add to outgoing radiance Lo
-        float NdotL = max(dot(N, L), 0.0);
-        Lo += (kD * albedoColour / PI + specular) * radiance * NdotL;
-    }
-
-	vec3 F = FresnelSchlickRoughness(max(dot(N, V), 0), F0, roughness);
-
-	vec3 kS = F;
-	vec3 kD = 1.0 - kS;
-	kD *= 1.0 - metallic;
-
-	vec3 irradiance = texture(irradianceMap, N).rgb;
-	vec3 diffuse = irradiance * albedoColour * occlusion;
-
-	vec3 prefilteredColor = textureLod(prefilterMap, R, roughness * maxReflectionLOD).rgb;
-	vec2 envBRDF = texture(brdfLUT, vec2(max(dot(N, V), 0.01), roughness)).rg;
-	vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
-
-	vec3 ambient = kD * diffuse + specular;
-	
-	// Match OpenGL: scalar emission strength tinted by the material albedo.
-	vec3 emissive = clamp(albedoColour, vec3(0.05), vec3(1.0)) * emission * emissionFactor;
-	
-	outColour = vec4(ambient + Lo + emissive, 1);
-	outBloom = vec4(emissive, 0);
+	shadeSurface(albedoColour, metallic, roughness, occlusion, N, emission);
 }

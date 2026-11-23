@@ -10,17 +10,8 @@ layout (location = 1) out vec2 texture_FS;
 layout (location = 2) out vec3 normal_FS;
 layout (location = 3) out vec3 tangent_FS;
 
-layout(set = 0, binding = 0, std140) uniform Camera
-{
-	layout(offset = 0) mat4 m_view;
-	layout(offset = 64) mat4 m_projection;
-	layout(offset = 128) vec3 cameraPosition;
-};
-
-layout(set = 2, binding = 0) uniform Model
-{
-	layout(offset = 0) mat4 m_transform;
-};
+#include "camera.glsl"
+#include "model.glsl"
 
 void main()
 {

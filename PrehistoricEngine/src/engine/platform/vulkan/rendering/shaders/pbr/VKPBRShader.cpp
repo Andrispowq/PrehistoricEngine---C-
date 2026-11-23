@@ -1,17 +1,29 @@
 #include "Includes.hpp"
 #include <algorithm>
 #include "VKPBRShader.h"
+#include "prehistoric/core/modules/terrain/TerrainMaps.h"
 #include "platform/vulkan/rendering/VKRenderer.h"
 #include "platform/vulkan/rendering/VKEnvironmentLighting.h"
 
 #include "prehistoric/application/Application.h"
 
 namespace Prehistoric {
-    VKPBRShader::VKPBRShader(Window *window) : VKShader(window->getContext(), window->getSwapchain()) {
-        AddShader(ResourceLoader::LoadShaderVK("vulkan/pbr/pbr_VS.spv"), VERTEX_SHADER);
-        AddShader(ResourceLoader::LoadShaderVK("vulkan/pbr/pbr_FS.spv"), FRAGMENT_SHADER);
-
-        AddUniform("camera", VERTEX_SHADER | FRAGMENT_SHADER, UniformBuffer, 0, 0,
+    VKPBRShader::VKPBRShader(Window *window, bool terrain) : VKShader(window->getContext(), window->getSwapchain()), terrain(terrain) {
+        uint32_t terrainStages = 0;
+        if (terrain)
+        {
+            terrainStages = TESSELLATION_CONTROL_SHADER | TESSELLATION_EVALUATION_SHADER;
+            AddShader(ResourceLoader::LoadShaderVK("vulkan/terrain/terrain.vert.spv"), VERTEX_SHADER);
+            AddShader(ResourceLoader::LoadShaderVK("vulkan/terrain/terrain.tesc.spv"), TESSELLATION_CONTROL_SHADER);
+            AddShader(ResourceLoader::LoadShaderVK("vulkan/terrain/terrain.tese.spv"), TESSELLATION_EVALUATION_SHADER);
+            AddShader(ResourceLoader::LoadShaderVK("vulkan/terrain/terrain.frag.spv"), FRAGMENT_SHADER);
+        }
+        else
+        {
+            AddShader(ResourceLoader::LoadShaderVK("vulkan/pbr/pbr_VS.spv"), VERTEX_SHADER);
+            AddShader(ResourceLoader::LoadShaderVK("vulkan/pbr/pbr_FS.spv"), FRAGMENT_SHADER);
+        }
+        AddUniform("camera", VERTEX_SHADER | FRAGMENT_SHADER | terrainStages, UniformBuffer, 0, 0,
                    sizeof(float) * 16 * 2 + Vector4f::size());
         AddUniform("lightConditions", FRAGMENT_SHADER, UniformBuffer, 0, 1, sizeof(int) * 2);
         AddUniform("lights", FRAGMENT_SHADER, UniformBuffer, 0, 2,
@@ -22,13 +34,28 @@ namespace Prehistoric {
         AddUniform("brdfLUT", FRAGMENT_SHADER, CombinedImageSampler, 0, 5, 0, nullptr);
         AddUniform("environment", FRAGMENT_SHADER, UniformBuffer, 0, 6, sizeof(float) * 4);
 
-        AddUniform(ALBEDO_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 0, 0, nullptr);
-        AddUniform(NORMAL_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 1, 0, nullptr);
-        AddUniform(MROT_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 2, 0, nullptr);
-
-        AddUniform("m_transform", VERTEX_SHADER, UniformBuffer, 2, 0, sizeof(float) * 16);
+        if (terrain)
+        {
+            AddUniform("heightMap", terrainStages | FRAGMENT_SHADER, CombinedImageSampler, 1, 0, 0, nullptr);
+            uint32_t binding = 1;
+            for (int i = 0; i < 3; ++i)
+            {
+                for (const char* map : {"albedoMap", "normalMap", "mrotMap"})
+                    AddUniform(map + std::to_string(i), FRAGMENT_SHADER, CombinedImageSampler, 1, binding++, 0, nullptr);
+            }
+        }
+        else
+        {
+            AddUniform(ALBEDO_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 0, 0, nullptr);
+            AddUniform(NORMAL_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 1, 0, nullptr);
+            AddUniform(MROT_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 2, 0, nullptr);
+        }
+        AddUniform("m_transform", VERTEX_SHADER | terrainStages, UniformBuffer, 2, 0, sizeof(float) * 16);
         AddUniform("material", FRAGMENT_SHADER, UniformBuffer, 2, 1,
                    Vector4f::size() * 2 + sizeof(int) + sizeof(float) * 4);
+
+        if (terrain)
+            AddUniform("terrainParams", terrainStages | FRAGMENT_SHADER, UniformBuffer, 2, 2, 80);
 
         descriptorPool->finalise(pipelineLayout);
 
@@ -108,6 +135,19 @@ namespace Prehistoric {
     }
 
     void VKPBRShader::UpdateMaterialUniforms(Material *material, uint32_t descriptor_index) const {
+        if (terrain)
+        {
+            SetTexture("heightMap", material->getTexture("heightMap"), descriptor_index);
+            for (int i = 0; i < 3; ++i)
+            {
+                for (const char* map : {"albedoMap", "normalMap", "mrotMap"})
+                {
+                    auto name = map + std::to_string(i);
+                    SetTexture(name, material->getTexture(name), descriptor_index);
+                }
+            }
+            return;
+        }
         SetTexture(ALBEDO_MAP, material->getTexture(ALBEDO_MAP), descriptor_index);
         SetTexture(NORMAL_MAP, material->getTexture(NORMAL_MAP), descriptor_index);
         SetTexture(MROT_MAP, material->getTexture(MROT_MAP), descriptor_index);
@@ -119,6 +159,15 @@ namespace Prehistoric {
         //Offset values are copied from shaders
         SetUniform("m_transform", object->getWorldTransform().getTransformationMatrix(), 0, instance_index);
 
+        if (terrain)
+        {
+            Vector4f tess(float(__TerrainConfig.tessellationFactor), __TerrainConfig.tessellationSlope, __TerrainConfig.tessellationShift, TerrainMaps::normalStrength);
+            SetUniform("terrainParams", tess, 0, instance_index);
+            SetUniform("terrainParams", Vector4f(material->getFloat("tiling0"), material->getFloat("tiling1"), material->getFloat("tiling2"), 0), 16, instance_index);
+            for (int i = 0; i < 3; ++i)
+                SetUniform("terrainParams", material->getVector4f("mrot" + std::to_string(i)), 32 + 16 * i, instance_index);
+            return;
+        }
         SetUniform("material", material->getVector4f(MROT), 0, instance_index);
         SetUniform("material", material->getVector3f(COLOUR), 16, instance_index);
         // Emission uses the same scalar material property as OpenGL. Missing = -1.
