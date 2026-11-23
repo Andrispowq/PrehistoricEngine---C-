@@ -36,7 +36,7 @@ namespace Prehistoric
 		virtual void Update(float delta) override;
 		void Render();
 
-		void ChangeCamera(Camera* camera);
+		void ChangeCamera(std::unique_ptr<Camera> camera);
 		void AddCameraComponent(CameraComponent* component);
 
 		inline Window* getWindow() const { return window.get(); }

@@ -1,4 +1,6 @@
 #include "EditorLayer.h"
+#include "platform/opengl/rendering/GLRenderer.h"
+#include "prehistoric/core/modules/environmentMapRenderer/EnvironmentMapRenderer.h"
 
 #include "prehistoric/application/Application.h"
 
@@ -10,11 +12,9 @@
 
 #include "Prehistoric/core/scene/world/WorldSerialiser.h"
 
-EditorLayer::EditorLayer(Prehistoric::Scene* scene)
-	: scenePanel{nullptr}, root{nullptr}
+EditorLayer::EditorLayer(std::unique_ptr<Prehistoric::Scene> scene)
+	: scene(std::move(scene)), root(this->scene->getSceneRoot())
 {
-	this->scene = std::unique_ptr<Prehistoric::Scene>(scene);
-	this->root = scene->getSceneRoot();
 
 	this->scenePanel = std::make_unique<SceneHierarchyPanel>(root);
 }
@@ -118,23 +118,25 @@ void EditorLayer::ImGUIRender()
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 	ImGui::Begin("Environment map configurations");
 
+	auto* renderer = static_cast<Prehistoric::GLRenderer*>(Prehistoric::Application::Get().getEngineLayer()->getRenderingEngine()->getRenderer());
+	auto& environment = renderer->getEnvironmentLighting();
 	if (ImGui::Button("Load environment map"))
 	{
 		std::optional<std::string> path = Prehistoric::FileDialogues::Get()->OpenFile("Environment Map (*.hdr)\0*.hdr\0");
 		if (path)
 		{
 			__EnvironmentMapConfig.environmentMapLocation = *path;
-			Prehistoric::EnvironmentMapRenderer::instance->RequestBake(true);
+			environment.RequestBake(true);
 		}
 	}
 
 	if (ImGui::Button("Regenerate environment map"))
 	{
-		Prehistoric::EnvironmentMapRenderer::instance->RequestBake(false);
+		environment.RequestBake(false);
 	}
 
 	float max = (float)__EnvironmentMapConfig.prefilterLevels;
-	ImGui::SliderFloat("Environment map LOD", &Prehistoric::EnvironmentMapRenderer::instance->lodRenderedMap, 0.0f, max - 1.0f, "Environment map LOD");
+	ImGui::SliderFloat("Environment map LOD", &environment.lodRenderedMap, 0.0f, max - 1.0f, "Environment map LOD");
 
 	ImGui::InputInt("Environment map resolution", (int*)&__EnvironmentMapConfig.environmentMapResolution);
 	ImGui::InputInt("Irradiance map resolution", (int*)&__EnvironmentMapConfig.irradianceMapResolution);
@@ -159,7 +161,7 @@ void EditorLayer::ImGUIRender()
 	ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 	Prehistoric::Vector2f viewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 
-	Prehistoric::Texture* texture = Prehistoric::Application::Get().getEngineLayer()->getRenderingEngine()->getRenderer()->getOutputTexture();
+	Prehistoric::Texture* texture = renderer->getOutputTexture();
 	ImGui::Image((void*)(dynamic_cast<Prehistoric::GLTexture*>(texture)->getTextureID()), ImVec2{ viewportSize.x, viewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 	ImGui::End();

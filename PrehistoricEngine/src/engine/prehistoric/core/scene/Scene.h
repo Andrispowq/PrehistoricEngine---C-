@@ -19,7 +19,6 @@
 
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 
-#include "prehistoric/core/modules/environmentMapRenderer/EnvironmentMapRenderer.h"
 #include "prehistoric/core/node/component/audio/AudioComponent.h"
 
 namespace Prehistoric

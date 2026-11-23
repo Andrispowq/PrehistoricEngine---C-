@@ -4,7 +4,6 @@
 #include "platform/opengl/rendering/GLRenderer.h"
 
 #include "prehistoric/application/Application.h"
-#include "prehistoric/core/modules/environmentMapRenderer/EnvironmentMapRenderer.h"
 
 namespace Prehistoric
 {
@@ -113,14 +112,7 @@ namespace Prehistoric
 		multisampleFBO->SetDrawAttachments(5, arr);
 		multisampleFBO->Clear(0.0f);
 
-		if (rend->getAtmosphere())
-		{
-			rend->getAtmospherePass().DrawScene(*rend->getAtmosphere(), *rend->getCamera());
-		}
-		else if (EnvironmentMapRenderer::instance && EnvironmentMapRenderer::instance->enabled)
-		{
-			EnvironmentMapRenderer::instance->RenderCube(rend->getCamera());
-		}
+		rend->DrawBackground(rend->getCamera());
 
 		rend->DrawModelBatches(rend->getModels3D());
 		rend->DrawModelBatches(rend->getModelsTransparency());

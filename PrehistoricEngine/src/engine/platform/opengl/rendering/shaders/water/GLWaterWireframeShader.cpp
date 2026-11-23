@@ -64,12 +64,7 @@ namespace Prehistoric
 
 		//SetUniformi("highDetailRange", __EngineConfig.rendererHighDetailRange);
 
-		/*__EnvironmentMapConfig.irradianceMap->Bind(0);
-		SetUniformi("irradianceMap", 0);
-		__EnvironmentMapConfig.prefilterMap->Bind(1);
-		SetUniformi("prefilterMap", 1);
-		__EnvironmentMapConfig.brdfLUT->Bind(2);
-		SetUniformi("brdfLUT", 2);
+		/*BindEnvironmentLighting(renderer, 0);
 
 		//TODO: This is ugly!!!!
 		SetUniformi("numberOfTilesX", __FrameworkConfig.windowWidth / 16);

@@ -69,6 +69,7 @@ namespace Prehistoric
 			return uniforms.at(name);
 		}
 	protected:
+		void BindEnvironmentLighting(Renderer* renderer, uint32_t firstUnit) const;
 		std::unordered_map<std::string, uint32_t> uniforms;
 
 		GLuint program;

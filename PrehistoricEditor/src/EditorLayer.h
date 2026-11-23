@@ -10,7 +10,7 @@
 class EditorLayer : public Prehistoric::Layer
 {
 public:
-	EditorLayer(Prehistoric::Scene* scene);
+	EditorLayer(std::unique_ptr<Prehistoric::Scene> scene);
 	virtual ~EditorLayer() = default;
 
 	virtual void OnAttach() override;

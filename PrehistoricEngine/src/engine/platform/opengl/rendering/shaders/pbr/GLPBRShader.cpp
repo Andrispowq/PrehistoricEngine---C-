@@ -64,12 +64,7 @@ namespace Prehistoric
 		SetUniform("cameraPosition", camera->getPosition());
 		SetUniformi("highDetailRange", __EngineConfig.rendererHighDetailRange);
 
-		__EnvironmentMapConfig.irradianceMap->Bind(4);
-		SetUniformi("irradianceMap", 4);
-		__EnvironmentMapConfig.prefilterMap->Bind(5);
-		SetUniformi("prefilterMap", 5);
-		__EnvironmentMapConfig.brdfLUT->Bind(6);
-		SetUniformi("brdfLUT", 6);
+		BindEnvironmentLighting(renderer, 4);
 
 		SetUniformi("numberOfTilesX", __FrameworkConfig.windowWidth / 16);
 		SetUniformf("max_reflection_lod", __EnvironmentMapConfig.prefilterLevels - 1.0f);

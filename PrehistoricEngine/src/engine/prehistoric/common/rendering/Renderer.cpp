@@ -59,6 +59,15 @@ namespace Prehistoric
 		}
 	}
 
+	void Renderer::Render()
+	{
+		if (!CanRenderFrame()) return;
+		UpdateEnvironmentLighting();
+		RenderScene();
+		RenderHDR();
+		FinishFrame();
+	}
+
     void Renderer::ClearFrameSubmissions()
     {
         models_3d.clear();

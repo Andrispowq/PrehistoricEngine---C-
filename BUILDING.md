@@ -366,6 +366,16 @@ using black, constant, directional, Cape Hill, and procedural sky environments. 
 requires a Vulkan SDK, a C++17 compiler and a Vulkan device with validation
 layers. Use `python3 tests/resource_pipeline.py` to check staging and install.
 
+## Renderer frame order
+
+After scene registration and successful frame preparation, both renderers update
+environment lighting, draw the scene, run HDR processing, and finish the output.
+OpenGL runs its water captures, depth, shadow, and light-culling passes before
+main colour, then runs optional bloom and volumetric processing before tone mapping.
+Vulkan records scene colour and tone mapping as successive native subpasses.
+The renderer owns the passes and baked maps for its backend. Outstanding rendering
+repairs are listed in the [rendering backlog](docs/RENDERING_BACKLOG.md).
+
 ## Vulkan procedural sky
 
 A JSON world with a `scattering_atmosphere` object and scattering enabled draws

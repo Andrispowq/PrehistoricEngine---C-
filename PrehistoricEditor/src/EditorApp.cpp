@@ -1,10 +1,8 @@
 #include "EditorApp.h"
-#include "platform/opengl/rendering/GLRenderer.h"
 
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 
 #include "prehistoric/application/Application.h"
-#include "prehistoric/core/modules/environmentMapRenderer/EnvironmentMapRenderer.h" 
 
 #include "prehistoric/core/node/movement/EditorCamera.h"
 
@@ -45,23 +43,11 @@ EditorApp::EditorApp()
 	sun->AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0.95f, 0.87f), 100.0f, 50000.0f, true, true));
 	sun_move_function(sun, 0.0f);
 
-	Scene* scene = new Scene("res/world/testLevel.wrld", window, cam, manager);
+	auto scene = std::make_unique<Scene>("res/world/testLevel.wrld", window, cam, manager);
 	scene->getSceneRoot()->AddChild("sun", sun);
-	engineLayer->SetScene(scene);
+	engineLayer->SetScene(scene.get());
 
-	//Load in the environment map
-	if (__FrameworkConfig.api == OpenGL)
-	{
-		{
-			PR_PROFILE("Environment map generation - BRDF Look-up Table");
-			EnvironmentMapRenderer::instance = new EnvironmentMapRenderer(window, manager,
-				static_cast<GLRenderer*>(engineLayer->getRenderingEngine()->getRenderer())->getAtmospherePass());
-		}
-
-		EnvironmentMapRenderer::instance->enabled = true;
-	}
-
-	editor = new EditorLayer(scene);
+	editor = new EditorLayer(std::move(scene));
 	PushLayer(editor);
 }
 

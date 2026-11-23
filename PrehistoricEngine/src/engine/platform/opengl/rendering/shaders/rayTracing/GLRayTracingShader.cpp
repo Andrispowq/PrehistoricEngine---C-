@@ -4,6 +4,7 @@
 #include "prehistoric/application/Application.h"
 
 #include "platform/opengl/rendering/GLRenderer.h"
+#include "prehistoric/core/modules/environmentMapRenderer/EnvironmentMapRenderer.h"
 
 namespace Prehistoric
 {
@@ -31,7 +32,7 @@ namespace Prehistoric
 	{
 		Camera* camera = renderer->getCamera();
 
-		__EnvironmentMapConfig.environmentMap->Bind(0);
+		static_cast<GLRenderer*>(renderer)->getEnvironmentLighting().getEnvironmentMap()->Bind(0);
 		SetUniformi("environment", 0);
 
 		SetUniform("Projection", camera->getProjectionMatrix());

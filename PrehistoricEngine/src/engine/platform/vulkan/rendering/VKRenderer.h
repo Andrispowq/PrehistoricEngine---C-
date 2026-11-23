@@ -24,11 +24,11 @@ namespace Prehistoric {
 
         virtual void EndRendering();
 
-        virtual void Render() override;
 
 
-        virtual CommandBuffer* getDrawCommandBuffer() const {
-            return (CommandBuffer*) commandPool->getCommandBuffer(window->getSwapchain()->getAquiredImageIndex());
+
+        VKCommandBuffer* getDrawCommandBuffer() const {
+            return commandPool->getCommandBuffer(window->getSwapchain()->getAquiredImageIndex());
         }
 
         VKEnvironmentLighting* getEnvironmentLighting() const {
@@ -45,7 +45,11 @@ namespace Prehistoric {
         std::unique_ptr<VKEnvironmentLighting> environmentLighting;
 
         void ProcessDraws(VKCommandBuffer* buffer);
-        void UpdateEnvironmentLighting();
+        bool CanRenderFrame() const override { return frameReady; }
+        void UpdateEnvironmentLighting() override;
+        void RenderScene() override;
+        void RenderHDR() override;
+        void FinishFrame() override;
         AtmosphereCapture environmentCapture;
         bool frameReady = false;
     };

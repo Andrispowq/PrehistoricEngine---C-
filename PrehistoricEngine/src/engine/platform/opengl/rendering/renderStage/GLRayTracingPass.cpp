@@ -5,7 +5,6 @@
 #include "platform/opengl/rendering/shaders/rayTracing/GLRayTracingShader.h"
 
 #include "prehistoric/application/Application.h"
-#include "prehistoric/core/modules/environmentMapRenderer/EnvironmentMapRenderer.h"
 
 namespace Prehistoric
 {

@@ -64,10 +64,6 @@ namespace Prehistoric
         uint32_t prefilterLevels = 0;
         float atmosphereRefreshSeconds = 10.0f;
 
-        Texture* environmentMap = nullptr;
-        Texture* irradianceMap = nullptr;
-        Texture* prefilterMap = nullptr;
-        Texture* brdfLUT = nullptr;
     };
 
     struct AtmosphereConfig

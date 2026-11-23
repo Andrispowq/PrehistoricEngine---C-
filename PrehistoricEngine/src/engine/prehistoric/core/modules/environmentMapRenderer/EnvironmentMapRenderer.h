@@ -22,8 +22,6 @@ namespace Prehistoric
 	class EnvironmentMapRenderer
 	{
 	public:
-		static EnvironmentMapRenderer* instance;
-
 		EnvironmentMapRenderer(Window* window, AssembledAssetManager* manager, GLAtmospherePass& atmospherePass);
 		virtual ~EnvironmentMapRenderer();
 
@@ -54,7 +52,7 @@ namespace Prehistoric
 		std::string mapCache;
 
 		VertexBufferHandle cubeBuffer;
-		Framebuffer* framebuffer;
+		std::unique_ptr<Framebuffer> framebuffer;
 
 		Matrix4f viewMatrices[6];
 		Matrix4f projectionMatrix;

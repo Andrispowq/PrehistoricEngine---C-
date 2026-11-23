@@ -18,25 +18,22 @@
 
 namespace Prehistoric
 {
-	extern bool bloomEnabled; //TODO: this is a shitty way to achieve this
-
 	GLRenderer::GLRenderer(Window* window, Camera* camera, AssembledAssetManager* manager)
 		: Renderer(window, camera, manager), atmospherePass(*manager)
 	{
-		depthPass = new GLDepthPass(this);
-		shadowDepthPass = new GLShadowDepthPass(this);
-		lightCullingPass = new GLLightCullingPass(this);
-		mainPass = new GLMainPass(this);
-		bloomPass = new GLBloomPass(this);
-		volumetricPostProcessingPass = new GLVolumetricPostProcessingPass(this);
-		hdrPass = new GLHDRPass(this);
+		depthPass = std::make_unique<GLDepthPass>(this);
+		shadowDepthPass = std::make_unique<GLShadowDepthPass>(this);
+		lightCullingPass = std::make_unique<GLLightCullingPass>(this);
+		mainPass = std::make_unique<GLMainPass>(this);
+		bloomPass = std::make_unique<GLBloomPass>(this);
+		volumetricPostProcessingPass = std::make_unique<GLVolumetricPostProcessingPass>(this);
+		hdrPass = std::make_unique<GLHDRPass>(this);
 
-		voxelPass = new GLVoxelRendererPass(this);
+		voxelPass = std::make_unique<GLVoxelRendererPass>(this);
 
-		rtxPass = new GLRayTracingPass(this);
+		rtxPass = std::make_unique<GLRayTracingPass>(this);
 
-		uint32_t width = window->getWidth();
-		uint32_t height = window->getHeight();
+		environmentLighting = std::make_unique<EnvironmentMapRenderer>(window, manager, atmospherePass);
 
 		AssetManager* man = manager->getAssetManager();
 
@@ -52,19 +49,6 @@ namespace Prehistoric
 
 	GLRenderer::~GLRenderer()
 	{
-		delete depthPass;
-		delete shadowDepthPass;
-		delete lightCullingPass;
-		delete mainPass;
-		delete bloomPass;
-		delete volumetricPostProcessingPass;
-		delete hdrPass;
-
-		delete voxelPass;
-
-		delete rtxPass;
-
-		AssetManager* man = manager->getAssetManager();
 		manager->removeReference<Pipeline>(renderPipeline.handle);
 	}
 
@@ -126,12 +110,19 @@ namespace Prehistoric
         });
     }
 
-	void GLRenderer::Render()
-	{ 
-		uint32_t width = window->getWidth();
-		uint32_t height = window->getHeight();
+	void GLRenderer::DrawBackground(Camera* camera)
+	{
+		if (atmosphere) atmospherePass.DrawScene(*atmosphere, *camera);
+		else if (environmentLighting->enabled) environmentLighting->RenderCube(camera);
+	}
 
-        if (EnvironmentMapRenderer::instance) EnvironmentMapRenderer::instance->UpdateEnvironment(atmosphere);
+	void GLRenderer::UpdateEnvironmentLighting()
+	{
+		environmentLighting->UpdateEnvironment(atmosphere);
+	}
+
+	void GLRenderer::RenderScene()
+	{
         for (Water* water : waters)
         {
             water->RenderCaptures(this);
@@ -146,11 +137,10 @@ namespace Prehistoric
 
 		lightCullingPass->Render();
 		mainPass->Render();
+	}
 
-		//voxelPass->Render();
-
-		//rtxPass->Render();
-
+	void GLRenderer::RenderHDR()
+	{
 		if (bloomEnabled)
 		{
 			bloomPass->Render();
@@ -158,13 +148,12 @@ namespace Prehistoric
 
 		volumetricPostProcessingPass->Render();
 		hdrPass->Render();
+	}
 
+	void GLRenderer::FinishFrame()
+	{
 		{
 			Texture* result = hdrPass->getOutputImage().pointer;
-			if (wireframeMode)
-			{
-				//result = voxelPass->getOutputImage().pointer;
-			}
 
 			PR_PROFILE("Render to screen");
 			renderPipeline->BindPipeline(nullptr);
@@ -176,7 +165,7 @@ namespace Prehistoric
 		//TODO: disable alpha blending and depth testing
 		{
 			PR_PROFILE("GUI pass");
-			for (auto pipeline : models_2d)
+			for (const auto& pipeline : models_2d)
 			{
 				Pipeline* pl = pipeline.first;
 

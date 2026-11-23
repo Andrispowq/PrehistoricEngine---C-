@@ -260,7 +260,7 @@ namespace Prehistoric
 		vkCmdBeginRenderPass(commandBuffer->getCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 	}
 
-	void VKRenderpass::EndRenderpass(VKCommandBuffer* commandBuffer)
+	void VKRenderpass::RenderHDR(VKCommandBuffer* commandBuffer)
 	{
 		VkCommandBuffer command = commandBuffer->getCommandBuffer();
 		vkCmdNextSubpass(command, VK_SUBPASS_CONTENTS_INLINE);
@@ -275,6 +275,5 @@ namespace Prehistoric
 			VKPBRShaderGamma(swapchain->getSwapchainImageFormat(), __EngineConfig.rendererGamma) };
 		vkCmdPushConstants(command, hdrLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(settings), settings);
 		vkCmdDraw(command, 3, 1, 0, 0);
-		vkCmdEndRenderPass(command);
 	}
 };

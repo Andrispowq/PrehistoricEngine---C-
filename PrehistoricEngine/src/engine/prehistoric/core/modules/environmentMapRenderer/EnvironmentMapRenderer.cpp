@@ -16,8 +16,6 @@
 //#include "platform/vulkan/rendering/pipeline/VKComputePipeline.h"
 
 namespace Prehistoric {
-    EnvironmentMapRenderer *EnvironmentMapRenderer::instance = nullptr;
-
     EnvironmentMapRenderer::EnvironmentMapRenderer(Window* window, AssembledAssetManager* manager, GLAtmospherePass& atmospherePass)
         : atmospherePass(atmospherePass), window(window), manager(manager) {
         mapCache = "";
@@ -48,7 +46,7 @@ namespace Prehistoric {
         manager->addReference<Pipeline>(backgroundPipeline.handle);
 
         //Create the framebuffer
-        framebuffer = new GLFramebuffer(window);
+        framebuffer = std::make_unique<GLFramebuffer>(window);
 
         //Create the matrices
         projectionMatrix = Matrix4f::PerspectiveProjection(90, 1, .1f, 100.0f);
@@ -75,7 +73,6 @@ namespace Prehistoric {
 
         brdfMap->Bind();
 
-        __EnvironmentMapConfig.brdfLUT = brdfMap.pointer;
     }
 
     EnvironmentMapRenderer::~EnvironmentMapRenderer() {
@@ -84,11 +81,11 @@ namespace Prehistoric {
         if (equirectangularMap.pointer != nullptr)
             man->removeReference<Texture>(equirectangularMap.handle);
 
-        man->removeReference<Texture>(environmentMap.handle);
-        man->removeReference<Texture>(irradianceMap.handle);
-        man->removeReference<Texture>(prefilterMap.handle);
+        if (environmentMap.pointer) man->removeReference<Texture>(environmentMap.handle);
+        if (irradianceMap.pointer) man->removeReference<Texture>(irradianceMap.handle);
+        if (prefilterMap.pointer) man->removeReference<Texture>(prefilterMap.handle);
 
-        delete framebuffer;
+        man->removeReference<Texture>(brdfMap.handle);
 
         manager->removeReference<Pipeline>(environmentMapPipeline.handle);
         manager->removeReference<Pipeline>(irradiancePipeline.handle);
@@ -243,9 +240,6 @@ namespace Prehistoric {
             prefilterMap->Bind();
         }
 
-        __EnvironmentMapConfig.environmentMap = environmentMap.pointer;
-        __EnvironmentMapConfig.irradianceMap = irradianceMap.pointer;
-        __EnvironmentMapConfig.prefilterMap = prefilterMap.pointer;
         if (previousEnvironment.pointer)
         {
             man->removeReference<Texture>(previousEnvironment.handle);

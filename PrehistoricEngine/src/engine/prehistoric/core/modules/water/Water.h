@@ -11,6 +11,7 @@
 namespace Prehistoric
 {
 	class Renderer;
+	class Framebuffer;
 
 	class Water : public Node
 	{

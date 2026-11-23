@@ -16,21 +16,16 @@ namespace Prehistoric
 	CoreEngine::~CoreEngine()
 	{
 		//The order is VERY important here, hence the deletion by hand
-		delete root.release();
-
-		if (EnvironmentMapRenderer::instance)
-		{
-			delete EnvironmentMapRenderer::instance;
-		}
+		root.reset();
 
 		renderingEngine->PreRelease();
-		delete manager.release();
+		manager.reset();
 #ifdef PR_WINDOWS_64
-		delete scriptEngine.release();
+		scriptEngine.reset();
 #endif
-		delete physicsEngine.release();
-		delete audioEngine.release();
-		delete renderingEngine.release();
+		physicsEngine.reset();
+		audioEngine.reset();
+		renderingEngine.reset();
 
 		Input::DeleteInstance();
 		Log::Shutdown();

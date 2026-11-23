@@ -14,8 +14,6 @@ namespace Prehistoric
 {
 	Statistics RenderingEngine::statistics;
 
-	bool bloomEnabled = true;
-
 	RenderingEngine::RenderingEngine()
 		: window(nullptr), defaultCamera(nullptr), renderer(nullptr)
 	{
@@ -69,8 +67,9 @@ namespace Prehistoric
 	void RenderingEngine::PreRelease()
 	{
 		//These depend on the Asset Manager, which needs to be deleted before the windows, so nasty hack ahead
-		delete renderer.release();
-		delete defaultCamera.release();
+		renderer.reset();
+		defaultCamera.reset();
+		primaryCamera = nullptr;
 	}
 
 	void RenderingEngine::OnEvent(Event& event)
@@ -114,7 +113,7 @@ namespace Prehistoric
 
 		if (InputInstance.IsKeyPushed(PR_KEY_K))
 		{
-			bloomEnabled = !bloomEnabled;
+			renderer->ToggleBloom();
 		}
 	}
 
@@ -123,10 +122,10 @@ namespace Prehistoric
 		renderer->Render();
 	}
 
-	void RenderingEngine::ChangeCamera(Camera* camera)
+	void RenderingEngine::ChangeCamera(std::unique_ptr<Camera> camera)
 	{
-		this->defaultCamera = (std::unique_ptr<Camera>)camera;
-		renderer->setCamera(camera);
+		defaultCamera = std::move(camera);
+		ChangePrimaryCamera(defaultCamera.get());
 	}
 
 	void RenderingEngine::AddCameraComponent(CameraComponent* component)

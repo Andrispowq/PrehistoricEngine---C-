@@ -99,7 +99,7 @@ namespace Prehistoric {
             vkDeviceWaitIdle(device->getDevice());
 
             primaryFramebuffers.clear();
-            delete renderpass.release();
+            renderpass.reset();
 
             swapchain->SetWindowSize((uint32_t) framebufferWidth, (uint32_t) framebufferHeight);
             VkExtent2D extent = swapchain->getSwapchainExtent();
@@ -133,39 +133,19 @@ namespace Prehistoric {
             return;
         frameReady = true;
 
-        /*uint32_t index = swapchain->getAquiredImageIndex();
-		VKCommandBuffer* buffer = commandPool->getCommandBuffer(index);
-
-		buffer->BindBuffer();
-		renderpass->BeginRenderpass(buffer, primaryFramebuffers[index].get(), swapchain->getSwapchainExtent(), swapchain->getClearColour());*/
     }
 
     void VKRenderer::EndRendering() {
         if (frameReady) {
-            VKSwapchain *swapchain = (VKSwapchain *) window->getSwapchain();
-            uint32_t index = swapchain->getAquiredImageIndex();
-            VKCommandBuffer *buffer = commandPool->getCommandBuffer(index);
-
-            /*renderpass->EndRenderpass(buffer);
-			buffer->UnbindBuffer();*/
-
-            {
-                PR_PROFILE("Submitting");
-                window->Render(buffer);
-            }
+            PR_PROFILE("Submitting");
+            window->Render(getDrawCommandBuffer());
         }
 
         ClearFrameSubmissions();
     }
 
-    void VKRenderer::Render() {
-        if (!frameReady)
-            return;
-
-        UpdateEnvironmentLighting();
-
-        PR_PROFILE("Update uniforms");
-
+    void VKRenderer::RenderScene()
+    {
         ProcessDraws(nullptr);
 
         auto* swapchain = static_cast<VKSwapchain*>(window->getSwapchain());
@@ -176,7 +156,17 @@ namespace Prehistoric {
                                     swapchain->getClearColour());
         background->Draw(buffer->getCommandBuffer(), camera, __AtmosphereConfig.scatteringEnabled ? atmosphere : nullptr);
         ProcessDraws(buffer);
-        renderpass->EndRenderpass(buffer);
+    }
+
+    void VKRenderer::RenderHDR()
+    {
+        renderpass->RenderHDR(getDrawCommandBuffer());
+    }
+
+    void VKRenderer::FinishFrame()
+    {
+        VKCommandBuffer* buffer = getDrawCommandBuffer();
+        vkCmdEndRenderPass(buffer->getCommandBuffer());
         buffer->UnbindBuffer();
     }
 

@@ -1,8 +1,21 @@
 #include "Includes.hpp"
 #include "prehistoric/core/resources/EngineResources.h"
 #include "GLShader.h"
+#include "platform/opengl/rendering/GLRenderer.h"
+#include "prehistoric/core/modules/environmentMapRenderer/EnvironmentMapRenderer.h"
 
 namespace Prehistoric {
+    void GLShader::BindEnvironmentLighting(Renderer* renderer, uint32_t firstUnit) const
+    {
+        const auto& lighting = static_cast<GLRenderer*>(renderer)->getEnvironmentLighting();
+        lighting.getIrradianceMap()->Bind(firstUnit);
+        SetUniformi("irradianceMap", firstUnit);
+        lighting.getPrefilterMap()->Bind(firstUnit + 1);
+        SetUniformi("prefilterMap", firstUnit + 1);
+        lighting.getBRDFMap()->Bind(firstUnit + 2);
+        SetUniformi("brdfLUT", firstUnit + 2);
+    }
+
     std::vector<char> ResourceLoader::LoadShaderGL(const std::string &filename) {
         std::ifstream file;
         file.open(EngineResourcePath("shaders/" + filename).c_str());

@@ -37,7 +37,8 @@ namespace Prehistoric
 		virtual void PrepareRendering() = 0;
 		virtual void EndRendering() = 0;
 
-		virtual void Render() = 0;
+		void Render();
+		void ToggleBloom() { bloomEnabled = !bloomEnabled; }
 
 		virtual CommandBuffer* getDrawCommandBuffer() const { return nullptr; }
 
@@ -88,6 +89,13 @@ namespace Prehistoric
         }
 
 	protected:
+		virtual bool CanRenderFrame() const { return true; }
+		virtual void UpdateEnvironmentLighting() = 0;
+		virtual void RenderScene() = 0;
+		virtual void RenderHDR() = 0;
+		virtual void FinishFrame() = 0;
+		bool bloomEnabled = true;
+
 		void ClearFrameSubmissions();
 		void ResizePipelines(uint32_t width, uint32_t height);
 

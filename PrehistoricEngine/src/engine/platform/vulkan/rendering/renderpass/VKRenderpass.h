@@ -19,7 +19,7 @@ namespace Prehistoric
 
 		std::unique_ptr<VKFramebuffer> CreateFramebuffer(uint32_t imageIndex) const;
 		void BeginRenderpass(VKCommandBuffer* commandBuffer, VKFramebuffer* framebuffer, VkExtent2D swapchainExtent, Vector4f clearColour);
-		void EndRenderpass(VKCommandBuffer* commandBuffer);
+		void RenderHDR(VKCommandBuffer* commandBuffer);
 
 		VkPipeline CreateFullscreenPipeline(const char* vertexPath, const char* fragmentPath, VkPipelineLayout layout, uint32_t subpass);
 		VkRenderPass getRenderPass() const { return renderpass; }
