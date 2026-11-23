@@ -1,5 +1,6 @@
 #include "Includes.hpp"
 #include "Atmosphere.h"
+#include "platform/vulkan/rendering/VKRenderer.h"
 
 #include "prehistoric/core/CoreEngine.h"
 #include "prehistoric/core/resources/AssembledAssetManager.h"
@@ -9,6 +10,8 @@
 namespace Prehistoric {
     Atmosphere::Atmosphere(Window *window, AssembledAssetManager *manager)
         : window(window) {
+        if (__FrameworkConfig.api == Vulkan) return;
+
         SetScale(Vector3f(__EngineConfig.rendererFarPlane / 2.f));
 
         AssetManager *man = manager->getAssetManager();
@@ -27,6 +30,16 @@ namespace Prehistoric {
 
         AddComponent(RENDERER_COMPONENT,
                      new RendererComponent(window, manager, pipeline, manager->storeMaterial(nullptr)));
+    }
+
+    void Atmosphere::PreRender(Renderer* renderer)
+    {
+        if (!isEnabled()) return;
+        if (__FrameworkConfig.api == Vulkan && sun)
+        {
+            static_cast<VKRenderer*>(renderer)->SetAtmosphereSun(sun->getParent()->getWorldTransform().getPosition());
+        }
+        GameObject::PreRender(renderer);
     }
 
     //We go around in a circle, from -range to range on the y and z axes

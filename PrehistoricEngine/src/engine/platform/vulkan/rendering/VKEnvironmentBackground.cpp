@@ -14,12 +14,20 @@ namespace Prehistoric
     {
         constexpr VkShaderStageFlags stages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
-        struct BackgroundConstants 
+        struct BackgroundConstants
         {
-            float inverseViewProjection[16];
+            float rayX[4];
+            float rayY[4];
+            float rayCenter[4];
+            float sunPositionRadius[4];
+            float sunColourIntensity[4];
+            float rayleighMie[4];
+            float radiiAndScaleHeights[4];
+            float anisotropyAndShift[2];
         };
 
-        static_assert(sizeof(BackgroundConstants) == 64);
+        static_assert(offsetof(BackgroundConstants, sunPositionRadius) == 48);
+        static_assert(sizeof(BackgroundConstants) == 120);
 
         void Check(VkResult result) 
         {
@@ -33,24 +41,26 @@ namespace Prehistoric
           swapchain((VKSwapchain *) window->getSwapchain()) 
     {
         const auto &location = __EnvironmentMapConfig.environmentMapLocation;
-        if (location.empty())return;
-        texture.reset((VKTexture *) TextureLoader::LoadTexture(window, location, Bilinear, ClampToEdge));
+        if (!location.empty())
+        {
+            texture.reset((VKTexture *) TextureLoader::LoadTexture(window, location, Bilinear, ClampToEdge));
 
-        VkSamplerCreateInfo samplerInfo{VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
-        VkFormatProperties properties{};
-        vkGetPhysicalDeviceFormatProperties(device->getPhysicalDevice(), texture->getImage()->getImageFormat(),
-                                            &properties);
-        samplerInfo.magFilter = samplerInfo.minFilter =
-                                properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT
-                                    ? VK_FILTER_LINEAR
-                                    : VK_FILTER_NEAREST;
-        samplerInfo.mipmapMode = samplerInfo.minFilter == VK_FILTER_LINEAR
-                                     ? VK_SAMPLER_MIPMAP_MODE_LINEAR
-                                     : VK_SAMPLER_MIPMAP_MODE_NEAREST;
-        samplerInfo.maxLod = float(texture->getImage()->getMipLevels() - 1);
-        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerInfo.addressModeV = samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        Check(vkCreateSampler(device->getDevice(), &samplerInfo, nullptr, &sampler));
+            VkSamplerCreateInfo samplerInfo{VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
+            VkFormatProperties properties{};
+            vkGetPhysicalDeviceFormatProperties(device->getPhysicalDevice(), texture->getImage()->getImageFormat(),
+                                                &properties);
+            samplerInfo.magFilter = samplerInfo.minFilter =
+                                    properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT
+                                        ? VK_FILTER_LINEAR
+                                        : VK_FILTER_NEAREST;
+            samplerInfo.mipmapMode = samplerInfo.minFilter == VK_FILTER_LINEAR
+                                         ? VK_SAMPLER_MIPMAP_MODE_LINEAR
+                                         : VK_SAMPLER_MIPMAP_MODE_NEAREST;
+            samplerInfo.maxLod = float(texture->getImage()->getMipLevels() - 1);
+            samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+            samplerInfo.addressModeV = samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            Check(vkCreateSampler(device->getDevice(), &samplerInfo, nullptr, &sampler));
+        }
 
         VkDescriptorSetLayoutBinding binding{};
         binding.binding = 0;
@@ -110,6 +120,7 @@ namespace Prehistoric
 
     VKEnvironmentBackground::~VKEnvironmentBackground() 
     {
+        vkDestroyPipeline(device->getDevice(), atmospherePipeline, nullptr);
         vkDestroyPipeline(device->getDevice(), pipeline, nullptr);
         vkDestroyPipelineLayout(device->getDevice(), pipelineLayout, nullptr);
         vkDestroyDescriptorPool(device->getDevice(), descriptorPool, nullptr);
@@ -119,33 +130,65 @@ namespace Prehistoric
 
     void VKEnvironmentBackground::RecreatePipeline() 
     {
-        if (!texture) return;
+        vkDestroyPipeline(device->getDevice(), atmospherePipeline, nullptr);
         vkDestroyPipeline(device->getDevice(), pipeline, nullptr);
         pipeline = VK_NULL_HANDLE;
 
+        atmospherePipeline = swapchain->getRenderpass()->CreateFullscreenPipeline("vulkan/background/background_VS.spv",
+            "vulkan/atmosphere/scattering_FS.spv", pipelineLayout, 0);
+        if (!texture) return;
         pipeline = swapchain->getRenderpass()->CreateFullscreenPipeline("vulkan/background/background_VS.spv",
             "vulkan/background/background_FS.spv", pipelineLayout, 0);
     }
 
-    void VKEnvironmentBackground::Draw(VkCommandBuffer commandBuffer, const Camera *camera) const 
+    void VKEnvironmentBackground::Draw(VkCommandBuffer commandBuffer, const Camera* camera, const std::optional<Vector3f>& sun) const
     {
-        if (!pipeline) return;
+        VkPipeline selected = sun ? atmospherePipeline : pipeline;
+        if (!selected) return;
         // Remove translation from the actual view matrix, retaining camera rotation.
         Matrix4f view = camera->getViewMatrix();
         view.m[12] = view.m[13] = view.m[14] = 0.0f;
         Matrix4f inverse = (camera->getProjectionMatrix() * view).Invert();
         BackgroundConstants constants{};
 
-        memcpy(constants.inverseViewProjection, inverse.m, sizeof(constants.inverseViewProjection));
+        for (int axis = 0; axis < 3; ++axis)
+        {
+            constants.rayX[axis] = inverse.m[axis];
+            constants.rayY[axis] = inverse.m[4 + axis];
+            constants.rayCenter[axis] = inverse.m[8 + axis] + inverse.m[12 + axis];
+        }
+        if (sun)
+        {
+            const auto& settings = __AtmosphereConfig;
+            auto pack = [](float (&values)[4], const Vector3f& xyz, float w)
+            {
+                values[0] = xyz.x;
+                values[1] = xyz.y;
+                values[2] = xyz.z;
+                values[3] = w;
+            };
+            pack(constants.sunPositionRadius, *sun, settings.sunRadius);
+            pack(constants.sunColourIntensity, settings.sunColour, settings.sunIntensity);
+            pack(constants.rayleighMie, settings.rayleigh, settings.mie);
+            constants.radiiAndScaleHeights[0] = settings.planetRadius;
+            constants.radiiAndScaleHeights[1] = settings.atmosphereRadius;
+            constants.radiiAndScaleHeights[2] = settings.rayleighHeightScale;
+            constants.radiiAndScaleHeights[3] = settings.mieHeightScale;
+            constants.anisotropyAndShift[0] = settings.mieDirection;
+            constants.anisotropyAndShift[1] = settings.horizontalVerticalShift;
+        }
         auto extent = swapchain->getSwapchainExtent();
         VkViewport viewport{0, 0, (float) extent.width, (float) extent.height, 0, 1};
         VkRect2D scissor{{0, 0}, extent};
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, selected);
         vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0,
-                                nullptr);
+        if (!sun)
+        {
+            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0,
+                                    nullptr);
+        }
         vkCmdPushConstants(commandBuffer, pipelineLayout, stages, 0, sizeof(constants), &constants);
         vkCmdDraw(commandBuffer, 3, 1, 0, 0);
     }

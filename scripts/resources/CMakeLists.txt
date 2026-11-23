@@ -32,7 +32,7 @@ endforeach ()
 # while include additions/edits rebuild the shader set. No Python/shell required.
 file(GLOB_RECURSE shader_includes CONFIGURE_DEPENDS "${resource_source}/shaders/vulkan/*"
         "${resource_source}/shaders/shared/*.glsl")
-foreach (entry basic/basic.vert basic/basic.frag pbr/pbr.vert pbr/pbr.frag background/background.vert background/background.frag ibl/ibl.comp ibl/convert.comp environmentMap/environmentMap.comp)
+foreach (entry atmosphere/scattering.frag postProcessing/hdr.vert postProcessing/hdr.frag basic/basic.vert basic/basic.frag pbr/pbr.vert pbr/pbr.frag background/background.vert background/background.frag ibl/ibl.comp ibl/convert.comp environmentMap/environmentMap.comp)
     list(REMOVE_ITEM shader_includes "${resource_source}/shaders/vulkan/${entry}")
 endforeach ()
 # A removed include must invalidate outputs too, rather than disappearing silently
@@ -55,6 +55,9 @@ function(prehistoric_shader source destination)
     set(shader_outputs ${shader_outputs} "${output}" PARENT_SCOPE)
 endfunction()
 
+prehistoric_shader(atmosphere/scattering.frag atmosphere/scattering_FS.spv)
+prehistoric_shader(postProcessing/hdr.vert postProcessing/hdr_VS.spv)
+prehistoric_shader(postProcessing/hdr.frag postProcessing/hdr_FS.spv)
 prehistoric_shader(basic/basic.vert basic/basic_VS.spv)
 prehistoric_shader(basic/basic.frag basic/basic_FS.spv)
 prehistoric_shader(pbr/pbr.vert pbr/pbr_VS.spv)

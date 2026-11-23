@@ -145,6 +145,7 @@ namespace Prehistoric
 
 	void Renderer::RegisterLight(Light* light)
 	{
+		if (__FrameworkConfig.api == Vulkan && !light->illuminates()) return;
 		lights.push_back(light);
 	}
 

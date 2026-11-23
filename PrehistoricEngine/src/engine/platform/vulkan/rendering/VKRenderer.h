@@ -26,6 +26,7 @@ namespace Prehistoric {
         virtual void Render() override;
 
         void BuildCommandBuffers();
+        void SetAtmosphereSun(const Vector3f& position) { atmosphereSun = position; }
 
         virtual CommandBuffer* getDrawCommandBuffer() const {
             return (CommandBuffer*) commandPool->getCommandBuffer(window->getSwapchain()->getAquiredImageIndex());
@@ -46,6 +47,7 @@ namespace Prehistoric {
 
         bool commandBuffersReady = false;
         bool frameReady = false;
+        std::optional<Vector3f> atmosphereSun;
     };
 };
 

@@ -583,42 +583,6 @@ namespace Prehistoric {
                 }
             }
 
-            //Big world objects like sun, atmosphere, clouds, terrain, oceans, etc
-            //These renderers currently only have OpenGL implementations.
-            if (__FrameworkConfig.api == OpenGL) {
-                std::vector<nlohmann::json> world_objects = file_json["world_objects"];
-                for (auto &world_object: world_objects) {
-                    std::string name = world_object["name"];
-                    std::string type = world_object["type"];
-
-                    if (type == "scattering_atmosphere") {
-                        GameObject *sun = new GameObject();
-
-                        std::string sun_name = world_object["sun"];
-                        if (sun_name == "") {
-                            //sun->setUpdateFunction(&Atmosphere::sunMoveFunction);
-                            sun->AddComponent(LIGHT_COMPONENT,
-                                              new Light(Vector3f(1, 0.95f, 0.87f), 100.0f, 50000.0f, true, true));
-                            Atmosphere::sunMoveFunction(sun, 0.0f);
-                            root->AddChild("sun", sun);
-                        } else {
-                            PR_LOG_ERROR("ERROR: can't bind existing sun to scattering atmosphere yet!\n");
-                        }
-
-                        Atmosphere *atmosphere = new Atmosphere(window, manager);
-                        atmosphere->setSun(sun->GetComponent<Light>());
-                        root->AddChild(name, atmosphere);
-                    } else if (type == "terrain") {
-                        std::string config = world_object["config"];
-
-                        Camera *camera = Application::Get().getEngineLayer()->getRenderingEngine()->getCamera();
-                        Terrain *terrain = new Terrain(window, camera, manager, directoryConfigs + config);
-                        terrain->UpdateQuadtree();
-                        root->AddChild(name, terrain);
-                    }
-                }
-            }
-
             {
                 nlohmann::json root_contents = file_json["root"];
                 std::vector<nlohmann::json> root_children = root_contents["children"];
@@ -700,6 +664,49 @@ namespace Prehistoric {
                     }
 
                     root->AddChild(name, object);
+                }
+            }
+
+            for (const auto& world_object : file_json["world_objects"])
+            {
+                std::string name = world_object["name"];
+                std::string type = world_object["type"];
+
+                if (type == "scattering_atmosphere" && (__FrameworkConfig.api == OpenGL || __AtmosphereConfig.scatteringEnabled))
+                {
+                    GameObject* sun = nullptr;
+
+                    std::string sun_name = world_object["sun"];
+                    if (sun_name.empty())
+                    {
+                        sun = new GameObject();
+                        sun->AddComponent(LIGHT_COMPONENT,
+                                          new Light(Vector3f(1, 0.95f, 0.87f), 100.0f, 50000.0f, true, true));
+                        Atmosphere::sunMoveFunction(sun, 0.0f);
+                        root->AddChild("sun", sun);
+                    }
+                    else
+                    {
+                        sun = dynamic_cast<GameObject*>(root->getChild(sun_name));
+                        if (!sun || !sun->GetComponent<Light>())
+                        {
+                            PR_LOG_ERROR("Atmosphere sun '%s' must name a light in the scene root.\n", sun_name.c_str());
+                            continue;
+                        }
+                    }
+
+                    Atmosphere* atmosphere = new Atmosphere(window, manager);
+                    atmosphere->setSun(sun->GetComponent<Light>());
+                    root->AddChild(name, atmosphere);
+                }
+                else if (type == "terrain" && __FrameworkConfig.api == OpenGL)
+                {
+                    std::string config = world_object["config"];
+
+                    Camera* camera = Application::Get().getEngineLayer()->getRenderingEngine()->getCamera();
+                    Terrain* terrain = new Terrain(window, camera, manager, directoryConfigs + config);
+                    terrain->UpdateQuadtree();
+                    root->AddChild(name, terrain);
                 }
             }
         } else {

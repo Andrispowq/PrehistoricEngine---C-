@@ -42,7 +42,8 @@ PrehistoricApp::PrehistoricApp()
     Camera *camera = engineLayer->getRenderingEngine()->getCamera();
 
     //Load in the environment map
-    if (__FrameworkConfig.api == OpenGL) {
+    if (__FrameworkConfig.api == OpenGL)
+    {
         {
             PR_PROFILE("Environment map generation - BRDF Look-up Table");
             EnvironmentMapRenderer::instance = new EnvironmentMapRenderer(

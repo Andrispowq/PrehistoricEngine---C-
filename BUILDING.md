@@ -143,8 +143,7 @@ The merge commit retains the history of `beta-features`; the old branch is retir
 The merge keeps the macOS platform, dialogs, Vulkan portability/device selection,
 compute pipeline, resource configuration and native OpenAL build. Vulkan texture
 loading expands beta RGB/grayscale `.prt` data to RGBA, and records the actual
-channel count for STB-decoded RGBA images. OpenGL-only atmosphere and terrain
-world objects are skipped by the Vulkan loader. Spotify remains
+channel count for STB-decoded RGBA images. Vulkan supports the scattering atmosphere background. Terrain world objects use OpenGL. Spotify remains
 removed. Generated Visual Studio projects are no longer tracked: regenerate them
 with Premake so they match the source and dependency graph.
 
@@ -326,7 +325,8 @@ negative emission means zero; positive emission is tinted by albedo with OpenGL'
 existing minimum tint and emission factor. There is no Vulkan PBR emission-map
 binding, so a missing map cannot pick an unrelated material texture.
 
-PBR output uses the actual colour-attachment format each frame. For sRGB attachments,
+The Vulkan scene writes linear radiance into an RGBA16F attachment. A fullscreen
+subpass reads the resolved colour and applies the shared OpenGL exposure curve. For sRGB attachments,
 the shader leaves tone-mapped output linear and the attachment encodes it once.
 For non-sRGB attachments, the shader retains the configured gamma encoding. Direct lights use the shared
 Schlick-GGX geometry term with `k = (roughness + 1)^2 / 8`.
@@ -349,8 +349,7 @@ orientation, panorama texels, angular sampling, source LOD, and the split-sum
 BRDF integral. A constant white environment produces diffuse irradiance of PI.
 The BRDF LUT depends only on view angle and roughness.
 
-Vulkan uses a fullscreen triangle and applies exposure and output encoding in
-the background fragment shader. OpenGL draws a cube and applies its HDR post
+Vulkan draws the background into the HDR scene using a fullscreen triangle. OpenGL draws a cube and applies its HDR post
 process. Both applications configure the original Cape Hill HDR. An empty
 Vulkan environment location keeps the window clear colour. Vulkan uses a
 single source cube level on hardware lacking float linear blits.
@@ -366,6 +365,17 @@ interface and `python3 tests/vulkan_ibl_smoke.py` for headless GPU readback
 using black, constant, directional, and Cape Hill environments. The latter
 requires a Vulkan SDK, a C++17 compiler and a Vulkan device with validation
 layers. Use `python3 tests/resource_pipeline.py` to check staging and install.
+
+## Vulkan procedural sky
+
+A JSON world with a `scattering_atmosphere` object and scattering enabled draws
+a fullscreen sky into the linear HDR scene. The sun field can name a light in
+the scene root. An empty sun field uses the sample's fixed sun position.
+Both backends use the Rayleigh/Mie integration and disk profile in
+`shaders/shared/atmosphere/scattering.glsl`. Vulkan applies exposure in its
+final HDR pass. In worlds without an active scattering atmosphere, the HDR
+environment background is used when configured. Vulkan material lighting still
+comes from the configured HDR environment bake.
 
 ## CPU math tests and CI
 

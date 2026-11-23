@@ -2,6 +2,8 @@
 #define VK_ENVIRONMENT_BACKGROUND_H
 
 #include <memory>
+#include <optional>
+#include "prehistoric/core/util/math/Math.h"
 #include <vulkan/vulkan.h>
 
 namespace Prehistoric {
@@ -21,7 +23,7 @@ namespace Prehistoric {
         void SetPrefilter(const VkDescriptorImageInfo& imageInfo);
         void RecreatePipeline();
 
-        void Draw(VkCommandBuffer commandBuffer, const Camera *camera) const;
+        void Draw(VkCommandBuffer commandBuffer, const Camera* camera, const std::optional<Vector3f>& sun) const;
 
         VkDescriptorImageInfo getSource() const;
 
@@ -37,6 +39,7 @@ namespace Prehistoric {
         VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
 
         VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+        VkPipeline atmospherePipeline = VK_NULL_HANDLE;
         VkPipeline pipeline = VK_NULL_HANDLE;
     };
 }

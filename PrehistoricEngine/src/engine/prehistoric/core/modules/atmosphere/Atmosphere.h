@@ -23,6 +23,7 @@ namespace Prehistoric
 	public:
 		Atmosphere(Window* window, AssembledAssetManager* manager);
 		virtual ~Atmosphere() {}
+		void PreRender(Renderer* renderer) override;
 
 		inline Light* getSun() const { return sun; }
 		inline void setSun(Light* sun) { this->sun = sun; sun->setIlluminate(false); }
@@ -34,7 +35,7 @@ namespace Prehistoric
 	private:
 		Window* window;
 
-		Light* sun;
+		Light* sun = nullptr;
 	};
 };
 
