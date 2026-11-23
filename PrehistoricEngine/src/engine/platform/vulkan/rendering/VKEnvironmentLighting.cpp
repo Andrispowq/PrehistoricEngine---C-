@@ -1,3 +1,4 @@
+#include "Includes.hpp"
 #include "VKEnvironmentLighting.h"
 
 #include <algorithm>
