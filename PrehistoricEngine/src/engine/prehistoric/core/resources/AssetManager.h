@@ -16,7 +16,7 @@
 #define MODEL_PATH "res/models/"
 #define TEXTURE_PATH "res/textures/"
 
-#define HANDLE_OF(type) typedef struct type##_handle_t { type* pointer = nullptr; size_t handle = -1; type* operator->() { return pointer;}; type* const operator->() const { return pointer;} } type##Handle
+#define HANDLE_OF(type) typedef struct type##_handle_t { type* pointer = nullptr; size_t handle = (size_t)-1; type* operator->() { return pointer;}; type* const operator->() const { return pointer;} } type##Handle
 
 typedef uint64_t UUID_t;
 

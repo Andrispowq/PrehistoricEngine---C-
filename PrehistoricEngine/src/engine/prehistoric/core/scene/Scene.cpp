@@ -1,6 +1,8 @@
 #include "Includes.hpp"
 #include "Scene.h"
 
+#include <filesystem>
+
 namespace Prehistoric {
     Scene::Scene(const std::string &worldFile, Window *window, Camera *camera, AssembledAssetManager *manager)
         : window(window), camera(camera), manager(manager) {
