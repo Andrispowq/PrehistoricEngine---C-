@@ -15,6 +15,6 @@ void main()
 {
     ivec3 pixel = ivec3(gl_GlobalInvocationID);
     vec3 N = CubeDirection(pixel, int(resolution_irradianceMap));
-    vec3 colour = ConvolveEnvironment(N, 1.0, 16384u, true);
+    vec3 colour = ConvolveEnvironment(N, 1.0, 512u, true);
     imageStore(irradianceMap, pixel, vec4(colour, 1.0));
 }

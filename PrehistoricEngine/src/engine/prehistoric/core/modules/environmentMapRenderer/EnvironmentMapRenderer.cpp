@@ -60,7 +60,7 @@ namespace Prehistoric {
         viewMatrices[5] = Matrix4f::View(Vector3f(0, 0, -1), Vector3f(0, -1, 0));
 
         //Creating the BRDF map
-        uint32_t size = 512;
+        constexpr uint32_t size = 256;
         brdfMap = man->storeTexture(GLTexture::Storage2D(size, size, 1, R16G16_LINEAR, Bilinear, ClampToEdge));
         manager->addReference<Texture>(brdfMap.handle);
         static_cast<GLComputePipeline *>(brdfIntegratePipeline.pointer)->setInvocationSize({size / 16, size / 16, 1});

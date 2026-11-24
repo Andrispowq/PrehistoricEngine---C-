@@ -12,6 +12,8 @@ Step 5 added emissive bloom to Vulkan before HDR tone mapping.
 9. Verify editor parity on native Vulkan and OpenGL desktops, including camera input, native file dialogs and moving
    panels between displays with different scale factors.
 
+10. Bake IBL in the background while rendering with the last completed maps. Capture one sky snapshot per bake, coalesce changes received during a bake, publish the complete map set after GPU completion, and retain old images until in-flight draws finish. Verify frame times and resource lifetime on both backends.
+
 ### Vulkan editor
 
 The [editor](../PrehistoricEditor/src/EditorApp.cpp) now defaults to Vulkan. Select

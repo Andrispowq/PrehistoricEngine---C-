@@ -72,8 +72,8 @@
     {
         "location": "sample://textures/environmentMaps/cape_hill_2k.hdr",
         "environmentMapResolution": 1024,
-        "irradianceMapResolution": 512,
-        "prefilterMapResolution": 1024,
+        "irradianceMapResolution": 64,
+        "prefilterMapResolution": 256,
         "prefilterMapLevels": 5
     },
     "terrain":

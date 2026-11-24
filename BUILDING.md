@@ -354,10 +354,7 @@ process. Both applications configure the original Cape Hill HDR. An empty
 Vulkan environment location keeps the window clear colour when the scene has no atmosphere. Vulkan uses a
 single source cube level on hardware lacking float linear blits.
 
-Vulkan retains its startup budget of 512 integration samples, up to 64 texels
-per irradiance face edge, up to 256 per reflection face edge, and a 256-square
-BRDF LUT. OpenGL uses the configured cube dimensions, 16,384 diffuse samples,
-2,048 reflection samples, and a 512-square LUT with 1,024 samples.
+Both backends use 512 integration samples and a 256-square BRDF LUT. The sample and editor default to 64 texels per irradiance face edge and 256 per reflection face edge.
 Vulkan retains the baked maps across resizes.
 
 Run `python3 tests/vulkan_background_contract.py` for the background shader

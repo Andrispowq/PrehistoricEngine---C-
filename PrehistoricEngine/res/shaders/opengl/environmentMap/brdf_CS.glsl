@@ -13,6 +13,6 @@ void main()
 	ivec2 size = imageSize(brdfLUT);
     vec2 texCoord = vec2(x) / vec2(size);
 	
-    vec2 integratedBRDF = IntegrateBRDF(texCoord.x, texCoord.y, 1024u);
+    vec2 integratedBRDF = IntegrateBRDF(texCoord.x, texCoord.y, 512u);
     imageStore(brdfLUT, x, vec4(integratedBRDF, 0.0, 1.0));
 }
