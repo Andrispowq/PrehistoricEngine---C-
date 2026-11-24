@@ -192,7 +192,9 @@ namespace Prehistoric {
                 }
                 if (pass.visible)
                 {
-                    CaptureConstants constants{pass.clippedProjection * pass.view, Vector4f(pass.eye,1)};
+                    const Matrix4f worldToClip = pass.clippedProjection * pass.view;
+                    CaptureConstants constants{{}, {pass.eye.x, pass.eye.y, pass.eye.z, 1.0f}};
+                    std::copy_n(worldToClip.m, 16, constants.worldToClip);
                     ProcessDraws(buffer,&constants);
                 }
                 vkCmdEndRenderPass(buffer->getCommandBuffer());
@@ -235,7 +237,7 @@ namespace Prehistoric {
             begin(pipeline, isWireframeMode());
             if (buffer)
             {
-                CaptureConstants mainView{Matrix4f::Identity(), Vector4f(0,0,0,0)};
+                constexpr CaptureConstants mainView{};
                 vkCmdPushConstants(buffer->getCommandBuffer(), shader->GetPipelineLayout(), VK_SHADER_STAGE_ALL_GRAPHICS,
                     0, sizeof(mainView), capture ? capture : &mainView);
                 shader->BindGlobalSets();

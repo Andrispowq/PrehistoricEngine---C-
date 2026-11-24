@@ -48,7 +48,12 @@ namespace Prehistoric {
         std::unique_ptr<VKEnvironmentBackground> background;
         std::unique_ptr<VKEnvironmentLighting> environmentLighting;
 
-        struct CaptureConstants { Matrix4f worldToClip; Vector4f eyeAndCapture; };
+        struct CaptureConstants {
+            float worldToClip[16];
+            float eyeAndCapture[4];
+        };
+        static_assert(offsetof(CaptureConstants, eyeAndCapture) == 64);
+        static_assert(sizeof(CaptureConstants) == 80);
         void ProcessDraws(VKCommandBuffer *buffer, const CaptureConstants* capture = nullptr);
         std::vector<Water*> waters;
 
