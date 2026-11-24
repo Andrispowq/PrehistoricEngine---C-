@@ -150,7 +150,7 @@ namespace Prehistoric
 		}
 	}
 
-	void TerrainNode::CollectLeaves(std::vector<TerrainPatch>& leaves) const
+	void TerrainNode::CollectLeaves(std::vector<QuadPatch>& leaves) const
 	{
 		if (leaf)
 		{

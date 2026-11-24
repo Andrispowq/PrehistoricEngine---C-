@@ -1,6 +1,6 @@
 void shadeSurface(vec3 albedoColour, float metallic, float roughness, float occlusion, vec3 N, float emission)
 {
-	vec3 V = normalize(cameraPosition - position_FS);
+	vec3 V = normalize((waterView.eyeAndCapture.w != 0.0 ? waterView.eyeAndCapture.xyz : cameraPosition) - position_FS);
 	vec3 R = reflect(-V, N);
 
 	vec3 F0 = vec3(0.04);

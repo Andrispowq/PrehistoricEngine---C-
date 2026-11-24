@@ -1,5 +1,6 @@
 #ifndef TERRAIN_NODE_H
 #define TERRAIN_NODE_H
+#include "../QuadPatch.h"
 
 #include "prehistoric/core/node/GameObject.h"
 
@@ -14,11 +15,7 @@
 
 namespace Prehistoric
 {
-	struct TerrainPatch
-	{
-		Vector4f locationGapMorph;
-		Vector4f quadrant;
-	};
+
 
 	class TerrainNode : public GameObject
 	{
@@ -38,7 +35,7 @@ namespace Prehistoric
 		void RemoveChildNodes();
 
 		void ComputeWorldPosition();
-		void CollectLeaves(std::vector<TerrainPatch>& leaves) const;
+		void CollectLeaves(std::vector<QuadPatch>& leaves) const;
 		float getTerrainHeight(const Vector2f& location) const;
 
 		TerrainMaps* getMaps() const { return maps; }

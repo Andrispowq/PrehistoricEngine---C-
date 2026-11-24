@@ -31,7 +31,7 @@ namespace Prehistoric
 		TerrainQuadtree(const TerrainQuadtree&) = default;
 	public:
 		static constexpr size_t maxNodes = 1024;
-		const std::vector<TerrainPatch>& getLeaves() const { return leaves; }
+		const std::vector<QuadPatch>& getLeaves() const { return leaves; }
 		constexpr static int rootNodes = 8;
 	private:
 		Window* window;
@@ -43,7 +43,7 @@ namespace Prehistoric
 		void CreateOpenGLResources(AssembledAssetManager* manager, PipelineHandle& pipeline,
 			PipelineHandle& wireframePipeline, PipelineHandle& shadowPipeline);
 		void CollectLeaves();
-		std::vector<TerrainPatch> leaves;
+		std::vector<QuadPatch> leaves;
 		Factory<TerrainNode> factory;
 	};
 };

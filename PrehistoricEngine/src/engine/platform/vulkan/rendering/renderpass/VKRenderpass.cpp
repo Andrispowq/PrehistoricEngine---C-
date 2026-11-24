@@ -168,7 +168,7 @@ namespace Prehistoric {
         auto samples = swapchain->getSceneSamples();
         bool resolve = samples != VK_SAMPLE_COUNT_1_BIT;
         emission = CreateImage(extent, VK_SAMPLE_COUNT_1_BIT);
-        VKImage *emissionTarget = resolve ? CreateImage(extent, samples) : emission;
+        emissionTarget = resolve ? CreateImage(extent, samples) : emission;
         auto colour = Attachment(emission->getImageFormat(), samples, VK_ATTACHMENT_LOAD_OP_CLEAR,
                                  resolve ? VK_ATTACHMENT_STORE_OP_DONT_CARE : VK_ATTACHMENT_STORE_OP_STORE,
                                  resolve
@@ -200,6 +200,34 @@ namespace Prehistoric {
         uint32_t count = resolve ? 5 : 3;
         renderpass = CreatePass(device->getDevice(), scene, count, attachments);
         sceneFramebuffer = CreateFramebuffer(renderpass, extent, count, views);
+    }
+
+    VKRenderpass::WaterTargets& VKRenderpass::GetWaterTargets(const Water* water)
+    {
+        auto& targets = waterTargets[water];
+        if (targets.reflectionFrame) return targets;
+        const auto extent = swapchain->getSwapchainExtent();
+        bool resolve = swapchain->getSceneSamples() != VK_SAMPLE_COUNT_1_BIT;
+        auto make = [&](std::unique_ptr<VKTexture>& texture, std::unique_ptr<VKFramebuffer>& framebuffer)
+        {
+            texture = VKTexture::CreateColourTarget(device, extent, emission->getImageFormat());
+            VkImageView colour = texture->getImage()->getImageView();
+            VkImageView views[] = {resolve ? swapchain->getColourImage()->getImageView() : colour,
+                emissionTarget->getImageView(), swapchain->getDepthImage()->getImageView(), colour, emission->getImageView()};
+            framebuffer = std::make_unique<VKFramebuffer>(device->getDevice(), renderpass, extent.width, extent.height, resolve ? 5 : 3, views);
+        };
+        make(targets.reflection,targets.reflectionFrame);
+        make(targets.refraction,targets.refractionFrame);
+        return targets;
+    }
+
+    void VKRenderpass::RetainWaterTargets(const std::vector<Water*>& active)
+    {
+        for (auto it = waterTargets.begin(); it != waterTargets.end(); )
+        {
+            if (std::find(active.begin(), active.end(), it->first) == active.end()) it = waterTargets.erase(it);
+            else ++it;
+        }
     }
 
     VkRenderPass VKRenderpass::CreateOutputPass(VkFormat format, VkImageLayout finalLayout) {
@@ -269,7 +297,7 @@ namespace Prehistoric {
         pool.poolSizeCount = 1;
         pool.pPoolSizes = &size;
         Check(vkCreateDescriptorPool(handle, &pool, nullptr, &hdrPool));
-        VkPushConstantRange range{VK_SHADER_STAGE_FRAGMENT_BIT, 0, 3 * sizeof(float)};
+        VkPushConstantRange range{VK_SHADER_STAGE_FRAGMENT_BIT, 0, 4 * sizeof(float)};
         VkPipelineLayoutCreateInfo layout{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
         layout.setLayoutCount = layout.pushConstantRangeCount = 1;
         layout.pSetLayouts = &hdrSetLayout;
@@ -321,6 +349,7 @@ namespace Prehistoric {
 
     VKRenderpass::~VKRenderpass() {
         VkDevice handle = device->getDevice();
+        waterTargets.clear();
         framebuffers.clear();
         vkDestroyRenderPass(handle, editorPass, nullptr);
         vkDestroyPipeline(handle, hdrPipeline, nullptr);
@@ -334,20 +363,20 @@ namespace Prehistoric {
         vkDestroyRenderPass(handle, renderpass, nullptr);
     }
 
-    void VKRenderpass::BeginRenderpass(VKCommandBuffer *commandBuffer, Vector4f clearColour) {
+    void VKRenderpass::BeginRenderpass(VKCommandBuffer *commandBuffer, Vector4f clearColour, VkFramebuffer target) {
         VkClearValue clear[3]{};
         clear[0].color = {clearColour.x, clearColour.y, clearColour.z, clearColour.w};
         clear[2].depthStencil = {1, 0};
         VkRenderPassBeginInfo info{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
         info.renderPass = renderpass;
-        info.framebuffer = sceneFramebuffer->getFramebuffer();
+        info.framebuffer = target ? target : sceneFramebuffer->getFramebuffer();
         info.renderArea.extent = swapchain->getSwapchainExtent();
         info.clearValueCount = 3;
         info.pClearValues = clear;
         vkCmdBeginRenderPass(commandBuffer->getCommandBuffer(), &info, VK_SUBPASS_CONTENTS_INLINE);
     }
 
-    void VKRenderpass::RenderHDR(VKCommandBuffer *commandBuffer, bool bloomEnabled) {
+    void VKRenderpass::RenderHDR(VKCommandBuffer *commandBuffer, bool bloomEnabled, bool underwater) {
         VkCommandBuffer command = commandBuffer->getCommandBuffer();
         vkCmdEndRenderPass(command);
         auto draw = [&](VkRenderPass pass, VkPipeline pipeline, const BloomDraw &draw) {
@@ -380,7 +409,7 @@ namespace Prehistoric {
                  hdrInputs[bloomEnabled], {
                      __EngineConfig.rendererExposure,
                      VKPBRShaderGamma(swapchain->getSwapchainImageFormat(), __EngineConfig.rendererGamma),
-                     float(bloomEnabled)
+                     float(bloomEnabled), float(underwater)
                  }
              });
         if (editorOutput) {

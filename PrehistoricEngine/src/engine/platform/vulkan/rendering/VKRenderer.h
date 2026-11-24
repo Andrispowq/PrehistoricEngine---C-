@@ -11,6 +11,7 @@
 #include "platform/vulkan/rendering/renderpass/VKRenderpass.h"
 
 namespace Prehistoric {
+    class Water;
     class VKEnvironmentBackground;
     class VKEnvironmentLighting;
 
@@ -33,6 +34,9 @@ namespace Prehistoric {
 
         Texture *getOutputTexture() const override;
 
+        void RegisterWater(Water* water) { waters.push_back(water); }
+        VKRenderpass::WaterTargets& GetWaterTargets(const Water* water) { return renderpass->GetWaterTargets(water); }
+
         VKEnvironmentLighting *getEnvironmentLighting() const {
             return environmentLighting.get();
         }
@@ -44,7 +48,9 @@ namespace Prehistoric {
         std::unique_ptr<VKEnvironmentBackground> background;
         std::unique_ptr<VKEnvironmentLighting> environmentLighting;
 
-        void ProcessDraws(VKCommandBuffer *buffer);
+        struct CaptureConstants { Matrix4f worldToClip; Vector4f eyeAndCapture; };
+        void ProcessDraws(VKCommandBuffer *buffer, const CaptureConstants* capture = nullptr);
+        std::vector<Water*> waters;
 
         bool CanRenderFrame() const override { return frameReady; }
 

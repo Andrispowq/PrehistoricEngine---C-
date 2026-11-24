@@ -1,5 +1,8 @@
 #include "Includes.hpp"
 #include "VKRenderer.h"
+#include "VKWaterSimulation.h"
+#include "prehistoric/core/modules/water/Water.h"
+#include "prehistoric/core/modules/water/WaterCapture.h"
 #include "platform/vulkan/rendering/pipeline/VKGraphicsPipeline.h"
 #include "VKEnvironmentBackground.h"
 #include "VKAtmosphereParameters.h"
@@ -150,16 +153,51 @@ namespace Prehistoric {
             window->Render(getDrawCommandBuffer());
         }
 
+        waters.clear();
         ClearFrameSubmissions();
     }
 
     void VKRenderer::RenderScene() {
+        renderpass->RetainWaterTargets(waters);
+        for (auto* water : waters)
+        {
+            renderpass->GetWaterTargets(water);
+            water->captureDepthScale = MakeWaterCapture(camera->getViewMatrix(),camera->getProjectionMatrix(),
+                camera->getPosition(),water->height(),false,true).depthScale;
+        }
         ProcessDraws(nullptr);
 
         auto *swapchain = static_cast<VKSwapchain *>(window->getSwapchain());
         uint32_t index = swapchain->getAquiredImageIndex();
         VKCommandBuffer *buffer = commandPool->getCommandBuffer(index);
         buffer->BindBuffer();
+        for (auto* water : waters)
+        {
+            water->simulation().Record(buffer->getCommandBuffer(), float(Time::getTimeFromStartNanoseconds()*1.0e-9));
+            auto& targets = renderpass->GetWaterTargets(water);
+            for (bool reflected : {true,false})
+            {
+                const Matrix4f view = camera->getViewMatrix();
+                const Matrix4f projection = camera->getProjectionMatrix();
+                const auto pass = MakeWaterCapture(view,projection,camera->getPosition(),water->height(),reflected,true);
+                const auto target = reflected ? targets.reflectionFrame.get() : targets.refractionFrame.get();
+                renderpass->BeginRenderpass(buffer, Vector4f(0,0,0,1), target->getFramebuffer());
+                if (pass.sky)
+                {
+                    camera->setViewMatrix(pass.view);
+                    camera->setProjectionMatrix(pass.projection);
+                    background->Draw(buffer->getCommandBuffer(),camera,__AtmosphereConfig.scatteringEnabled ? atmosphere : nullptr,environmentPreviewLod);
+                    camera->setViewMatrix(view);
+                    camera->setProjectionMatrix(projection);
+                }
+                if (pass.visible)
+                {
+                    CaptureConstants constants{pass.clippedProjection * pass.view, Vector4f(pass.eye,1)};
+                    ProcessDraws(buffer,&constants);
+                }
+                vkCmdEndRenderPass(buffer->getCommandBuffer());
+            }
+        }
         renderpass->BeginRenderpass(buffer, swapchain->getClearColour());
         background->Draw(buffer->getCommandBuffer(), camera,
                          __AtmosphereConfig.scatteringEnabled ? atmosphere : nullptr, environmentPreviewLod);
@@ -167,7 +205,9 @@ namespace Prehistoric {
     }
 
     void VKRenderer::RenderHDR() {
-        renderpass->RenderHDR(getDrawCommandBuffer(), bloomEnabled);
+        const bool underwater = __WaterConfig.underwaterPostProcessing && std::any_of(waters.begin(),waters.end(),
+            [](const Water* water) { return water->isCameraUnderwater(); });
+        renderpass->RenderHDR(getDrawCommandBuffer(), bloomEnabled, underwater);
     }
 
     void VKRenderer::FinishFrame() {
@@ -177,7 +217,7 @@ namespace Prehistoric {
         buffer->UnbindBuffer();
     }
 
-    void VKRenderer::ProcessDraws(VKCommandBuffer *buffer) {
+    void VKRenderer::ProcessDraws(VKCommandBuffer *buffer, const CaptureConstants* capture) {
         // Each shader owns its descriptor pool. Both traversals assign the same slots.
         struct Slots {
             uint32_t material = 0;
@@ -193,7 +233,13 @@ namespace Prehistoric {
         };
         auto beginScene = [&](Pipeline *pipeline) {
             begin(pipeline, isWireframeMode());
-            if (buffer) shader->BindGlobalSets();
+            if (buffer)
+            {
+                CaptureConstants mainView{Matrix4f::Identity(), Vector4f(0,0,0,0)};
+                vkCmdPushConstants(buffer->getCommandBuffer(), shader->GetPipelineLayout(), VK_SHADER_STAGE_ALL_GRAPHICS,
+                    0, sizeof(mainView), capture ? capture : &mainView);
+                shader->BindGlobalSets();
+            }
             else shader->UpdateGlobalUniforms(this);
         };
         auto material = [&](Pipeline *, Material *material) {
@@ -202,7 +248,9 @@ namespace Prehistoric {
         };
         auto object = [&](Pipeline *pipeline, RenderableComponent *renderable) {
             if (buffer) {
-                shader->BindObjectSets(slots->object++);
+                auto slot = slots->object++;
+                if (capture && !renderable->hasReflection()) return;
+                shader->BindObjectSets(slot);
                 pipeline->RenderPipeline();
             } else {
                 shader->UpdateObjectUniforms(renderable->getParent(), slots->object++);
@@ -212,6 +260,7 @@ namespace Prehistoric {
             if (buffer) pipeline->UnbindPipeline();
         };
         VisitBatches(models_3d, beginScene, material, object, end);
+        if (capture) return;
         VisitBatches(models_transparency, beginScene, material, object, end);
         for (const auto &[pipeline, objects]: models_2d) {
             begin(pipeline, false);

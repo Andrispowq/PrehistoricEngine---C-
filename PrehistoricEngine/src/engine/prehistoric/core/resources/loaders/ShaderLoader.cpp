@@ -1,4 +1,5 @@
 #include "Includes.hpp"
+#include "platform/vulkan/rendering/shaders/VKWaterShader.h"
 #include "ShaderLoader.h"
 
 #include "platform/opengl/rendering/shaders/atmosphere/GLAtmosphereScatteringShader.h"
@@ -164,6 +165,10 @@ namespace Prehistoric
 			else if (path == "terrain")
 			{
 				shader = new VKPBRShader(window, true);
+			}
+			else if (path == "water")
+			{
+				shader = new VKWaterShader(window);
 			}
 			else if (path == "basic")
 			{

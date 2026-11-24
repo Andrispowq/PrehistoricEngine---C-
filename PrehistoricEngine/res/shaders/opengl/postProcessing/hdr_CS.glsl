@@ -13,6 +13,8 @@ uniform vec2 resolution;
 
 #include "shared/postProcessing/hdr.glsl"
 
+#include "shared/water/underwater.glsl"
+
 void main()
 {
     ivec2 x = ivec2(gl_GlobalInvocationID.xy);
@@ -21,15 +23,7 @@ void main()
 
     vec3 sceneColour = texture(scene, texCoord).rgb;
        
-    if (underwater != 0)
-    {
-        vec2 stepUV = 2.0 / resolution;
-        vec3 haze = (texture(scene, texCoord + vec2(stepUV.x, 0)).rgb +
-                     texture(scene, texCoord - vec2(stepUV.x, 0)).rgb +
-                     texture(scene, texCoord + vec2(0, stepUV.y)).rgb +
-                     texture(scene, texCoord - vec2(0, stepUV.y)).rgb) * 0.25;
-        sceneColour = mix(sceneColour, haze, 0.45) * vec3(0.45, 0.79, 0.84) + vec3(0.008, 0.035, 0.045);
-    }
+    if (underwater != 0) sceneColour = underwaterColour(scene, texCoord, resolution, sceneColour);
     sceneColour = ToneMapHDR(sceneColour, exposure, gamma);
 
     imageStore(outColour, x, vec4(sceneColour, 1.0));

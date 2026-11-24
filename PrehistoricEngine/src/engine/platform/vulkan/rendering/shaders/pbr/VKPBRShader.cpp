@@ -71,7 +71,7 @@ namespace Prehistoric {
         if (terrain)
         {
             AddUniform("terrainParams", terrainStages | FRAGMENT_SHADER, UniformBuffer, 2, 2, 112);
-            AddUniform("leaves", VERTEX_SHADER, StorageBuffer, 2, 3, TerrainQuadtree::maxNodes * sizeof(TerrainPatch));
+            AddUniform("leaves", VERTEX_SHADER, StorageBuffer, 2, 3, TerrainQuadtree::maxNodes * sizeof(QuadPatch));
         }
 
         descriptorPool->finalise(pipelineLayout);
@@ -186,8 +186,8 @@ namespace Prehistoric {
             const auto& leaves = surface->getQuadtree()->getLeaves();
             auto* pipeline = static_cast<VKGraphicsPipeline*>(component->getPipeline());
             static_cast<VKMeshVertexBuffer*>(pipeline->getVertexBuffer())->setInstanceCount(static_cast<uint32_t>(leaves.size()));
-            static_assert(sizeof(TerrainPatch) == 32, "Terrain patch must match the std430 array stride");
-            SetUniform("leaves", leaves.data(), leaves.size() * sizeof(TerrainPatch), 0, instance_index);
+            static_assert(sizeof(QuadPatch) == 32, "Terrain patch must match the std430 array stride");
+            SetUniform("leaves", leaves.data(), leaves.size() * sizeof(QuadPatch), 0, instance_index);
             SetUniform("terrainParams", Vector4f(material->getFloat("heightScale0"), material->getFloat("heightScale1"),
                 material->getFloat("heightScale2"), float(__EngineConfig.rendererHighDetailRange)), 80, instance_index);
             SetUniform("terrainParams", Vector4f(material->getFloat("hasEmission0"), material->getFloat("hasEmission1"),

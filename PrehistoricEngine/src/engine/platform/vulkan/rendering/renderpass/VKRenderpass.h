@@ -9,6 +9,7 @@
 #include "platform/vulkan/rendering/command/VKCommandBuffer.h"
 
 namespace Prehistoric {
+    class Water;
     class VKSwapchain;
     class VKImage;
 
@@ -18,12 +19,20 @@ namespace Prehistoric {
 
         virtual ~VKRenderpass();
 
-        void BeginRenderpass(VKCommandBuffer *commandBuffer, Vector4f clearColour);
+        void BeginRenderpass(VKCommandBuffer *commandBuffer, Vector4f clearColour, VkFramebuffer target = VK_NULL_HANDLE);
+
+        struct WaterTargets
+        {
+            std::unique_ptr<VKTexture> reflection, refraction;
+            std::unique_ptr<VKFramebuffer> reflectionFrame, refractionFrame;
+        };
+        WaterTargets& GetWaterTargets(const Water* water);
+        void RetainWaterTargets(const std::vector<Water*>& active);
 
         Texture *getEditorOutput() const { return editorOutput.get(); }
         VkRenderPass getPresentPass() const { return presentPass; }
 
-        void RenderHDR(VKCommandBuffer *commandBuffer, bool bloomEnabled);
+        void RenderHDR(VKCommandBuffer *commandBuffer, bool bloomEnabled, bool underwater = false);
 
         VkPipeline CreateFullscreenPipeline(const char *vertexPath, const char *fragmentPath, VkPipelineLayout layout,
                                             VkRenderPass postPass = VK_NULL_HANDLE);
@@ -35,7 +44,7 @@ namespace Prehistoric {
             VkFramebuffer framebuffer;
             VkExtent2D extent;
             VkDescriptorSet inputs;
-            float settings[3];
+            float settings[4];
         };
 
         void CreateScenePass();
@@ -63,6 +72,8 @@ namespace Prehistoric {
         VkPipeline hdrPipeline{};
         VkPipeline bloomPipeline{};
         VkDescriptorSet hdrInputs[2]{};
+        std::unordered_map<const Water*, WaterTargets> waterTargets;
+        VKImage* emissionTarget{};
         VKImage *emission{};
         VKFramebuffer *sceneFramebuffer{};
         std::vector<std::unique_ptr<VKImage> > images;

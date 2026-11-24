@@ -1,5 +1,6 @@
 #ifndef WATER_NODE_H
 #define WATER_NODE_H
+#include "../QuadPatch.h"
 
 #include "prehistoric/core/node/GameObject.h"
 
@@ -30,6 +31,7 @@ namespace Prehistoric
 		void RemoveChildNodes();
 
 		void ComputeWorldPosition();
+        void CollectLeaves(std::vector<QuadPatch>& leaves) const;
 
 		int getLod() const { return lod; }
 		Vector2f getLocation() const { return location; }
@@ -89,8 +91,8 @@ namespace Prehistoric
 		float gap;
 		Vector3f position;
 
-		RendererComponent* rendererComponent;
-		RendererComponent* wireframeRendererComponent;
+		RendererComponent* rendererComponent = nullptr;
+		RendererComponent* wireframeRendererComponent = nullptr;
 
 		MaterialHandle waterMaterial;
 

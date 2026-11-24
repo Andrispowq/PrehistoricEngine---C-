@@ -172,19 +172,11 @@ namespace Prehistoric
 		assets->addReference<Texture>(splat.handle);
 	}
 
-	void CreateVulkanTerrainSurface(Terrain& terrain, Window* window, TerrainMaps& maps, AssembledAssetManager* manager)
-	{
-		VkPhysicalDeviceFeatures features{};
-		vkGetPhysicalDeviceFeatures(*static_cast<VkPhysicalDevice*>(window->getContext()->getNativePhysicalDevice()), &features);
-		if (!features.tessellationShader)
-		{
-			PR_LOG_ERROR("Vulkan terrain requires tessellationShader.\n");
-			return;
-		}
-
+    VertexBufferHandle CreateVulkanQuadPatch(Window* window, AssembledAssetManager* manager)
+    {
 		Mesh mesh;
 		mesh.setMaterialIndex(-1);
-		const auto patch = terrain.getQuadtree()->generatePatch();
+		const auto patch = QuadPatchVertices();
 		for (uint32_t i = 0; i < patch.size(); ++i)
 		{
 			const auto& point = patch[i];
@@ -195,7 +187,21 @@ namespace Prehistoric
 		Model model;
 		model.AddMesh(std::move(mesh));
 		auto* assets = manager->getAssetManager();
-		auto vertices = assets->storeVertexBuffer(new VKMeshVertexBuffer(window, model));
+		return assets->storeVertexBuffer(new VKMeshVertexBuffer(window, model));
+    }
+
+	void CreateVulkanTerrainSurface(Terrain& terrain, Window* window, TerrainMaps& maps, AssembledAssetManager* manager)
+	{
+		VkPhysicalDeviceFeatures features{};
+		vkGetPhysicalDeviceFeatures(*static_cast<VkPhysicalDevice*>(window->getContext()->getNativePhysicalDevice()), &features);
+		if (!features.tessellationShader)
+		{
+			PR_LOG_ERROR("Vulkan terrain requires tessellationShader.\n");
+			return;
+		}
+
+        auto* assets = manager->getAssetManager();
+        auto vertices = CreateVulkanQuadPatch(window, manager);
 		auto shader = assets->loadShader(ShaderName::Terrain).value();
 		auto pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vertices);
 		auto layers = maps.getMaterials();

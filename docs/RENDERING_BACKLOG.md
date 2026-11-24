@@ -4,7 +4,7 @@ Step 4 established the [shared renderer frame order](../BUILDING.md#renderer-fra
 
 Step 5 added emissive bloom to Vulkan before HDR tone mapping.
 
-OpenGL water is enabled in the sample. Native GPU captures exercised the surface, reflection and refraction above and below the waterline. Set `water.reflectionParameters.underwaterPostProcessing` to `false` to disable the underwater tint and blur.
+OpenGL and Vulkan water are enabled in the sample. Vulkan selects its geometry or tessellation-only pipeline from device capabilities. Native OpenGL GPU captures exercised the surface, reflection and refraction above and below the waterline. Set `water.reflectionParameters.underwaterPostProcessing` to `false` to disable the underwater tint and blur.
 
 ## Remaining work
 
@@ -14,6 +14,11 @@ OpenGL water is enabled in the sample. Native GPU captures exercised the surface
    panels between displays with different scale factors.
 
 10. Bake IBL in the background while rendering with the last completed maps. Capture one sky snapshot per bake, coalesce changes received during a bake, publish the complete map set after GPU completion, and retain old images until in-flight draws finish. Verify frame times and resource lifetime on both backends.
+
+11. Add procedural terrain rendering.
+12. Reactivate terrain collisions.
+13. Improve physics.
+14. Improve scripting.
 
 ### Vulkan editor
 

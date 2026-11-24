@@ -69,9 +69,6 @@ PrehistoricScene::PrehistoricScene(const std::string &name, Prehistoric::Window 
     } else {
         AssetManager *man = manager->getAssetManager();
 
-        Water* water = new Water(window, camera, manager, Vector3f(0, 200, 0));
-		water->UpdateQuadtree();
-		sceneRoot->AddChild("water", water);
 
         /*GameObject* slider = new GUISlider(window, manager, 0.0f, 2.0f, Vector3f(0.5f), &__EngineConfig.rendererExposure, sizeof(float), true);
 		slider->SetPosition({ 0.5f, 0.5f, 0 });
@@ -162,6 +159,8 @@ PrehistoricScene::PrehistoricScene(const std::string &name, Prehistoric::Window 
         phys_obj1->AddComponent(PHYSICS_COMPONENT, phys_comp1);
         phys_obj1->Move({0, 80, 0});
     }
+    sceneRoot->AddChild("water", new Water(window, camera, manager, Vector3f(0, 200, 0)));
+
 }
 
 PrehistoricScene::~PrehistoricScene() {

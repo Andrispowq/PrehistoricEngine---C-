@@ -17,9 +17,9 @@ namespace Prehistoric {
 
         VKTexture(VKDevice *device);
 
-        static std::unique_ptr<VKTexture> CreateColourTarget(VKDevice *device, VkExtent2D extent);
+        static std::unique_ptr<VKTexture> CreateColourTarget(VKDevice *device, VkExtent2D extent, VkFormat colourFormat = VK_FORMAT_R8G8B8A8_UNORM);
 
-        static std::unique_ptr<VKTexture> CreateStorageMap(VKDevice *device, uint32_t width, uint32_t height);
+        static std::unique_ptr<VKTexture> CreateStorageMap(VKDevice *device, uint32_t width, uint32_t height, VkFormat storageFormat = VK_FORMAT_R8G8B8A8_UNORM);
 
         virtual ~VKTexture();
 

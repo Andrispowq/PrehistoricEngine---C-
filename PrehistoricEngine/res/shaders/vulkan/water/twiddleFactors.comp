@@ -1,0 +1,22 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+#define M_PI 3.1415926535897932384626433832795
+
+layout (local_size_x = 1, local_size_y = 16) in;
+
+layout (binding = 0, rgba32f) writeonly uniform image2D twiddleIndices;
+
+
+
+struct complex
+{	
+	float real;
+	float im;
+};
+
+
+layout(push_constant) uniform Settings {
+    int N;
+};
+int reverseIndex(int i) { return int(bitfieldReverse(uint(i)) >> (32 - findMSB(N))); }
+#include "../../shared/water/fft/twiddleFactors.glsl"

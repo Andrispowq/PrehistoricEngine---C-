@@ -90,29 +90,6 @@ namespace Prehistoric
 
 	std::vector<Vector2f> TerrainQuadtree::generatePatch() const
 	{
-		std::vector<Vector2f> vertices;
-		vertices.reserve(16);
-
-		vertices.push_back({ 0, 0 });
-		vertices.push_back({ 0.333f, 0 });
-		vertices.push_back({ 0.666f, 0 });
-		vertices.push_back({ 1, 0 });
-
-		vertices.push_back({ 0, 0.333f });
-		vertices.push_back({ 0.333f, 0.333f });
-		vertices.push_back({ 0.666f, 0.333f });
-		vertices.push_back({ 1, 0.333f });
-
-		vertices.push_back({ 0, 0.666f });
-		vertices.push_back({ 0.333f, 0.666f });
-		vertices.push_back({ 0.666f, 0.666f });
-		vertices.push_back({ 1, 0.666f });
-
-		vertices.push_back({ 0, 1 });
-		vertices.push_back({ 0.333f, 1 });
-		vertices.push_back({ 0.666f, 1 });
-		vertices.push_back({ 1, 1 });
-
-		return vertices;
+		return QuadPatchVertices();
 	}
 };

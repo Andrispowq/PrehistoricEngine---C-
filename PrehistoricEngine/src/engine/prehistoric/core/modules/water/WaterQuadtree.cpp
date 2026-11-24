@@ -6,17 +6,21 @@
 namespace Prehistoric
 {
 	WaterQuadtree::WaterQuadtree(Window* window, Camera* camera, AssembledAssetManager* manager, MaterialHandle waterMaterial, Vector3f position)
-		: window(window), camera(camera), factory{ 1024 }
+		: window(window), camera(camera), factory{ maxNodes }
 	{
+        PipelineHandle pipeline{}, wireframePipeline{};
+        if (__FrameworkConfig.api == OpenGL)
+        {
 		PatchVertexBuffer* vbo = new GLPatchVertexBuffer(window, generatePatch());
 		VertexBufferHandle vboHandle = manager->getAssetManager()->storeVertexBuffer(vbo);
 		vboHandle->setFrontFace(FrontFace::DOUBLE_SIDED);
 
 		ShaderHandle shader = manager->getAssetManager()->loadShader(ShaderName::Water).value();
-		PipelineHandle pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vboHandle);
+		pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vboHandle);
 		ShaderHandle wireframeShader = manager->getAssetManager()->loadShader(ShaderName::WaterWireframe).value();
-		PipelineHandle wireframePipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, wireframeShader, vboHandle);
+		wireframePipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, wireframeShader, vboHandle);
 
+        }
 		for (int i = 0; i < rootNodes; i++)
 		{
 			for (int j = 0; j < rootNodes; j++)
@@ -60,29 +64,6 @@ namespace Prehistoric
 
 	std::vector<Vector2f> WaterQuadtree::generatePatch() const
 	{
-		std::vector<Vector2f> vertices;
-		vertices.reserve(16);
-
-		vertices.push_back({ 0, 0 });
-		vertices.push_back({ 0.333f, 0 });
-		vertices.push_back({ 0.666f, 0 });
-		vertices.push_back({ 1, 0 });
-
-		vertices.push_back({ 0, 0.333f });
-		vertices.push_back({ 0.333f, 0.333f });
-		vertices.push_back({ 0.666f, 0.333f });
-		vertices.push_back({ 1, 0.333f });
-
-		vertices.push_back({ 0, 0.666f });
-		vertices.push_back({ 0.333f, 0.666f });
-		vertices.push_back({ 0.666f, 0.666f });
-		vertices.push_back({ 1, 0.666f });
-
-		vertices.push_back({ 0, 1 });
-		vertices.push_back({ 0.333f, 1 });
-		vertices.push_back({ 0.666f, 1 });
-		vertices.push_back({ 1, 1 });
-
-		return vertices;
+		return QuadPatchVertices();
 	}
 }

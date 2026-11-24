@@ -13,7 +13,8 @@ namespace Prehistoric
 	class Renderer;
 	class Framebuffer;
 
-	class Water : public Node
+	class VKWaterSimulation;
+	class Water : public GameObject
 	{
 	public:
 		Water(Window* window, Camera* camera, AssembledAssetManager* manager, Vector3f position);
@@ -27,13 +28,20 @@ namespace Prehistoric
 		Texture* getReflectionTexture() const { return reflectionTexture.pointer; }
 		Texture* getRefractionTexture() const { return refractionTexture.pointer; }
 
-		Water(const Water&) = default;
+		Water(const Water&) = delete;
+        VKWaterSimulation& simulation() const { return *vkSimulation; }
+        const std::vector<QuadPatch>& getLeaves() const { return leaves; }
+        float height() const { return position.y; }
+        float captureDepthScale = 0;
+    private:
+        std::unique_ptr<VKWaterSimulation> vkSimulation;
+        std::vector<QuadPatch> leaves;
 	private:
 		Window* window;
 		Camera* camera;
 		AssembledAssetManager* manager;
 
-		WaterQuadtree* quadtree;
+		WaterQuadtree* quadtree = nullptr;
 
 		static constexpr uint32_t refl_size = 1024;
 		static constexpr uint32_t refr_size = 1024;

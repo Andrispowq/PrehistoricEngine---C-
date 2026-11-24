@@ -1,5 +1,6 @@
 #version 450
 #extension GL_GOOGLE_include_directive : require
+#include "../water/capture.glsl"
 #include "../pbr/scene.glsl"
 #include "params.glsl"
 #include "../../shared/terrain/lighting.glsl"
@@ -54,7 +55,7 @@ void main()
 	vec3 emission = weights.x * emissionEnabled.x * pow(texture(emission0, uv * tiling.x).rgb, vec3(2.2))
 		+ weights.y * emissionEnabled.y * pow(texture(emission1, uv * tiling.y).rgb, vec3(2.2))
 		+ weights.z * emissionEnabled.z * pow(texture(emission2, uv * tiling.z).rgb, vec3(2.2));
-	vec3 V = normalize(cameraPosition - position_FS);
+	vec3 V = normalize((waterView.eyeAndCapture.w != 0.0 ? waterView.eyeAndCapture.xyz : cameraPosition) - position_FS);
 	vec3 F0 = mix(vec3(0.04), colour, mrot.r);
 	vec3 lit = terrainAmbient(N, V, F0, colour, mrot.r, mrot.g, mrot.b,
 		irradianceMap, prefilterMap, brdfLUT, maxReflectionLOD);
@@ -64,4 +65,5 @@ void main()
 	lit += emission * emissionFactor;
 	outColour = vec4(isnan(lit.r) ? vec3(0) : lit, 1);
 	outBloom = vec4(emission * emissionFactor, 0);
+    if (waterView.eyeAndCapture.w != 0.0) outColour.a = gl_FragCoord.z;
 }

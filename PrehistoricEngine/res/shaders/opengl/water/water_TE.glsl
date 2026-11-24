@@ -23,18 +23,13 @@ uniform vec3 cameraPosition;
 
 #include "shared/terrain/quadEvaluation.glsl"
 
+#include "shared/water/displacement.glsl"
+
 void main()
 {
     vec4 p;
     vec2 uv;
     evaluateTerrainQuad(p, uv);
-    mapCoord_GS = uv * tiling + wind * motion;
-    float fade = clamp(1.0 - distance(p.xyz, cameraPosition) / max(float(displacementRange), 1.0), 0.0, 1.0);
-    p.y = waterHeight + textureLod(Dy, uv, 0).r * scaleY;
-    p.y += fade * textureLod(Dy, mapCoord_GS, 0).r * displacementScale;
-    if (choppiness != 0.0)
-    {
-        p.xz -= fade * choppiness * vec2(textureLod(Dx, mapCoord_GS, 0).r, textureLod(Dz, mapCoord_GS, 0).r);
-    }
+    displaceWater(p, uv, mapCoord_GS);
     gl_Position = p;
 }

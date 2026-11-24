@@ -1,4 +1,5 @@
 #version 450
+#include "../water/capture.glsl"
 
 layout (location = 0) in vec3 position_VS;
 layout (location = 1) in vec2 texture_VS;
@@ -16,7 +17,7 @@ layout (location = 3) out vec3 tangent_FS;
 void main()
 {
 	vec4 worldPosition = m_transform * vec4(position_VS, 1.0);
-	gl_Position = m_projection * m_view * worldPosition;
+	gl_Position = sceneClip(m_projection, m_view, worldPosition);
 	
 	vec3 N = normalize((m_transform * vec4(normal_VS, 0.0)).xyz);
 	vec3 T = normalize((m_transform * vec4(tangent_VS, 0.0)).xyz);

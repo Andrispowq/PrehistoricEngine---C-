@@ -49,8 +49,9 @@ namespace Prehistoric
 		_layoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		_layoutCreateInfo.setLayoutCount = (uint32_t)layouts.size();
 		_layoutCreateInfo.pSetLayouts = layouts.data();
-		_layoutCreateInfo.pushConstantRangeCount = 0; // For now
-		_layoutCreateInfo.pPushConstantRanges = nullptr; // For now
+		VkPushConstantRange captureRange{VK_SHADER_STAGE_ALL_GRAPHICS, 0, 80};
+		_layoutCreateInfo.pushConstantRangeCount = 1;
+		_layoutCreateInfo.pPushConstantRanges = &captureRange;
 
 		if (vkCreatePipelineLayout(device->getDevice(), &_layoutCreateInfo, nullptr, &layout) != VK_SUCCESS)
 		{

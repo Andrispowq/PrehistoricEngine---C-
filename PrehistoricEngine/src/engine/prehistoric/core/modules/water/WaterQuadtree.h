@@ -30,7 +30,14 @@ namespace Prehistoric
 
 		WaterQuadtree(const WaterQuadtree&) = default;
 	public:
-		constexpr static int rootNodes = 8;
+		static constexpr size_t maxNodes = 1024;
+        void CollectLeaves(std::vector<QuadPatch>& leaves) const
+        {
+            leaves.clear();
+            for (const auto& child : children)
+                static_cast<const WaterNode*>(child.second.get())->CollectLeaves(leaves);
+        }
+        constexpr static int rootNodes = 8;
 	private:
 		Window* window;
 		Camera* camera;

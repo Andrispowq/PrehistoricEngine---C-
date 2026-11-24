@@ -1,6 +1,7 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_KHR_vulkan_glsl : enable
+#include "../water/capture.glsl"
 
 layout(location = 0) out vec4 outColour;
 layout(location = 1) out vec4 outBloom;
@@ -63,7 +64,7 @@ void main()
 	float dist = length(cameraPosition - position_FS);
 
 	vec3 N = normalize(normal_FS);
-	vec3 V = normalize(cameraPosition - position_FS);
+	vec3 V = normalize((waterView.eyeAndCapture.w != 0.0 ? waterView.eyeAndCapture.xyz : cameraPosition) - position_FS);
 	vec3 R = reflect(-V, N);
 	
 	vec3 F0 = vec3(0.04); 
@@ -105,4 +106,5 @@ void main()
 
     outColour = vec4(colour, 1.0);
     outBloom = vec4(0);
+    if (waterView.eyeAndCapture.w != 0.0) outColour.a = gl_FragCoord.z;
 }

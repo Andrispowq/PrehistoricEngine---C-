@@ -1,5 +1,6 @@
 #version 450
 #extension GL_GOOGLE_include_directive : require
+#include "../water/capture.glsl"
 #include "../pbr/camera.glsl"
 #include "detail.glsl"
 layout(triangles) in;
@@ -18,7 +19,7 @@ void emitTerrainVertex(int i, float offset, vec3 tangent)
 	texture_FS = mapCoord_GS[i];
 	position_FS = p.xyz;
 	tangent_FS = tangent;
-	gl_Position = m_projection * m_view * p;
+	gl_Position = sceneClip(m_projection, m_view, p);
 	EmitVertex();
 }
 

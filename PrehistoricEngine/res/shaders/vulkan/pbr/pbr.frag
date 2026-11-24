@@ -1,4 +1,5 @@
 #version 450
+#include "../water/capture.glsl"
 #include "scene.glsl"
 layout(location=2) in vec3 normal_FS;
 #include "shade.glsl"
@@ -47,7 +48,7 @@ void main()
 	float roughness = mrot.g;
 	float occlusion = mrot.b;
 	
-	float dist = length(position_FS - cameraPosition);	
+	float dist = length(position_FS - (waterView.eyeAndCapture.w != 0.0 ? waterView.eyeAndCapture.xyz : cameraPosition));	
 	vec3 normal = normalize(normal_FS);
 	if((dist < (highDetailRange - 50)) && (material.usesNormalMap == 1) && (dot(tangent_FS, vec3(0)) != 1))
 	{
@@ -65,4 +66,5 @@ void main()
 	
 	vec3 N = normalize(normal);
 	shadeSurface(albedoColour, metallic, roughness, occlusion, N, emission);
+    if (waterView.eyeAndCapture.w != 0.0) outColour.a = gl_FragCoord.z;
 }

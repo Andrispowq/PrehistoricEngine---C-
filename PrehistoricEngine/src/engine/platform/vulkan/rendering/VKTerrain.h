@@ -9,6 +9,7 @@ namespace Prehistoric
 	class Window;
 	class AssembledAssetManager;
 
+	VertexBufferHandle CreateVulkanQuadPatch(Window* window, AssembledAssetManager* manager);
 	void BakeVulkanTerrainMaps(Window* window, AssembledAssetManager* manager, TextureHandle height,
 		TextureHandle& normal, TextureHandle& splat, std::vector<float>& heights);
 	void CreateVulkanTerrainSurface(Terrain& terrain, Window* window, TerrainMaps& maps, AssembledAssetManager* manager);

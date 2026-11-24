@@ -1,5 +1,9 @@
 #include "Includes.hpp"
 #include "Water.h"
+#include "WaterCapture.h"
+#include "platform/vulkan/rendering/VKWaterSimulation.h"
+#include "platform/vulkan/rendering/VKTerrain.h"
+#include "platform/vulkan/rendering/VKRenderer.h"
 
 #include "platform/opengl/rendering/framebuffer/GLFramebuffer.h"
 #include "platform/opengl/rendering/GLRenderer.h"
@@ -8,6 +12,32 @@ namespace Prehistoric {
     Water::Water(Window *window, Camera *camera, AssembledAssetManager *manager, Vector3f position)
         : window(window), camera(camera), manager(manager), position(position), fft{nullptr}, reflectionFbo{nullptr},
           refractionFbo{nullptr} {
+        if (__FrameworkConfig.api == Vulkan)
+        {
+            auto* gpu = static_cast<VKDevice*>(window->getContext()->getDevices());
+            VkPhysicalDeviceFeatures features{};
+            vkGetPhysicalDeviceFeatures(gpu->getPhysicalDevice(), &features);
+            if (!features.tessellationShader) return;
+            auto* assets = manager->getAssetManager();
+            vkSimulation = std::make_unique<VKWaterSimulation>(gpu, assets);
+            auto* surface = new Material(assets, "Water");
+            surface->addTexture("dudvMap", assets->loadTexture("engine://textures/water/dudv1.jpg", Bilinear, Repeat).value());
+            material = manager->storeMaterial(surface);
+            auto vertices = CreateVulkanQuadPatch(window, manager);
+            vertices->setFrontFace(FrontFace::DOUBLE_SIDED);
+            auto shader = assets->loadShader(ShaderName::Water).value();
+            auto pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vertices);
+            auto* component = new RendererComponent(window, manager, pipeline, material);
+            component->setReflection(false);
+            AddComponent(RENDERER_COMPONENT, component);
+            SetPosition(position - Vector3f(__WaterConfig.scaleXZ/2,0,__WaterConfig.scaleXZ/2));
+            SetScale({__WaterConfig.scaleXZ,1,__WaterConfig.scaleXZ});
+            quadtree = new WaterQuadtree(window,camera,manager,material,position);
+            AddChild("Quadtree",quadtree);
+            quadtree->CollectLeaves(leaves);
+            lastLodPosition = camera->getPosition();
+            return;
+        }
         fft = std::make_unique<FFT>(manager, window, &__WaterConfig);
         normalMapRenderer = std::make_unique<NormalMapRenderer>(window, manager, __WaterConfig.normalStrength,
                                                                 __WaterConfig.fftResolution);
@@ -56,6 +86,7 @@ namespace Prehistoric {
     }
 
     Water::~Water() {
+        if (!fft) return;
         AssetManager *man = manager->getAssetManager();
         manager->removeReference<Material>(material.handle);
         man->removeReference<Texture>(reflectionTexture.handle);
@@ -65,10 +96,18 @@ namespace Prehistoric {
     }
 
     void Water::PreRender(Renderer *renderer) {
+        if (!enabled || (!fft && !vkSimulation)) return;
         camera = renderer->getCamera();
         const Vector3f offset = camera->getPosition() - position;
         const float halfExtent = __WaterConfig.scaleXZ * 0.5f;
         cameraUnderwater = offset.y < 0 && std::abs(offset.x) <= halfExtent && std::abs(offset.z) <= halfExtent;
+        if (vkSimulation)
+        {
+            UpdateQuadtree();
+            static_cast<VKRenderer*>(renderer)->RegisterWater(this);
+            GetComponent<RendererComponent>()->PreRender(renderer);
+            return;
+        }
         const float motion = float(Time::getTimeFromStartNanoseconds() * 1.0e-9 * __WaterConfig.wavemotion * 0.001);
         material->getFloats().at("motion") = motion;
         material->getInts().at("underwater") = cameraUnderwater;
@@ -93,49 +132,24 @@ namespace Prehistoric {
         const Matrix4f projection = camera->getProjectionMatrix();
         const Matrix4f viewProjection = camera->getViewProjectionMatrix();
         const Vector3f eye = camera->getPosition();
-        Matrix4f mirror = Matrix4f::Identity();
-        mirror.m[5] = -1;
-        mirror.m[13] = 2 * position.y;
-        const float side = eye.y >= position.y ? 1.0f : -1.0f;
-
         auto capture = [&](Framebuffer& target, uint32_t size, bool reflection)
         {
-            const Matrix4f captureView = reflection ? view * mirror : view;
-            const Matrix4f vp = projection * captureView;
-            const float keep = reflection ? side : -side;
-            camera->setPosition(reflection ? Vector3f(eye.x, 2 * position.y - eye.y, eye.z) : eye);
-            camera->setViewMatrix(captureView);
+            const auto pass = MakeWaterCapture(view, projection, eye, position.y, reflection, false);
+            camera->setPosition(pass.eye);
+            camera->setViewMatrix(pass.view);
             camera->setProjectionMatrix(projection);
-            camera->setViewProjectionMatrix(vp);
+            camera->setViewProjectionMatrix(projection * pass.view);
             __WaterConfig.stage = reflection ? WaterRenderStage::Reflection : WaterRenderStage::Refraction;
             target.Bind();
             target.Clear(0.0f);
             window->getSwapchain()->SetWindowSize(size, size);
             auto* gl = static_cast<GLRenderer*>(renderer);
-            if (keep > 0) gl->DrawBackground(camera);
-
-            // Map the retained water half-space to the OpenGL near clip plane.
-            const Matrix4f inverse = vp.Invert();
-            float farDistance = 0;
-            for (float x : {-1.0f, 1.0f})
+            if (pass.sky) gl->DrawBackground(camera);
+            if (!reflection) material->getFloats().at("refractionDepthScale") = pass.depthScale;
+            if (pass.visible)
             {
-                for (float y : {-1.0f, 1.0f})
-                {
-                    const Vector4f corner = inverse * Vector4f(x, y, 1, 1);
-                    farDistance = (std::max)(farDistance, keep * (corner.y - position.y * corner.w));
-                }
-            }
-            if (!reflection) material->getFloats().at("refractionDepthScale") = keep * farDistance;
-            if (farDistance > 0.00001f)
-            {
-                Matrix4f clipped = vp;
-                for (int column = 0; column < 4; ++column)
-                {
-                    const float plane = column == 1 ? keep : column == 3 ? -keep * position.y : 0;
-                    clipped.m[column * 4 + 2] = 2 * plane / farDistance - vp.m[column * 4 + 3];
-                }
-                camera->setProjectionMatrix(clipped * captureView.Invert());
-                camera->setViewProjectionMatrix(clipped);
+                camera->setProjectionMatrix(pass.clippedProjection);
+                camera->setViewProjectionMatrix(pass.clippedProjection * pass.view);
                 gl->DrawModelBatches(gl->getModelsWater());
             }
             target.Unbind();
@@ -152,8 +166,9 @@ namespace Prehistoric {
     }
 
     void Water::UpdateQuadtree() {
-        if (camera->getPosition() != lastLodPosition) {
+        if (quadtree && camera->getPosition() != lastLodPosition) {
             quadtree->UpdateQuadtree(camera);
+            if (vkSimulation) quadtree->CollectLeaves(leaves);
             lastLodPosition = camera->getPosition();
         }
     }
