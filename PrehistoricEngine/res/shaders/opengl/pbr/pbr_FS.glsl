@@ -57,6 +57,7 @@ uniform sampler2D brdfLUT;
 uniform vec3 cameraPosition;
 uniform int highDetailRange;
 uniform int numberOfTilesX;
+uniform int captureLightCount;
 uniform float max_reflection_lod; 
 uniform float threshold;
 
@@ -223,9 +224,10 @@ void main()
 
     vec3 Lo = vec3(0);
 	uint offset = index * 1024;
-    for (uint i = 0; i < 1024 && visibleLightIndicesBuffer.data[offset + i].index != -1; i++)
+    for (uint i = 0; i < (captureLightCount >= 0 ? uint(captureLightCount) : 1024u); i++)
     {
-		int lightIndex = visibleLightIndicesBuffer.data[offset + i].index;
+		int lightIndex = captureLightCount >= 0 ? int(i) : visibleLightIndicesBuffer.data[offset + i].index;
+        if (lightIndex == -1) break;
 		PointLight light = lightBuffer.data[lightIndex];
 		
 		vec3 lightPos = light.position.xyz;

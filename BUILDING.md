@@ -367,7 +367,7 @@ layers. Use `python3 tests/resource_pipeline.py` to check staging and install.
 
 After scene registration and successful frame preparation, both renderers update
 environment lighting, draw the scene, run HDR processing, and finish the output.
-OpenGL runs its water captures, depth, shadow, and light-culling passes before
+OpenGL runs its depth, shadow, light-culling, and water capture passes before
 main colour, then runs optional bloom and volumetric processing before tone mapping.
 Vulkan renders scene colour and material emission into separate floating-point attachments.
 With bloom enabled (K toggles it), fullscreen passes blur emission at up to eight resolutions

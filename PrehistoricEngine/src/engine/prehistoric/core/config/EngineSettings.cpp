@@ -183,7 +183,8 @@ namespace Prehistoric
 				waterConfig.kRefraction = reflectionParameters_json["kRefraction"];
 				waterConfig.reflectionBlendfactor = reflectionParameters_json["reflectionBlendfactor"];
 				waterConfig.dudvDownsampling = reflectionParameters_json["dudvDownsampling"];
-				waterConfig.underwaterBlurfactor = reflectionParameters_json["underwaterBlurfactor"];
+				waterConfig.underwaterPostProcessing = reflectionParameters_json.value("underwaterPostProcessing", true);
+                waterConfig.underwaterBlurfactor = reflectionParameters_json["underwaterBlurfactor"];
 				waterConfig.distortionDelta = reflectionParameters_json["distortionDelta"];
 
 				nlohmann::json lightParameters_json = water_json["lightParameters"];

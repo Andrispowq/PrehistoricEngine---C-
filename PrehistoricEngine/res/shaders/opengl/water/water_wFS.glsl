@@ -1,4 +1,4 @@
-#version 460
+#version 430
 
 layout (location = 0) out vec4 outColour;
 layout (location = 1) out vec4 outPositionMetallic;

@@ -112,10 +112,6 @@ namespace Prehistoric {
     }
 
     void GLRenderer::RenderScene() {
-        for (Water *water: waters) {
-            water->RenderCaptures(this);
-        }
-
         depthPass->Render();
 
         //shadow pass
@@ -124,7 +120,20 @@ namespace Prehistoric {
         renderingShadow = false;
 
         lightCullingPass->Render();
+        for (Water *water: waters) {
+            water->RenderCaptures(this);
+        }
+
         mainPass->Render();
+    }
+
+    bool GLRenderer::isUnderwater() const
+    {
+        for (const Water* water : waters)
+        {
+            if (water->isCameraUnderwater()) return true;
+        }
+        return false;
     }
 
     void GLRenderer::RenderHDR() {

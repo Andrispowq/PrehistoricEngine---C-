@@ -19,6 +19,7 @@ float heightAt(vec2 uv)
 	return textureLod(heightmap, uv, 0).r;
 }
 
+#include "shared/terrain/patchMorph.glsl"
 #include "shared/terrain/morph.glsl"
 
 void main()

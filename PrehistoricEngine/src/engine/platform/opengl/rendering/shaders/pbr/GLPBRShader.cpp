@@ -32,6 +32,7 @@ namespace Prehistoric
 		AddUniform("prefilterMap");
 		AddUniform("brdfLUT");
 
+		AddUniform("captureLightCount");
 		AddUniform("numberOfTilesX");
 		AddUniform("max_reflection_lod");
 
@@ -55,6 +56,7 @@ namespace Prehistoric
 
 		BindEnvironmentLighting(renderer, 4);
 
+		SetUniformi("captureLightCount", __WaterConfig.stage == WaterRenderStage::Default ? -1 : static_cast<int>(lights.size()));
 		SetUniformi("numberOfTilesX", GLLightCullingPass::TileCount(renderer->getWindow()->getWidth()));
 		SetUniformf("max_reflection_lod", __EnvironmentMapConfig.prefilterLevels - 1.0f);
 

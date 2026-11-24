@@ -12,35 +12,18 @@
 
 namespace Prehistoric
 {
-	struct TexturesData
-	{
-		Texture* Dy;
-		Texture* Dx;
-		Texture* Dz;
-
-		Texture* waterReflection = nullptr;
-		Texture* waterRefraction = nullptr;
-		Texture* normalMap;
-		Texture* dudvMap;
-
-		float waterHeight = 0.0f;
-
-		float motion = 0.0f;
-		bool underwater = false;
-	};
-
 	class WaterNode : public GameObject
 	{
 	public:
 		WaterNode() {}
 		WaterNode(Factory<WaterNode>* factory, Window* window, Camera* camera, AssembledAssetManager* manager,
-			TexturesData* texData, PipelineHandle pipeline, PipelineHandle wireframePipeline,
+			MaterialHandle waterMaterial, PipelineHandle pipeline, PipelineHandle wireframePipeline,
 			Vector2f location, int lod, Vector2f index, Vector3f position);
 		virtual ~WaterNode();
 
 		virtual void PreRender(Renderer* renderer) override;
 
-		void UpdateQuadtree();
+		void UpdateQuadtree(Camera* activeCamera);
 		void UpdateChildNodes();
 
 		void AddChildNodes(int lod);
@@ -98,7 +81,7 @@ namespace Prehistoric
 		Window* window;
 		Camera* camera;
 
-		bool leaf;
+		bool leaf = true;
 		int lod;
 		Vector2f location;
 		Vector3f worldPosition;
@@ -108,9 +91,8 @@ namespace Prehistoric
 
 		RendererComponent* rendererComponent;
 		RendererComponent* wireframeRendererComponent;
-		Material* material;
 
-		TexturesData* texData;
+		MaterialHandle waterMaterial;
 
 		Transform localTransform;
 	};

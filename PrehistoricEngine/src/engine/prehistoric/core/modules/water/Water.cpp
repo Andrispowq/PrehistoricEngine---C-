@@ -31,28 +31,33 @@ namespace Prehistoric {
         refractionFbo = std::make_unique<GLFramebuffer>(window);
         refractionFbo->Bind();
         refractionFbo->addColourAttachment2D(refractionTexture.pointer);
-        refractionFbo->addDepthAttachment(refr_size, refr_size);
+        auto refractionDepth = man->storeTexture(GLTexture::Storage2D(refr_size, refr_size, 1, D32_LINEAR, Nearest, ClampToEdge, false));
+        refractionFbo->addColourAttachment2D(refractionDepth.pointer);
         refractionFbo->Unbind();
 
-        //data
-        texData = new TexturesData();
-        texData->Dy = fft->getDyTexture();
-        texData->Dx = fft->getDxTexture();
-        texData->Dz = fft->getDzTexture();
-
-        texData->waterHeight = position.y;
-
-        texData->waterReflection = reflectionTexture.pointer;
-        texData->waterRefraction = refractionTexture.pointer;
-        texData->dudvMap = dudv.pointer;
-
-        //Add water
-        quadtree = new WaterQuadtree(window, camera, manager, texData, position);
+        auto* surface = new Material(man, "Water");
+        surface->addTexture("Dy", fft->getDyTexture());
+        surface->addTexture("Dx", fft->getDxTexture());
+        surface->addTexture("Dz", fft->getDzTexture());
+        surface->addTexture("waterReflection", reflectionTexture);
+        surface->addTexture("waterRefraction", refractionTexture);
+        surface->addTexture("refractionDepth", refractionDepth);
+        surface->addFloat("refractionDepthScale", 0);
+        surface->addTexture("normalMap", normalMapRenderer->getNormalmap());
+        surface->addTexture("dudvMap", dudv);
+        surface->addFloat("waterHeight", position.y);
+        surface->addFloat("motion", 0);
+        surface->addInt("underwater", 0);
+        material = manager->storeMaterial(surface);
+        manager->addReference<Material>(material.handle);
+        quadtree = new WaterQuadtree(window, camera, manager, material, position);
+        lastLodPosition = camera->getPosition();
         AddChild("Quadtree", quadtree);
     }
 
     Water::~Water() {
         AssetManager *man = manager->getAssetManager();
+        manager->removeReference<Material>(material.handle);
         man->removeReference<Texture>(reflectionTexture.handle);
         man->removeReference<Texture>(refractionTexture.handle);
 
@@ -60,21 +65,18 @@ namespace Prehistoric {
     }
 
     void Water::PreRender(Renderer *renderer) {
-        //Very bad
-        cameraUnderwater = renderer->getCamera()->getPosition().y < position.y;
-        //glEnable(GL_CLIP_DISTANCE0);
-
-        __WaterConfig.distortionDelta += distortionDelta;
-        motion += __WaterConfig.wavemotion;
-        texData->motion = motion;
-        texData->underwater = cameraUnderwater;
+        camera = renderer->getCamera();
+        const Vector3f offset = camera->getPosition() - position;
+        const float halfExtent = __WaterConfig.scaleXZ * 0.5f;
+        cameraUnderwater = offset.y < 0 && std::abs(offset.x) <= halfExtent && std::abs(offset.z) <= halfExtent;
+        const float motion = float(Time::getTimeFromStartNanoseconds() * 1.0e-9 * __WaterConfig.wavemotion * 0.001);
+        material->getFloats().at("motion") = motion;
+        material->getInts().at("underwater") = cameraUnderwater;
 
         static_cast<GLRenderer*>(renderer)->RegisterWater(this);
         //FFT stuff
         fft->Render();
-        normalMapRenderer->Render(fft->getDyTexture());
-
-        texData->normalMap = normalMapRenderer->getNormalmap().pointer;
+        normalMapRenderer->Render(fft->getDyTexture().pointer);
 
         //Water rendering
         UpdateQuadtree();
@@ -86,63 +88,74 @@ namespace Prehistoric {
         uint32_t width = window->getWidth();
         uint32_t height = window->getHeight();
 
-        //flipping upside down
-        Matrix4f refl = Matrix4f::Identity();
-        refl.m[1 * 4 + 1] = -1;
-        refl.m[3 * 4 + 1] = 2 * position.y;
+        Camera* camera = renderer->getCamera();
+        const Matrix4f view = camera->getViewMatrix();
+        const Matrix4f projection = camera->getProjectionMatrix();
+        const Matrix4f viewProjection = camera->getViewProjectionMatrix();
+        const Vector3f eye = camera->getPosition();
+        Matrix4f mirror = Matrix4f::Identity();
+        mirror.m[5] = -1;
+        mirror.m[13] = 2 * position.y;
+        const float side = eye.y >= position.y ? 1.0f : -1.0f;
 
-        Camera *camera = renderer->getCamera();
+        auto capture = [&](Framebuffer& target, uint32_t size, bool reflection)
+        {
+            const Matrix4f captureView = reflection ? view * mirror : view;
+            const Matrix4f vp = projection * captureView;
+            const float keep = reflection ? side : -side;
+            camera->setPosition(reflection ? Vector3f(eye.x, 2 * position.y - eye.y, eye.z) : eye);
+            camera->setViewMatrix(captureView);
+            camera->setProjectionMatrix(projection);
+            camera->setViewProjectionMatrix(vp);
+            __WaterConfig.stage = reflection ? WaterRenderStage::Reflection : WaterRenderStage::Refraction;
+            target.Bind();
+            target.Clear(0.0f);
+            window->getSwapchain()->SetWindowSize(size, size);
+            auto* gl = static_cast<GLRenderer*>(renderer);
+            if (keep > 0) gl->DrawBackground(camera);
 
-        Matrix4f view = camera->getViewMatrix();
-        Matrix4f refl_view = refl * view;
-        camera->setViewMatrix(refl_view);
-        camera->setViewProjectionMatrix(camera->getProjectionMatrix() * refl_view);
+            // Map the retained water half-space to the OpenGL near clip plane.
+            const Matrix4f inverse = vp.Invert();
+            float farDistance = 0;
+            for (float x : {-1.0f, 1.0f})
+            {
+                for (float y : {-1.0f, 1.0f})
+                {
+                    const Vector4f corner = inverse * Vector4f(x, y, 1, 1);
+                    farDistance = (std::max)(farDistance, keep * (corner.y - position.y * corner.w));
+                }
+            }
+            if (!reflection) material->getFloats().at("refractionDepthScale") = keep * farDistance;
+            if (farDistance > 0.00001f)
+            {
+                Matrix4f clipped = vp;
+                for (int column = 0; column < 4; ++column)
+                {
+                    const float plane = column == 1 ? keep : column == 3 ? -keep * position.y : 0;
+                    clipped.m[column * 4 + 2] = 2 * plane / farDistance - vp.m[column * 4 + 3];
+                }
+                camera->setProjectionMatrix(clipped * captureView.Invert());
+                camera->setViewProjectionMatrix(clipped);
+                gl->DrawModelBatches(gl->getModelsWater());
+            }
+            target.Unbind();
+        };
 
-        //reflection
-        reflectionFbo->Bind();
-        reflectionFbo->Clear(0.0f);
-        window->getSwapchain()->SetWindowSize(refl_size, refl_size);
-        glFrontFace(GL_CCW);
-        __WaterConfig.stage = WaterRenderStage::Reflection;
-
-        if (!cameraUnderwater) {
-            RenderObjects(renderer);
-        }
-
-        glFinish();
-        glFrontFace(GL_CW);
-        reflectionFbo->Unbind();
-
-        //flipping back
+        capture(*reflectionFbo, refl_size, true);
+        capture(*refractionFbo, refr_size, false);
+        camera->setPosition(eye);
         camera->setViewMatrix(view);
-        camera->setViewProjectionMatrix(camera->getProjectionMatrix() * view);
-
-        //refraction
-        refractionFbo->Bind();
-        refractionFbo->Clear(0.0f);
-        window->getSwapchain()->SetWindowSize(refr_size, refr_size);
-        __WaterConfig.stage = WaterRenderStage::Refraction;
-
-        RenderObjects(renderer);
-
-        glFinish();
-
-        refractionFbo->Unbind();
+        camera->setProjectionMatrix(projection);
+        camera->setViewProjectionMatrix(viewProjection);
         window->getSwapchain()->SetWindowSize(width, height);
-        //glDisable(GL_CLIP_DISTANCE0);
         __WaterConfig.stage = WaterRenderStage::Default;
-
     }
 
     void Water::UpdateQuadtree() {
-        if (camera->isChanged()) {
-            quadtree->UpdateQuadtree();
+        if (camera->getPosition() != lastLodPosition) {
+            quadtree->UpdateQuadtree(camera);
+            lastLodPosition = camera->getPosition();
         }
     }
 
-    void Water::RenderObjects(Renderer *renderer) const {
-        GLRenderer* rend = static_cast<GLRenderer*>(renderer);
-        rend->DrawBackground(camera);
-        rend->DrawModelBatches(rend->getModelsWater());
-    }
 }

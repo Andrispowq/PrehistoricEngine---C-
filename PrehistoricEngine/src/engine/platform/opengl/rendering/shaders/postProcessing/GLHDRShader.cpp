@@ -14,15 +14,17 @@ namespace Prehistoric
 		CompileShader();
 
 		AddUniform("scene");
+        AddUniform("underwater");
 		AddUniform("resolution");
 
 		AddUniform("gamma");
 		AddUniform("exposure");
 	}
 
-	void GLHDRShader::UpdateUniforms(Texture* scene, Vector2f resolution) const
+	void GLHDRShader::UpdateUniforms(Texture* scene, Vector2f resolution, bool underwater) const
 	{
-		scene->Bind();
+		SetUniformi("underwater", underwater);
+        scene->Bind();
 		SetUniformi("scene", 0);
 
 		SetUniform("resolution", resolution);

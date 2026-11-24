@@ -63,127 +63,51 @@ namespace Prehistoric
 
 		uint32_t invSize = (uint32_t)N / 16;
 
-		//Dy FFT
-
-		pingpong = 0;
-		dynamic_cast<GLComputePipeline*>(butterflyPipeline.pointer)->ResetBindings();
-		dynamic_cast<GLComputePipeline*>(butterflyPipeline.pointer)->addTextureBinding(0, twiddleFactors->getTexture(), (AccessMask)ComputeAccessFlags::READ_WRITE);
-		dynamic_cast<GLComputePipeline*>(butterflyPipeline.pointer)->addTextureBinding(1, hkt->getDyCoefficients(), (AccessMask)ComputeAccessFlags::READ_WRITE);
-		dynamic_cast<GLComputePipeline*>(butterflyPipeline.pointer)->addTextureBinding(2, pingpongTexture.pointer, (AccessMask)ComputeAccessFlags::READ_WRITE);
-		dynamic_cast<GLComputePipeline*>(butterflyPipeline.pointer)->setInvocationSize({ invSize, invSize, 1 });
-		butterflyPipeline->BindPipeline(nullptr);
-
-		// 1D FFT horizontal
-		for (int i = 0; i < log_2_N; i++)
+		auto invert = [&](Texture* coefficients, Texture* output)
 		{
-			dynamic_cast<GLButterflyShader*>(butterflyShader.pointer)->UpdateUniforms(pingpong, 0, i);
-			butterflyPipeline->RenderPipeline();
-			pingpong++;
-			pingpong %= 2;
-		}
+			pingpong = 0;
+			dynamic_cast<GLComputePipeline*>(butterflyPipeline.pointer)->ResetBindings();
+			dynamic_cast<GLComputePipeline*>(butterflyPipeline.pointer)->addTextureBinding(0, twiddleFactors->getTexture(), (AccessMask)ComputeAccessFlags::READ_WRITE);
+			dynamic_cast<GLComputePipeline*>(butterflyPipeline.pointer)->addTextureBinding(1, coefficients, (AccessMask)ComputeAccessFlags::READ_WRITE);
+			dynamic_cast<GLComputePipeline*>(butterflyPipeline.pointer)->addTextureBinding(2, pingpongTexture.pointer, (AccessMask)ComputeAccessFlags::READ_WRITE);
+			dynamic_cast<GLComputePipeline*>(butterflyPipeline.pointer)->setInvocationSize({ invSize, invSize, 1 });
+			butterflyPipeline->BindPipeline(nullptr);
 
-		// 1D FFT vertical
-		for (int j = 0; j < log_2_N; j++)
-		{
-			dynamic_cast<GLButterflyShader*>(butterflyShader.pointer)->UpdateUniforms(pingpong, 1, j);
-			butterflyPipeline->RenderPipeline();
-			pingpong++;
-			pingpong %= 2;
-		}
+			// 1D FFT horizontal
+			for (int i = 0; i < log_2_N; i++)
+			{
+				dynamic_cast<GLButterflyShader*>(butterflyShader.pointer)->UpdateUniforms(pingpong, 0, i);
+				butterflyPipeline->RenderPipeline();
+				pingpong++;
+				pingpong %= 2;
+			}
 
-		butterflyPipeline->UnbindPipeline();
+			// 1D FFT vertical
+			for (int j = 0; j < log_2_N; j++)
+			{
+				dynamic_cast<GLButterflyShader*>(butterflyShader.pointer)->UpdateUniforms(pingpong, 1, j);
+				butterflyPipeline->RenderPipeline();
+				pingpong++;
+				pingpong %= 2;
+			}
 
-		dynamic_cast<GLComputePipeline*>(inversionPipeline.pointer)->ResetBindings();
-		dynamic_cast<GLComputePipeline*>(inversionPipeline.pointer)->addTextureBinding(0, Dy.pointer, (AccessMask)ComputeAccessFlags::READ_WRITE);
-		dynamic_cast<GLComputePipeline*>(inversionPipeline.pointer)->addTextureBinding(1, hkt->getDyCoefficients(), (AccessMask)ComputeAccessFlags::READ_WRITE);
-		dynamic_cast<GLComputePipeline*>(inversionPipeline.pointer)->addTextureBinding(2, pingpongTexture.pointer, (AccessMask)ComputeAccessFlags::READ_WRITE);
-		dynamic_cast<GLComputePipeline*>(inversionPipeline.pointer)->setInvocationSize({ invSize, invSize, 1 });
-		inversionPipeline->BindPipeline(nullptr);
-		dynamic_cast<GLInversionShader*>(inversionShader.pointer)->UpdateUniforms(N, pingpong);
-		inversionPipeline->RenderPipeline();
-		inversionPipeline->UnbindPipeline();
+			butterflyPipeline->UnbindPipeline();
 
+			dynamic_cast<GLComputePipeline*>(inversionPipeline.pointer)->ResetBindings();
+			dynamic_cast<GLComputePipeline*>(inversionPipeline.pointer)->addTextureBinding(0, output, (AccessMask)ComputeAccessFlags::READ_WRITE);
+			dynamic_cast<GLComputePipeline*>(inversionPipeline.pointer)->addTextureBinding(1, coefficients, (AccessMask)ComputeAccessFlags::READ_WRITE);
+			dynamic_cast<GLComputePipeline*>(inversionPipeline.pointer)->addTextureBinding(2, pingpongTexture.pointer, (AccessMask)ComputeAccessFlags::READ_WRITE);
+			dynamic_cast<GLComputePipeline*>(inversionPipeline.pointer)->setInvocationSize({ invSize, invSize, 1 });
+			inversionPipeline->BindPipeline(nullptr);
+			dynamic_cast<GLInversionShader*>(inversionShader.pointer)->UpdateUniforms(N, pingpong);
+			inversionPipeline->RenderPipeline();
+			inversionPipeline->UnbindPipeline();
+		};
+		invert(hkt->getDyCoefficients(), Dy.pointer);
 		if (choppy)
 		{
-			// Dx-FFT
-
-			pingpong = 0;
-			dynamic_cast<GLComputePipeline*>(butterflyPipeline.pointer)->ResetBindings();
-			dynamic_cast<GLComputePipeline*>(butterflyPipeline.pointer)->addTextureBinding(0, twiddleFactors->getTexture(), (AccessMask)ComputeAccessFlags::READ_WRITE);
-			dynamic_cast<GLComputePipeline*>(butterflyPipeline.pointer)->addTextureBinding(1, hkt->getDxCoefficients(), (AccessMask)ComputeAccessFlags::READ_WRITE);
-			dynamic_cast<GLComputePipeline*>(butterflyPipeline.pointer)->addTextureBinding(2, pingpongTexture.pointer, (AccessMask)ComputeAccessFlags::READ_WRITE);
-			dynamic_cast<GLComputePipeline*>(butterflyPipeline.pointer)->setInvocationSize({ invSize, invSize, 1 });
-			butterflyPipeline->BindPipeline(nullptr);
-
-			// 1D FFT horizontal
-			for (int i = 0; i < log_2_N; i++)
-			{
-				dynamic_cast<GLButterflyShader*>(butterflyShader.pointer)->UpdateUniforms(pingpong, 0, i);
-				butterflyPipeline->RenderPipeline();
-				pingpong++;
-				pingpong %= 2;
-			}
-
-			// 1D FFT vertical
-			for (int j = 0; j < log_2_N; j++)
-			{
-				dynamic_cast<GLButterflyShader*>(butterflyShader.pointer)->UpdateUniforms(pingpong, 1, j);
-				butterflyPipeline->RenderPipeline();
-				pingpong++;
-				pingpong %= 2;
-			}
-
-			butterflyPipeline->UnbindPipeline();
-
-			dynamic_cast<GLComputePipeline*>(inversionPipeline.pointer)->ResetBindings();
-			dynamic_cast<GLComputePipeline*>(inversionPipeline.pointer)->addTextureBinding(0, Dx.pointer, (AccessMask)ComputeAccessFlags::READ_WRITE);
-			dynamic_cast<GLComputePipeline*>(inversionPipeline.pointer)->addTextureBinding(1, hkt->getDyCoefficients(), (AccessMask)ComputeAccessFlags::READ_WRITE);
-			dynamic_cast<GLComputePipeline*>(inversionPipeline.pointer)->addTextureBinding(2, pingpongTexture.pointer, (AccessMask)ComputeAccessFlags::READ_WRITE);
-			dynamic_cast<GLComputePipeline*>(inversionPipeline.pointer)->setInvocationSize({ invSize, invSize, 1 });
-			inversionPipeline->BindPipeline(nullptr);
-			dynamic_cast<GLInversionShader*>(inversionShader.pointer)->UpdateUniforms(N, pingpong);
-			inversionPipeline->RenderPipeline();
-			inversionPipeline->UnbindPipeline();
-
-			// Dz-FFT
-
-			pingpong = 0;
-			dynamic_cast<GLComputePipeline*>(butterflyPipeline.pointer)->ResetBindings();
-			dynamic_cast<GLComputePipeline*>(butterflyPipeline.pointer)->addTextureBinding(0, twiddleFactors->getTexture(), (AccessMask)ComputeAccessFlags::READ_WRITE);
-			dynamic_cast<GLComputePipeline*>(butterflyPipeline.pointer)->addTextureBinding(1, hkt->getDzCoefficients(), (AccessMask)ComputeAccessFlags::READ_WRITE);
-			dynamic_cast<GLComputePipeline*>(butterflyPipeline.pointer)->addTextureBinding(2, pingpongTexture.pointer, (AccessMask)ComputeAccessFlags::READ_WRITE);
-			dynamic_cast<GLComputePipeline*>(butterflyPipeline.pointer)->setInvocationSize({ invSize, invSize, 1 });
-			butterflyPipeline->BindPipeline(nullptr);
-
-			// 1D FFT horizontal
-			for (int i = 0; i < log_2_N; i++)
-			{
-				dynamic_cast<GLButterflyShader*>(butterflyShader.pointer)->UpdateUniforms(pingpong, 0, i);
-				butterflyPipeline->RenderPipeline();
-				pingpong++;
-				pingpong %= 2;
-			}
-
-			// 1D FFT vertical
-			for (int j = 0; j < log_2_N; j++)
-			{
-				dynamic_cast<GLButterflyShader*>(butterflyShader.pointer)->UpdateUniforms(pingpong, 1, j);
-				butterflyPipeline->RenderPipeline();
-				pingpong++;
-				pingpong %= 2;
-			}
-
-			butterflyPipeline->UnbindPipeline();
-
-			dynamic_cast<GLComputePipeline*>(inversionPipeline.pointer)->ResetBindings();
-			dynamic_cast<GLComputePipeline*>(inversionPipeline.pointer)->addTextureBinding(0, Dz.pointer, (AccessMask)ComputeAccessFlags::READ_WRITE);
-			dynamic_cast<GLComputePipeline*>(inversionPipeline.pointer)->addTextureBinding(1, hkt->getDyCoefficients(), (AccessMask)ComputeAccessFlags::READ_WRITE);
-			dynamic_cast<GLComputePipeline*>(inversionPipeline.pointer)->addTextureBinding(2, pingpongTexture.pointer, (AccessMask)ComputeAccessFlags::READ_WRITE);
-			dynamic_cast<GLComputePipeline*>(inversionPipeline.pointer)->setInvocationSize({ invSize, invSize, 1 });
-			inversionPipeline->BindPipeline(nullptr);
-			dynamic_cast<GLInversionShader*>(inversionShader.pointer)->UpdateUniforms(N, pingpong);
-			inversionPipeline->RenderPipeline();
-			inversionPipeline->UnbindPipeline();
+			invert(hkt->getDxCoefficients(), Dx.pointer);
+			invert(hkt->getDzCoefficients(), Dz.pointer);
 		}
 
 		t += (Time::getTimeFromStartNanoseconds() / 1000000 - systemTime) * t_delta;

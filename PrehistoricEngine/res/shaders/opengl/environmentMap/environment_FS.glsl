@@ -11,15 +11,11 @@ layout (location = 0) in vec3 position_FS;
 uniform samplerCube environmentMap;
 uniform float lod;
 
-uniform int isReflection;
+
 
 void main()
 {
 	vec3 sampleVec = normalize(position_FS);
-	if(isReflection == 1)
-	{
-		sampleVec.y *= -1;
-	}
 	
 	vec3 colour = textureLod(environmentMap, sampleVec, lod).rgb;
 	

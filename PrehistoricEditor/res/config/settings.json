@@ -120,6 +120,7 @@
             "kRefraction": 0.008,
             "reflectionBlendfactor": 0.7,
             "dudvDownsampling": 1,
+            "underwaterPostProcessing": true,
             "underwaterBlurfactor": 0.015,
             "distortionDelta": 1.0E-3
         },

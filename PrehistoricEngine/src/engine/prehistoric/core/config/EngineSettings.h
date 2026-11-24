@@ -150,6 +150,7 @@ namespace Prehistoric
         float kRefraction = 0.0f;
         float reflectionBlendfactor = 0.0f;
         float dudvDownsampling = 0.0f;
+        bool underwaterPostProcessing = true;
         float underwaterBlurfactor = 0.0f;
         float distortionDelta = 0.0f;
 

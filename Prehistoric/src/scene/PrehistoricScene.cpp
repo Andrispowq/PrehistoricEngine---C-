@@ -69,9 +69,9 @@ PrehistoricScene::PrehistoricScene(const std::string &name, Prehistoric::Window 
     } else {
         AssetManager *man = manager->getAssetManager();
 
-        /*Water* water = new Water(window, camera, manager, Vector3f(0, 200, 0));
+        Water* water = new Water(window, camera, manager, Vector3f(0, 200, 0));
 		water->UpdateQuadtree();
-		sceneRoot->AddChild("water", water);*/
+		sceneRoot->AddChild("water", water);
 
         /*GameObject* slider = new GUISlider(window, manager, 0.0f, 2.0f, Vector3f(0.5f), &__EngineConfig.rendererExposure, sizeof(float), true);
 		slider->SetPosition({ 0.5f, 0.5f, 0 });

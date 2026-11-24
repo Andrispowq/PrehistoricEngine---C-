@@ -4,11 +4,12 @@ Step 4 established the [shared renderer frame order](../BUILDING.md#renderer-fra
 
 Step 5 added emissive bloom to Vulkan before HDR tone mapping.
 
+OpenGL water is enabled in the sample. Native GPU captures exercised the surface, reflection and refraction above and below the waterline. Set `water.reflectionParameters.underwaterPostProcessing` to `false` to disable the underwater tint and blur.
+
 ## Remaining work
 
 6. Fix terrain rendering issues in the existing OpenGL path.
 7. Port terrain rendering to Vulkan and compare it against the corrected OpenGL terrain.
-8. Repair OpenGL water rendering. Verify reflection, refraction, and the rendered water surface in a water-enabled scene.
 9. Verify editor parity on native Vulkan and OpenGL desktops, including camera input, native file dialogs and moving
    panels between displays with different scale factors.
 

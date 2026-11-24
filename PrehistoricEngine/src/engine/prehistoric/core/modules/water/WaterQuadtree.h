@@ -22,10 +22,10 @@ namespace Prehistoric
 	class WaterQuadtree : public Node
 	{
 	public:
-		WaterQuadtree(Window* window, Camera* camera, AssembledAssetManager* manager, TexturesData* texData, Vector3f position);
+		WaterQuadtree(Window* window, Camera* camera, AssembledAssetManager* manager, MaterialHandle waterMaterial, Vector3f position);
 		virtual ~WaterQuadtree();
 
-		void UpdateQuadtree();
+		void UpdateQuadtree(Camera* activeCamera);
 		std::vector<Vector2f> generatePatch() const;
 
 		WaterQuadtree(const WaterQuadtree&) = default;

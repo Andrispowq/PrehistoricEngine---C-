@@ -22,7 +22,6 @@ namespace Prehistoric
 		location_gap = glGetUniformLocation(program, "gap");
 		location_lod = glGetUniformLocation(program, "lod");
 
-		AddUniform("clipplane");
 		AddUniform("scaleY");
 		AddUniform("waterHeight");
 
@@ -52,134 +51,117 @@ namespace Prehistoric
 		AddUniform("motion");
 
 		AddUniform("displacementRange");
-		AddUniform("highDetailRange");
 
 		AddUniform("waterReflection");
 		AddUniform("waterRefraction");
+		AddUniform("refractionDepth");
+		AddUniform("refractionDepthScale");
 		AddUniform("normalMap");
 		AddUniform("dudvMap");
 
 		AddUniform("worldMatrix");
 
 		AddUniform("waterColour");
+        AddUniform("sunDirection");
+        AddUniform("sunRadiance");
+        AddUniform("specularFactor");
 		AddUniform("wind");
 
 		AddUniform("kReflection");
 		AddUniform("kRefraction");
-		AddUniform("distortion");
-		AddUniform("emission");
-		AddUniform("specularFactor");
-		AddUniform("specularAmplifier");
-		AddUniform("sightRangeFactor");
 		AddUniform("reflectionBlendFactor");
-		AddUniform("fresnelFactor");
 		AddUniform("capillarStrength");
 		AddUniform("capillarDownsampling");
 		AddUniform("dudvDownsampling");
-		AddUniform("zFar");
-		AddUniform("zNear");
 
-		AddUniform("numberOfTilesX");
 
 		AddUniform("isCameraUnderWater");
-		AddUniform("windowWidth");
-		AddUniform("windowHeight");
 	}
 
 	void GLWaterShader::UpdateGlobalUniforms(Renderer* renderer) const
 	{
 		Camera* camera = renderer->getCamera();
-		const std::vector<Light*>& lights = renderer->getLights();
 
 		SetUniform("viewProjection", camera->getViewProjectionMatrix());
 		SetUniform("cameraPosition", camera->getPosition());
 
-		//SetUniformi("highDetailRange", __EngineConfig.rendererHighDetailRange);
-
-		/*BindEnvironmentLighting(renderer, 0);
-
-		//TODO: This is ugly!!!! 
-		SetUniformi("numberOfTilesX", __FrameworkConfig.windowWidth / 16);
-		SetUniformf("max_reflection_lod", __EnvironmentMapConfig.prefilterLevels - 1.0f);*/
-
-		//Some other stuff that is terrain-related
-		SetUniformf("scaleY", __TerrainConfig.scaleY);
-
-		SetUniformi("tessellationFactor", __TerrainConfig.tessellationFactor);
-		SetUniformf("tessellationSlope", __TerrainConfig.tessellationSlope);
-		SetUniformf("tessellationShift", __TerrainConfig.tessellationShift);
+		SetUniformi("tessellationFactor", __WaterConfig.tessellationFactor);
+		SetUniformf("tessellationSlope", __WaterConfig.tessellationSlope);
+		SetUniformf("tessellationShift", __WaterConfig.tessellationShift);
 
 		for (unsigned int i = 0; i < 8; i++)
 		{
 			std::string uName = "lodMorphArea[" + std::to_string(i) + "]";
 
-			SetUniformi(uName, __TerrainConfig.lodMorphingAreas[i]);
+			SetUniformi(uName, i < __WaterConfig.lodMorphingAreas.size() ? __WaterConfig.lodMorphingAreas[i] : 0);
 		}
 
 		WaterConfig* config = &__WaterConfig;
 
 		SetUniformf("scaleY", config->scaleY);
-		SetUniform("clipplane", Vector4f(0, -1, 0, 100000));
 
 		SetUniformi("tiling", config->tiling);
 
 		SetUniform("wind", config->windDirection);
 
 		SetUniformf("displacementScale", config->displacementScale);
-		SetUniformf("choppiness", config->choppiness);
+		SetUniformf("choppiness", config->choppy ? config->choppiness : 0.0f);
 
 		SetUniformi("displacementRange", config->displacementRange);
-		SetUniformi("highDetailRange", config->highDetailRange);
 
 		SetUniform("waterColour", config->baseColour);
-		SetUniform("wind", config->windDirection);
+        Vector3f sunDirection(0, 1, 0), sunRadiance(0);
+        for (Light* light : renderer->getLights())
+        {
+            if (light->castShadows())
+            {
+                sunDirection = light->getParent()->getWorldTransform().getPosition().normalise();
+                sunRadiance = light->getColour() * config->specularAmplifier;
+                break;
+            }
+        }
+        SetUniform("sunDirection", sunDirection);
+        SetUniform("sunRadiance", sunRadiance);
+        SetUniformf("specularFactor", config->specularFactor);
 
 		SetUniformf("kReflection", config->kReflection);
 		SetUniformf("kRefraction", config->kRefraction);
-		SetUniformf("distortion", config->distortionDelta);
-		SetUniformf("emission", config->emissionFactor);
-		SetUniformf("specularFactor", config->specularFactor);
-		SetUniformf("specularAmplifier", config->specularAmplifier);
-		SetUniformf("sightRangeFactor", 0.0f);
 		SetUniformf("reflectionBlendFactor", config->reflectionBlendfactor);
-		SetUniformf("fresnelFactor", config->fresnelFactor);
 		SetUniformf("capillarStrength", config->capillarStrength);
 		SetUniformf("capillarDownsampling", config->capillarDownsampling);
 		SetUniformf("dudvDownsampling", config->dudvDownsampling);
-		SetUniformf("zFar", __EngineConfig.rendererFarPlane);
-		SetUniformf("zNear", __EngineConfig.rendererNearPlane);
-		SetUniformi("numberOfTilesX", __FrameworkConfig.windowWidth / 16);
 
-		SetUniformi("windowWidth", __FrameworkConfig.windowWidth);
-		SetUniformi("windowHeight", __FrameworkConfig.windowHeight);
 	}
 
 	void GLWaterShader::UpdateMaterialUniforms(Material* material, uint32_t descriptor_index) const
 	{
-		TexturesData* texData = (TexturesData*)material;
 
-		texData->Dy->Bind(3);
-		texData->Dx->Bind(4);
-		texData->Dz->Bind(5);
+
+		material->getTexture("Dy")->Bind(3);
+		material->getTexture("Dx")->Bind(4);
+		material->getTexture("Dz")->Bind(5);
 
 		SetUniformi("Dy", 3);
 		SetUniformi("Dx", 4);
 		SetUniformi("Dz", 5);
 
-		texData->waterReflection->Bind(6);
-		texData->waterRefraction->Bind(7);
-		texData->normalMap->Bind(8);
-		texData->dudvMap->Bind(9);
+		material->getTexture("waterReflection")->Bind(6);
+		material->getTexture("waterRefraction")->Bind(7);
+		material->getTexture("normalMap")->Bind(8);
+		material->getTexture("dudvMap")->Bind(9);
 
 		SetUniformi("waterReflection", 6);
 		SetUniformi("waterRefraction", 7);
+		material->getTexture("refractionDepth")->Bind(10);
+		SetUniformi("refractionDepth", 10);
+		SetUniformf("refractionDepthScale", material->getFloat("refractionDepthScale"));
 		SetUniformi("normalMap", 8);
 		SetUniformi("dudvMap", 9);
 
-		SetUniformf("waterHeight", texData->waterHeight);
+		SetUniformf("waterHeight", material->getFloat("waterHeight"));
 
-		SetUniformf("motion", texData->motion);
-		SetUniformi("isCameraUnderWater", texData->underwater);
+		SetUniformf("motion", material->getFloat("motion"));
+		SetUniformi("isCameraUnderWater", material->getInt("underwater"));
 	}
 
 	void GLWaterShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const

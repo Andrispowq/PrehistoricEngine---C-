@@ -5,7 +5,7 @@
 
 namespace Prehistoric
 {
-	WaterQuadtree::WaterQuadtree(Window* window, Camera* camera, AssembledAssetManager* manager, TexturesData* texData, Vector3f position)
+	WaterQuadtree::WaterQuadtree(Window* window, Camera* camera, AssembledAssetManager* manager, MaterialHandle waterMaterial, Vector3f position)
 		: window(window), camera(camera), factory{ 1024 }
 	{
 		PatchVertexBuffer* vbo = new GLPatchVertexBuffer(window, generatePatch());
@@ -27,7 +27,7 @@ namespace Prehistoric
 				ss << ", ";
 				ss << j;
 
-				AddChild(ss.str(), new(factory) WaterNode(&factory, window, camera, manager, texData, pipeline, wireframePipeline,
+				AddChild(ss.str(), new(factory) WaterNode(&factory, window, camera, manager, waterMaterial, pipeline, wireframePipeline,
 					{ i / (float)rootNodes, j / (float)rootNodes }, 0, { float(i), float(j) }, position));
 			}
 		}
@@ -49,11 +49,12 @@ namespace Prehistoric
 		children.clear();
 	}
 
-	void WaterQuadtree::UpdateQuadtree()
+	void WaterQuadtree::UpdateQuadtree(Camera* activeCamera)
 	{
+		camera = activeCamera;
 		for (auto& node : children)
 		{
-			((WaterNode*)node.second.get())->UpdateQuadtree();
+			((WaterNode*)node.second.get())->UpdateQuadtree(activeCamera);
 		}
 	}
 

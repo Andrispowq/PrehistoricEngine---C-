@@ -1,4 +1,4 @@
-#version 460
+#version 430
 
 layout (quads, fractional_odd_spacing, ccw) in;
 
@@ -14,27 +14,27 @@ uniform sampler2D Dz;
 uniform float scaleY;
 uniform float waterHeight;
 
+uniform vec2 wind;
+uniform float motion;
+uniform float displacementScale;
+uniform float choppiness;
+uniform int displacementRange;
+uniform vec3 cameraPosition;
+
+#include "shared/terrain/quadEvaluation.glsl"
+
 void main()
 {
-	float u = gl_TessCoord.x;
-	float v = gl_TessCoord.y;
-	
-	vec4 position = 
-	((1 - u) * (1 - v) * gl_in[12].gl_Position + 
-	u * (1 - v) * gl_in[0].gl_Position + 
-	u * v* gl_in[3].gl_Position + 
-	(1 - u) * v * gl_in[15].gl_Position);
-	
-	vec2 mapCoord = 
-	((1 - u) * (1 - v) * mapCoord_TE[12] + 
-	u * (1 - v) * mapCoord_TE[0] + 
-	u * v* mapCoord_TE[3] + 
-	(1 - u) * v * mapCoord_TE[15]);
-	
-	float height = texture(Dy, mapCoord).r * scaleY + waterHeight;
-	
-	position.y = height;
-	gl_Position = position;
-	
-	mapCoord_GS = mapCoord * tiling;
+    vec4 p;
+    vec2 uv;
+    evaluateTerrainQuad(p, uv);
+    mapCoord_GS = uv * tiling + wind * motion;
+    float fade = clamp(1.0 - distance(p.xyz, cameraPosition) / max(float(displacementRange), 1.0), 0.0, 1.0);
+    p.y = waterHeight + textureLod(Dy, uv, 0).r * scaleY;
+    p.y += fade * textureLod(Dy, mapCoord_GS, 0).r * displacementScale;
+    if (choppiness != 0.0)
+    {
+        p.xz -= fade * choppiness * vec2(textureLod(Dx, mapCoord_GS, 0).r, textureLod(Dz, mapCoord_GS, 0).r);
+    }
+    gl_Position = p;
 }

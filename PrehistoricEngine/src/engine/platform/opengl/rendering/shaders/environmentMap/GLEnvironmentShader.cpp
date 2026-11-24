@@ -17,7 +17,6 @@ namespace Prehistoric
 
 		AddUniform("environmentMap");
 		AddUniform("lod");
-		AddUniform("isReflection");
 	}
 
 	void GLEnvironmentShader::UpdateUniforms(const Matrix4f& projection, const Matrix4f& view, Texture* texture, float lod) const
@@ -29,6 +28,5 @@ namespace Prehistoric
 		SetUniformi("environmentMap", 0);
 		SetUniformf("lod", lod);
 
-		SetUniformi("isReflection", (__WaterConfig.stage == WaterRenderStage::Reflection) ? 1 : 0);
 	}
 };

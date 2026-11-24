@@ -44,6 +44,8 @@ namespace Prehistoric {
 
         virtual Texture *getOutputTexture() const override { return hdrPass->getOutputImage().pointer; }
 
+        bool isUnderwater() const;
+
         void RegisterWater(Water *water) { waters.push_back(water); }
 
         void DrawModelBatches(const ModelBatches &batches);

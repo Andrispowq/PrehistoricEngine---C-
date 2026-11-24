@@ -22,7 +22,6 @@ namespace Prehistoric
 		location_gap = glGetUniformLocation(program, "gap");
 		location_lod = glGetUniformLocation(program, "lod");
 
-		AddUniform("clipplane");
 		AddUniform("scaleY");
 		AddUniform("waterHeight");
 
@@ -57,62 +56,49 @@ namespace Prehistoric
 	void GLWaterWireframeShader::UpdateGlobalUniforms(Renderer* renderer) const
 	{
 		Camera* camera = renderer->getCamera();
-		const std::vector<Light*>& lights = renderer->getLights();
 
 		SetUniform("viewProjection", camera->getViewProjectionMatrix());
 		SetUniform("cameraPosition", camera->getPosition());
 
-		//SetUniformi("highDetailRange", __EngineConfig.rendererHighDetailRange);
-
-		/*BindEnvironmentLighting(renderer, 0);
-
-		//TODO: This is ugly!!!!
-		SetUniformi("numberOfTilesX", __FrameworkConfig.windowWidth / 16);
-		SetUniformf("max_reflection_lod", __EnvironmentMapConfig.prefilterLevels - 1.0f);*/
-
-		//Some other stuff that is terrain-related
-		SetUniformf("scaleY", __TerrainConfig.scaleY);
-
-		SetUniformi("tessellationFactor", __TerrainConfig.tessellationFactor);
-		SetUniformf("tessellationSlope", __TerrainConfig.tessellationSlope);
-		SetUniformf("tessellationShift", __TerrainConfig.tessellationShift);
+		SetUniformi("tessellationFactor", __WaterConfig.tessellationFactor);
+		SetUniformf("tessellationSlope", __WaterConfig.tessellationSlope);
+		SetUniformf("tessellationShift", __WaterConfig.tessellationShift);
 
 		for (unsigned int i = 0; i < 8; i++)
 		{
 			std::string uName = "lodMorphArea[" + std::to_string(i) + "]";
 
-			SetUniformi(uName, __TerrainConfig.lodMorphingAreas[i]);
+			SetUniformi(uName, i < __WaterConfig.lodMorphingAreas.size() ? __WaterConfig.lodMorphingAreas[i] : 0);
 		}
 
 		WaterConfig* config = &__WaterConfig;
 
 		SetUniformf("scaleY", config->scaleY);
-		SetUniform("clipplane", Vector4f(0, -1, 0, 100000));
 
 		SetUniformi("tiling", config->tiling);
 
 		SetUniform("wind", config->windDirection);
 
 		SetUniformf("displacementScale", config->displacementScale);
-		SetUniformf("choppiness", config->choppiness);
+		SetUniformf("choppiness", config->choppy ? config->choppiness : 0.0f);
 
 		SetUniformi("displacementRange", config->displacementRange);
 	}
 
 	void GLWaterWireframeShader::UpdateMaterialUniforms(Material* material, uint32_t descriptor_index) const
 	{
-		TexturesData* texData = (TexturesData*)material;
 
-		texData->Dy->Bind(3);
-		texData->Dx->Bind(4);
-		texData->Dz->Bind(5);
+
+		material->getTexture("Dy")->Bind(3);
+		material->getTexture("Dx")->Bind(4);
+		material->getTexture("Dz")->Bind(5);
 
 		SetUniformi("Dy", 3);
 		SetUniformi("Dx", 4);
 		SetUniformi("Dz", 5);
 
-		SetUniformf("waterHeight", texData->waterHeight);
-		SetUniformf("motion", texData->motion);
+		SetUniformf("waterHeight", material->getFloat("waterHeight"));
+		SetUniformf("motion", material->getFloat("motion"));
 	}
 
 	void GLWaterWireframeShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const

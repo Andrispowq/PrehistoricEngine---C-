@@ -1,4 +1,5 @@
 #include "Includes.hpp"
+#include "prehistoric/application/Application.h"
 #include "GLHDRPass.h"
 
 #include "platform/opengl/rendering/pipeline/GLComputePipeline.h"
@@ -13,8 +14,8 @@ namespace Prehistoric
 		uint32_t width = window->getWidth();
 		uint32_t height = window->getHeight();
 
-		uint32_t workGroupsX = (width + (width % 16)) / 16;
-		uint32_t workGroupsY = (height + (height % 16)) / 16;
+		uint32_t workGroupsX = (width + 15) / 16;
+		uint32_t workGroupsY = (height + 15) / 16;
 
 		uint32_t numberOfTiles = workGroupsX * workGroupsY;
 
@@ -42,8 +43,8 @@ namespace Prehistoric
 		uint32_t width = window->getWidth();
 		uint32_t height = window->getHeight();
 
-		uint32_t workGroupsX = (width + (width % 16)) / 16;
-		uint32_t workGroupsY = (height + (height % 16)) / 16;
+		uint32_t workGroupsX = (width + 15) / 16;
+		uint32_t workGroupsY = (height + 15) / 16;
 
 		uint32_t numberOfTiles = workGroupsX * workGroupsY;
 
@@ -67,7 +68,7 @@ namespace Prehistoric
 		uint32_t height = window->getHeight();
 
 		hdrPipeline->BindPipeline(nullptr);
-		static_cast<GLHDRShader*>(hdrPipeline->getShader())->UpdateUniforms(rend->getVolumetricPostProcessingPass()->getOutputTexture().pointer, {(float)width, (float)height});
+		static_cast<GLHDRShader*>(hdrPipeline->getShader())->UpdateUniforms(rend->getVolumetricPostProcessingPass()->getOutputTexture().pointer, {(float)width, (float)height}, __WaterConfig.underwaterPostProcessing && rend->isUnderwater());
 		hdrPipeline->RenderPipeline();
 		hdrPipeline->UnbindPipeline();
 	}

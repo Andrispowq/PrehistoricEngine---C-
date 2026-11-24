@@ -7,9 +7,9 @@
 
 namespace Prehistoric
 {
-	WaterNode::WaterNode(Factory<WaterNode>* factory, Window* window, Camera* camera, AssembledAssetManager* manager, TexturesData* texData, PipelineHandle pipeline, PipelineHandle wireframePipeline, Vector2f location, int lod, Vector2f index, Vector3f position)
+	WaterNode::WaterNode(Factory<WaterNode>* factory, Window* window, Camera* camera, AssembledAssetManager* manager, MaterialHandle waterMaterial, PipelineHandle pipeline, PipelineHandle wireframePipeline, Vector2f location, int lod, Vector2f index, Vector3f position)
 		: factory(factory), window(window), camera(camera), manager(manager),
-		texData(texData), location(location),	lod(lod), index(index), position(position)
+		waterMaterial(waterMaterial), location(location),	lod(lod), index(index), position(position)
 	{
 		this->gap = 1.0f / float(WaterQuadtree::rootNodes * pow(2, lod));
 		
@@ -22,21 +22,16 @@ namespace Prehistoric
 		worldTransform.setScaling({ __WaterConfig.scaleXZ, __WaterConfig.displacementScale, __WaterConfig.scaleXZ });
 		worldTransform.setPosition(Vector3f{ -__WaterConfig.scaleXZ / 2.0f, 0, -__WaterConfig.scaleXZ / 2.0f } + position);
 
-		//Definitely not something that should be done, but let's just do it here silently
-		MaterialHandle material;
-		material.pointer = (Material*)texData;
-		material.handle = 0;
-
-		rendererComponent = new RendererComponent(window, manager, pipeline, material);
+		rendererComponent = new RendererComponent(window, manager, pipeline, waterMaterial);
 		rendererComponent->setReflection(false);
-		wireframeRendererComponent = new RendererComponent(window, manager, wireframePipeline, material);
+		wireframeRendererComponent = new RendererComponent(window, manager, wireframePipeline, waterMaterial);
 		wireframeRendererComponent->setReflection(false);
 		
 		AddComponent(RENDERER_COMPONENT, rendererComponent);
 		AddComponent(WIREFRAME_RENDERER_COMPONENT, wireframeRendererComponent);
 
 		ComputeWorldPosition();
-		UpdateQuadtree();
+		UpdateQuadtree(camera);
 	}
 
 	WaterNode::~WaterNode()
@@ -70,15 +65,16 @@ namespace Prehistoric
 		}
 	}
 
-	void WaterNode::UpdateQuadtree()
+	void WaterNode::UpdateQuadtree(Camera* activeCamera)
 	{
+		camera = activeCamera;
 		UpdateChildNodes();
 
 		if (children.size() != 0)
 		{
 			for (auto& child : children)
 			{
-				((WaterNode*)child.second.get())->UpdateQuadtree();
+				((WaterNode*)child.second.get())->UpdateQuadtree(activeCamera);
 			}
 		}
 	}
@@ -87,7 +83,7 @@ namespace Prehistoric
 	{
 		float distance = (camera->getPosition() - worldPosition).length();
 
-		if (distance < __WaterConfig.lodRanges[lod])
+		if (size_t(lod) < __WaterConfig.lodRanges.size() && distance < __WaterConfig.lodRanges[lod])
 		{
 			AddChildNodes(lod + 1);
 		}
@@ -118,7 +114,7 @@ namespace Prehistoric
 					ss << ", lod: ";
 					ss << lod;
 
-					AddChild(ss.str(), new(*factory) WaterNode(factory, window, camera, manager, texData, rendererComponent->getPipelineHandle(), wireframeRendererComponent->getPipelineHandle(),
+					AddChild(ss.str(), new(*factory) WaterNode(factory, window, camera, manager, waterMaterial, rendererComponent->getPipelineHandle(), wireframeRendererComponent->getPipelineHandle(),
 						location + Vector2f(float(i), float(j)) * (gap / 2.f), lod, { float(i), float(j) }, position));
 				}
 			}
@@ -146,6 +142,6 @@ namespace Prehistoric
 	void WaterNode::ComputeWorldPosition()
 	{
 		Vector2f loc = (location + gap / 2.0f) * __WaterConfig.scaleXZ - __WaterConfig.scaleXZ / 2.0f;
-		this->worldPosition = { loc.x, 0, loc.y };
+		this->worldPosition = Vector3f(loc.x, 0, loc.y) + position;
 	}
 }

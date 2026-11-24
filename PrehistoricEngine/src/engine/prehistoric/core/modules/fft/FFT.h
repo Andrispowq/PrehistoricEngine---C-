@@ -20,9 +20,9 @@ namespace Prehistoric
 
 		void Render();
 
-		Texture* getDyTexture() const { return Dy.pointer; }
-		Texture* getDxTexture() const { return Dx.pointer; }
-		Texture* getDzTexture() const { return Dz.pointer; }
+		TextureHandle getDyTexture() const { return Dy; }
+		TextureHandle getDxTexture() const { return Dx; }
+		TextureHandle getDzTexture() const { return Dz; }
 
 	private:
 		AssembledAssetManager* manager = nullptr;

@@ -22,13 +22,12 @@ namespace Prehistoric
 		void PreRender(Renderer* renderer) override;
 		void RenderCaptures(Renderer* renderer);
 		void UpdateQuadtree();
+        bool isCameraUnderwater() const { return cameraUnderwater; }
 
 		Texture* getReflectionTexture() const { return reflectionTexture.pointer; }
 		Texture* getRefractionTexture() const { return refractionTexture.pointer; }
 
 		Water(const Water&) = default;
-	private:
-		void RenderObjects(Renderer* renderer) const;
 	private:
 		Window* window;
 		Camera* camera;
@@ -36,20 +35,17 @@ namespace Prehistoric
 
 		WaterQuadtree* quadtree;
 
-		size_t refl_size = 1024;
-		size_t refr_size = 1024;
+		static constexpr uint32_t refl_size = 1024;
+		static constexpr uint32_t refr_size = 1024;
 
 		std::unique_ptr<FFT> fft;
 		std::unique_ptr<NormalMapRenderer> normalMapRenderer;
 
-		Vector4f clipplane = 0.0f;
-		int clipOffset = 0;
-		float motion = 0.0f;
-		float distortionDelta = 0.0f;
 		TextureHandle dudv;
 		Vector3f position = 0;
+		Vector3f lastLodPosition;
 
-		TexturesData* texData;
+		MaterialHandle material;
 
 		std::unique_ptr<Framebuffer> reflectionFbo;
 		std::unique_ptr<Framebuffer> refractionFbo;

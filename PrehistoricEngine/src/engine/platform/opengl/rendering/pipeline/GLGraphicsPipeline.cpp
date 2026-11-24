@@ -1,4 +1,5 @@
 #include "Includes.hpp"
+#include "prehistoric/application/Application.h"
 #include "GLGraphicsPipeline.h"
 
 namespace Prehistoric
@@ -26,16 +27,13 @@ namespace Prehistoric
 	{
 		GLPipeline::RenderPipeline();
 
-		if ((vbo->getFrontFace() == FrontFace::CLOCKWISE) && (state_frontface == CCW))
-		{
-			glFrontFace(GL_CW);
-			state_frontface = CW;
-		}
-		else if ((vbo->getFrontFace() == FrontFace::COUNTER_CLOCKWISE) && (state_frontface == CW))
-		{
-			glFrontFace(GL_CCW);
-			state_frontface = CCW;
-		}
+        const bool mirrored = __WaterConfig.stage == WaterRenderStage::Reflection;
+        const char winding = ((vbo->getFrontFace() == FrontFace::CLOCKWISE) != mirrored) ? CW : CCW;
+        if (winding != state_frontface)
+        {
+            glFrontFace(winding == CW ? GL_CW : GL_CCW);
+            state_frontface = winding;
+        }
 
 		if (backfaceCulling && (vbo->getFrontFace() != FrontFace::DOUBLE_SIDED) && (state_culling != CULL))
 		{

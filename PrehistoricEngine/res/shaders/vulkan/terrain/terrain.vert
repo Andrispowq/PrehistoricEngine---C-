@@ -1,6 +1,7 @@
 #version 450
 #extension GL_GOOGLE_include_directive : require
 #include "patch.glsl"
+#include "../../shared/terrain/patchMorph.glsl"
 #include "../../shared/terrain/morph.glsl"
 layout(location=0) in vec3 position;
 layout(location=0) out vec2 mapCoord_TC;
