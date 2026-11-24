@@ -5,6 +5,7 @@
 
 #include "prehistoric/core/node/component/renderer/RendererComponent.h"
 #include "prehistoric/core/node/component/light/Light.h"
+#include "prehistoric/core/node/component/VolumetricSphereComponent.h"
 #include "prehistoric/application/Application.h"
 
 
@@ -27,6 +28,15 @@ void SceneHierarchyPanel::ImGuiRender() {
     if (ImGui::BeginPopupContextWindow(0, 1, false)) {
         if (ImGui::MenuItem("Create Empty Entity"))
             root->AddChild("Empty Entity", new Prehistoric::GameObject());
+
+        if (ImGui::MenuItem("Create Volumetric Sphere")) {
+            const auto* camera = Prehistoric::Application::Get().getEngineLayer()->getRenderingEngine()->getCamera();
+            auto* object = new Prehistoric::GameObject();
+            object->SetPosition(camera->getPosition() - camera->getForward() * 15.0f);
+            object->AddComponent(Prehistoric::VolumetricSphereComponent::Name, new Prehistoric::VolumetricSphereComponent());
+            root->AddChild("Volumetric Sphere", object);
+            selectionContext = object;
+        }
 
         ImGui::EndPopup();
     }
@@ -85,6 +95,7 @@ static void DrawComponent(const std::string &name, Prehistoric::GameObject *obje
                                              ImGuiTreeNodeFlags_FramePadding;
     Prehistoric::Component *comp;
     if (comp = object->GetComponent<T>()) {
+        ImGui::PushID(comp);
         ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
 
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{4, 4});
@@ -110,6 +121,7 @@ static void DrawComponent(const std::string &name, Prehistoric::GameObject *obje
             ImGui::TreePop();
         }
 
+        ImGui::PopID();
         if (removeComponent)
             object->RemoveComponent<T>();
     }
@@ -199,6 +211,11 @@ void SceneHierarchyPanel::DrawComponents(Prehistoric::GameObject *object) {
         ImGui::OpenPopup("AddComponent");
 
     if (ImGui::BeginPopup("AddComponent")) {
+        using Prehistoric::VolumetricSphereComponent;
+        if (ImGui::MenuItem("Volumetric Sphere", nullptr, false, !object->HasComponent<VolumetricSphereComponent>())) {
+            object->AddComponent(VolumetricSphereComponent::Name, new VolumetricSphereComponent());
+        }
+
         if (ImGui::MenuItem("LightComponent")) {
             if (!selectionContext->GetComponent<Prehistoric::Light>()) {
                 using namespace Prehistoric;
@@ -304,6 +321,22 @@ void SceneHierarchyPanel::DrawComponents(Prehistoric::GameObject *object) {
             float radius = light->getRadius();
             ImGui::InputFloat("Radius", &radius, 10.0f, 200.0f);
             light->setRadius({radius});
+        }
+    });
+
+    DrawComponent<Prehistoric::VolumetricSphereComponent>("Volumetric Sphere", object, [](Prehistoric::Component* comp) {
+        auto* sphere = static_cast<Prehistoric::VolumetricSphereComponent*>(comp);
+        float radius = sphere->getRadius();
+        float density = sphere->getDensity();
+        float anisotropy = sphere->getAnisotropy();
+        const auto& tint = sphere->getTint();
+        float colour[] = {tint.x, tint.y, tint.z};
+        if (ImGui::DragFloat("Radius", &radius, 0.1f, 0.0f, 0.0f, "%.2f")) sphere->setRadius(radius);
+        if (ImGui::DragFloat("Density", &density, 0.001f, 0.0f, 0.0f, "%.4f")) sphere->setDensity(density);
+        if (ImGui::ColorEdit3("Tint", colour)) sphere->setTint({colour[0], colour[1], colour[2]});
+        if (ImGui::SliderFloat("Anisotropy", &anisotropy, -0.95f, 0.95f)) sphere->setAnisotropy(anisotropy);
+        if (__FrameworkConfig.api != Prehistoric::OpenGL) {
+            ImGui::TextUnformatted("Volume preview requires OpenGL.");
         }
     });
 

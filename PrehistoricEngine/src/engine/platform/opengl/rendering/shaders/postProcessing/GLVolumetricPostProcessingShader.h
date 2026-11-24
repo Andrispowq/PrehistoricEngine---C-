@@ -13,9 +13,7 @@ namespace Prehistoric
 		GLVolumetricPostProcessingShader();
 		virtual ~GLVolumetricPostProcessingShader() {}
 
-		void UpdateUniforms(Texture* scene,
-			Texture* positionMetallic, Texture* albedoRoughness, Texture* normal,
-			Renderer* renderer) const;
+		void UpdateUniforms(Texture* scene, Texture* depth, Renderer* renderer) const;
 	};
 };
 

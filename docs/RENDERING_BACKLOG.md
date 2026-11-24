@@ -4,6 +4,10 @@ Step 4 established the [shared renderer frame order](../BUILDING.md#renderer-fra
 
 Step 5 added emissive bloom to Vulkan before HDR tone mapping.
 
+OpenGL composites spherical volumetric media before tone mapping. Volumetric
+spheres are editable scene components, and the
+[Sponza world](../BUILDING.md#opengl-volumetric-lighting-test) provides two examples.
+
 OpenGL and Vulkan water are enabled in the sample. Vulkan selects its geometry or tessellation-only pipeline from device capabilities. Native OpenGL GPU captures exercised the surface, reflection and refraction above and below the waterline. Set `water.reflectionParameters.underwaterPostProcessing` to `false` to disable the underwater tint and blur.
 
 ## Remaining work
@@ -19,6 +23,14 @@ OpenGL and Vulkan water are enabled in the sample. Vulkan selects its geometry o
 12. Reactivate terrain collisions.
 13. Improve physics.
 14. Improve scripting.
+
+### Renderer fixes
+
+- Restore OpenGL voxel rendering. Verify voxelization first with the existing [voxel visualization shaders](../PrehistoricEngine/res/shaders/opengl/voxel/Visualisation/), then verify that cone tracing produces visible indirect lighting in a small test scene.
+
+### Engine maintenance
+
+- Migrate native vector, quaternion, and matrix operations to GLM incrementally behind the existing math API. Start with matrix multiplication and inversion. Preserve transform order, angle and clip-space conventions, and GPU and scripting layouts. Run the [math suite](../tests/unit/math/MathTests.cpp) and smoke-test both renderers before changing public types.
 
 ### Vulkan editor
 

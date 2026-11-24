@@ -23,6 +23,14 @@ namespace Prehistoric {
         int index;
     };
 
+    struct VolumetricSphere {
+        Vector3f center;
+        float radius = 0.0f;
+        float density = 0.0f; // Extinction per world unit at the center.
+        Vector3f scatteringTint{1.0f}; // Fraction of extinction that scatters light, per channel.
+        float anisotropy = 0.0f; // Positive values favor forward scattering.
+    };
+
     using ModelBatches = std::unordered_map<Pipeline *, std::unordered_map<Material *, std::vector<RenderableComponent
         *> > >;
 
@@ -57,6 +65,9 @@ namespace Prehistoric {
 
         void RegisterAtmosphere(const Atmosphere &sky) { atmosphere = &sky; }
         const Atmosphere *getAtmosphere() const { return atmosphere; }
+
+        void RegisterVolumetricSphere(const VolumetricSphere& sphere) { volumetricSpheres.push_back(sphere); }
+        const std::vector<VolumetricSphere> &getVolumetricSpheres() const { return volumetricSpheres; }
 
         void UnregisterModel(RenderableComponent *renderable);
 
@@ -128,6 +139,7 @@ namespace Prehistoric {
 
         std::vector<Light *> lights;
         const Atmosphere *atmosphere = nullptr;
+        std::vector<VolumetricSphere> volumetricSpheres;
 
         bool wireframeMode;
         bool renderingShadow = false;

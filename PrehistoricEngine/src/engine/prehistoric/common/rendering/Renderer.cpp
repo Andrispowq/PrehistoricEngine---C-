@@ -75,6 +75,7 @@ namespace Prehistoric
         models_water.clear();
         models_2d.clear();
         lights.clear();
+        volumetricSpheres.clear();
         atmosphere = nullptr;
     }
 

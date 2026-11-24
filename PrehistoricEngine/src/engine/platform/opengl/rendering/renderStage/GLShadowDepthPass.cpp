@@ -209,11 +209,11 @@ namespace Prehistoric
 
 		//projection
 		float minX = std::numeric_limits<float>::max();
-		float maxX = std::numeric_limits<float>::min();
+		float maxX = std::numeric_limits<float>::lowest();
 		float minY = std::numeric_limits<float>::max();
-		float maxY = std::numeric_limits<float>::min();
+		float maxY = std::numeric_limits<float>::lowest();
 		float minZ = std::numeric_limits<float>::max();
-		float maxZ = std::numeric_limits<float>::min();
+		float maxZ = std::numeric_limits<float>::lowest();
 
 		for (const auto& v : corners)
 		{
@@ -246,7 +246,8 @@ namespace Prehistoric
 			maxZ *= zMult;
 		}
 
-		Matrix4f lightProj = Matrix4f::OrthographicProjection(minX, maxX, minY, maxY, minZ, maxZ);
+		// OrthographicProjection takes near/far distances along negative view Z.
+		Matrix4f lightProj = Matrix4f::OrthographicProjection(minX, maxX, minY, maxY, -maxZ, -minZ);
 		return lightProj * lightView;
 	}
 

@@ -11,7 +11,8 @@ uniform vec2 targetSize;
 void main()
 {
 	ivec2 x = ivec2(gl_GlobalInvocationID.xy);
-    vec2 texCoord = gl_GlobalInvocationID.xy / targetSize;
+    if (any(greaterThanEqual(x, ivec2(targetSize)))) return;
+    vec2 texCoord = (vec2(x) + 0.5) / targetSize;
 
 	vec3 bloomColour = texture(scene, texCoord).rgb;
 	float intensity = dot(bloomColour, vec3(0.2126, 0.7152, 0.0722));
@@ -24,4 +25,3 @@ void main()
 
 	imageStore(outBloom, x, vec4(bloomColour, 1.0));
 }
-	

@@ -12,7 +12,7 @@ public:
 	PrehistoricApp();
 	~PrehistoricApp();
 private:
-	std::unique_ptr<PrehistoricScene> scene;
+	std::unique_ptr<Prehistoric::Scene> scene;
 };
 
 Prehistoric::Application* Prehistoric::CreateApplication()

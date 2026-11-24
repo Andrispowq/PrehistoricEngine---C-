@@ -3,6 +3,7 @@
 
 #include "prehistoric/core/node/component/renderer/RendererComponent.h"
 #include "prehistoric/core/node/component/light/Light.h"
+#include "prehistoric/core/node/component/VolumetricSphereComponent.h"
 #include "prehistoric/core/node/GameObject.h"
 
 #include "prehistoric/application/Application.h"
@@ -18,6 +19,13 @@ namespace Prehistoric {
 
         nlohmann::json file_json;
         file_json["name"] = sceneName;
+        if (const auto& pose = scene->getInitialCamera()) {
+            file_json["initial_camera"] = {
+                {"position", {pose->position.x, pose->position.y, pose->position.z}},
+                {"forward", {pose->forward.x, pose->forward.y, pose->forward.z}},
+                {"up", {pose->up.x, pose->up.y, pose->up.z}}
+            };
+        }
 
         {
             nlohmann::json directories;
@@ -141,10 +149,21 @@ namespace Prehistoric {
         {
             nlohmann::json root_json;
             std::vector<nlohmann::json> list_children;
+            auto worldObjects = nlohmann::json::array();
 
             std::vector<GameObject *> children = root->getAllChildren();
             //For now we serialise everything to be root's child
             for (auto child: children) {
+                if (const auto* atmosphere = dynamic_cast<const Atmosphere*>(child)) {
+                    const auto sun = std::find_if(children.begin(), children.end(), [&](const GameObject* object) {
+                        return atmosphere->getSun() && object->GetComponent<Light>() == atmosphere->getSun();
+                    });
+                    if (sun != children.end()) {
+                        worldObjects.push_back({{"name", child->getName()}, {"type", "scattering_atmosphere"},
+                                                {"sun", (*sun)->getName()}});
+                    }
+                    continue;
+                }
                 nlohmann::json child_json;
                 child_json["name"] = child->getName();
 
@@ -215,6 +234,18 @@ namespace Prehistoric {
                             comp_json["colour"] = colour_v;
                             comp_json["intensity"] = lightComp->getIntensity();
                             comp_json["range"] = lightComp->getRadius();
+                            comp_json["illuminate"] = lightComp->illuminates();
+                            comp_json["cast_shadows"] = lightComp->castShadows();
+                        } else if (comp->getComponentType() == ComponentType::VolumetricSphereComponent) {
+                            const auto* sphere = static_cast<const VolumetricSphereComponent*>(comp);
+                            const auto& tint = sphere->getTint();
+                            comp_json = {
+                                {"type", VolumetricSphereComponent::Name},
+                                {"radius", sphere->getRadius()},
+                                {"density", sphere->getDensity()},
+                                {"tint", {tint.x, tint.y, tint.z}},
+                                {"anisotropy", sphere->getAnisotropy()}
+                            };
                         }
 
                         if (!comp_json.is_null()) components.push_back(comp_json);
@@ -228,6 +259,7 @@ namespace Prehistoric {
 
             root_json["children"] = list_children;
             file_json["root"] = root_json;
+            file_json["world_objects"] = worldObjects;
         }
 
         std::fstream file;

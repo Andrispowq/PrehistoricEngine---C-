@@ -34,7 +34,6 @@ namespace Prehistoric
 
 		TextureHandle outputImage;
 
-		std::vector<float> shadowCascadeLevels;
 	};
 };
 

@@ -97,6 +97,14 @@ namespace Prehistoric {
         this->sceneRoot = scene->getSceneRoot();
         this->scene = scene;
 
+        if (const auto& pose = scene->getInitialCamera()) {
+            auto* camera = renderingEngine->getCamera();
+            camera->setPosition(pose->position);
+            camera->setForward(pose->forward);
+            camera->setUp(pose->up);
+            camera->Update(renderingEngine->getWindow(), 0.0f);
+        }
+
         bool found = false;
         for (auto child: root->getChildren()) {
             if (child.second == (Node *) sceneRoot) {

@@ -34,9 +34,11 @@ namespace Prehistoric
 
 		std::string getName() const { return name; }
 		GameObject* getSceneRoot() const { return sceneRoot; }
+		const std::optional<WorldCameraPose>& getInitialCamera() const { return initialCamera; }
 
 	protected:
 		std::string name = "UnnamedScene";
+		std::optional<WorldCameraPose> initialCamera;
 		
 		GameObject* sceneRoot;
 		Window* window;

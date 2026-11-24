@@ -141,7 +141,9 @@ namespace Prehistoric {
             bloomPass->Render();
         }
 
-        volumetricPostProcessingPass->Render();
+        if (!getVolumetricSpheres().empty()) {
+            volumetricPostProcessingPass->Render();
+        }
         hdrPass->Render();
     }
 

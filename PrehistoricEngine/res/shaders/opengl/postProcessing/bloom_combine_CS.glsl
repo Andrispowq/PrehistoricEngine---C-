@@ -11,7 +11,8 @@ uniform vec2 targetSize;
 void main()
 {
 	ivec2 x = ivec2(gl_GlobalInvocationID.xy);
-    vec2 texCoord = gl_GlobalInvocationID.xy / targetSize;
+    if (any(greaterThanEqual(x, ivec2(targetSize)))) return;
+    vec2 texCoord = (vec2(x) + 0.5) / targetSize;
 	
 	vec3 colour0 = texture(image0, texCoord).rgb;
     vec3 colour1 = texture(image1, texCoord).rgb;

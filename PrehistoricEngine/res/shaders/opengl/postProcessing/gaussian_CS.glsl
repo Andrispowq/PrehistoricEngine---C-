@@ -17,7 +17,8 @@ uniform float weights[KERNEL_SIZE] = float[](0.214606428562373, 0.18987923288883
 void main()
 {
 	ivec2 x = ivec2(gl_GlobalInvocationID.xy);
-    vec2 texCoord = gl_GlobalInvocationID.xy / targetSize;
+    if (any(greaterThanEqual(x, ivec2(targetSize)))) return;
+    vec2 texCoord = (vec2(x) + 0.5) / targetSize;
 
 	vec2 texelSize = 1.0 / sceneSize;
 

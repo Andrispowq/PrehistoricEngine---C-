@@ -19,8 +19,8 @@ namespace Prehistoric
 		uint32_t width = window->getWidth();
 		uint32_t height = window->getHeight();
 
-		uint32_t workGroupsX = (width + (width % 16)) / 16;
-		uint32_t workGroupsY = (height + (height % 16)) / 16;
+		uint32_t workGroupsX = (width + 15) / 16;
+		uint32_t workGroupsY = (height + 15) / 16;
 
 		uint32_t numberOfTiles = workGroupsX * workGroupsY;
 
@@ -85,8 +85,8 @@ namespace Prehistoric
 		uint32_t width = window->getWidth();
 		uint32_t height = window->getHeight();
 
-		uint32_t workGroupsX = (width + (width % 16)) / 16;
-		uint32_t workGroupsY = (height + (height % 16)) / 16;
+		uint32_t workGroupsX = (width + 15) / 16;
+		uint32_t workGroupsY = (height + 15) / 16;
 
 		uint32_t numberOfTiles = workGroupsX * workGroupsY;
 
@@ -146,8 +146,8 @@ namespace Prehistoric
 				uint32_t local_width = width / (uint32_t)pow(2, i + 1);
 				uint32_t local_height = height / (uint32_t)pow(2, i + 1);
 
-				uint32_t workGroupsX = (local_width + (local_width % 4)) / 4;
-				uint32_t workGroupsY = (local_height + (local_height % 4)) / 4;
+				uint32_t workGroupsX = (local_width + 3) / 4;
+				uint32_t workGroupsY = (local_height + 3) / 4;
 
 				Vector2f targetDim = Vector2f((float)local_width, (float)local_height);
 
@@ -186,8 +186,8 @@ namespace Prehistoric
 				uint32_t local_width = width / (uint32_t)pow(2, i + 1);
 				uint32_t local_height = height / (uint32_t)pow(2, i + 1);
 
-				uint32_t workGroupsX = (local_width + (local_width % 4)) / 4;
-				uint32_t workGroupsY = (local_height + (local_height % 4)) / 4;
+				uint32_t workGroupsX = (local_width + 3) / 4;
+				uint32_t workGroupsY = (local_height + 3) / 4;
 
 				Vector2f targetDim = Vector2f((float)local_width, (float)local_height);
 
@@ -221,7 +221,7 @@ namespace Prehistoric
 		{
 			PR_PROFILE("Combine pass");
 			static_cast<GLComputePipeline*>(bloomCombinePipeline.pointer)->removeTextureBinding(0);
-			static_cast<GLComputePipeline*>(bloomCombinePipeline.pointer)->setInvocationSize({ width / 4, height / 4, 1 });
+			static_cast<GLComputePipeline*>(bloomCombinePipeline.pointer)->setInvocationSize({ (width + 3) / 4, (height + 3) / 4, 1 });
 			static_cast<GLComputePipeline*>(bloomCombinePipeline.pointer)->addTextureBinding(0, combinedImage.pointer, (AccessMask)ComputeAccessFlags::WRITE_ONLY);
 
 			bloomCombinePipeline->BindPipeline(nullptr);

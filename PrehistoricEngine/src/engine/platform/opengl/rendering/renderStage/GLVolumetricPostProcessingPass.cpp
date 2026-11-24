@@ -14,10 +14,8 @@ namespace Prehistoric
 		uint32_t width = window->getWidth();
 		uint32_t height = window->getHeight();
 
-		uint32_t workGroupsX = (width + (width % 16)) / 16;
-		uint32_t workGroupsY = (height + (height % 16)) / 16;
-
-		uint32_t numberOfTiles = workGroupsX * workGroupsY;
+		uint32_t workGroupsX = (width + 15) / 16;
+		uint32_t workGroupsY = (height + 15) / 16;
 
 		AssetManager* man = manager->getAssetManager();
 		outputImage = man->storeTexture(GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge, false));
@@ -44,10 +42,8 @@ namespace Prehistoric
 		uint32_t width = window->getWidth();
 		uint32_t height = window->getHeight();
 
-		uint32_t workGroupsX = (width + (width % 16)) / 16;
-		uint32_t workGroupsY = (height + (height % 16)) / 16;
-
-		uint32_t numberOfTiles = workGroupsX * workGroupsY;
+		uint32_t workGroupsX = (width + 15) / 16;
+		uint32_t workGroupsY = (height + 15) / 16;
 
 		AssetManager* man = manager->getAssetManager();
 		man->removeReference<Texture>(outputImage.handle);
@@ -68,9 +64,7 @@ namespace Prehistoric
 		renderPipeline->BindPipeline(nullptr);
 		dynamic_cast<GLVolumetricPostProcessingShader*>(shader.pointer)->UpdateUniforms(
 			rend->getMainPass()->getColourImage().pointer,
-				rend->getMainPass()->getPositionMetallicImage().pointer,
-				rend->getMainPass()->getAlbedoRoughnessImage().pointer,
-				rend->getMainPass()->getNormalImage().pointer, renderer);
+			rend->getDepthPass()->getDepthTexture().pointer, renderer);
 		renderPipeline->RenderPipeline();
 		renderPipeline->UnbindPipeline();
 	}

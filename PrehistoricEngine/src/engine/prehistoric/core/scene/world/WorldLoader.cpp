@@ -3,10 +3,17 @@
 #include "WorldLoader.h"
 
 #include "prehistoric/application/Application.h"
+#include "prehistoric/core/node/component/VolumetricSphereComponent.h"
 
+#include <filesystem>
 #include <json.hpp>
 
 namespace Prehistoric {
+    static Vector3f ReadWorldVector(const nlohmann::json& value) {
+        const auto components = value.get<std::array<float, 3>>();
+        return {components[0], components[1], components[2]};
+    }
+
     void WorldLoader::LoadWorld(const std::string &worldFile, GameObject *root) {
         PR_PROFILE("Loading world from .wrld file");
 
@@ -454,6 +461,11 @@ namespace Prehistoric {
 
             nlohmann::json file_json = nlohmann::json::parse(contents);
             sceneName = file_json["name"];
+            if (const auto pose = file_json.find("initial_camera"); pose != file_json.end()) {
+                initialCamera = WorldCameraPose{ReadWorldVector(pose->at("position")),
+                                                ReadWorldVector(pose->at("forward")),
+                                                ReadWorldVector(pose->at("up"))};
+            }
 
             {
                 nlohmann::json directories = file_json["directories"];
@@ -476,10 +488,13 @@ namespace Prehistoric {
                         frontFace = FrontFace::COUNTER_CLOCKWISE;
                     }
 
-                    // In case we already loaded this, don't add it to the queue
+                    const std::string reference = JoinAssetReference(directoryModels, directory);
+                    // OBJ material parsing loads textures immediately. Keep these uploads on the render thread.
+                    const bool synchronous = std::filesystem::path(reference).extension() != ".pmf";
                     std::optional<VertexBufferHandle> handle = man->loadVertexBuffer(
-                        std::nullopt, JoinAssetReference(directoryModels, directory), BatchSettings::QueuedLoad);
+                        std::nullopt, reference, synchronous ? BatchSettings::Load : BatchSettings::QueuedLoad);
                     if (handle.has_value()) {
+                        handle.value()->setFrontFace(frontFace);
                         models.insert(std::make_pair(name, handle.value()));
                     } else {
                         meshNames.push_back(name);
@@ -657,9 +672,19 @@ namespace Prehistoric {
                             float intensity = component["intensity"];
                             float range = component["range"];
 
-                            Light *light = new Light(Vector3f(colour[0], colour[1], colour[2]), intensity, range, true,
-                                                     false);
+                            Light *light = new Light(Vector3f(colour[0], colour[1], colour[2]), intensity, range,
+                                                     component.value("illuminate", true),
+                                                     component.value("cast_shadows", false));
                             object->AddComponent(LIGHT_COMPONENT, light);
+                        } else if (type == VolumetricSphereComponent::Name) {
+                            auto* sphere = new VolumetricSphereComponent();
+                            sphere->setRadius(component.value("radius", sphere->getRadius()));
+                            sphere->setDensity(component.value("density", sphere->getDensity()));
+                            sphere->setAnisotropy(component.value("anisotropy", sphere->getAnisotropy()));
+                            if (const auto tint = component.find("tint"); tint != component.end()) {
+                                sphere->setTint(ReadWorldVector(*tint));
+                            }
+                            object->AddComponent(VolumetricSphereComponent::Name, sphere);
                         }
                     }
 

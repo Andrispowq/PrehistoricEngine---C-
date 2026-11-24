@@ -1,160 +1,163 @@
 #version 430
 
 layout(local_size_x = 16, local_size_y = 16) in;
-
 layout(binding = 0, rgba32f) uniform writeonly image2D outColour;
 
+const int MaxSpheres = 8;
+const int StepsPerInterval = 24;
+const float Pi = 3.141592653589793;
+
 uniform sampler2D scene;
-uniform sampler2D positionMetallicImage;
-uniform sampler2D albedoRoughnessImage;
-uniform sampler2D normalImage;
+uniform sampler2D sceneDepth;
 uniform sampler2DArray shadowMap;
-
-uniform vec2 resolution;
-
 uniform vec3 cameraPosition;
-
-uniform vec3 sunPosition;
-uniform vec3 sunColour;
-uniform int sunIndex;
+uniform mat4 inverseViewProjection;
+uniform mat4 m_view;
+uniform vec3 sunDirection;
+uniform vec3 sunRadiance;
+uniform int sphereCount;
+uniform vec4 sphereBounds[MaxSpheres];
+uniform vec4 sphereMedia[MaxSpheres];
+uniform float sphereAnisotropy[MaxSpheres];
 
 uniform int cascadeCount;
 uniform float cascadePlaneDistances[16];
 uniform float farPlane;
-
-uniform mat4 m_view;
 layout(std140, binding = 0) uniform LightSpaceMatrices
 {
     mat4 m_LightSpace[16];
 };
 
-const float PI = 3.141592653589793;
-
-float getShadow(vec3 fragPosWorldSpace, vec3 lightDir, vec3 normal)
+float sunVisibility(vec3 position)
 {
-	// select cascade layer
-	vec4 fragPosViewSpace = m_view * vec4(fragPosWorldSpace, 1.0);
-	float depthValue = abs(fragPosViewSpace.z);
+    float viewDepth = -(m_view * vec4(position, 1.0)).z;
+    int layer = 0;
+    while (layer < cascadeCount && viewDepth >= cascadePlaneDistances[layer])
+        ++layer;
 
-	int layer = -1;
-	for (int i = 0; i < cascadeCount; ++i)
-	{
-		if (depthValue < cascadePlaneDistances[i])
-		{
-			layer = i;
-			break;
-		}
-	}
-	if (layer == -1)
-	{
-		layer = cascadeCount;
-	}
+    vec4 lightPosition = m_LightSpace[layer] * vec4(position, 1.0);
+    vec3 shadowCoord = lightPosition.xyz / lightPosition.w * 0.5 + 0.5;
+    if (any(lessThan(shadowCoord, vec3(0.0))) || any(greaterThan(shadowCoord, vec3(1.0))))
+        return 1.0;
 
-	vec4 fragPosLightSpace = m_LightSpace[layer] * vec4(fragPosWorldSpace, 1.0);
-
-	// perform perspective divide
-	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-	// transform to [0,1] range
-	projCoords = projCoords * 0.5 + 0.5;
-
-	// get depth of current fragment from light's perspective
-	float currentDepth = projCoords.z;
-	if (currentDepth > 1.0)
-	{
-		//return 0.0;
-	}
-
-	// calculate bias (based on depth map resolution and slope)
-	float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
-	if (layer == cascadeCount)
-	{
-		bias *= 1 / (farPlane * 0.5f);
-	}
-	else
-	{
-		bias *= 1 / (cascadePlaneDistances[layer] * 0.5f);
-	}
-
-	// PCF
-	float pcfDepth = texture(shadowMap, vec3(projCoords.xy, layer)).r;
-	float shadow = ((currentDepth - bias) > pcfDepth) ? 1.0 : 0.0;
-
-	// keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
-	if (projCoords.z > 1.0)
-	{
-		//shadow = 0.0;
-	}
-
-	return shadow;
+    float cascadeFar = layer < cascadeCount ? cascadePlaneDistances[layer] : farPlane;
+    float bias = 0.01 / max(cascadeFar, 1.0);
+    ivec2 size = textureSize(shadowMap, 0).xy;
+    vec2 texel = shadowCoord.xy * vec2(size) - 0.5;
+    ivec2 base = ivec2(floor(texel));
+    vec2 fraction = fract(texel);
+    float visibility = 0.0;
+    for (int y = 0; y < 2; ++y)
+    {
+        for (int x = 0; x < 2; ++x)
+        {
+            ivec2 samplePixel = clamp(base + ivec2(x, y), ivec2(0), size - 1);
+            float storedDepth = texelFetch(shadowMap, ivec3(samplePixel, layer), 0).r;
+            vec2 weight = mix(1.0 - fraction, fraction, vec2(x, y));
+            if (shadowCoord.z - bias <= storedDepth)
+                visibility += weight.x * weight.y;
+        }
+    }
+    return visibility;
 }
 
-const float G_SCATTERING = 0.8;
-const int NB_STEPS = 50;
-
-vec3 RayleighScattering(float distance, float lightDotView, float intensity, float wavelength/*vec3 colour*/, float ior)
+float phaseFunction(float cosine, float g)
 {
-	vec3 result = vec3(intensity);
-	result *= ((1 + pow(lightDotView, 2)) / (2 * distance));
-	result *= pow(((2 * PI) / wavelength), 4);//colour;
-	result *= pow(((ior * ior - 1) / (ior * ior + 2)), 2);
-	return result;
+    g = clamp(g, -0.95, 0.95);
+    return (1.0 - g * g) / (4.0 * Pi * pow(1.0 + g * g - 2.0 * g * cosine, 1.5));
 }
 
-float MieScattering(float lightDotView)
+vec2 intersectSphere(vec3 origin, vec3 direction, vec4 sphere, float surfaceDistance)
 {
-	float result = 1.0f - G_SCATTERING * G_SCATTERING;
-	result /= (4.0f * PI * pow(1.0f + G_SCATTERING * G_SCATTERING - (2.0f * G_SCATTERING) * lightDotView, 1.5f));
-	return result;
+    vec3 toCenter = sphere.xyz - origin;
+    float centerDistance = dot(toCenter, direction);
+    vec3 perpendicular = toCenter - direction * centerDistance;
+    float discriminant = sphere.w * sphere.w - dot(perpendicular, perpendicular);
+    if (discriminant <= 0.0) return vec2(0.0);
+
+    float halfChord = sqrt(discriminant);
+    return clamp(vec2(centerDistance - halfChord, centerDistance + halfChord), 0.0, surfaceDistance);
 }
 
-vec3 ComputeScattering(float lightDotView, float distance)
+vec3 compositeVolumes(vec3 background, vec3 origin, vec3 direction, float surfaceDistance)
 {
-	float mie = MieScattering(lightDotView);
-	vec3 rayleigh = RayleighScattering(distance, lightDotView, 1000.0, 700/*vec3(0.9, 0.6, 0.3)*/, 1.1);
+    vec2 intervals[MaxSpheres];
+    vec3 scatter[MaxSpheres];
+    float cosine = clamp(dot(direction, sunDirection), -1.0, 1.0);
+    for (int i = 0; i < sphereCount; ++i)
+    {
+        intervals[i] = intersectSphere(origin, direction, sphereBounds[i], surfaceDistance);
+        scatter[i] = clamp(sphereMedia[i].rgb, 0.0, 1.0) * phaseFunction(cosine, sphereAnisotropy[i]);
+    }
 
-	return vec3(mie) + rayleigh;
+    float transmittance = 1.0;
+    vec3 radiance = vec3(0.0);
+    float start = 0.0;
+    // Split at sphere boundaries so small or disjoint volumes still receive samples.
+    for (int segment = 0; segment < 2 * sphereCount && start < surfaceDistance; ++segment)
+    {
+        float end = surfaceDistance;
+        int activeMask = 0;
+        for (int i = 0; i < sphereCount; ++i)
+        {
+            vec2 interval = intervals[i];
+            if (interval.x >= interval.y) continue;
+            if (interval.x > start)
+                end = min(end, interval.x);
+            else if (interval.y > start)
+            {
+                end = min(end, interval.y);
+                activeMask |= 1 << i;
+            }
+        }
+
+        if (activeMask != 0)
+        {
+            float stepLength = (end - start) / float(StepsPerInterval);
+            for (int step = 0; step < StepsPerInterval; ++step)
+            {
+                vec3 position = origin + direction * (start + (float(step) + 0.5) * stepLength);
+                float extinction = 0.0;
+                vec3 scattering = vec3(0.0);
+                for (int i = 0; i < sphereCount; ++i)
+                {
+                    if ((activeMask & (1 << i)) == 0) continue;
+                    float radialDistance = length(position - sphereBounds[i].xyz) / sphereBounds[i].w;
+                    float density = sphereMedia[i].w * (1.0 - smoothstep(0.0, 1.0, radialDistance));
+                    extinction += density;
+                    scattering += density * scatter[i];
+                }
+
+                if (extinction <= 0.0) continue;
+                float segmentTransmittance = exp(-extinction * stepLength);
+                if (any(greaterThan(sunRadiance, vec3(0.0))))
+                    radiance += transmittance * (1.0 - segmentTransmittance) *
+                        (scattering / extinction) * sunRadiance * sunVisibility(position);
+                transmittance *= segmentTransmittance;
+            }
+        }
+        start = end;
+    }
+    return background * transmittance + radiance;
 }
 
-vec3 getFog(vec3 worldPosition, vec3 lightDir, vec3 lightColour, vec3 normal)
+vec3 unproject(vec2 ndc, float depth)
 {
-	vec3 startPosition = worldPosition;
-	vec3 endPosition = cameraPosition;
-
-	vec3 rayVector = endPosition - startPosition;
-	float rayLength = length(rayVector);
-	float steps = float(NB_STEPS);
-	vec3 rayDirection = rayVector / rayLength;
-	float stepLength = rayLength / steps;
-	vec3 step = rayDirection * stepLength;
-
-	vec3 currentPosition = startPosition;
-	vec3 accumFog = vec3(0.0);
-	for (int i = 0; i < NB_STEPS; i++)
-	{
-		float shadow = getShadow(currentPosition, lightDir, normal);
-		if (shadow == 0.0)
-		{
-			accumFog += ComputeScattering(dot(rayDirection, lightDir), length(sunPosition - currentPosition)) * /*stepLength */ lightColour;
-		}
-
-		currentPosition += step;
-	}
-
-	return accumFog;
+    vec4 world = inverseViewProjection * vec4(ndc, depth * 2.0 - 1.0, 1.0);
+    return world.xyz / world.w;
 }
-
 
 void main()
 {
-    ivec2 x = ivec2(gl_GlobalInvocationID.xy);
-    vec2 texCoord = gl_GlobalInvocationID.xy / resolution;
+    ivec2 pixel = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 size = imageSize(outColour);
+    if (any(greaterThanEqual(pixel, size))) return;
 
-    vec3 sceneColour = texture(scene, texCoord).rgb;
-    vec4 positionMetallic = texture(positionMetallicImage, texCoord);
-    vec4 albedoRoughness = texture(albedoRoughnessImage, texCoord);
-    vec3 normal = texture(normalImage, texCoord).rgb;
-
-	vec3 accumFog = getFog(positionMetallic.rgb, -normalize(sunPosition), vec3(0.9, 0.6, 0.3), normal);
-	vec3 total = sceneColour;//mix(sceneColour, accumFog, 0.8);// + accumFog;
-    imageStore(outColour, x, vec4(total, 1.0));
+    vec2 ndc = (vec2(pixel) + 0.5) / vec2(size) * 2.0 - 1.0;
+    float depth = texelFetch(sceneDepth, pixel, 0).r;
+    vec3 origin = unproject(ndc, 0.0);
+    vec3 direction = normalize(origin - cameraPosition);
+    float surfaceDistance = max(0.0, dot(unproject(ndc, depth) - origin, direction));
+    vec3 background = texelFetch(scene, pixel, 0).rgb;
+    imageStore(outColour, pixel, vec4(compositeVolumes(background, origin, direction, surfaceDistance), 1.0));
 }

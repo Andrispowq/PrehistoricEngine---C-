@@ -3,12 +3,22 @@
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 #include "platform/opengl/rendering/GLRenderer.h"
 
+#include <cstdlib>
+
 PrehistoricApp::PrehistoricApp()
     : scene{nullptr} {
     using namespace Prehistoric;
 
     GameObject *audioRoot = new GameObject();
     engineLayer->getRootObject()->AddChild("audioRoot", audioRoot);
+
+    if (const char* worldFile = std::getenv("PREHISTORIC_WORLD"); worldFile && *worldFile) {
+        auto* rendering = engineLayer->getRenderingEngine();
+        scene = std::make_unique<Scene>(worldFile, rendering->getWindow(), rendering->getCamera(),
+                                        engineLayer->getAssetManager());
+        engineLayer->SetScene(scene.get());
+        return;
+    }
 
     /*GameObject* startupMusic = new GameObject();
 	startupMusic->AddComponent(AUDIO_COMPONENT, new AudioComponent("sample://sounds/_Closer.wav", 75.0f, true, true));

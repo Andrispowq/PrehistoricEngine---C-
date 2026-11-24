@@ -24,6 +24,13 @@
 
 namespace Prehistoric
 {
+	struct WorldCameraPose
+	{
+		Vector3f position;
+		Vector3f forward;
+		Vector3f up;
+	};
+
 	class WorldLoader
 	{
 	public:
@@ -36,6 +43,7 @@ namespace Prehistoric
 
 	public:
 		std::string sceneName;
+		std::optional<WorldCameraPose> initialCamera;
 
 		std::string directoryModels;
 		std::string directoryTextures;

@@ -375,6 +375,26 @@ and add the levels together. The presentation pass combines bloom with scene col
 The renderer owns the passes and baked maps for its backend. Outstanding rendering
 repairs are listed in the [rendering backlog](docs/RENDERING_BACKLOG.md).
 
+## OpenGL volumetric lighting test
+
+Open [the Sponza world](Prehistoric/res/world/sponza_volumetric.json) in the
+editor using File → Open. To launch the sample directly, set
+`PREHISTORIC_WORLD=res/world/sponza_volumetric.json` and run it from
+`Prehistoric/`. Select OpenGL 4.5 in the application's settings to preview
+the haze. Both backends can edit and save the objects.
+
+Right-click empty space in the Scene Hierarchy and choose **Create Volumetric
+Sphere**, or add **Volumetric Sphere** to an existing object's components.
+The object's position is the center. Edit radius, density, tint, and anisotropy
+in Properties, then use File → Save As to write them to the world JSON. Radius
+is in world units and is independent of the object's scale. Density is the
+center extinction per world unit. Set it to zero for a clear-air comparison.
+Positive anisotropy favors looking toward the light.
+
+OpenGL renders up to eight spheres with positive radius and density. The
+first shadow-casting light supplies directional lighting. Density fades
+smoothly to zero at the edge, and opaque surfaces clip the haze.
+
 ## Vulkan procedural sky
 
 A JSON world with a `scattering_atmosphere` object and scattering enabled draws
