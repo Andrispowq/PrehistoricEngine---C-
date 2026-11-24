@@ -22,63 +22,75 @@
 
 #include "platform/opengl/rendering/renderStage/GLRayTracingPass.h"
 
-namespace Prehistoric
-{
-	class Water;
-	class EnvironmentMapRenderer;
+namespace Prehistoric {
+    class Water;
+    class EnvironmentMapRenderer;
 
-	class GLRenderer : public Renderer
-	{
-	public:
-		GLRenderer(Window* window, Camera* camera, AssembledAssetManager* manager);
-		virtual ~GLRenderer();
+    class GLRenderer : public Renderer {
+    public:
+        GLRenderer(Window *window, Camera *camera, AssembledAssetManager *manager);
 
-		virtual void PrepareRendering();
-		virtual void EndRendering();
+        virtual ~GLRenderer();
 
-		EnvironmentMapRenderer& getEnvironmentLighting() const { return *environmentLighting; }
-		void DrawBackground(Camera* camera);
+        virtual void PrepareRendering();
 
-		virtual Texture* getOutputTexture() const override { return hdrPass->getOutputImage().pointer; }
+        virtual void EndRendering();
 
-        void RegisterWater(Water* water) { waters.push_back(water); }
-        void DrawModelBatches(const ModelBatches& batches);
-		GLAtmospherePass& getAtmospherePass() { return atmospherePass; }
-		GLDepthPass* getDepthPass() const { return depthPass.get(); }
-		GLShadowDepthPass* getShadowDepthPass() const { return shadowDepthPass.get(); }
-		GLLightCullingPass* getLightCullingPass() const { return lightCullingPass.get(); }
-		GLMainPass* getMainPass() const { return mainPass.get(); }
-		GLBloomPass* getBloomPass() const { return bloomPass.get(); }
-		GLVolumetricPostProcessingPass* getVolumetricPostProcessingPass() const { return volumetricPostProcessingPass.get(); }
-		GLHDRPass* getHDRPass() const { return hdrPass.get(); }
-		GLVoxelRendererPass* getVoxelPass() const { return voxelPass.get(); }
+        EnvironmentMapRenderer &getEnvironmentLighting() const { return *environmentLighting; }
 
-		GLRayTracingPass* getRayTracingPass() const { return rtxPass.get(); }
+        void RequestEnvironmentBake(bool usePanorama) override;
 
-	private:
-		void UpdateEnvironmentLighting() override;
-		void RenderScene() override;
-		void RenderHDR() override;
-		void FinishFrame() override;
+        void DrawBackground(Camera *camera);
 
-		std::vector<Water*> waters;
-		GLAtmospherePass atmospherePass;
-		std::unique_ptr<EnvironmentMapRenderer> environmentLighting;
-		std::unique_ptr<GLDepthPass> depthPass;
-		std::unique_ptr<GLShadowDepthPass> shadowDepthPass;
-		std::unique_ptr<GLLightCullingPass> lightCullingPass;
-		std::unique_ptr<GLMainPass> mainPass;
-		std::unique_ptr<GLBloomPass> bloomPass;
-		std::unique_ptr<GLVolumetricPostProcessingPass> volumetricPostProcessingPass;
-		std::unique_ptr<GLHDRPass> hdrPass;
-		std::unique_ptr<GLVoxelRendererPass> voxelPass;
+        virtual Texture *getOutputTexture() const override { return hdrPass->getOutputImage().pointer; }
 
-		std::unique_ptr<GLRayTracingPass> rtxPass;
+        void RegisterWater(Water *water) { waters.push_back(water); }
 
-		VertexBufferHandle quad;
-		ShaderHandle renderShader;
-		PipelineHandle renderPipeline;
-	};
+        void DrawModelBatches(const ModelBatches &batches);
+
+        GLAtmospherePass &getAtmospherePass() { return atmospherePass; }
+        GLDepthPass *getDepthPass() const { return depthPass.get(); }
+        GLShadowDepthPass *getShadowDepthPass() const { return shadowDepthPass.get(); }
+        GLLightCullingPass *getLightCullingPass() const { return lightCullingPass.get(); }
+        GLMainPass *getMainPass() const { return mainPass.get(); }
+        GLBloomPass *getBloomPass() const { return bloomPass.get(); }
+
+        GLVolumetricPostProcessingPass *getVolumetricPostProcessingPass() const {
+            return volumetricPostProcessingPass.get();
+        }
+
+        GLHDRPass *getHDRPass() const { return hdrPass.get(); }
+        GLVoxelRendererPass *getVoxelPass() const { return voxelPass.get(); }
+
+        GLRayTracingPass *getRayTracingPass() const { return rtxPass.get(); }
+
+    private:
+        void UpdateEnvironmentLighting() override;
+
+        void RenderScene() override;
+
+        void RenderHDR() override;
+
+        void FinishFrame() override;
+
+        std::vector<Water *> waters;
+        GLAtmospherePass atmospherePass;
+        std::unique_ptr<EnvironmentMapRenderer> environmentLighting;
+        std::unique_ptr<GLDepthPass> depthPass;
+        std::unique_ptr<GLShadowDepthPass> shadowDepthPass;
+        std::unique_ptr<GLLightCullingPass> lightCullingPass;
+        std::unique_ptr<GLMainPass> mainPass;
+        std::unique_ptr<GLBloomPass> bloomPass;
+        std::unique_ptr<GLVolumetricPostProcessingPass> volumetricPostProcessingPass;
+        std::unique_ptr<GLHDRPass> hdrPass;
+        std::unique_ptr<GLVoxelRendererPass> voxelPass;
+
+        std::unique_ptr<GLRayTracingPass> rtxPass;
+
+        VertexBufferHandle quad;
+        ShaderHandle renderShader;
+        PipelineHandle renderPipeline;
+    };
 };
 
 #endif

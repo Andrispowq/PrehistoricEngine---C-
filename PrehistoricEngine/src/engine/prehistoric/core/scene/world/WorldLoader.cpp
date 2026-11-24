@@ -459,7 +459,7 @@ namespace Prehistoric {
                 nlohmann::json directories = file_json["directories"];
                 directoryModels = directories["models"];
                 directoryTextures = directories["textures"];
-                directoryConfigs = directories["configs"];
+                directoryConfigs = directories.value("configs", std::string{});
             }
 
             {
@@ -612,7 +612,12 @@ namespace Prehistoric {
 
                         if (type == "Renderer") {
                             std::string modelName = component["model"];
-                            std::string shaderName = component["shader"];
+                            // Older Vulkan editor saves omitted the PBR shader name.
+                            std::string shaderName = component.value("shader", std::string("pbr"));
+                            if (shaderName != "pbr") {
+                                PR_LOG_ERROR("Unsupported world renderer shader '%s'.\n", shaderName.c_str());
+                                continue;
+                            }
                             std::string materialName = component["material"];
 
                             VertexBufferHandle vbo = models.at(modelName);
@@ -625,12 +630,7 @@ namespace Prehistoric {
                             if (shaderIndex != shaders.end()) {
                                 shader = shaderIndex->second;
                             } else {
-                                ShaderName name;
-                                if (shaderName == "pbr") {
-                                    name = ShaderName::PBR;
-                                }
-
-                                shader = manager->getAssetManager()->loadShader(name).value();
+                                shader = man->loadShader(ShaderName::PBR).value();
                                 shaders.insert(std::make_pair(shaderName, shader));
                             }
 
@@ -667,42 +667,36 @@ namespace Prehistoric {
                 }
             }
 
-            for (const auto& world_object : file_json["world_objects"])
-            {
+            for (const auto &world_object: file_json["world_objects"]) {
                 std::string name = world_object["name"];
                 std::string type = world_object["type"];
 
-                if (type == "scattering_atmosphere" && (__FrameworkConfig.api == OpenGL || __AtmosphereConfig.scatteringEnabled))
-                {
-                    GameObject* sun = nullptr;
+                if (type == "scattering_atmosphere" && (
+                        __FrameworkConfig.api == OpenGL || __AtmosphereConfig.scatteringEnabled)) {
+                    GameObject *sun = nullptr;
 
                     std::string sun_name = world_object["sun"];
-                    if (sun_name.empty())
-                    {
+                    if (sun_name.empty()) {
                         auto orbitingSun = Atmosphere::CreateSun();
                         sun = orbitingSun.get();
                         root->AddChild("sun", orbitingSun.release());
-                    }
-                    else
-                    {
-                        sun = dynamic_cast<GameObject*>(root->getChild(sun_name));
-                        if (!sun || !sun->GetComponent<Light>())
-                        {
-                            PR_LOG_ERROR("Atmosphere sun '%s' must name a light in the scene root.\n", sun_name.c_str());
+                    } else {
+                        sun = dynamic_cast<GameObject *>(root->getChild(sun_name));
+                        if (!sun || !sun->GetComponent<Light>()) {
+                            PR_LOG_ERROR("Atmosphere sun '%s' must name a light in the scene root.\n",
+                                         sun_name.c_str());
                             continue;
                         }
                     }
 
-                    Atmosphere* atmosphere = new Atmosphere();
+                    Atmosphere *atmosphere = new Atmosphere();
                     atmosphere->setSun(sun->GetComponent<Light>());
                     root->AddChild(name, atmosphere);
-                }
-                else if (type == "terrain")
-                {
+                } else if (type == "terrain") {
                     std::string config = world_object["config"];
 
-                    Camera* camera = Application::Get().getEngineLayer()->getRenderingEngine()->getCamera();
-                    Terrain* terrain = new Terrain(window, camera, manager, directoryConfigs + config);
+                    Camera *camera = Application::Get().getEngineLayer()->getRenderingEngine()->getCamera();
+                    Terrain *terrain = new Terrain(window, camera, manager, directoryConfigs + config);
                     terrain->UpdateQuadtree();
                     root->AddChild(name, terrain);
                 }

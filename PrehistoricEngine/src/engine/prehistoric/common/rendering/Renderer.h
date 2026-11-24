@@ -6,81 +6,92 @@
 
 #include "prehistoric/common/rendering/pipeline/Pipeline.h"
 
-namespace Prehistoric
-{
-	class RenderableComponent;
-	class AssembledAssetManager;
-	class Light;
-	class Atmosphere;
+namespace Prehistoric {
+    class RenderableComponent;
+    class AssembledAssetManager;
+    class Light;
+    class Atmosphere;
 
-	//The light structure used in the internal Forward+ renderer calculations
-	struct InternalLight
-	{
-		Vector4f position;
-		Vector4f colour;
-		Vector4f intensity_radius;
-	};
+    //The light structure used in the internal Forward+ renderer calculations
+    struct InternalLight {
+        Vector4f position;
+        Vector4f colour;
+        Vector4f intensity_radius;
+    };
 
-	struct VisibleIndex
-	{
-		int index;
-	};
+    struct VisibleIndex {
+        int index;
+    };
 
-	using ModelBatches = std::unordered_map<Pipeline*, std::unordered_map<Material*, std::vector<RenderableComponent*>>>;
+    using ModelBatches = std::unordered_map<Pipeline *, std::unordered_map<Material *, std::vector<RenderableComponent
+        *> > >;
 
-	class Renderer
-	{
-	public:
-		Renderer(Window* window, Camera* camera, AssembledAssetManager* manager);
-		virtual ~Renderer() {}
+    class Renderer {
+    public:
+        Renderer(Window *window, Camera *camera, AssembledAssetManager *manager);
 
-		virtual void PrepareRendering() = 0;
-		virtual void EndRendering() = 0;
+        virtual ~Renderer() {
+        }
 
-		void Render();
-		void ToggleBloom() { bloomEnabled = !bloomEnabled; }
+        virtual void PrepareRendering() = 0;
 
-		virtual CommandBuffer* getDrawCommandBuffer() const { return nullptr; }
+        virtual void EndRendering() = 0;
 
-		virtual Texture* getOutputTexture() const { return nullptr; }
+        virtual bool CanRenderFrame() const { return true; }
 
-		void RegisterModel(RenderableComponent* renderable);
-		void RegisterLight(Light* light);
-		void RegisterAtmosphere(const Atmosphere& sky) { atmosphere = &sky; }
-		const Atmosphere* getAtmosphere() const { return atmosphere; }
-		void UnregisterModel(RenderableComponent* renderable);
-		void UnregisterLight(Light* light);
+        virtual void RequestEnvironmentBake(bool usePanorama) = 0;
 
-		Window* getWindow() const { return window; }
-		Camera* getCamera() const { return camera; }
+        float environmentPreviewLod = 0.0f;
 
-		AssembledAssetManager* getAssetManager() const { return manager; }
+        void Render();
 
-		void setCamera(Camera* camera) { this->camera = camera; }
+        void ToggleBloom() { bloomEnabled = !bloomEnabled; }
 
-		inline const std::vector<Light*>& getLights() const { return lights; }
+        virtual CommandBuffer *getDrawCommandBuffer() const { return nullptr; }
 
-		inline bool isWireframeMode() const { return wireframeMode; }
-		inline bool isShadowMode() const { return renderingShadow; }
-		inline void setWireframeMode(bool wire) { this->wireframeMode = wire; }
+        virtual Texture *getOutputTexture() const { return nullptr; }
 
-		const ModelBatches& getModels3D() const{ return models_3d; }
-		const ModelBatches& getModelsTransparency() const{ return models_transparency; }
-		const std::unordered_map<Pipeline*, std::vector<RenderableComponent*>>& getModels2D() const{ return models_2d; }
+        void RegisterModel(RenderableComponent *renderable);
 
-		const ModelBatches& getModelsWater() const { return models_water; }
+        void RegisterLight(Light *light);
+
+        void RegisterAtmosphere(const Atmosphere &sky) { atmosphere = &sky; }
+        const Atmosphere *getAtmosphere() const { return atmosphere; }
+
+        void UnregisterModel(RenderableComponent *renderable);
+
+        void UnregisterLight(Light *light);
+
+        Window *getWindow() const { return window; }
+        Camera *getCamera() const { return camera; }
+
+        AssembledAssetManager *getAssetManager() const { return manager; }
+
+        void setCamera(Camera *camera) { this->camera = camera; }
+
+        inline const std::vector<Light *> &getLights() const { return lights; }
+
+        inline bool isWireframeMode() const { return wireframeMode; }
+        inline bool isShadowMode() const { return renderingShadow; }
+        inline void setWireframeMode(bool wire) { this->wireframeMode = wire; }
+
+        const ModelBatches &getModels3D() const { return models_3d; }
+        const ModelBatches &getModelsTransparency() const { return models_transparency; }
+
+        const std::unordered_map<Pipeline *, std::vector<RenderableComponent *> > &getModels2D() const {
+            return models_2d;
+        }
+
+        const ModelBatches &getModelsWater() const { return models_water; }
 
         template<typename Begin, typename MaterialBatch, typename Object, typename End>
-        static void VisitBatches(const ModelBatches& batches, Begin begin, MaterialBatch materialBatch, Object object, End end)
-        {
-            for (const auto& [pipeline, materials] : batches)
-            {
+        static void VisitBatches(const ModelBatches &batches, Begin begin, MaterialBatch materialBatch, Object object,
+                                 End end) {
+            for (const auto &[pipeline, materials]: batches) {
                 begin(pipeline);
-                for (const auto& [material, renderables] : materials)
-                {
+                for (const auto &[material, renderables]: materials) {
                     materialBatch(pipeline, material);
-                    for (RenderableComponent* renderable : renderables)
-                    {
+                    for (RenderableComponent *renderable: renderables) {
                         object(pipeline, renderable);
                     }
                 }
@@ -88,35 +99,39 @@ namespace Prehistoric
             }
         }
 
-	protected:
-		virtual bool CanRenderFrame() const { return true; }
-		virtual void UpdateEnvironmentLighting() = 0;
-		virtual void RenderScene() = 0;
-		virtual void RenderHDR() = 0;
-		virtual void FinishFrame() = 0;
-		bool bloomEnabled = true;
+    protected:
+        virtual void UpdateEnvironmentLighting() = 0;
 
-		void ClearFrameSubmissions();
-		void ResizePipelines(uint32_t width, uint32_t height);
+        virtual void RenderScene() = 0;
 
-		AssembledAssetManager* manager;
+        virtual void RenderHDR() = 0;
 
-		Window* window;
-		Camera* camera;
+        virtual void FinishFrame() = 0;
 
-		//The rendering context
-		ModelBatches models_3d;
-		ModelBatches models_transparency;
-		std::unordered_map<Pipeline*, std::vector<RenderableComponent*>> models_2d;
+        bool bloomEnabled = true;
 
-		ModelBatches models_water;
+        void ClearFrameSubmissions();
 
-		std::vector<Light*> lights;
-		const Atmosphere* atmosphere = nullptr;
+        void ResizePipelines(uint32_t width, uint32_t height);
 
-		bool wireframeMode;
-		bool renderingShadow = false;
-	};
+        AssembledAssetManager *manager;
+
+        Window *window;
+        Camera *camera;
+
+        //The rendering context
+        ModelBatches models_3d;
+        ModelBatches models_transparency;
+        std::unordered_map<Pipeline *, std::vector<RenderableComponent *> > models_2d;
+
+        ModelBatches models_water;
+
+        std::vector<Light *> lights;
+        const Atmosphere *atmosphere = nullptr;
+
+        bool wireframeMode;
+        bool renderingShadow = false;
+    };
 };
 
 #endif

@@ -16,7 +16,8 @@
 //#include "platform/vulkan/rendering/pipeline/VKComputePipeline.h"
 
 namespace Prehistoric {
-    EnvironmentMapRenderer::EnvironmentMapRenderer(Window* window, AssembledAssetManager* manager, GLAtmospherePass& atmospherePass)
+    EnvironmentMapRenderer::EnvironmentMapRenderer(Window *window, AssembledAssetManager *manager,
+                                                   GLAtmospherePass &atmospherePass)
         : atmospherePass(atmospherePass), window(window), manager(manager) {
         mapCache = "";
 
@@ -72,7 +73,6 @@ namespace Prehistoric {
         brdfIntegratePipeline->UnbindPipeline();
 
         brdfMap->Bind();
-
     }
 
     EnvironmentMapRenderer::~EnvironmentMapRenderer() {
@@ -94,37 +94,34 @@ namespace Prehistoric {
         manager->removeReference<Pipeline>(backgroundPipeline.handle);
     }
 
-    void EnvironmentMapRenderer::RequestBake(bool usePanorama)
-    {
+    void EnvironmentMapRenderer::RequestBake(bool usePanorama) {
         panoramaOverride = usePanorama;
         requested = true;
     }
 
-    void EnvironmentMapRenderer::UpdateEnvironment(const Atmosphere* atmosphere)
-    {
-        auto source = EnvironmentCaptureSource::FromScene(panoramaOverride ? nullptr : atmosphere, __EngineConfig.rendererExposure);
+    void EnvironmentMapRenderer::UpdateEnvironment(const Atmosphere *atmosphere) {
+        auto source = EnvironmentCaptureSource::FromScene(panoramaOverride ? nullptr : atmosphere,
+                                                          __EngineConfig.rendererExposure);
         if (!requested && !capture.NeedsBake(source, __EnvironmentMapConfig.atmosphereRefreshSeconds)) return;
         GenerateEnvironmentMap(source);
         capture.Complete(source);
         requested = false;
     }
 
-    void EnvironmentMapRenderer::GenerateEnvironmentMap(const EnvironmentCaptureSource& source)
-    {
-        AssetManager* man = manager->getAssetManager();
-        const Atmosphere* atmosphere = source.atmosphere;
+    void EnvironmentMapRenderer::GenerateEnvironmentMap(const EnvironmentCaptureSource &source) {
+        AssetManager *man = manager->getAssetManager();
+        const Atmosphere *atmosphere = source.atmosphere;
         TextureHandle previousEnvironment = environmentMap;
         TextureHandle previousIrradiance = irradianceMap;
         TextureHandle previousPrefilter = prefilterMap;
-       
-        auto* conversion = static_cast<GLComputePipeline*>(environmentMapPipeline.pointer);
+
+        auto *conversion = static_cast<GLComputePipeline *>(environmentMapPipeline.pointer);
         conversion->ResetBindings();
-        static_cast<GLComputePipeline*>(irradiancePipeline.pointer)->ResetBindings();
-        static_cast<GLComputePipeline*>(prefilterPipeline.pointer)->ResetBindings();
-        if (!atmosphere && (!equirectangularMap.pointer || mapCache != source.panorama))
-        {
+        static_cast<GLComputePipeline *>(irradiancePipeline.pointer)->ResetBindings();
+        static_cast<GLComputePipeline *>(prefilterPipeline.pointer)->ResetBindings();
+        if (!atmosphere && (!equirectangularMap.pointer || mapCache != source.panorama)) {
             auto next = man->loadTexture(source.panorama.empty() ? "engine://textures/default.png" : source.panorama,
-                Bilinear, ClampToEdge).value();
+                                         Bilinear, ClampToEdge).value();
             man->addReference<Texture>(next.handle);
             if (equirectangularMap.pointer) man->removeReference<Texture>(equirectangularMap.handle);
             equirectangularMap = next;
@@ -145,11 +142,12 @@ namespace Prehistoric {
             {
                 PR_PROFILE("Creating the textures");
                 man->addReference<Texture>(environmentMap.handle);
-                if (!atmosphere)
-                {
+                if (!atmosphere) {
                     conversion->setInvocationSize({size / 16, size / 16, 6});
-                    conversion->addTextureBinding(0, environmentMap.pointer, (AccessMask) ComputeAccessFlags::WRITE_ONLY);
-                    conversion->addTextureBinding(1, equirectangularMap.pointer, (AccessMask) ComputeAccessFlags::READ_ONLY);
+                    conversion->addTextureBinding(0, environmentMap.pointer,
+                                                  (AccessMask) ComputeAccessFlags::WRITE_ONLY);
+                    conversion->addTextureBinding(1, equirectangularMap.pointer,
+                                                  (AccessMask) ComputeAccessFlags::READ_ONLY);
                 }
 
                 size = __EnvironmentMapConfig.irradianceMapResolution;
@@ -175,15 +173,13 @@ namespace Prehistoric {
             if (atmosphere != nullptr) {
                 uint32_t size = __EnvironmentMapConfig.environmentMapResolution;
                 framebuffer->Bind();
-                if (captureDepthSize != size)
-                {
+                if (captureDepthSize != size) {
                     framebuffer->addDepthAttachment(size, size);
                     captureDepthSize = size;
                 }
                 window->getSwapchain()->SetWindowSize(size, size);
 
-                for (uint32_t i = 0; i < 6; ++i)
-                {
+                for (uint32_t i = 0; i < 6; ++i) {
                     framebuffer->addColourAttachment3D(environmentMap.pointer, i);
                     framebuffer->Clear(0.0f);
                     atmospherePass.DrawCapture(source, viewMatrices[i], projectionMatrix);
@@ -240,18 +236,17 @@ namespace Prehistoric {
             prefilterMap->Bind();
         }
 
-        if (previousEnvironment.pointer)
-        {
+        if (previousEnvironment.pointer) {
             man->removeReference<Texture>(previousEnvironment.handle);
             man->removeReference<Texture>(previousIrradiance.handle);
             man->removeReference<Texture>(previousPrefilter.handle);
         }
     }
 
-    void EnvironmentMapRenderer::RenderCube(Camera *camera) {
+    void EnvironmentMapRenderer::RenderCube(Camera *camera, float lod) {
         backgroundPipeline->BindPipeline(nullptr);
         static_cast<GLEnvironmentShader *>(environmentShader.pointer)->UpdateUniforms(
-            camera->getProjectionMatrix(), camera->getOriginalViewMatrix(), prefilterMap.pointer, lodRenderedMap);
+            camera->getProjectionMatrix(), camera->getOriginalViewMatrix(), prefilterMap.pointer, lod);
         backgroundPipeline->RenderPipeline();
         backgroundPipeline->UnbindPipeline();
     }

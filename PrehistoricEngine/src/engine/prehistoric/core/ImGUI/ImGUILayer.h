@@ -3,22 +3,35 @@
 
 #include "prehistoric/core/layers/Layer.h"
 
-namespace Prehistoric
-{
-	class ImGuiLayer : public Layer
-	{
-	public:
-		ImGuiLayer();
-		~ImGuiLayer() = default;
+namespace Prehistoric {
+    class Texture;
+    class VKImGui;
 
-		virtual void OnAttach() override;
-		virtual void OnDetach() override;
+    class ImGuiLayer : public Layer {
+    public:
+        ImGuiLayer();
 
-		void Begin();
-		void End();
+        ~ImGuiLayer();
 
-		void SetDarkThemeColors();
-	};
+        virtual void OnAttach() override;
+
+        virtual void OnDetach() override;
+
+        void Begin();
+
+        void End();
+
+        void Draw();
+
+        void DrawImage(Texture *texture, float width, float height);
+
+        void RenderPlatformWindows();
+
+        void SetDarkThemeColors();
+
+    private:
+        std::unique_ptr<VKImGui> vulkan;
+    };
 };
 
 #endif

@@ -1,18 +1,16 @@
- #include "Includes.hpp"
+#include "Includes.hpp"
 #include <stdexcept>
 #include "VKSwapchain.h"
 
 #include "platform/vulkan/framework/context/VKContext.h"
 #include "prehistoric/application/Application.h"
 
-namespace Prehistoric
-{
-    VKSwapchain::VKSwapchain(Window* window)
-        : Swapchain(window)
-    {
-        VKContext* cont = (VKContext*)window->getContext();
+namespace Prehistoric {
+    VKSwapchain::VKSwapchain(Window *window)
+        : Swapchain(window) {
+        VKContext *cont = (VKContext *) window->getContext();
 
-        this->device = (VKDevice*)cont->getDevices();
+        this->device = (VKDevice *) cont->getDevices();
         this->surface = cont->getSurface();
 
         SwapchainSupportDetails swapchainSupport = surface->QuerySwapChainSupport(device->getPhysicalDevice());
@@ -23,8 +21,8 @@ namespace Prehistoric
 
         NumImages = swapchainSupport.capabilities.minImageCount + 1;
 
-        if (swapchainSupport.capabilities.maxImageCount > 0 && NumImages > swapchainSupport.capabilities.maxImageCount)
-        {
+        if (swapchainSupport.capabilities.maxImageCount > 0 && NumImages > swapchainSupport.capabilities.
+            maxImageCount) {
             NumImages = swapchainSupport.capabilities.maxImageCount;
         }
 
@@ -39,16 +37,13 @@ namespace Prehistoric
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
         QueueFamilyIndices indices = device->getQueueFamilyIndices();
-        uint32_t queueFamilyIndices[] = { indices.graphicsFamily, indices.presentFamily };
+        uint32_t queueFamilyIndices[] = {indices.graphicsFamily, indices.presentFamily};
 
-        if (indices.graphicsFamily != indices.presentFamily)
-        {
+        if (indices.graphicsFamily != indices.presentFamily) {
             createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
             createInfo.queueFamilyIndexCount = 2;
             createInfo.pQueueFamilyIndices = queueFamilyIndices;
-        }
-        else
-        {
+        } else {
             createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
             createInfo.queueFamilyIndexCount = 0; // Optional
             createInfo.pQueueFamilyIndices = nullptr; // Optional
@@ -60,8 +55,7 @@ namespace Prehistoric
         createInfo.clipped = VK_TRUE;
         createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-        if (vkCreateSwapchainKHR(device->getDevice(), &createInfo, nullptr, &swapchain) != VK_SUCCESS)
-        {
+        if (vkCreateSwapchainKHR(device->getDevice(), &createInfo, nullptr, &swapchain) != VK_SUCCESS) {
             PR_LOG_RUNTIME_ERROR("Failed to create swap chain!\n");
         }
 
@@ -77,8 +71,7 @@ namespace Prehistoric
         imagesInFlight.assign(NumImages, VK_NULL_HANDLE);
 
         swapchainImages.resize(NumImages);
-        for (size_t i = 0; i < NumImages; i++)
-        {
+        for (size_t i = 0; i < NumImages; i++) {
             swapchainImages[i] = new VKImage(device, swapImages[i], 1, swapchainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
         }
 
@@ -90,76 +83,72 @@ namespace Prehistoric
         renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
         inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
 
-        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-        {
+        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
             imageAvailableSemaphores[i] = new VKSemaphore(device->getDevice());
             renderFinishedSemaphores[i] = new VKSemaphore(device->getDevice());
             inFlightFences[i] = new VKFence(device->getDevice());
         }
     }
 
-    void VKSwapchain::CreateSceneAttachments()
-    {
-        VkFormat format = FindSupportedFormat({ VK_FORMAT_R16G16B16A16_SFLOAT }, VK_IMAGE_TILING_OPTIMAL,
-            VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT);
+    void VKSwapchain::CreateSceneAttachments() {
+        VkFormat format = FindSupportedFormat({VK_FORMAT_R16G16B16A16_SFLOAT}, VK_IMAGE_TILING_OPTIMAL,
+                                              VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT |
+                                              VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT);
         VkImageFormatProperties properties{};
         auto usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
         if (vkGetPhysicalDeviceImageFormatProperties(device->getPhysicalDevice(), format, VK_IMAGE_TYPE_2D,
-            VK_IMAGE_TILING_OPTIMAL, usage, 0, &properties) != VK_SUCCESS)
-        {
+                                                     VK_IMAGE_TILING_OPTIMAL, usage, 0, &properties) != VK_SUCCESS) {
             PR_LOG_RUNTIME_ERROR("Floating-point HDR attachments are unavailable!\n");
         }
         hdrImage = new VKImage(device, swapchainExtent.width, swapchainExtent.height, 1, format,
-            VK_IMAGE_TILING_OPTIMAL, usage, VK_SAMPLE_COUNT_1_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
+                               VK_IMAGE_TILING_OPTIMAL, usage, VK_SAMPLE_COUNT_1_BIT,
+                               VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
 
         //Create depth buffer
         VkFormat depthFormat = FindSupportedFormat(
-            { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
+            {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
             VK_IMAGE_TILING_OPTIMAL,
             VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
         );
 
         VkImageFormatProperties depthProperties{};
         if (vkGetPhysicalDeviceImageFormatProperties(device->getPhysicalDevice(), depthFormat, VK_IMAGE_TYPE_2D,
-            VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 0, &depthProperties) != VK_SUCCESS)
-        {
+                                                     VK_IMAGE_TILING_OPTIMAL,
+                                                     VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 0,
+                                                     &depthProperties) != VK_SUCCESS) {
             PR_LOG_RUNTIME_ERROR("Scene depth attachment is unavailable!\n");
         }
         sceneSamples = VK_SAMPLE_COUNT_1_BIT;
         usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
         if (vkGetPhysicalDeviceImageFormatProperties(device->getPhysicalDevice(), format, VK_IMAGE_TYPE_2D,
-            VK_IMAGE_TILING_OPTIMAL, usage, 0, &properties) == VK_SUCCESS)
-        {
+                                                     VK_IMAGE_TILING_OPTIMAL, usage, 0, &properties) == VK_SUCCESS) {
             VkSampleCountFlags supported = properties.sampleCounts & depthProperties.sampleCounts;
-            for (uint32_t count = device->getSampleCount(); count > 1; count >>= 1)
-            {
-                if (count <= __FrameworkConfig.windowNumSamples && (supported & count))
-                {
+            for (uint32_t count = device->getSampleCount(); count > 1; count >>= 1) {
+                if (count <= __FrameworkConfig.windowNumSamples && (supported & count)) {
                     sceneSamples = static_cast<VkSampleCountFlagBits>(count);
                     break;
                 }
             }
         }
-        if (sceneSamples != VK_SAMPLE_COUNT_1_BIT)
-        {
+        if (sceneSamples != VK_SAMPLE_COUNT_1_BIT) {
             multisampleColourImage = new VKImage(device, swapchainExtent.width, swapchainExtent.height, 1, format,
-                VK_IMAGE_TILING_OPTIMAL, usage, sceneSamples, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
+                                                 VK_IMAGE_TILING_OPTIMAL, usage, sceneSamples,
+                                                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
         }
         depthImage = new VKImage(device, swapchainExtent.width, swapchainExtent.height, 1, depthFormat,
-            VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, sceneSamples,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
+                                 VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, sceneSamples,
+                                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
 
-        VKUtil::TransitionImageLayout(device, depthImage->getImage(), depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
+        VKUtil::TransitionImageLayout(device, depthImage->getImage(), depthFormat, VK_IMAGE_LAYOUT_UNDEFINED,
+                                      VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
     }
 
-    VKSwapchain::~VKSwapchain()
-    {
+    VKSwapchain::~VKSwapchain() {
         VkDevice dev = device->getDevice();
 
         vkDeviceWaitIdle(dev);
 
-        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-        {
+        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
             delete renderFinishedSemaphores[i];
             delete imageAvailableSemaphores[i];
             delete inFlightFences[i];
@@ -170,8 +159,7 @@ namespace Prehistoric
         multisampleColourImage = nullptr;
         delete hdrImage;
 
-        for (auto image : swapchainImages)
-        {
+        for (auto image: swapchainImages) {
             vkDestroyImageView(dev, image->getImageView(), nullptr);
         }
 
@@ -179,15 +167,15 @@ namespace Prehistoric
     }
 
     //TODO: for VKRenderer
-    bool VKSwapchain::GetNextImageIndex()
-    {
+    bool VKSwapchain::GetNextImageIndex() {
         //get the next available image to render to
         vkWaitForFences(device->getDevice(), 1, &(inFlightFences[currentFrame]->getFence()), VK_TRUE, UINT64_MAX);
 
-        VkResult res = vkAcquireNextImageKHR(device->getDevice(), swapchain, UINT64_MAX, imageAvailableSemaphores[currentFrame]->getSemaphore(), VK_NULL_HANDLE, &aquiredImageIndex);
+        VkResult res = vkAcquireNextImageKHR(device->getDevice(), swapchain, UINT64_MAX,
+                                             imageAvailableSemaphores[currentFrame]->getSemaphore(), VK_NULL_HANDLE,
+                                             &aquiredImageIndex);
 
-        if (res == VK_ERROR_OUT_OF_DATE_KHR)
-        {
+        if (res == VK_ERROR_OUT_OF_DATE_KHR) {
             window->setResized(true);
             return false;
         }
@@ -197,8 +185,7 @@ namespace Prehistoric
         else if (res != VK_SUCCESS)
             throw std::runtime_error("Failed to acquire the next swapchain image!");
 
-        if (imagesInFlight[aquiredImageIndex] != VK_NULL_HANDLE)
-        {
+        if (imagesInFlight[aquiredImageIndex] != VK_NULL_HANDLE) {
             vkWaitForFences(device->getDevice(), 1, &imagesInFlight[aquiredImageIndex], VK_TRUE, UINT64_MAX);
         }
 
@@ -207,28 +194,27 @@ namespace Prehistoric
         return true;
     }
 
-    void VKSwapchain::SwapBuffers(CommandBuffer* buffer)
-    {
+    void VKSwapchain::SwapBuffers(CommandBuffer *buffer) {
         //Submit the graphics queue for rendering
         VkSubmitInfo submitInfo = {};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-        VkSemaphore waitSemaphores[] = { imageAvailableSemaphores[currentFrame]->getSemaphore() };
-        VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+        VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]->getSemaphore()};
+        VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
         submitInfo.waitSemaphoreCount = 1;
         submitInfo.pWaitSemaphores = waitSemaphores;
         submitInfo.pWaitDstStageMask = waitStages;
         submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &((VKCommandBuffer*)buffer)->getCommandBuffer();
+        submitInfo.pCommandBuffers = &((VKCommandBuffer *) buffer)->getCommandBuffer();
 
-        VkSemaphore signalSemaphores[] = { renderFinishedSemaphores[currentFrame]->getSemaphore() };
+        VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]->getSemaphore()};
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
         inFlightFences[currentFrame]->ResetFence();
 
-        if (vkQueueSubmit(device->getGraphicsQueue().getQueue(), 1, &submitInfo, inFlightFences[currentFrame]->getFence()) != VK_SUCCESS)
-        {
+        if (vkQueueSubmit(device->getGraphicsQueue().getQueue(), 1, &submitInfo,
+                          inFlightFences[currentFrame]->getFence()) != VK_SUCCESS) {
             PR_LOG_RUNTIME_ERROR("Failed to submit draw command buffer!\n");
         }
 
@@ -252,8 +238,7 @@ namespace Prehistoric
         currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 
-    void VKSwapchain::ClearScreen()
-    {
+    void VKSwapchain::ClearScreen() {
         /*VkClearColorValue value = { clearColor.x, clearColor.y, clearColor.z, clearColor.w };
 
         VkImageSubresourceRange range = {};
@@ -266,8 +251,7 @@ namespace Prehistoric
         commandPool->getCommandBuffer(aquiredImageIndex)->UnbindBuffer();*/
     }
 
-    void VKSwapchain::SetWindowSize(uint32_t width, uint32_t height)
-    {
+    void VKSwapchain::SetWindowSize(uint32_t width, uint32_t height) {
         VkDevice dev = device->getDevice();
 
         vkDeviceWaitIdle(dev);
@@ -278,8 +262,7 @@ namespace Prehistoric
         multisampleColourImage = nullptr;
         delete hdrImage;
 
-        for (auto image : swapchainImages)
-        {
+        for (auto image: swapchainImages) {
             vkDestroyImageView(dev, image->getImageView(), nullptr);
         }
         swapchainImages.clear();
@@ -295,8 +278,8 @@ namespace Prehistoric
 
         NumImages = swapchainSupport.capabilities.minImageCount + 1;
 
-        if (swapchainSupport.capabilities.maxImageCount > 0 && NumImages > swapchainSupport.capabilities.maxImageCount)
-        {
+        if (swapchainSupport.capabilities.maxImageCount > 0 && NumImages > swapchainSupport.capabilities.
+            maxImageCount) {
             NumImages = swapchainSupport.capabilities.maxImageCount;
         }
 
@@ -311,16 +294,13 @@ namespace Prehistoric
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
         QueueFamilyIndices indices = device->getQueueFamilyIndices();
-        uint32_t queueFamilyIndices[] = { indices.graphicsFamily, indices.presentFamily };
+        uint32_t queueFamilyIndices[] = {indices.graphicsFamily, indices.presentFamily};
 
-        if (indices.graphicsFamily != indices.presentFamily)
-        {
+        if (indices.graphicsFamily != indices.presentFamily) {
             createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
             createInfo.queueFamilyIndexCount = 2;
             createInfo.pQueueFamilyIndices = queueFamilyIndices;
-        }
-        else
-        {
+        } else {
             createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
             createInfo.queueFamilyIndexCount = 0; // Optional
             createInfo.pQueueFamilyIndices = nullptr; // Optional
@@ -332,8 +312,7 @@ namespace Prehistoric
         createInfo.clipped = VK_TRUE;
         createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-        if (vkCreateSwapchainKHR(device->getDevice(), &createInfo, nullptr, &swapchain) != VK_SUCCESS)
-        {
+        if (vkCreateSwapchainKHR(device->getDevice(), &createInfo, nullptr, &swapchain) != VK_SUCCESS) {
             PR_LOG_RUNTIME_ERROR("Failed to create swap chain!\n");
         }
 
@@ -349,21 +328,18 @@ namespace Prehistoric
         imagesInFlight.assign(NumImages, VK_NULL_HANDLE);
 
         swapchainImages.resize(NumImages);
-        for (size_t i = 0; i < NumImages; i++)
-        {
+        for (size_t i = 0; i < NumImages; i++) {
             swapchainImages[i] = new VKImage(device, swapImages[i], 1, swapchainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
         }
 
         CreateSceneAttachments();
-
     }
-    
-    VkSurfaceFormatKHR VKSwapchain::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
-    {
-        for (const auto& availableFormat : availableFormats)
-        {
-            if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
-            {
+
+    VkSurfaceFormatKHR VKSwapchain::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats) {
+        const VkFormat preferred = Application::Get().isEditor() ? VK_FORMAT_B8G8R8A8_UNORM : VK_FORMAT_B8G8R8A8_SRGB;
+        for (const auto &availableFormat: availableFormats) {
+            if (availableFormat.format == preferred && availableFormat.colorSpace ==
+                VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
                 return availableFormat;
             }
         }
@@ -371,12 +347,9 @@ namespace Prehistoric
         return availableFormats[0];
     }
 
-    VkPresentModeKHR VKSwapchain::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
-    {
-        for (const auto& availablePresentMode : availablePresentModes)
-        {
-            if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
-            {
+    VkPresentModeKHR VKSwapchain::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes) {
+        for (const auto &availablePresentMode: availablePresentModes) {
+            if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
                 return availablePresentMode;
             }
         }
@@ -384,38 +357,32 @@ namespace Prehistoric
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
-    VkExtent2D VKSwapchain::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
-    {
-        if (capabilities.currentExtent.width != UINT32_MAX)
-        {
+    VkExtent2D VKSwapchain::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) {
+        if (capabilities.currentExtent.width != UINT32_MAX) {
             return capabilities.currentExtent;
-        }
-        else
-        {
+        } else {
             int width, height;
-            glfwGetFramebufferSize((GLFWwindow*)window->getWindowHandle(), &width, &height);
-            VkExtent2D actualExtent = { (uint32_t)width, (uint32_t)height };
+            glfwGetFramebufferSize((GLFWwindow *) window->getWindowHandle(), &width, &height);
+            VkExtent2D actualExtent = {(uint32_t) width, (uint32_t) height};
 
-            actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
-            actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
+            actualExtent.width = std::max(capabilities.minImageExtent.width,
+                                          std::min(capabilities.maxImageExtent.width, actualExtent.width));
+            actualExtent.height = std::max(capabilities.minImageExtent.height,
+                                           std::min(capabilities.maxImageExtent.height, actualExtent.height));
 
             return actualExtent;
         }
     }
 
-    VkFormat VKSwapchain::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
-    {
-        for (VkFormat format : candidates)
-        {
+    VkFormat VKSwapchain::FindSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling,
+                                              VkFormatFeatureFlags features) {
+        for (VkFormat format: candidates) {
             VkFormatProperties props;
             vkGetPhysicalDeviceFormatProperties(device->getPhysicalDevice(), format, &props);
 
-            if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features)
-            {
+            if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
                 return format;
-            }
-            else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features)
-            {
+            } else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
                 return format;
             }
         }

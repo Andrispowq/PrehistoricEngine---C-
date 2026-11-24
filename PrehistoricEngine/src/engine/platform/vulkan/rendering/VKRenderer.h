@@ -16,7 +16,7 @@ namespace Prehistoric {
 
     class VKRenderer : public Renderer {
     public:
-        VKRenderer(Window* window, Camera* camera, AssembledAssetManager* manager);
+        VKRenderer(Window *window, Camera *camera, AssembledAssetManager *manager);
 
         virtual ~VKRenderer();
 
@@ -25,13 +25,15 @@ namespace Prehistoric {
         virtual void EndRendering();
 
 
-
-
-        VKCommandBuffer* getDrawCommandBuffer() const {
+        VKCommandBuffer *getDrawCommandBuffer() const {
             return commandPool->getCommandBuffer(window->getSwapchain()->getAquiredImageIndex());
         }
 
-        VKEnvironmentLighting* getEnvironmentLighting() const {
+        void RequestEnvironmentBake(bool usePanorama) override;
+
+        Texture *getOutputTexture() const override;
+
+        VKEnvironmentLighting *getEnvironmentLighting() const {
             return environmentLighting.get();
         }
 
@@ -42,13 +44,21 @@ namespace Prehistoric {
         std::unique_ptr<VKEnvironmentBackground> background;
         std::unique_ptr<VKEnvironmentLighting> environmentLighting;
 
-        void ProcessDraws(VKCommandBuffer* buffer);
+        void ProcessDraws(VKCommandBuffer *buffer);
+
         bool CanRenderFrame() const override { return frameReady; }
+
         void UpdateEnvironmentLighting() override;
+
         void RenderScene() override;
+
         void RenderHDR() override;
+
         void FinishFrame() override;
+
         AtmosphereCapture environmentCapture;
+        bool panoramaOverride = false;
+        bool bakeRequested = false;
         bool frameReady = false;
     };
 };

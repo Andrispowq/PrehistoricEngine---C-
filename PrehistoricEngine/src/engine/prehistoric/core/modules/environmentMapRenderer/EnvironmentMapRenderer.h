@@ -16,65 +16,66 @@
 #include "prehistoric/core/modules/atmosphere/Atmosphere.h"
 #include "prehistoric/core/modules/atmosphere/AtmosphereCapture.h"
 
-namespace Prehistoric
-{
-	class GLAtmospherePass;
-	class EnvironmentMapRenderer
-	{
-	public:
-		EnvironmentMapRenderer(Window* window, AssembledAssetManager* manager, GLAtmospherePass& atmospherePass);
-		virtual ~EnvironmentMapRenderer();
+namespace Prehistoric {
+    class GLAtmospherePass;
 
-		void UpdateEnvironment(const Atmosphere* atmosphere);
-		void RequestBake(bool usePanorama);
-		void RenderCube(Camera* camera);
+    class EnvironmentMapRenderer {
+    public:
+        EnvironmentMapRenderer(Window *window, AssembledAssetManager *manager, GLAtmospherePass &atmospherePass);
 
-		Texture* getEnvironmentMap() const { return environmentMap.pointer; }
-		Texture* getIrradianceMap() const { return irradianceMap.pointer; }
-		Texture* getPrefilterMap() const { return prefilterMap.pointer; }
-		Texture* getBRDFMap() const { return brdfMap.pointer; }
+        virtual ~EnvironmentMapRenderer();
 
-	public:
-		float lodRenderedMap = 0.0;
-		bool enabled = true;
+        void UpdateEnvironment(const Atmosphere *atmosphere);
 
+        void RequestBake(bool usePanorama);
 
-	private:
-        void GenerateEnvironmentMap(const EnvironmentCaptureSource& source);
+        void RenderCube(Camera *camera, float lod);
+
+        Texture *getEnvironmentMap() const { return environmentMap.pointer; }
+        Texture *getIrradianceMap() const { return irradianceMap.pointer; }
+        Texture *getPrefilterMap() const { return prefilterMap.pointer; }
+        Texture *getBRDFMap() const { return brdfMap.pointer; }
+
+    public:
+        bool enabled = true;
+
+    private:
+        void GenerateEnvironmentMap(const EnvironmentCaptureSource &source);
+
         AtmosphereCapture capture;
         bool panoramaOverride = false;
         bool requested = false;
         uint32_t captureDepthSize = 0;
-		GLAtmospherePass& atmospherePass;
-		Window* window;
-		AssembledAssetManager* manager;
+        GLAtmospherePass &atmospherePass;
+        Window *window;
+        AssembledAssetManager *manager;
 
-		std::string mapCache;
+        std::string mapCache;
 
-		VertexBufferHandle cubeBuffer;
-		std::unique_ptr<Framebuffer> framebuffer;
+        VertexBufferHandle cubeBuffer;
+        std::unique_ptr<Framebuffer> framebuffer;
 
-		Matrix4f viewMatrices[6];
-		Matrix4f projectionMatrix;
+        Matrix4f viewMatrices[6];
+        Matrix4f projectionMatrix;
 
-		TextureHandle equirectangularMap;
-		TextureHandle environmentMap;
-		TextureHandle irradianceMap;
-		TextureHandle prefilterMap;
-		TextureHandle brdfMap;
+        TextureHandle equirectangularMap;
+        TextureHandle environmentMap;
+        TextureHandle irradianceMap;
+        TextureHandle prefilterMap;
+        TextureHandle brdfMap;
 
-		ShaderHandle environmentMapShader;
-		ShaderHandle irradianceShader;
-		ShaderHandle prefilterShader;
-		ShaderHandle brdfIntegrateShader;
-		ShaderHandle environmentShader;
+        ShaderHandle environmentMapShader;
+        ShaderHandle irradianceShader;
+        ShaderHandle prefilterShader;
+        ShaderHandle brdfIntegrateShader;
+        ShaderHandle environmentShader;
 
-		PipelineHandle environmentMapPipeline;
-		PipelineHandle irradiancePipeline;
-		PipelineHandle prefilterPipeline;
-		PipelineHandle brdfIntegratePipeline;
-		PipelineHandle backgroundPipeline;
-	};
+        PipelineHandle environmentMapPipeline;
+        PipelineHandle irradiancePipeline;
+        PipelineHandle prefilterPipeline;
+        PipelineHandle brdfIntegratePipeline;
+        PipelineHandle backgroundPipeline;
+    };
 };
 
 #endif

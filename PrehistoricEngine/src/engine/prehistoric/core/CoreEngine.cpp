@@ -1,134 +1,116 @@
 #include "Includes.hpp"
 #include "CoreEngine.h"
 
-namespace Prehistoric
-{
-	CoreEngine::CoreEngine(const std::string& configPath, const std::string& worldFile)
-		: root(nullptr), renderingEngine(nullptr), audioEngine(nullptr), manager(nullptr)
-	{
-		running = false;
+namespace Prehistoric {
+    CoreEngine::CoreEngine(const std::string &configPath, const std::string &worldFile)
+        : root(nullptr), renderingEngine(nullptr), audioEngine(nullptr), manager(nullptr) {
+        running = false;
 
-		Log::Init();
+        Log::Init();
 
-		LoadConfigurationFiles(configPath);
-	}
+        LoadConfigurationFiles(configPath);
+    }
 
-	CoreEngine::~CoreEngine()
-	{
-		//The order is VERY important here, hence the deletion by hand
-		root.reset();
+    CoreEngine::~CoreEngine() {
+        //The order is VERY important here, hence the deletion by hand
+        root.reset();
 
-		renderingEngine->PreRelease();
-		manager.reset();
+        renderingEngine->PreRelease();
+        manager.reset();
 #ifdef PR_WINDOWS_64
-		scriptEngine.reset();
+        scriptEngine.reset();
 #endif
-		physicsEngine.reset();
-		audioEngine.reset();
-		renderingEngine.reset();
+        physicsEngine.reset();
+        audioEngine.reset();
+        renderingEngine.reset();
 
-		Input::DeleteInstance();
-		Log::Shutdown();
-	}
+        Input::DeleteInstance();
+        Log::Shutdown();
+    }
 
-	void CoreEngine::LoadConfigurationFiles(const std::string& path)
-	{
-		engineSettings.LoadConfig(path);
-	}
+    void CoreEngine::LoadConfigurationFiles(const std::string &path) {
+        engineSettings.LoadConfig(path);
+    }
 
-	void CoreEngine::LoadEngines()
-	{
-		//Root object and manager initialisation
-		root = std::make_unique<GameObject>();
+    void CoreEngine::LoadEngines() {
+        //Root object and manager initialisation
+        root = std::make_unique<GameObject>();
 
-		//Engines' initialisation
-		renderingEngine = std::make_unique<RenderingEngine>();
-		audioEngine = std::make_unique<AudioEngine>();
-		physicsEngine = std::make_unique<PhysicsEngine>();
+        //Engines' initialisation
+        renderingEngine = std::make_unique<RenderingEngine>();
+        audioEngine = std::make_unique<AudioEngine>();
+        physicsEngine = std::make_unique<PhysicsEngine>();
 #ifdef PR_WINDOWS_64
-		scriptEngine = std::make_unique<ScriptEngine>();
+        scriptEngine = std::make_unique<ScriptEngine>();
 #endif
 
-		//Manager and the renderers in the rendering engine
-		manager = std::make_unique<AssembledAssetManager>(renderingEngine->getWindow());
-		renderingEngine->Init(manager.get());
-	}
+        //Manager and the renderers in the rendering engine
+        manager = std::make_unique<AssembledAssetManager>(renderingEngine->getWindow());
+        renderingEngine->Init(manager.get());
+    }
 
-	void CoreEngine::Update(float frameTime)
-	{
-		this->frameTime = frameTime;
+    void CoreEngine::Update(float frameTime) {
+        this->frameTime = frameTime;
 
-		root->PreUpdate(this);
+        root->PreUpdate(this);
 
-		InputInstance.Update();
-		renderingEngine->getWindow()->Input();
+        InputInstance.Update();
+        renderingEngine->getWindow()->Input();
 
-		renderingEngine->Update(frameTime);
-		audioEngine->Update(frameTime);
-		physicsEngine->Update(frameTime);
+        renderingEngine->Update(frameTime);
+        audioEngine->Update(frameTime);
+        physicsEngine->Update(frameTime);
 #ifdef PR_WINDOWS_64
-		scriptEngine->Update(frameTime);
+        scriptEngine->Update(frameTime);
 #endif
-	}
+    }
 
-	void CoreEngine::Render()
-	{
-		{
-			PR_PROFILE("PreRender(Renderer*)");
-			root->PreRender(renderingEngine->getRenderer());
-		}
+    void CoreEngine::Render() {
+        RenderingEngine::getStats() = {};
+        {
+            PR_PROFILE("PreRender(Renderer*)");
+            root->PreRender(renderingEngine->getRenderer());
+        }
 
-		renderingEngine->Render();
-	}
+        renderingEngine->Render();
+    }
 
-	void CoreEngine::BeginRendering()
-	{
-		renderingEngine->getWindow()->ClearScreen();
-		renderingEngine->getRenderer()->PrepareRendering();
-	}
+    void CoreEngine::BeginRendering() {
+        renderingEngine->getWindow()->ClearScreen();
+        renderingEngine->getRenderer()->PrepareRendering();
+    }
 
-	void CoreEngine::EndRendering()
-	{
-		renderingEngine->getRenderer()->EndRendering();
+    void CoreEngine::EndRendering() {
+        renderingEngine->getRenderer()->EndRendering();
+    }
 
-		RenderingEngine::getStats().drawcalls = 0;
-		RenderingEngine::getStats().vertexCount = 0;
-		RenderingEngine::getStats().indexCount = 0;
-	}
-
-	void CoreEngine::OnEvent(Event& event)
-	{
-		renderingEngine->OnEvent(event);
-		audioEngine->OnEvent(event);
-		physicsEngine->OnEvent(event);
+    void CoreEngine::OnEvent(Event &event) {
+        renderingEngine->OnEvent(event);
+        audioEngine->OnEvent(event);
+        physicsEngine->OnEvent(event);
 #ifdef PR_WINDOWS_64
-		scriptEngine->OnEvent(event);
+        scriptEngine->OnEvent(event);
 #endif
-	}
+    }
 
-	void CoreEngine::SetScene(Scene* scene)
-	{
-		this->sceneRoot = scene->getSceneRoot();
-		this->scene = scene;
+    void CoreEngine::SetScene(Scene *scene) {
+        this->sceneRoot = scene->getSceneRoot();
+        this->scene = scene;
 
-		bool found = false;
-		for (auto child : root->getChildren())
-		{
-			if (child.second == (Node*)sceneRoot)
-			{
-				child.second->setEnabled(true);
-				found = true;
-			}
-		}
+        bool found = false;
+        for (auto child: root->getChildren()) {
+            if (child.second == (Node *) sceneRoot) {
+                child.second->setEnabled(true);
+                found = true;
+            }
+        }
 
-		if (!found)
-		{
-			root->AddChild(scene->getName(), sceneRoot);
-		}
-	}
+        if (!found) {
+            root->AddChild(scene->getName(), sceneRoot);
+        }
+    }
 
-	void CoreEngine::AddGameObject(const std::string& name, GameObject* gameobject)
-	{
-		root->AddChild(name, gameobject);
-	}
+    void CoreEngine::AddGameObject(const std::string &name, GameObject *gameobject) {
+        root->AddChild(name, gameobject);
+    }
 };

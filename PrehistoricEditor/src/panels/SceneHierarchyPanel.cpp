@@ -7,7 +7,6 @@
 #include "prehistoric/core/node/component/light/Light.h"
 #include "prehistoric/application/Application.h"
 
-#include "platform/opengl/rendering/pipeline/GLGraphicsPipeline.h"
 
 SceneHierarchyPanel::SceneHierarchyPanel(Prehistoric::GameObject *root) {
     SetContext(root);
@@ -20,9 +19,8 @@ void SceneHierarchyPanel::SetContext(Prehistoric::GameObject *root) {
 void SceneHierarchyPanel::ImGuiRender() {
     ImGui::Begin("Scene Hierarchy");
 
-    auto children = root->getAllChildren();
-    for (auto child: children) {
-        DrawGameObjectNode(child);
+    for (const auto &child: root->getChildrenByID()) {
+        if (auto *object = dynamic_cast<Prehistoric::GameObject *>(child.second)) DrawGameObjectNode(object);
     }
 
     // Right-click on blank space
@@ -49,7 +47,7 @@ void SceneHierarchyPanel::DrawGameObjectNode(Prehistoric::GameObject *object) {
     ImGuiTreeNodeFlags flags = ((selectionContext == object) ? ImGuiTreeNodeFlags_Selected : 0) |
                                ImGuiTreeNodeFlags_OpenOnArrow;
     flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
-    bool opened = ImGui::TreeNodeEx((void *) object, flags, tag.c_str());
+    bool opened = ImGui::TreeNodeEx((void *) object, flags, "%s", tag.c_str());
     if (ImGui::IsItemClicked()) {
         selectionContext = object;
     }
@@ -63,17 +61,20 @@ void SceneHierarchyPanel::DrawGameObjectNode(Prehistoric::GameObject *object) {
     }
 
     if (opened) {
-        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-        bool opened = ImGui::TreeNodeEx((void *) 9817239, flags, tag.c_str());
-        if (opened)
-            ImGui::TreePop();
+        for (const auto &child: object->getChildrenByID()) {
+            if (auto *nested = dynamic_cast<Prehistoric::GameObject *>(child.second)) DrawGameObjectNode(nested);
+        }
         ImGui::TreePop();
     }
 
     if (entityDeleted) {
-        root->RemoveChild(object);
-        if (selectionContext == object)
-            selectionContext = nullptr;
+        for (Prehistoric::Node *node = selectionContext; node; node = node->getParent()) {
+            if (node == object) {
+                selectionContext = nullptr;
+                break;
+            }
+        }
+        object->getParent()->RemoveChild(object);
     }
 }
 

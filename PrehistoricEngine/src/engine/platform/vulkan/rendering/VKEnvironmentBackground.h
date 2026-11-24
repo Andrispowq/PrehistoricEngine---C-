@@ -20,12 +20,13 @@ namespace Prehistoric {
 
         ~VKEnvironmentBackground();
 
-        void SetPrefilter(const VkDescriptorImageInfo& imageInfo);
+        void SetPrefilter(const VkDescriptorImageInfo &imageInfo);
+
         void RecreatePipeline();
 
-        void Draw(VkCommandBuffer commandBuffer, const Camera* camera, const Atmosphere* atmosphere) const;
+        void Draw(VkCommandBuffer commandBuffer, const Camera *camera, const Atmosphere *atmosphere, float lod) const;
 
-        VkDescriptorImageInfo LoadSource(Window* window);
+        VkDescriptorImageInfo LoadSource(Window *window);
 
     private:
         VKDevice *device;

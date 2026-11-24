@@ -17,47 +17,50 @@
 #define __EnvironmentMapConfig __EngineSettings->environmentMapConfig
 #define __WaterConfig __EngineSettings->waterConfig
 
-namespace Prehistoric
-{
-	class Application
-	{
-	public:
-		Application();
-		virtual ~Application();
+namespace Prehistoric {
+    class Application {
+    public:
+        explicit Application(bool editor = false);
 
-		void Run();
-		void Stop();
+        virtual ~Application();
 
-		void OnEvent(Event& e);
+        void Run();
 
-		void PushLayer(Layer* layer);
-		void PushOverlay(Layer* layer);
+        void Stop();
 
-		CoreEngine* getEngineLayer() { return engineLayer; }
-		ImGuiLayer* getImGuiLayer() { return imGUILayer; }
+        void OnEvent(Event &e);
 
-		int getLastFPS() const { return last_fps; }
-		double getFrameTime() const { return last_frameTime; }
+        void PushLayer(Layer *layer);
 
-		static Application& Get() { return *instance; }
+        void PushOverlay(Layer *layer);
 
-	protected:
-		LayerStack layerStack;
-		bool running = false;
-		double frameTime;
-		double last_frameTime;
-		int last_fps;
+        bool isEditor() const { return editorMode; }
+        CoreEngine *getEngineLayer() { return engineLayer; }
+        ImGuiLayer *getImGuiLayer() { return imGUILayer; }
 
-		std::unique_ptr<Window> window;
+        int getLastFPS() const { return last_fps; }
+        double getFrameTime() const { return last_frameTime; }
 
-		CoreEngine* engineLayer;
-		ImGuiLayer* imGUILayer;
+        static Application &Get() { return *instance; }
 
-		static Application* instance;
-	};
+    protected:
+        bool editorMode;
+        LayerStack layerStack;
+        bool running = false;
+        double frameTime;
+        double last_frameTime;
+        int last_fps;
 
-	//To be defined in client
-	Application* CreateApplication();
+        std::unique_ptr<Window> window;
+
+        CoreEngine *engineLayer;
+        ImGuiLayer *imGUILayer = nullptr;
+
+        static Application *instance;
+    };
+
+    //To be defined in client
+    Application *CreateApplication();
 };
 
 #endif

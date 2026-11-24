@@ -23,35 +23,32 @@ typedef uint64_t UUID_t;
 #define SHIFT(val,am) ((UUID_t)val << am)
 #define UUID(type,subtype,id) (SHIFT(type,56) | SHIFT(subtype,48) | id)
 
-namespace Prehistoric
-{
-	HANDLE_OF(Texture);
-	HANDLE_OF(VertexBuffer);
-	HANDLE_OF(Shader);
+namespace Prehistoric {
+    HANDLE_OF(Texture);
 
-	enum class BatchSettings
-	{
-		Load, QueuedLoad
-	};
+    HANDLE_OF(VertexBuffer);
 
-	enum class Shaders
-	{
-		BASIC,
-		PBR
-	};
+    HANDLE_OF(Shader);
 
-	enum class ResourceType
-	{
-		Texture, VertexBuffer, Shader
-	};
+    enum class BatchSettings {
+        Load, QueuedLoad
+    };
 
-	struct Resource
-	{
-		ResourceType type;
-		size_t handle;
-	};
+    enum class Shaders {
+        BASIC,
+        PBR
+    };
 
-	/*
+    enum class ResourceType {
+        Texture, VertexBuffer, Shader
+    };
+
+    struct Resource {
+        ResourceType type;
+        size_t handle;
+    };
+
+    /*
 		DOCUMENTATION of AssetManager
 
 		This class stores every single resource we will ever use, loads them, stores them, and destroys them when needed.
@@ -93,212 +90,189 @@ namespace Prehistoric
 		void removeReference(size_t) -> this function decreases the refcount of the resource associated with the handle passed in, and deletes it, if it reaches 0
 	*/
 
-	class AssetManager
-	{
-	public:
-		AssetManager(Window* window);
-		AssetManager(const AssetManager&) = default;
-		~AssetManager() {}
+    class AssetManager {
+    public:
+        AssetManager(Window *window);
 
-		std::optional<TextureHandle> loadTexture(const std::string& location, SamplerFilter filter = Bilinear, TextureWrapMode wrapMode = ClampToEdge, BatchSettings settings = BatchSettings::Load);
-		std::optional<VertexBufferHandle> loadVertexBuffer(std::optional<Model> mesh, const std::string& name, BatchSettings settings = BatchSettings::Load);
-		std::optional<ShaderHandle> loadShader(ShaderName type, BatchSettings settings = BatchSettings::Load);
+        AssetManager(const AssetManager &) = default;
 
-		TextureHandle storeTexture(Texture* texture, const std::string& cacheName = "");
-		VertexBufferHandle storeVertexBuffer(VertexBuffer* vertexBuffer, const std::string& cacheName = "");
-		ShaderHandle storeShader(Shader* shader);
+        ~AssetManager() {
+        }
 
-		template<typename T> void addReference(size_t handle) {}
-		template<typename T> void removeReference(size_t handle) {}
-		template<typename T> std::vector<T*> get() {}
+        std::optional<TextureHandle> loadTexture(const std::string &location, SamplerFilter filter = Bilinear,
+                                                 TextureWrapMode wrapMode = ClampToEdge,
+                                                 BatchSettings settings = BatchSettings::Load);
 
-		template<>
-		void addReference<Texture>(size_t handle)
-		{
-			const auto& idx = textures.find(handle);
-			if (idx == textures.end())
-			{
-				PR_LOG_RUNTIME_ERROR("Could not find Texture handle %x\n", handle);
-			}
+        std::optional<VertexBufferHandle> loadVertexBuffer(std::optional<Model> mesh, const std::string &name,
+                                                           BatchSettings settings = BatchSettings::Load);
 
-			idx->second.second++;
-		}
+        std::optional<ShaderHandle> loadShader(ShaderName type, BatchSettings settings = BatchSettings::Load);
 
-		template<>
-		void addReference<VertexBuffer>(size_t handle)
-		{
-			const auto& idx = vertexBuffers.find(handle);
-			if (idx == vertexBuffers.end())
-			{
-				PR_LOG_RUNTIME_ERROR("Could not find VertexBuffer handle %x\n", handle);
-			}
+        TextureHandle storeTexture(Texture *texture, const std::string &cacheName = "");
 
-			idx->second.second++;
-		}
+        VertexBufferHandle storeVertexBuffer(VertexBuffer *vertexBuffer, const std::string &cacheName = "");
 
-		template<>
-		void addReference<Shader>(size_t handle)
-		{
-			const auto& idx = shaders.find(handle);
-			if (idx == shaders.end())
-			{
-				PR_LOG_RUNTIME_ERROR("Could not find Shader handle %x\n", handle);
-			}
+        ShaderHandle storeShader(Shader *shader);
 
-			idx->second.second++;
-		}
+        template<typename T>
+        void addReference(size_t handle) {
+        }
 
-		template<>
-		void removeReference<Texture>(size_t handle)
-		{
-			const auto& idx = textures.find(handle);
-			if (idx == textures.end())
-			{
-				PR_LOG_RUNTIME_ERROR("Could not find Texture handle %x\n", handle);
-			}
+        template<typename T>
+        void removeReference(size_t handle) {
+        }
 
-			uint32_t& refCount = idx->second.second;
-			refCount--;
+        template<typename T>
+        std::vector<T *> get() {
+        }
 
-			if (refCount == 0)
-			{
-				textures.erase(handle);
+        template<>
+        void addReference<Texture>(size_t handle) {
+            const auto &idx = textures.find(handle);
+            if (idx == textures.end()) {
+                PR_LOG_RUNTIME_ERROR("Could not find Texture handle %x\n", handle);
+            }
 
-				for (const auto& elem : ID_map)
-				{
-					if (elem.second.handle == handle)
-					{
-						ID_map.erase(elem.first);
-						return;
-					}
-				}
-			}
-		}
+            idx->second.second++;
+        }
 
-		template<>
-		void removeReference<VertexBuffer>(size_t handle)
-		{
-			const auto& idx = vertexBuffers.find(handle);
-			if (idx == vertexBuffers.end())
-			{
-				PR_LOG_RUNTIME_ERROR("Could not find VertexBuffer handle %x\n", handle);
-			}
+        template<>
+        void addReference<VertexBuffer>(size_t handle) {
+            const auto &idx = vertexBuffers.find(handle);
+            if (idx == vertexBuffers.end()) {
+                PR_LOG_RUNTIME_ERROR("Could not find VertexBuffer handle %x\n", handle);
+            }
 
-			uint32_t& refCount = idx->second.second;
-			refCount--;
+            idx->second.second++;
+        }
 
-			if (refCount == 0)
-			{
-				vertexBuffers.erase(handle);
+        template<>
+        void addReference<Shader>(size_t handle) {
+            const auto &idx = shaders.find(handle);
+            if (idx == shaders.end()) {
+                PR_LOG_RUNTIME_ERROR("Could not find Shader handle %x\n", handle);
+            }
 
-				for (const auto& elem : ID_map)
-				{
-					if (elem.second.handle == handle)
-					{
-						ID_map.erase(elem.first);
-						return;
-					}
-				}
-			}
-		}
+            idx->second.second++;
+        }
 
-		template<>
-		void removeReference<Shader>(size_t handle)
-		{
-			const auto& idx = shaders.find(handle);
-			if (idx == shaders.end())
-			{
-				PR_LOG_RUNTIME_ERROR("Could not find Shader handle %x\n", handle);
-			}
+        template<>
+        void removeReference<Texture>(size_t handle) {
+            const auto &idx = textures.find(handle);
+            if (idx == textures.end()) {
+                PR_LOG_RUNTIME_ERROR("Could not find Texture handle %x\n", handle);
+            }
 
-			uint32_t& refCount = idx->second.second;
-			refCount--;
+            uint32_t &refCount = idx->second.second;
+            refCount--;
 
-			if (refCount == 0)
-			{
-				shaders.erase(handle);
+            if (refCount == 0) {
+                textures.erase(handle);
 
-				for (const auto& elem : ID_map)
-				{
-					if (elem.second.handle == handle)
-					{
-						ID_map.erase(elem.first);
-						return;
-					}
-				}
-			}
-		}
+                RemoveResourceID(ResourceType::Texture, handle);
+            }
+        }
 
-		template<>
-		std::vector<Texture*> get<Texture>()
-		{
-			std::vector<Texture*> ret;
-			ret.reserve(textures.size());
-			for (auto& _ : textures)
-			{
-				ret.push_back(_.second.first.get());
-			}
+        template<>
+        void removeReference<VertexBuffer>(size_t handle) {
+            const auto &idx = vertexBuffers.find(handle);
+            if (idx == vertexBuffers.end()) {
+                PR_LOG_RUNTIME_ERROR("Could not find VertexBuffer handle %x\n", handle);
+            }
 
-			return ret;
-		}
+            uint32_t &refCount = idx->second.second;
+            refCount--;
 
-		template<>
-		std::vector<VertexBuffer*> get<VertexBuffer>()
-		{
-			std::vector<VertexBuffer*> ret;
-			ret.reserve(vertexBuffers.size());
-			for (auto& _ : vertexBuffers)
-			{
-				ret.push_back(_.second.first.get());
-			}
+            if (refCount == 0) {
+                vertexBuffers.erase(handle);
 
-			return ret;
-		}
+                RemoveResourceID(ResourceType::VertexBuffer, handle);
+            }
+        }
 
-		template<>
-		std::vector<Shader*> get<Shader>()
-		{
-			std::vector<Shader*> ret;
-			ret.reserve(shaders.size());
-			for (auto& _ : shaders)
-			{
-				ret.push_back(_.second.first.get());
-			}
+        template<>
+        void removeReference<Shader>(size_t handle) {
+            const auto &idx = shaders.find(handle);
+            if (idx == shaders.end()) {
+                PR_LOG_RUNTIME_ERROR("Could not find Shader handle %x\n", handle);
+            }
 
-			return ret;
-		}
+            uint32_t &refCount = idx->second.second;
+            refCount--;
 
-		TextureLoader* getTextureLoader() const { return textureLoader; }
-		VertexBufferLoader* getVertexBufferLoader() const { return vertexBufferLoader; }
-		ShaderLoader* getShaderLoader() const { return shaderLoader; }
+            if (refCount == 0) {
+                shaders.erase(handle);
 
-		std::unordered_map<std::string, Resource> getIDMap() const { return ID_map; }
+                RemoveResourceID(ResourceType::Shader, handle);
+            }
+        }
 
-	private:
-		Window* window;
+        template<>
+        std::vector<Texture *> get<Texture>() {
+            std::vector<Texture *> ret;
+            ret.reserve(textures.size());
+            for (auto &_: textures) {
+                ret.push_back(_.second.first.get());
+            }
 
-		//size_t: ID, pointer: data, uint32_t: refcount
-		std::unordered_map<size_t, std::pair<std::unique_ptr<Texture>, uint32_t>> textures;
-		std::unordered_map<size_t, std::pair<std::unique_ptr<VertexBuffer>, uint32_t>> vertexBuffers;
-		std::unordered_map<size_t, std::pair<std::unique_ptr<Shader>, uint32_t>> shaders;
+            return ret;
+        }
 
-		TextureLoader* textureLoader;
-		VertexBufferLoader* vertexBufferLoader;
-		ShaderLoader* shaderLoader;
+        template<>
+        std::vector<VertexBuffer *> get<VertexBuffer>() {
+            std::vector<VertexBuffer *> ret;
+            ret.reserve(vertexBuffers.size());
+            for (auto &_: vertexBuffers) {
+                ret.push_back(_.second.first.get());
+            }
 
-		//Maps for getting the resource ID from the name (only one because there can't be two things with the same name because of the system's naming conventions
-		std::unordered_map<std::string, Resource> ID_map;
+            return ret;
+        }
 
-		//The IDs that we assign the next asset we add
-		size_t texture_ID = 0;
-		size_t vertexBuffer_ID = 0;
-		size_t shader_ID = 0;
+        template<>
+        std::vector<Shader *> get<Shader>() {
+            std::vector<Shader *> ret;
+            ret.reserve(shaders.size());
+            for (auto &_: shaders) {
+                ret.push_back(_.second.first.get());
+            }
 
-		//These values are just for reference, so I'll mark it as TODO
-		constexpr static size_t TexturesSize = 30;
-		constexpr static size_t VertexBuffersSize = 10;
-		constexpr static size_t ShadersSize = 10;
-	};
+            return ret;
+        }
+
+        TextureLoader *getTextureLoader() const { return textureLoader; }
+        VertexBufferLoader *getVertexBufferLoader() const { return vertexBufferLoader; }
+        ShaderLoader *getShaderLoader() const { return shaderLoader; }
+
+        std::unordered_map<std::string, Resource> getIDMap() const { return ID_map; }
+
+    private:
+        void RemoveResourceID(ResourceType type, size_t handle);
+
+        Window *window;
+
+        //size_t: ID, pointer: data, uint32_t: refcount
+        std::unordered_map<size_t, std::pair<std::unique_ptr<Texture>, uint32_t> > textures;
+        std::unordered_map<size_t, std::pair<std::unique_ptr<VertexBuffer>, uint32_t> > vertexBuffers;
+        std::unordered_map<size_t, std::pair<std::unique_ptr<Shader>, uint32_t> > shaders;
+
+        TextureLoader *textureLoader;
+        VertexBufferLoader *vertexBufferLoader;
+        ShaderLoader *shaderLoader;
+
+        //Maps for getting the resource ID from the name (only one because there can't be two things with the same name because of the system's naming conventions
+        std::unordered_map<std::string, Resource> ID_map;
+
+        //The IDs that we assign the next asset we add
+        size_t texture_ID = 0;
+        size_t vertexBuffer_ID = 0;
+        size_t shader_ID = 0;
+
+        //These values are just for reference, so I'll mark it as TODO
+        constexpr static size_t TexturesSize = 30;
+        constexpr static size_t VertexBuffersSize = 10;
+        constexpr static size_t ShadersSize = 10;
+    };
 };
 
 #endif

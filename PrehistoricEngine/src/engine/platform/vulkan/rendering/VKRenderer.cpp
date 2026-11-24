@@ -40,38 +40,57 @@ namespace Prehistoric {
         background = std::make_unique<VKEnvironmentBackground>(window);
     }
 
-    void VKRenderer::UpdateEnvironmentLighting()
-    {
-        auto capture = EnvironmentCaptureSource::FromScene(__AtmosphereConfig.scatteringEnabled ? atmosphere : nullptr, 0);
-        if (!environmentCapture.NeedsBake(capture, __EnvironmentMapConfig.atmosphereRefreshSeconds)) return;
+    void VKRenderer::RequestEnvironmentBake(bool usePanorama) {
+        panoramaOverride = usePanorama;
+        bakeRequested = true;
+    }
+
+    Texture *VKRenderer::getOutputTexture() const {
+        return renderpass->getEditorOutput();
+    }
+
+    void VKRenderer::UpdateEnvironmentLighting() {
+        auto capture = EnvironmentCaptureSource::FromScene(
+            !panoramaOverride && __AtmosphereConfig.scatteringEnabled ? atmosphere : nullptr, 0);
+        if (!bakeRequested && !environmentCapture.NeedsBake(capture, __EnvironmentMapConfig.atmosphereRefreshSeconds))
+            return;
         bool captureSky = capture.scattering;
-        auto* device = static_cast<VKDevice*>(window->getContext()->getDevices());
+        auto *device = static_cast<VKDevice *>(window->getContext()->getDevices());
         VkDescriptorImageInfo source{};
         std::unique_ptr<VKTexture> fallback;
-        if (!captureSky)
-        {
+        if (!captureSky) {
             source = background->LoadSource(window);
-            if (!source.imageView)
-            {
-                fallback.reset(static_cast<VKTexture*>(TextureLoader::LoadTexture(window,
+            if (!source.imageView) {
+                fallback.reset(static_cast<VKTexture *>(TextureLoader::LoadTexture(window,
                     "engine://textures/default.png", Bilinear, ClampToEdge)));
-                source = {fallback->getSampler(), fallback->getImage()->getImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+                source = {
+                    fallback->getSampler(), fallback->getImage()->getImageView(),
+                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+                };
             }
         }
 
-        // Cap startup work independently of the more expensive OpenGL bake settings.
-        // Maps are immutable and survive swapchain recreation.
-        uint32_t irradianceSize = std::clamp(uint32_t(__EnvironmentMapConfig.irradianceMapResolution), 1u, 64u);
-        uint32_t prefilterSize = std::clamp(uint32_t(__EnvironmentMapConfig.prefilterMapResolution), 2u, 256u);
-        uint32_t levels = std::clamp(uint32_t(__EnvironmentMapConfig.prefilterLevels), 2u, 9u);
-        const char* captureShader = captureSky ? "vulkan/atmosphere/capture_CS.spv" : "vulkan/ibl/convert_CS.spv";
+        VkPhysicalDeviceProperties properties;
+        vkGetPhysicalDeviceProperties(device->getPhysicalDevice(), &properties);
+        const auto limit = properties.limits.maxImageDimensionCube;
+        const bool editor = Application::Get().isEditor();
+        // The sample caps startup bake cost. The editor exposes these sizes to the user.
+        uint32_t irradianceSize = std::clamp(__EnvironmentMapConfig.irradianceMapResolution, 1u, editor ? limit : 64u);
+        uint32_t prefilterSize = std::clamp(__EnvironmentMapConfig.prefilterMapResolution, editor ? 1u : 2u,
+                                            editor ? limit : 256u);
+        uint32_t levels = editor
+                              ? std::max(1u, __EnvironmentMapConfig.prefilterLevels)
+                              : std::clamp(__EnvironmentMapConfig.prefilterLevels, 2u, 9u);
+        const char *captureShader = captureSky ? "vulkan/atmosphere/capture_CS.spv" : "vulkan/ibl/convert_CS.spv";
         environmentLighting = std::make_unique<VKEnvironmentLighting>(
             device->getPhysicalDevice(), device->getDevice(), device->getGraphicsQueue().getQueue(),
             device->getQueueFamilyIndices().graphicsFamily, source, irradianceSize, prefilterSize, levels,
-            __EnvironmentMapConfig.environmentMapResolution, ResourceLoader::LoadShaderVK(captureShader),
+            std::clamp(__EnvironmentMapConfig.environmentMapResolution, 1u, limit),
+            ResourceLoader::LoadShaderVK(captureShader),
             ResourceLoader::LoadShaderVK("vulkan/ibl/ibl_CS.spv"), VKEnvironmentLighting::DefaultLutSize,
             VKEnvironmentLighting::DefaultSamples, captureSky ? &capture.sky : nullptr, environmentLighting.get());
         environmentCapture.Complete(capture);
+        bakeRequested = false;
         if (!captureSky && !fallback) background->SetPrefilter(environmentLighting->getPrefilter());
     }
 
@@ -123,7 +142,6 @@ namespace Prehistoric {
         if (!swapchain->GetNextImageIndex())
             return;
         frameReady = true;
-
     }
 
     void VKRenderer::EndRendering() {
@@ -135,82 +153,69 @@ namespace Prehistoric {
         ClearFrameSubmissions();
     }
 
-    void VKRenderer::RenderScene()
-    {
+    void VKRenderer::RenderScene() {
         ProcessDraws(nullptr);
 
-        auto* swapchain = static_cast<VKSwapchain*>(window->getSwapchain());
+        auto *swapchain = static_cast<VKSwapchain *>(window->getSwapchain());
         uint32_t index = swapchain->getAquiredImageIndex();
-        VKCommandBuffer* buffer = commandPool->getCommandBuffer(index);
+        VKCommandBuffer *buffer = commandPool->getCommandBuffer(index);
         buffer->BindBuffer();
         renderpass->BeginRenderpass(buffer, swapchain->getClearColour());
-        background->Draw(buffer->getCommandBuffer(), camera, __AtmosphereConfig.scatteringEnabled ? atmosphere : nullptr);
+        background->Draw(buffer->getCommandBuffer(), camera,
+                         __AtmosphereConfig.scatteringEnabled ? atmosphere : nullptr, environmentPreviewLod);
         ProcessDraws(buffer);
     }
 
-    void VKRenderer::RenderHDR()
-    {
+    void VKRenderer::RenderHDR() {
         renderpass->RenderHDR(getDrawCommandBuffer(), bloomEnabled);
     }
 
-    void VKRenderer::FinishFrame()
-    {
-        VKCommandBuffer* buffer = getDrawCommandBuffer();
+    void VKRenderer::FinishFrame() {
+        VKCommandBuffer *buffer = getDrawCommandBuffer();
+        if (auto *ui = Application::Get().getImGuiLayer()) ui->Draw();
         vkCmdEndRenderPass(buffer->getCommandBuffer());
         buffer->UnbindBuffer();
     }
 
-    void VKRenderer::ProcessDraws(VKCommandBuffer* buffer)
-    {
+    void VKRenderer::ProcessDraws(VKCommandBuffer *buffer) {
         // Each shader owns its descriptor pool. Both traversals assign the same slots.
-        struct Slots
-        {
+        struct Slots {
             uint32_t material = 0;
             uint32_t object = 0;
         };
-        std::unordered_map<VKShader*, Slots> shaderSlots;
-        Slots* slots = nullptr;
-        VKShader* shader = nullptr;
-        auto begin = [&](Pipeline* pipeline, bool wireframe)
-        {
-            shader = static_cast<VKShader*>(pipeline->getShader());
+        std::unordered_map<VKShader *, Slots> shaderSlots;
+        Slots *slots = nullptr;
+        VKShader *shader = nullptr;
+        auto begin = [&](Pipeline *pipeline, bool wireframe) {
+            shader = static_cast<VKShader *>(pipeline->getShader());
             slots = &shaderSlots[shader];
-            if (buffer) static_cast<VKGraphicsPipeline*>(pipeline)->BindPipeline(buffer, wireframe);
+            if (buffer) static_cast<VKGraphicsPipeline *>(pipeline)->BindPipeline(buffer, wireframe);
         };
-        auto beginScene = [&](Pipeline* pipeline)
-        {
+        auto beginScene = [&](Pipeline *pipeline) {
             begin(pipeline, isWireframeMode());
             if (buffer) shader->BindGlobalSets();
             else shader->UpdateGlobalUniforms(this);
         };
-        auto material = [&](Pipeline*, Material* material)
-        {
+        auto material = [&](Pipeline *, Material *material) {
             if (buffer) shader->BindTextureSets(slots->material++);
             else shader->UpdateMaterialUniforms(material, slots->material++);
         };
-        auto object = [&](Pipeline* pipeline, RenderableComponent* renderable)
-        {
-            if (buffer)
-            {
+        auto object = [&](Pipeline *pipeline, RenderableComponent *renderable) {
+            if (buffer) {
                 shader->BindObjectSets(slots->object++);
                 pipeline->RenderPipeline();
-            }
-            else
-            {
+            } else {
                 shader->UpdateObjectUniforms(renderable->getParent(), slots->object++);
             }
         };
-        auto end = [&](Pipeline* pipeline)
-        {
+        auto end = [&](Pipeline *pipeline) {
             if (buffer) pipeline->UnbindPipeline();
         };
         VisitBatches(models_3d, beginScene, material, object, end);
         VisitBatches(models_transparency, beginScene, material, object, end);
-        for (const auto& [pipeline, objects] : models_2d)
-        {
+        for (const auto &[pipeline, objects]: models_2d) {
             begin(pipeline, false);
-            for (RenderableComponent* renderable : objects)
-            {
+            for (RenderableComponent *renderable: objects) {
                 object(pipeline, renderable);
             }
             end(pipeline);

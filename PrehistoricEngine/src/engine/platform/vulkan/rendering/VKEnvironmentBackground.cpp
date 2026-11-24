@@ -10,14 +10,11 @@
 #include "prehistoric/core/resources/loaders/TextureLoader.h"
 #include "prehistoric/common/rendering/shaders/Shader.h"
 
-namespace Prehistoric 
-{
-    namespace 
-    {
+namespace Prehistoric {
+    namespace {
         constexpr VkShaderStageFlags stages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
-        struct BackgroundConstants
-        {
+        struct BackgroundConstants {
             float rayX[4];
             float rayY[4];
             float rayCenter[4];
@@ -27,8 +24,7 @@ namespace Prehistoric
         static_assert(offsetof(BackgroundConstants, sky) == AtmospherePushOffset);
         static_assert(sizeof(BackgroundConstants) == 120);
 
-        void Check(VkResult result) 
-        {
+        void Check(VkResult result) {
             if (result != VK_SUCCESS)
                 PR_LOG_RUNTIME_ERROR("Failed to create Vulkan environment background (VkResult %d)!\n", result);
         }
@@ -36,8 +32,7 @@ namespace Prehistoric
 
     VKEnvironmentBackground::VKEnvironmentBackground(Window *window)
         : device((VKDevice *) window->getContext()->getDevices()),
-          swapchain((VKSwapchain *) window->getSwapchain()) 
-    {
+          swapchain((VKSwapchain *) window->getSwapchain()) {
         VkDescriptorSetLayoutBinding binding{};
         binding.binding = 0;
         binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -73,8 +68,7 @@ namespace Prehistoric
         RecreatePipeline();
     }
 
-    void VKEnvironmentBackground::SetPrefilter(const VkDescriptorImageInfo& imageInfo)
-    {
+    void VKEnvironmentBackground::SetPrefilter(const VkDescriptorImageInfo &imageInfo) {
         VkWriteDescriptorSet write{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
         write.dstSet = descriptorSet;
         write.dstBinding = 0;
@@ -85,19 +79,17 @@ namespace Prehistoric
         vkUpdateDescriptorSets(device->getDevice(), 1, &write, 0, nullptr);
     }
 
-    VkDescriptorImageInfo VKEnvironmentBackground::LoadSource(Window* window)
-    {
-        const auto& location = __EnvironmentMapConfig.environmentMapLocation;
-        if (location != sourceLocation)
-        {
+    VkDescriptorImageInfo VKEnvironmentBackground::LoadSource(Window *window) {
+        const auto &location = __EnvironmentMapConfig.environmentMapLocation;
+        if (location != sourceLocation) {
             texture.reset();
             vkDestroySampler(device->getDevice(), sampler, nullptr);
             sampler = VK_NULL_HANDLE;
             sourceLocation = location;
         }
-        if (!texture && !location.empty())
-        {
-            texture.reset(static_cast<VKTexture*>(TextureLoader::LoadTexture(window, location, Bilinear, ClampToEdge)));
+        if (!texture && !location.empty()) {
+            texture.reset(
+                static_cast<VKTexture *>(TextureLoader::LoadTexture(window, location, Bilinear, ClampToEdge)));
 
             VkSamplerCreateInfo samplerInfo{VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
             VkFormatProperties properties{};
@@ -115,15 +107,14 @@ namespace Prehistoric
             samplerInfo.addressModeV = samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
             Check(vkCreateSampler(device->getDevice(), &samplerInfo, nullptr, &sampler));
         }
-        return 
+        return
         {
             sampler, texture ? texture->getImage()->getImageView() : VK_NULL_HANDLE,
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
         };
     }
 
-    VKEnvironmentBackground::~VKEnvironmentBackground() 
-    {
+    VKEnvironmentBackground::~VKEnvironmentBackground() {
         vkDestroyPipeline(device->getDevice(), atmospherePipeline, nullptr);
         vkDestroyPipeline(device->getDevice(), pipeline, nullptr);
         vkDestroyPipelineLayout(device->getDevice(), pipelineLayout, nullptr);
@@ -132,8 +123,7 @@ namespace Prehistoric
         vkDestroySampler(device->getDevice(), sampler, nullptr);
     }
 
-    void VKEnvironmentBackground::RecreatePipeline() 
-    {
+    void VKEnvironmentBackground::RecreatePipeline() {
         vkDestroyPipeline(device->getDevice(), atmospherePipeline, nullptr);
         vkDestroyPipeline(device->getDevice(), pipeline, nullptr);
         pipeline = VK_NULL_HANDLE;
@@ -141,11 +131,12 @@ namespace Prehistoric
         atmospherePipeline = swapchain->getRenderpass()->CreateFullscreenPipeline("vulkan/background/background_VS.spv",
             "vulkan/atmosphere/scattering_FS.spv", pipelineLayout);
         pipeline = swapchain->getRenderpass()->CreateFullscreenPipeline("vulkan/background/background_VS.spv",
-            "vulkan/background/background_FS.spv", pipelineLayout);
+                                                                        "vulkan/background/background_FS.spv",
+                                                                        pipelineLayout);
     }
 
-    void VKEnvironmentBackground::Draw(VkCommandBuffer commandBuffer, const Camera* camera, const Atmosphere* atmosphere) const
-    {
+    void VKEnvironmentBackground::Draw(VkCommandBuffer commandBuffer, const Camera *camera,
+                                       const Atmosphere *atmosphere, float lod) const {
         VkPipeline selected = atmosphere ? atmospherePipeline : pipeline;
         if (!atmosphere && !texture) return;
         // Remove translation from the actual view matrix, retaining camera rotation.
@@ -153,15 +144,14 @@ namespace Prehistoric
         view.m[12] = view.m[13] = view.m[14] = 0.0f;
         Matrix4f inverse = (camera->getProjectionMatrix() * view).Invert();
         BackgroundConstants constants{};
+        constants.rayX[3] = lod;
 
-        for (int axis = 0; axis < 3; ++axis)
-        {
+        for (int axis = 0; axis < 3; ++axis) {
             constants.rayX[axis] = inverse.m[axis];
             constants.rayY[axis] = inverse.m[4 + axis];
             constants.rayCenter[axis] = inverse.m[8 + axis] + inverse.m[12 + axis];
         }
-        if (atmosphere)
-        {
+        if (atmosphere) {
             constants.sky = GetAtmosphereParameters(*atmosphere);
         }
         auto extent = swapchain->getSwapchainExtent();
@@ -171,9 +161,9 @@ namespace Prehistoric
         vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-        if (!atmosphere)
-        {
-            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0,
+        if (!atmosphere) {
+            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
+                                    &descriptorSet, 0,
                                     nullptr);
         }
         vkCmdPushConstants(commandBuffer, pipelineLayout, stages, 0, sizeof(constants), &constants);

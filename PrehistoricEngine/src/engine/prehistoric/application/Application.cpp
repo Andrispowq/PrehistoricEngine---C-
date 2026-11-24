@@ -7,8 +7,7 @@ namespace Prehistoric
 {
 	Application* Application::instance = nullptr;
 
-	Application::Application()
-	{
+	Application::Application(bool editor) : editorMode(editor) {
 		if (instance)
 			PR_LOG_RUNTIME_ERROR("The application already exists!\n");
 
@@ -23,9 +22,8 @@ namespace Prehistoric
 		InputInstance.Init(engineLayer->getRenderingEngine()->getWindow());
 
 		PushLayer(engineLayer);
-		
-		if (__FrameworkConfig.api == OpenGL)
-		{
+
+		if (editor || __FrameworkConfig.api == OpenGL) {
 			imGUILayer = new ImGuiLayer();
 			PushOverlay(imGUILayer);
 			imGUILayer->SetDarkThemeColors();
@@ -37,8 +35,7 @@ namespace Prehistoric
 
 	Application::~Application()
 	{
-		if (__FrameworkConfig.api == OpenGL)
-		{
+		if (imGUILayer) {
 			//Making sure that the ImGUI layer is deleted before the core engine, therefore deleting the GLFWwindow which is needed by ImGUI
 			layerStack.PopOverlay(imGUILayer);
 			delete imGUILayer;
@@ -116,26 +113,31 @@ namespace Prehistoric
 			if (render && !InputInstance.IsPauseRendering())
 			{
 				engineLayer->BeginRendering();
-				for (auto it = layerStack.rbegin(); it != layerStack.rend(); ++it)
-				{
-					(*it)->Render();
-				}
-
-				if (__FrameworkConfig.api == OpenGL)
-				{
+				auto *renderer = engineLayer->getRenderingEngine()->getRenderer();
+				const bool drawUI = imGUILayer && renderer->CanRenderFrame();
+				auto buildUI = [&]() {
 					imGUILayer->Begin();
 					for (auto it = layerStack.rbegin(); it != layerStack.rend(); ++it)
 					{
 						(*it)->ImGUIRender();
 					}
 					imGUILayer->End();
-				}
+				};
+				// Apply editor scene mutations before recording commands that reference scene assets.
+				if (drawUI && __FrameworkConfig.api == Vulkan) buildUI();
 
+				for (auto it = layerStack.rbegin(); it != layerStack.rend(); ++it) {
+					(*it)->Render();
+				}
+				if (drawUI && __FrameworkConfig.api == OpenGL) {
+					buildUI();
+					imGUILayer->Draw();
+				}
 				engineLayer->EndRendering();
+				if (drawUI) imGUILayer->RenderPlatformWindows();
 
 				frames++;
-			}
-			else
+			} else
 			{
 				using namespace std::chrono_literals;
 				std::this_thread::sleep_for(1ms);

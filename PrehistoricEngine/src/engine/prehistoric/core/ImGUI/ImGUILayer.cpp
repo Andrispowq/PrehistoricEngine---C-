@@ -4,16 +4,19 @@
 
 #include "imgui.h"
 #include "backends/imgui_impl_opengl3.h"
-#include "backends/imgui_impl_vulkan.h"
 #include "backends/imgui_impl_glfw.h"
 
 #include "prehistoric/application/Application.h"
 
 #include "platform/vulkan/framework/context/VKContext.h"
+#include "platform/vulkan/rendering/VKImGui.h"
+#include "platform/opengl/texture/GLTexture.h"
 
 namespace Prehistoric {
     ImGuiLayer::ImGuiLayer() {
     }
+
+    ImGuiLayer::~ImGuiLayer() = default;
 
     void ImGuiLayer::OnAttach() {
         // Setup Dear ImGui context
@@ -53,45 +56,57 @@ namespace Prehistoric {
         if (__FrameworkConfig.api == OpenGL) {
             ImGui_ImplGlfw_InitForOpenGL(glfw_window, true);
             ImGui_ImplOpenGL3_Init("#version 410");
+        } else {
+            ImGui_ImplGlfw_InitForVulkan(glfw_window, true);
+            vulkan = std::make_unique<VKImGui>(static_cast<VKContext *>(window->getContext()),
+                                               static_cast<VKSwapchain *>(window->getSwapchain()));
         }
     }
 
     void ImGuiLayer::OnDetach() {
-        if (__FrameworkConfig.api == OpenGL) {
-            ImGui_ImplOpenGL3_Shutdown();
-            ImGui_ImplGlfw_Shutdown();
-        }
-
+        if (vulkan) vulkan.reset();
+        else ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
     }
 
     void ImGuiLayer::Begin() {
-        if (__FrameworkConfig.api == OpenGL) {
-            ImGui_ImplOpenGL3_NewFrame();
-            ImGui_ImplGlfw_NewFrame();
-        }
-
+        if (vulkan) vulkan->Begin();
+        else ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
     }
 
     void ImGuiLayer::End() {
-        ImGuiIO &io = ImGui::GetIO();
-        Application &app = Application::Get();
-        Window *window = app.getEngineLayer()->getRenderingEngine()->getWindow();
-        io.DisplaySize = ImVec2((float) window->getWidth(), (float) window->getHeight());
-
-        // Rendering
         ImGui::Render();
+    }
 
-        if (__FrameworkConfig.api == OpenGL) {
-            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        }
+    void ImGuiLayer::DrawImage(Texture *texture, float width, float height) {
+        if (!texture || texture->getType() != TEXTURE_2D || width <= 0 || height <= 0) return;
+        ImTextureID id;
+        if (vulkan) id = (ImTextureID) vulkan->BindTexture(static_cast<VKTexture *>(texture));
+        else id = (ImTextureID)(uintptr_t)
+        static_cast<GLTexture *>(texture)->getTextureID();
+        const bool flip = !vulkan;
+        ImGui::Image(id, ImVec2(width, height), ImVec2(0, flip ? 1 : 0), ImVec2(1, flip ? 0 : 1));
+    }
 
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-            GLFWwindow *backup_current_context = glfwGetCurrentContext();
-            ImGui::UpdatePlatformWindows();
+    void ImGuiLayer::Draw() {
+        if (vulkan) {
+            auto *renderer = Application::Get().getEngineLayer()->getRenderingEngine()->getRenderer();
+            auto *buffer = static_cast<VKCommandBuffer *>(renderer->getDrawCommandBuffer());
+            vulkan->Draw(buffer->getCommandBuffer());
+        } else ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
+
+    void ImGuiLayer::RenderPlatformWindows() {
+        if (!(ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)) return;
+        GLFWwindow *previous = vulkan ? nullptr : glfwGetCurrentContext();
+        ImGui::UpdatePlatformWindows();
+        if (vulkan) vulkan->RenderPlatformWindows();
+        else {
             ImGui::RenderPlatformWindowsDefault();
-            glfwMakeContextCurrent(backup_current_context);
+            glfwMakeContextCurrent(previous);
         }
     }
 

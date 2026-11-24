@@ -25,7 +25,8 @@ with tempfile.TemporaryDirectory(prefix='vulkan-background-') as temporary:
             for member, offset in enumerate((48, 64, 80, 96, 112)):
                 assert re.search(r'OpMemberDecorate\s+' + re.escape(block) + rf'\s+{member}\s+Offset\s+{offset}\b', assembly)
         if stage == 'frag':
-            assert ' PushConstant' not in assembly
+            block = re.search(r'OpName\s+(%\S+)\s+"Background"', assembly).group(1)
+            assert re.search(r'OpMemberDecorate\s+' + re.escape(block) + r'\s+0\s+Offset\s+0\b', assembly)
             sampler = re.search(r'OpName\s+(%\S+)\s+"environmentMap"', assembly).group(1)
             assert re.search(r'OpDecorate\s+' + re.escape(sampler) + r'\s+DescriptorSet\s+0\b', assembly)
             assert re.search(r'OpDecorate\s+' + re.escape(sampler) + r'\s+Binding\s+0\b', assembly)
@@ -44,4 +45,4 @@ with tempfile.TemporaryDirectory(prefix='vulkan-background-') as temporary:
     for app in ('Prehistoric', 'PrehistoricEditor'):
         config = json.loads((ROOT / app / 'res/config/settings.json').read_text())
         assert config['environmentMap']['location'] == 'sample://textures/environmentMaps/cape_hill_2k.hdr'
-print('PASS: background SPIR-V, camera-only push constants, HDR sampler, and shared HDR configuration')
+print('PASS: background SPIR-V, camera and preview LOD push constants, HDR sampler, and shared HDR configuration')

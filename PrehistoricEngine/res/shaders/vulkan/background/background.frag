@@ -7,12 +7,12 @@ layout(location = 1) out vec4 outBloom;
 
 layout(set = 0, binding = 0) uniform samplerCube environmentMap;
 
-const float PI = 3.14159265359;
+layout(push_constant) uniform Background { vec4 rayX; } sky;
 
 void main()
 {
     outBloom = vec4(0);
     vec3 ray = normalize(direction);
-    vec3 colour = textureLod(environmentMap, ray, 0.0).rgb;
+    vec3 colour = textureLod(environmentMap, ray, sky.rayX.w).rgb;
     outColour = vec4(colour, 1.0);
 }

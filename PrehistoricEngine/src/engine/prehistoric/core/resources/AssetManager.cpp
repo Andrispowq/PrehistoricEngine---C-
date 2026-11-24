@@ -8,6 +8,13 @@
 #include "platform/vulkan/rendering/shaders/pbr/VKPBRShader.h"
 
 namespace Prehistoric {
+    void AssetManager::RemoveResourceID(ResourceType type, size_t handle) {
+        auto found = std::find_if(ID_map.begin(), ID_map.end(), [=](const auto &entry) {
+            return entry.second.type == type && entry.second.handle == handle;
+        });
+        if (found != ID_map.end()) ID_map.erase(found);
+    }
+
     AssetManager::AssetManager(Window *window) {
         this->window = window;
 
