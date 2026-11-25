@@ -5,136 +5,147 @@
 
 #include "prehistoric/core/engines/RenderingEngine.h"
 
-namespace Prehistoric
-{
-	VKMeshVertexBuffer::VKMeshVertexBuffer(Window* window, const Model& model)
-		: MeshVertexBuffer(window, model)
-	{
-		this->device = reinterpret_cast<VKDevice*>(window->getContext()->getDevices());
-		this->swapchain = (VKSwapchain*)window->getSwapchain();
+namespace Prehistoric {
+    VKMeshVertexBuffer::VKMeshVertexBuffer(Window *window, const Model &model)
+        : MeshVertexBuffer(window, model) {
+        this->device = reinterpret_cast<VKDevice *>(window->getContext()->getDevices());
+        this->swapchain = (VKSwapchain *) window->getSwapchain();
 
-		std::vector<float> vdata;
-		std::vector<uint32_t> idata;
+        std::vector<float> vdata;
+        std::vector<uint32_t> idata;
 
-		vertices.resize(submeshCount);
-		index_offsets.resize(submeshCount);
-		sizes.resize(submeshCount);
+        vertices.resize(submeshCount);
+        index_offsets.resize(submeshCount);
+        sizes.resize(submeshCount);
 
-		size_t vertCount = 0;
-		size_t index = 0;
-		for (auto& mesh : model.getMeshes())
-		{
-			std::vector<float> vdat = mesh.GetVertexData();
-			std::vector<uint32_t> idat = mesh.GetIndexData();
+        size_t vertCount = 0;
+        size_t index = 0;
+        for (auto &mesh: model.getMeshes()) {
+            std::vector<float> vdat = mesh.GetVertexData();
+            std::vector<uint32_t> idat = mesh.GetIndexData();
 
-			for (uint32_t& elem : idat)
-			{
-				elem += (uint32_t)vertCount;
-			}
+            for (uint32_t &elem: idat) {
+                elem += (uint32_t) vertCount;
+            }
 
-			vdata.insert(vdata.end(), vdat.begin(), vdat.end());
-			idata.insert(idata.end(), idat.begin(), idat.end());
+            vdata.insert(vdata.end(), vdat.begin(), vdat.end());
+            idata.insert(idata.end(), idat.begin(), idat.end());
 
-			size_t verts = mesh.getVertices().size();
-			size_t inds = mesh.getIndices().size();
+            size_t verts = mesh.getVertices().size();
+            size_t inds = mesh.getIndices().size();
 
-			vertices[index] = verts;
-			index_offsets[index] = size;
-			sizes[index] = inds;
+            vertices[index] = verts;
+            index_offsets[index] = size;
+            sizes[index] = inds;
 
-			size += (uint32_t)inds;
-			vertCount += verts;
-			index++;
-		}
+            size += (uint32_t) inds;
+            vertCount += verts;
+            index++;
+        }
 
-		//Building mesh data
-		VkDeviceSize vBufferSize = vertCount * Vertex::getSize();
-		VkDeviceSize iBufferSize = size * sizeof(uint32_t);
+        totalVertices = vertCount;
 
-		vertexBuffer = std::make_unique<VKBuffer>(device, vBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		indexBuffer = std::make_unique<VKBuffer>(device, iBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        //Building mesh data
+        VkDeviceSize vBufferSize = vertCount * Vertex::getSize();
+        VkDeviceSize iBufferSize = size * sizeof(uint32_t);
 
-		//Creation of the vertex buffer
-		std::unique_ptr<VKBuffer> stagingBuffer = std::make_unique<VKBuffer>(device, vBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        vertexBuffer = std::make_unique<VKBuffer>(device, vBufferSize,
+                                                  VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT
+                                                  | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                                                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                                  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        indexBuffer = std::make_unique<VKBuffer>(device, iBufferSize,
+                                                 VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+                                                 VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+                                                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                                 VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-		stagingBuffer->MapMemory();
-		stagingBuffer->Store(vdata.data());
-		stagingBuffer->UnmapMemory();
+        //Creation of the vertex buffer
+        std::unique_ptr<VKBuffer> stagingBuffer = std::make_unique<VKBuffer>(
+            device, vBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-		vertexBuffer->Copy(stagingBuffer.get());
+        stagingBuffer->MapMemory();
+        stagingBuffer->Store(vdata.data());
+        stagingBuffer->UnmapMemory();
 
-		//Creation of index buffer
-		stagingBuffer = std::make_unique<VKBuffer>(device, iBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        vertexBuffer->Copy(stagingBuffer.get());
 
-		stagingBuffer->MapMemory();
-		stagingBuffer->Store(idata.data());
-		stagingBuffer->UnmapMemory();
+        //Creation of index buffer
+        stagingBuffer = std::make_unique<VKBuffer>(device, iBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                                   VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                                   VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-		indexBuffer->Copy(stagingBuffer.get());
-	}
+        stagingBuffer->MapMemory();
+        stagingBuffer->Store(idata.data());
+        stagingBuffer->UnmapMemory();
 
-	void VKMeshVertexBuffer::Bind(CommandBuffer* commandBuffer) const
-	{
-		VKCommandBuffer* buffer = (VKCommandBuffer*)commandBuffer;
+        indexBuffer->Copy(stagingBuffer.get());
+    }
 
-		VkDeviceSize offsets[] = { 0 };
+    void VKMeshVertexBuffer::Bind(CommandBuffer *commandBuffer) const {
+        VKCommandBuffer *buffer = (VKCommandBuffer *) commandBuffer;
 
-		vkCmdBindVertexBuffers(buffer->getCommandBuffer(), 0, 1, &vertexBuffer->getBuffer(), offsets);
-		vkCmdBindIndexBuffer(buffer->getCommandBuffer(), indexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32);
-	}
+        VkDeviceSize offsets[] = {0};
 
-	void VKMeshVertexBuffer::Draw(CommandBuffer* commandBuffer, uint32_t submesh) const
-	{
-		if (submesh >= submeshCount)
-		{
-			return;
-		}
+        vkCmdBindVertexBuffers(buffer->getCommandBuffer(), 0, 1, &vertexBuffer->getBuffer(), offsets);
+        vkCmdBindIndexBuffer(buffer->getCommandBuffer(), indexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+    }
 
-		RenderingEngine::getStats().drawcalls += 1;
-		RenderingEngine::getStats().vertexCount += vertices[submesh] * instanceCount;
-		RenderingEngine::getStats().indexCount += sizes[submesh] * instanceCount;
+    void VKMeshVertexBuffer::DrawAll(VKCommandBuffer *buffer) const {
+        if (!size) return;
+        auto &stats = RenderingEngine::getStats();
+        stats.drawcalls += 1;
+        stats.vertexCount += totalVertices * instanceCount;
+        stats.indexCount += size * instanceCount;
+        vkCmdDrawIndexed(buffer->getCommandBuffer(), size, instanceCount, 0, 0, 0);
+    }
 
-		vkCmdDrawIndexed(((VKCommandBuffer*)commandBuffer)->getCommandBuffer(), (uint32_t)sizes[submesh], instanceCount, (uint32_t)index_offsets[submesh], 0, 0);
-	}
+    void VKMeshVertexBuffer::Draw(CommandBuffer *commandBuffer, uint32_t submesh) const {
+        if (submesh >= submeshCount) {
+            return;
+        }
 
-	VkVertexInputBindingDescription VKMeshVertexBuffer::getBindingDescription() const
-	{
-		VkVertexInputBindingDescription bindingDescription;
-		bindingDescription.binding = 0;
-		bindingDescription.stride = (uint32_t)Vertex::getSize();
-		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+        RenderingEngine::getStats().drawcalls += 1;
+        RenderingEngine::getStats().vertexCount += vertices[submesh] * instanceCount;
+        RenderingEngine::getStats().indexCount += sizes[submesh] * instanceCount;
 
-		return bindingDescription;
-	}
+        vkCmdDrawIndexed(((VKCommandBuffer *) commandBuffer)->getCommandBuffer(), (uint32_t) sizes[submesh],
+                         instanceCount, (uint32_t) index_offsets[submesh], 0, 0);
+    }
 
-	std::vector<VkVertexInputAttributeDescription> VKMeshVertexBuffer::getAttributeDescriptions() const
-	{
-		std::vector<VkVertexInputAttributeDescription> attributeDescriptions(4);
+    VkVertexInputBindingDescription VKMeshVertexBuffer::getBindingDescription() const {
+        VkVertexInputBindingDescription bindingDescription;
+        bindingDescription.binding = 0;
+        bindingDescription.stride = (uint32_t) Vertex::getSize();
+        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-		attributeDescriptions[0].binding = 0;
-		attributeDescriptions[0].location = 0;
-		attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescriptions[0].offset = 0;
+        return bindingDescription;
+    }
 
-		attributeDescriptions[1].binding = 0;
-		attributeDescriptions[1].location = 1;
-		attributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
-		attributeDescriptions[1].offset = uint32_t(Vector3f::size());
+    std::vector<VkVertexInputAttributeDescription> VKMeshVertexBuffer::getAttributeDescriptions() const {
+        std::vector<VkVertexInputAttributeDescription> attributeDescriptions(4);
 
-		attributeDescriptions[2].binding = 0;
-		attributeDescriptions[2].location = 2;
-		attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescriptions[2].offset = uint32_t(Vector3f::size() + Vector2f::size());
+        attributeDescriptions[0].binding = 0;
+        attributeDescriptions[0].location = 0;
+        attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[0].offset = 0;
 
-		attributeDescriptions[3].binding = 0;
-		attributeDescriptions[3].location = 3;
-		attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescriptions[3].offset = uint32_t(Vector3f::size() + Vector2f::size() + Vector3f::size());
+        attributeDescriptions[1].binding = 0;
+        attributeDescriptions[1].location = 1;
+        attributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions[1].offset = uint32_t(Vector3f::size());
 
-		return attributeDescriptions;
-	}
+        attributeDescriptions[2].binding = 0;
+        attributeDescriptions[2].location = 2;
+        attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[2].offset = uint32_t(Vector3f::size() + Vector2f::size());
+
+        attributeDescriptions[3].binding = 0;
+        attributeDescriptions[3].location = 3;
+        attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[3].offset = uint32_t(Vector3f::size() + Vector2f::size() + Vector3f::size());
+
+        return attributeDescriptions;
+    }
 };

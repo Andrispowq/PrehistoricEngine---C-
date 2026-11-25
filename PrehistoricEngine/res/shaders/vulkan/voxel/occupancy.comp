@@ -1,0 +1,60 @@
+#version 450
+layout(local_size_x = 64) in;
+layout(std430, binding = 0) buffer Occupancy { uint cells[]; };
+layout(std430, binding = 1) readonly buffer Vertices { float vertices[]; };
+layout(std430, binding = 2) readonly buffer Indices { uint indices[]; };
+layout(binding = 3) uniform sampler2D albedoMap;
+layout(push_constant) uniform Surface
+{
+    mat4 model;
+    vec4 grid;
+    vec4 colour;
+    uvec4 range; // first index, triangle count, grid resolution, textured
+};
+
+vec2 projectCell(vec3 p, int axis)
+{
+    return axis == 0 ? p.yz : (axis == 1 ? p.xz : p.xy);
+}
+
+float cross2(vec2 a, vec2 b) { return a.x * b.y - a.y * b.x; }
+
+void main()
+{
+    uint triangle = gl_GlobalInvocationID.x;
+    if (triangle >= range.y) return;
+    int size = int(range.z);
+    vec3 p[3];
+    vec2 uv[3];
+    for (int i = 0; i < 3; ++i)
+    {
+        uint base = 11u * indices[range.x + triangle * 3u + uint(i)];
+        vec3 position = vec3(vertices[base], vertices[base + 1], vertices[base + 2]);
+        p[i] = ((model * vec4(position, 1)).xyz - grid.xyz) * (float(size) / grid.w);
+        uv[i] = vec2(vertices[base + 3], 1.0 - vertices[base + 4]);
+    }
+    vec3 normal = abs(cross(p[1] - p[0], p[2] - p[0]));
+    int axis = normal.x >= max(normal.y, normal.z) ? 0 : (normal.y >= normal.z ? 1 : 2);
+    vec2 a = projectCell(p[0], axis), b = projectCell(p[1], axis), c = projectCell(p[2], axis);
+    vec2 e = b - a, f = c - a;
+    float area = cross2(e, f);
+    if (abs(area) < 1e-9) return;
+    vec2 lower = max(ceil(min(a, min(b, c)) - 0.5), vec2(0));
+    vec2 upper = min(floor(max(a, max(b, c)) - 0.5), vec2(size - 1));
+    if (any(greaterThan(lower, upper))) return;
+    vec2 du = uv[1] - uv[0], dv = uv[2] - uv[0];
+    vec2 dx = (f.y * du - e.y * dv) / area;
+    vec2 dy = (e.x * dv - f.x * du) / area;
+    for (int y = int(lower.y); y <= int(upper.y); ++y)
+    for (int x = int(lower.x); x <= int(upper.x); ++x)
+    {
+        vec2 at = vec2(x, y) + 0.5 - a;
+        float u = cross2(at, f) / area, v = cross2(e, at) / area;
+        if (min(u, v) < 0 || u + v > 1) continue;
+        ivec3 cell = ivec3(floor(p[0] + u * (p[1] - p[0]) + v * (p[2] - p[0])));
+        if (any(lessThan(cell, ivec3(0))) || any(greaterThanEqual(cell, ivec3(size)))) continue;
+        vec4 texel = range.w != 0u ? textureGrad(albedoMap, uv[0] + u * du + v * dv, dx, dy) : vec4(1);
+        if (texel.a < 0.5) continue;
+        atomicMax(cells[cell.x + size * (cell.y + size * cell.z)], packUnorm4x8(vec4(colour.rgb * texel.rgb, 1)));
+    }
+}

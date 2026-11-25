@@ -445,6 +445,14 @@ In the OpenGL editor, loading an HDR file selects it as the lighting source.
 Regenerate returns to the scene source. Both actions request a bake on the next
 rendered frame and bypass the refresh interval.
 
+## Vulkan occupied-voxel view
+
+Open Sponza in the Vulkan editor and press **V** in the viewport, or enable the
+occupied-voxel view in **Render Settings**. Adjust the grid center and width to
+frame the geometry. The view shows mesh albedo in a 128³ grid. Moving the camera
+reuses the grid. Changes to mesh transforms, materials or grid placement trigger
+a new bake. The grid is allocated on first use.
+
 ## OpenGL voxel rendering
 
 Set `framework.api.active` to `OpenGL` in the application's

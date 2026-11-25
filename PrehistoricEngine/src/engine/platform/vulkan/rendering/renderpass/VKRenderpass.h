@@ -12,6 +12,7 @@ namespace Prehistoric {
     class Water;
     class VKBuffer;
     class VKRenderer;
+    class VKVoxelView;
     class VKSwapchain;
     class VKImage;
 
@@ -22,7 +23,7 @@ namespace Prehistoric {
         virtual ~VKRenderpass();
 
         void BeginRenderpass(VKCommandBuffer *commandBuffer, Vector4f clearColour,
-                             const VKFramebuffer *target = nullptr);
+                             const VKFramebuffer *target = nullptr, bool sampleDepth = false);
 
         struct WaterTargets {
             std::unique_ptr<VKTexture> reflection, refraction;
@@ -50,6 +51,10 @@ namespace Prehistoric {
             VkDescriptorSet inputs;
             float settings[4];
         };
+
+        std::unique_ptr<VKVoxelView> voxelPass;
+
+        void RenderLitHDR(VKCommandBuffer *commandBuffer, VKRenderer &renderer, bool bloomEnabled, bool underwater);
 
         void CreateScenePass();
 
@@ -87,6 +92,7 @@ namespace Prehistoric {
         VkFramebuffer editorFramebuffer{};
         VkRenderPass editorPass{};
         VkRenderPass renderpass{};
+        VkRenderPass sceneWithReadableDepth{};
         VkRenderPass bloomPass{};
         VkRenderPass presentPass{};
         VkDescriptorSetLayout hdrSetLayout{};

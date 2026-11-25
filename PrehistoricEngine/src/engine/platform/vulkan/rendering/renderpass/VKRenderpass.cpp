@@ -1,5 +1,6 @@
 #include "Includes.hpp"
 #include "VKRenderpass.h"
+#include "../VKVoxelView.h"
 #include "platform/vulkan/rendering/VKRenderer.h"
 #include "platform/vulkan/rendering/VKShadowPass.h"
 #include "platform/vulkan/rendering/VKEnvironmentLighting.h"
@@ -204,6 +205,10 @@ namespace Prehistoric {
         scene.pDepthStencilAttachment = &depthRef;
         if (resolve) scene.pResolveAttachments = resolves;
         uint32_t count = resolve ? 5 : 3;
+        sceneWithReadableDepth = CreatePass(device->getDevice(), scene, count, attachments);
+        // Water captures and frames without media have no depth consumer.
+        attachments[2].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachments[2].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         renderpass = CreatePass(device->getDevice(), scene, count, attachments);
         sceneFramebuffer = CreateFramebuffer(renderpass, extent, count, views);
     }
@@ -525,16 +530,17 @@ namespace Prehistoric {
         vkDestroySampler(handle, sampler, nullptr);
         vkDestroyRenderPass(handle, presentPass, nullptr);
         vkDestroyRenderPass(handle, bloomPass, nullptr);
+        vkDestroyRenderPass(handle, sceneWithReadableDepth, nullptr);
         vkDestroyRenderPass(handle, renderpass, nullptr);
     }
 
     void VKRenderpass::BeginRenderpass(VKCommandBuffer *commandBuffer, Vector4f clearColour,
-                                       const VKFramebuffer *target) {
+                                       const VKFramebuffer *target, bool sampleDepth) {
         VkClearValue clear[3]{};
         clear[0].color = {clearColour.x, clearColour.y, clearColour.z, clearColour.w};
         clear[2].depthStencil = {1, 0};
         VkRenderPassBeginInfo info{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
-        info.renderPass = renderpass;
+        info.renderPass = sampleDepth ? sceneWithReadableDepth : renderpass;
         const auto *framebuffer = target ? target : sceneFramebuffer;
         info.framebuffer = framebuffer->getFramebuffer();
         info.renderArea.extent = framebuffer->getExtent();
@@ -547,8 +553,8 @@ namespace Prehistoric {
         vkCmdSetScissor(commandBuffer->getCommandBuffer(), 0, 1, &info.renderArea);
     }
 
-    void VKRenderpass::RenderHDR(VKCommandBuffer *commandBuffer, VKRenderer &renderer, bool bloomEnabled,
-                                 bool underwater) {
+    void VKRenderpass::RenderLitHDR(VKCommandBuffer *commandBuffer, VKRenderer &renderer, bool bloomEnabled,
+                                    bool underwater) {
         VkCommandBuffer command = commandBuffer->getCommandBuffer();
         vkCmdEndRenderPass(command);
         auto draw = [&](VkRenderPass pass, VkPipeline pipeline, const BloomDraw &draw,
@@ -600,6 +606,18 @@ namespace Prehistoric {
                      float(addBloom), float(underwater)
                  }
              });
+    }
+
+    void VKRenderpass::RenderHDR(VKCommandBuffer *commandBuffer, VKRenderer &renderer, bool bloomEnabled,
+                                 bool underwater) {
+        const auto command = commandBuffer->getCommandBuffer();
+        const auto extent = swapchain->getSwapchainExtent();
+        const auto framebuffer = presentFramebuffers[swapchain->getAquiredImageIndex()];
+        if (renderer.voxelView) {
+            const auto pass = editorOutput ? editorPass : presentPass;
+            if (!voxelPass) voxelPass = std::make_unique<VKVoxelView>(device, *this, pass);
+            voxelPass->Render(command, renderer, pass, editorOutput ? editorFramebuffer : framebuffer, extent);
+        } else RenderLitHDR(commandBuffer, renderer, bloomEnabled, underwater);
         if (editorOutput) {
             vkCmdEndRenderPass(command);
             VkRenderPassBeginInfo info{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};

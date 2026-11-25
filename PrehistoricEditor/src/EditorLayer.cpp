@@ -2,6 +2,7 @@
 
 #include "prehistoric/application/Application.h"
 #include "platform/opengl/rendering/GLRenderer.h"
+#include "platform/vulkan/rendering/VKRenderer.h"
 
 #include "imgui.h"
 #include "imgui_internal.h"
@@ -110,6 +111,14 @@ void EditorLayer::ImGUIRender() {
             if (ImGui::Checkbox("Bloom (K)", &bloom)) renderer->setBloomEnabled(bloom);
 
             auto *gl = dynamic_cast<Prehistoric::GLRenderer *>(renderer);
+            if (auto *vk = dynamic_cast<Prehistoric::VKRenderer *>(renderer)) {
+                ImGui::Checkbox("Voxel View (V)", &vk->voxelView);
+                if (vk->voxelView) {
+                    ImGui::DragFloat3("Volume Center", &vk->voxelCenter.x, 1.0f);
+                    ImGui::DragFloat("Volume Width", &vk->voxelExtent, 1.0f, 1.0f, 100000.0f, "%.1f",
+                                     ImGuiSliderFlags_AlwaysClamp);
+                }
+            }
             if (gl && gl->getVoxelPass()->IsSupported()) {
                 auto &settings = gl->getVoxelPass()->GetSettings();
                 ImGui::Separator();

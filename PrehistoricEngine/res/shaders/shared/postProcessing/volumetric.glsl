@@ -34,6 +34,14 @@ vec2 intersectSphere(vec3 origin, vec3 direction, vec4 sphere, float surfaceDist
 vec3 compositeVolumes(vec3 background, vec3 origin, vec3 direction, float surfaceDistance, float sampleOffset)
 {
     vec2 intervals[MaxSpheres];
+    float start = surfaceDistance;
+    for (int i = 0; i < sphereCount; ++i)
+    {
+        intervals[i] = intersectSphere(origin, direction, sphereBounds[i], surfaceDistance);
+        if (intervals[i].x < intervals[i].y) start = min(start, intervals[i].x);
+    }
+    if (start >= surfaceDistance) return background;
+
     vec3 scatter[MaxSpheres];
     vec3 albedo[MaxSpheres];
     // Approximate isotropic sky and ground lighting with two hemispheres.
@@ -43,14 +51,12 @@ vec3 compositeVolumes(vec3 background, vec3 origin, vec3 direction, float surfac
     float cosine = clamp(dot(direction, sunDirection.xyz), -1.0, 1.0);
     for (int i = 0; i < sphereCount; ++i)
     {
-        intervals[i] = intersectSphere(origin, direction, sphereBounds[i], surfaceDistance);
         albedo[i] = clamp(sphereMedia[i].rgb, 0.0, 1.0);
         scatter[i] = albedo[i] * phaseFunction(cosine, volumeAnisotropy(i));
     }
 
     float transmittance = 1.0;
     vec3 radiance = vec3(0.0);
-    float start = 0.0;
     // Split at sphere boundaries so small or disjoint volumes still receive samples.
     for (int segment = 0; segment < 2 * sphereCount && start < surfaceDistance; ++segment)
     {

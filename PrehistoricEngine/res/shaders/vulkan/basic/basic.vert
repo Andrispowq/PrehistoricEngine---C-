@@ -29,6 +29,6 @@ void main()
     gl_Position = sceneClip(proj, view, worldPos);
 
 	position_FS = worldPos.xyz;
-	texture_FS = texture_VS;
+    texture_FS = vec2(texture_VS.x, 1.0 - texture_VS.y);
 	normal_FS = (model * vec4(normal_VS, 0)).xyz;
 }

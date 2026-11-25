@@ -30,7 +30,7 @@ void main()
 	}
 
 	position_FS = worldPosition.xyz;
-	texture_FS = texture_VS;
+    texture_FS = vec2(texture_VS.x, 1.0 - texture_VS.y);
 	normal_FS = N;
 	tangent_FS = T;
 }

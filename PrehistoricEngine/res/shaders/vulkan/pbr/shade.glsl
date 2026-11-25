@@ -13,7 +13,7 @@ void shadeSurface(vec3 albedoColour, float metallic, float roughness, float occl
 
     if (any(greaterThan(sunRadiance.rgb, vec3(0))))
     {
-        float visibility = cascadeSunVisibility(position_FS, normalize(normal_FS), 0.65, false);
+        float visibility = cascadeSunVisibility(position_FS, N, 0.65, false);
         Lo = visibility * directPbrLight(N, V, sunDirection.xyz, F0, albedoColour, metallic, roughness, sunRadiance.rgb);
     }
 

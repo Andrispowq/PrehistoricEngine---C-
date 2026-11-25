@@ -202,8 +202,11 @@ namespace Prehistoric {
                     const auto transform = cascades.matrices[i] * object->getParent()->getWorldTransform().
                                            getTransformationMatrix();
                     vkCmdPushConstants(cmd, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, 64, transform.m);
-                    for (unsigned sub = 0; sub < vertices->getSubmeshCount(); ++sub)
-                        vertices->Draw(buffer, sub);
+                    if (vertices->getType() == VertexBufferType::MESH)
+                        static_cast<VKMeshVertexBuffer *>(vertices)->DrawAll(buffer);
+                    else
+                        for (unsigned sub = 0; sub < vertices->getSubmeshCount(); ++sub)
+                            vertices->Draw(buffer, sub);
                 };
                 for (const auto *batches: {&renderer.getModels3D(), &renderer.getModelsTransparency()})
                     Renderer::VisitBatches(*batches, bind, [](Pipeline *, Material *) {

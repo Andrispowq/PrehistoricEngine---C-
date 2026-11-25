@@ -1,6 +1,7 @@
 #include "Includes.hpp"
 #include "prehistoric/core/resources/EngineResources.h"
 #include "ImGUILayer.h"
+#include "platform/vulkan/rendering/VKRenderer.h"
 
 #include "imgui.h"
 #include "backends/imgui_impl_opengl3.h"
@@ -77,19 +78,22 @@ namespace Prehistoric {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        if (vulkan || ImGui::GetIO().WantTextInput) return;
-        auto* renderer = Application::Get().getEngineLayer()->getRenderingEngine()->getRenderer();
-        auto* voxels = static_cast<GLRenderer*>(renderer)->getVoxelPass();
+        if (ImGui::GetIO().WantTextInput) return;
+        auto *renderer = Application::Get().getEngineLayer()->getRenderingEngine()->getRenderer();
+        if (vulkan) {
+            auto *vk = static_cast<VKRenderer *>(renderer);
+            if (ImGui::IsKeyPressed(ImGuiKey_V, false)) vk->voxelView = !vk->voxelView;
+            return;
+        }
+        auto *voxels = static_cast<GLRenderer *>(renderer)->getVoxelPass();
         if (!voxels->IsSupported()) return;
 
-        auto& settings = voxels->GetSettings();
+        auto &settings = voxels->GetSettings();
         if (ImGui::IsKeyPressed(ImGuiKey_V, false)) settings.debugView = !settings.debugView;
         if (ImGui::IsKeyPressed(ImGuiKey_G, false)) settings.globalIllumination = !settings.globalIllumination;
-        if (ImGui::IsKeyPressed(ImGuiKey_B, false))
-        {
+        if (ImGui::IsKeyPressed(ImGuiKey_B, false)) {
             const int count = static_cast<int>(std::size(GLVoxelRendererPass::Resolutions));
-            for (int step = 1; step <= count; ++step)
-            {
+            for (int step = 1; step <= count; ++step) {
                 const int index = (settings.resolutionIndex + step) % count;
                 if (!voxels->CanUseResolution(index)) continue;
                 settings.resolutionIndex = index;

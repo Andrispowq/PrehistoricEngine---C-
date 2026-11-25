@@ -163,6 +163,10 @@ namespace Prehistoric {
     }
 
     void VKRenderer::RenderScene() {
+        if (voxelView) {
+            getDrawCommandBuffer()->BindBuffer();
+            return;
+        }
         renderpass->RetainWaterTargets(waters);
         for (auto *water: waters) {
             renderpass->GetWaterTargets(water);
@@ -207,7 +211,7 @@ namespace Prehistoric {
                 vkCmdEndRenderPass(buffer->getCommandBuffer());
             }
         }
-        renderpass->BeginRenderpass(buffer, swapchain->getClearColour());
+        renderpass->BeginRenderpass(buffer, swapchain->getClearColour(), nullptr, !getVolumetricSpheres().empty());
         background->Draw(buffer->getCommandBuffer(), camera,
                          __AtmosphereConfig.scatteringEnabled ? atmosphere : nullptr, environmentPreviewLod);
         ProcessDraws(buffer);

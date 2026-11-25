@@ -38,7 +38,8 @@ OpenGL and Vulkan water are enabled in the sample. Vulkan selects its geometry o
    Vulkan composites the editable spheres after bloom and before underwater effects and tone mapping. Both backends
    share the volume integration shader. Vulkan clips rays against sampled scene depth, using the nearest depth sample
    at MSAA edges. Voxel-based sun visibility depends on the voxel rendering port.
-3. **Voxel rendering.** Port the occupied-voxel debug view, cached occluder and radiance volumes, emissive and sun
+3. **Voxel rendering.** Vulkan has a cached 128³ occupied-voxel debug view for triangle meshes. Next port the occluder
+   and radiance volumes, emissive and sun
    injection, diffuse bounce propagation, isotropic and six-direction mip chains, full- and half-resolution cone tracing
    and surface-aware composite. Include voxel sun and point-light visibility, grid and memory limits, invalidation,
    editor controls, shortcuts and stage timings. Use Midnight Sponza with bloom disabled.

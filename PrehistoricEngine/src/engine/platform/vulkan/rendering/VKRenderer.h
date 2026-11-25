@@ -34,6 +34,10 @@ namespace Prehistoric {
 
         const VKShadowPass &GetShadows() const { return *shadows; }
 
+        bool voxelView = false;
+        Vector3f voxelCenter{0.0f};
+        float voxelExtent = 400.0f;
+
         void RequestEnvironmentBake(bool usePanorama) override;
 
         Texture *getOutputTexture() const override;
