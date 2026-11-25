@@ -468,6 +468,7 @@ namespace Prehistoric {
                     ReadWorldVector(pose->at("forward")),
                     ReadWorldVector(pose->at("up"))
                 };
+                if (pose->contains("bloom")) initialCamera->bloom = pose->at("bloom").get<bool>();
                 if (const auto exposure = pose->find("exposure"); exposure != pose->end()) {
                     initialCamera->exposure = std::max(0.01f, exposure->get<float>());
                 }

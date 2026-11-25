@@ -80,6 +80,7 @@ namespace Prehistoric {
         VkPipelineLayout lightLayout{};
         VkDescriptorSetLayout lightSet{};
         VkDescriptorSet lightInputs{};
+        VkImageView previousEnvironment{};
         Vec4 previousSun{}, previousDirection{};
         int previousBounces = -1;
         bool previousDirectional = false, previousVoxelShadows = false;

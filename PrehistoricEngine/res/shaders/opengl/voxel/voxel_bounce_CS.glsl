@@ -7,6 +7,8 @@ layout(binding = 1, rgba16f) uniform image3D accumulatedRadiance;
 layout(binding = 2, rgba16f) uniform writeonly image3D nextRadiance;
 uniform bool writeNext;
 
+layout(binding = 5) uniform samplerCube coneEnvironment;
+uniform bool useEnvironment;
 #include "opengl/voxel/voxel_cones.glsl"
 #include "opengl/voxel/voxel_surface.glsl"
 

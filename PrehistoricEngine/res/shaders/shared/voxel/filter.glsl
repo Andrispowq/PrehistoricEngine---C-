@@ -1,12 +1,12 @@
-vec3 filteredIndirect(ivec2 pixel, ivec2 size, vec3 position, vec3 normal, int traceStride, float voxelSize, vec3 volumeMin, float volumeExtent)
+vec4 filteredIndirect(ivec2 pixel, ivec2 size, vec3 position, vec3 normal, int traceStride, float voxelSize, vec3 volumeMin, float volumeExtent)
 {
     bool halfResolution = traceStride == 2;
     ivec2 center = pixel / traceStride;
     vec4 indirect = texelFetch(indirectImage, center, 0);
-    if (!halfResolution && indirect.a == 0.0) return vec3(0);
+    if (!halfResolution && indirect.a == 0.0) return vec4(0);
 
     vec3 uvw = (position - volumeMin) / volumeExtent;
-    if (halfResolution && (any(lessThan(uvw, vec3(0))) || any(greaterThanEqual(uvw, vec3(1))))) return vec3(0);
+    if (halfResolution && (any(lessThan(uvw, vec3(0))) || any(greaterThanEqual(uvw, vec3(1))))) return vec4(0);
     vec3 sum = halfResolution ? vec3(0.0) : 4.0 * indirect.rgb;
     float total = halfResolution ? 0.0 : 4.0;
     ivec2 indirectSize = textureSize(indirectImage, 0);
@@ -33,5 +33,11 @@ vec3 filteredIndirect(ivec2 pixel, ivec2 size, vec3 position, vec3 normal, int t
         total += weight;
     }
 
-    return total < 0.001 ? vec3(0) : sum / total;
+    return total < 0.001 ? vec4(0) : vec4(sum / total, 1.0);
+}
+
+// Replace the existing diffuse sky term only where the trace yielded a receiver.
+vec3 diffuseTraceCorrection(vec4 traced, vec3 skyIrradiance, float strength)
+{
+    return traced.a * (strength * traced.rgb - min(strength, 1.0) * skyIrradiance);
 }

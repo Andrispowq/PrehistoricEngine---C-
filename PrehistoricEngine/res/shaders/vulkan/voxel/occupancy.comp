@@ -73,7 +73,7 @@ void main()
             float metal =
             material.x < 0 ? textureGrad(metallicMap, uv[0] + u * du + v * dv, dx, dy).r : material.x;
             atomicMax(cells[surfaces + index], packBounceSurface(base * (1 - clamp(metal, 0, 1)), n));
-            vec3 encoded = clamp(log2(1.0 + base * colour.a) / 8.0, 0.0, 1.0);
+            vec3 encoded = encodeVoxelRadiance(base * colour.a);
             float priority = max(encoded.r, max(encoded.g, encoded.b));
             atomicMax(cells[surfaces + count + index],
                     packUnorm4x8(vec4(encoded, (1.0 + 254.0 * priority) / 255.0)));

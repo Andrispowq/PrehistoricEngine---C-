@@ -1,5 +1,6 @@
 #include "Includes.hpp"
 #include "GLVoxelRendererPass.h"
+#include "prehistoric/core/modules/environmentMapRenderer/EnvironmentMapRenderer.h"
 
 #include "platform/opengl/rendering/GLRenderer.h"
 #include "platform/opengl/rendering/shaders/voxel/GLVoxelisationShader.h"
@@ -99,13 +100,15 @@ namespace Prehistoric {
             int traceDepth;
             bool voxelSunShadows;
             bool directionalMips;
+            uint32_t environment;
             SceneState meshes;
             SceneState transparentCasters;
 
             bool operator==(const BakeInputs &other) const {
                 return center == other.center && extent == other.extent && traceDepth == other.traceDepth
                        && voxelSunShadows == other.voxelSunShadows && directionalMips == other.directionalMips
-                       && meshes == other.meshes && transparentCasters == other.transparentCasters;
+                       && environment == other.environment && meshes == other.meshes && transparentCasters == other.
+                       transparentCasters;
             }
         };
     }
@@ -224,6 +227,8 @@ namespace Prehistoric {
         filterShader->AddUniform("volumeExtent");
         compositeShader->AddUniform("traceStride");
         bounceShader->AddUniform("writeNext");
+        bounceShader->AddUniform("useEnvironment");
+        filterShader->AddUniform("cameraPosition");
 
         shadowShader = std::make_unique<VoxelShadowShader>();
         if (!shadowShader->AddShader(ResourceLoader::LoadShaderGL("opengl/voxel/voxel_shadow_VS.glsl"), VERTEX_SHADER)
@@ -381,6 +386,8 @@ namespace Prehistoric {
             glBindImageTexture(2, writeNext ? bounceVolumes[1 - source] : 0, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
             bounceShader->Bind(nullptr);
             BindDirectionalMips(*bounceShader, settings.directionalMips);
+            static_cast<GLRenderer *>(renderer)->getEnvironmentLighting().getEnvironmentMap()->Bind(5);
+            bounceShader->SetUniformi("useEnvironment", bounce == 1);
             bounceShader->SetUniformi("writeNext", writeNext);
             glDispatchCompute(resolution / 4, resolution / 4, resolution / 4);
             bounceShader->Unbind();
@@ -507,10 +514,14 @@ namespace Prehistoric {
         const bool voxelSunShadows = !debugView && UsesVoxelSunShadows();
         BakeInputs inputs{
             settings.center, settings.extent, traceDepth, voxelSunShadows,
-            !debugView && settings.directionalMips, CaptureBatches(renderer->getModels3D(),
-                                                                   debugView
-                                                                       ? CaptureMode::DebugColour
-                                                                       : CaptureMode::Radiance, captureBounceSurfaces),
+            !debugView && settings.directionalMips,
+            captureBounceSurfaces
+                ? static_cast<GLRenderer *>(renderer)->getEnvironmentLighting().getEnvironmentMap()->getID()
+                : 0,
+            CaptureBatches(renderer->getModels3D(),
+                           debugView
+                               ? CaptureMode::DebugColour
+                               : CaptureMode::Radiance, captureBounceSurfaces),
             {}
         };
         if (lighting.source && !voxelSunShadows)
@@ -667,6 +678,8 @@ namespace Prehistoric {
             const auto *main = static_cast<GLRenderer *>(renderer)->getMainPass();
             glBindTextureUnit(0, radianceVolume);
             glBindTextureUnit(8, debugVolume);
+            auto &environment = static_cast<GLRenderer *>(renderer)->getEnvironmentLighting();
+            environment.getEnvironmentMap()->Bind(5);
             main->getPositionMetallicImage()->Bind(1);
             main->getAlbedoRoughnessImage()->Bind(2);
             main->getNormalImage()->Bind(3);
@@ -679,6 +692,9 @@ namespace Prehistoric {
             glBindImageTexture(1, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F);
 
             filterShader->Bind(nullptr);
+            filterShader->SetUniform("cameraPosition", renderer->getCamera()->getPosition());
+            main->getBloomImage()->Bind(4);
+            environment.getIrradianceMap()->Bind(5);
             filterShader->SetUniformf("giStrength", settings.giStrength);
             filterShader->SetUniformf("voxelSize", settings.extent / resolution);
             filterShader->SetUniformi("traceStride", stride);

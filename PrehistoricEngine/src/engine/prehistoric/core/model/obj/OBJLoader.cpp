@@ -98,9 +98,15 @@ namespace Prehistoric {
                                          material.diffuse[0], material.diffuse[1],
                                          material.diffuse[2]
                                      });
-            new_mat->addVector4f(MROT, {
-                                     /*material.metallic*/ 0, /*material.roughness*/ 0.3f, 1, -1
-                                 });
+            // A classic MTL with no specular lobe should import as a matte dielectric.
+            const bool matte = material.illum == 1 ||
+                               (material.illum == 2 && material.specular[0] == 0 && material.specular[1] == 0 &&
+                                material.specular[2] == 0 && material.specular_texname.empty() &&
+                                material.specular_highlight_texname.empty());
+            const float roughness = material.roughness > 0
+                                        ? material.roughness
+                                        : (matte && material.metallic == 0 ? 1.0f : 0.3f);
+            new_mat->addVector4f(MROT, {material.metallic, roughness, 1, -1});
             new_mat->addFloat(EMISSION, 0.0f);
 
             model.AddMaterial(new_mat);

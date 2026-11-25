@@ -41,8 +41,10 @@ vec3 traceCone(vec3 origin, vec3 direction, float cellSize)
     float distance = cellSize;
     float hitDistance;
     ivec3 hitCell;
-    bool blocked = voxelFirstHit(origin / cellSize, direction, 0.4 / cellSize, hitDistance, hitCell);
-    float stop = blocked ? hitDistance * cellSize : 0.4;
+    bool blocked = voxelFirstHit(origin / cellSize, direction, 1.733 / cellSize, hitDistance, hitCell);
+    float stop = hitDistance * cellSize;
+    // An exhausted traversal inside the grid is inconclusive. Only a grid exit sees sky.
+    bool escaped = !blocked && !inside(origin + direction * stop);
     for (int i = 0; i < 12 && sum.a < 0.95 && distance < stop; ++i)
     {
         vec3 p = origin + direction * distance;
@@ -55,6 +57,13 @@ vec3 traceCone(vec3 origin, vec3 direction, float cellSize)
     }
     if (blocked)
     sum.rgb += (1.0 - sum.a) * filterHitRadiance(hitCell, origin / cellSize, direction, hitDistance);
+    else if (escaped && useEnvironment && sum.a < 1.0)
+    {
+        // The cone diameter grows by 0.9 per unit distance. A cube face spans two units.
+        float skyLod = log2(max(1.0, 0.45 * float(textureSize(coneEnvironment, 0).x)));
+        // Match the diffuse irradiance convention of ConvolveEnvironment for an open hemisphere.
+        sum.rgb += (1.0 - sum.a) * 3.14159265 * textureLod(coneEnvironment, direction, skyLod).rgb;
+    }
     return sum.rgb;
 }
 

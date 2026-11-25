@@ -14,6 +14,8 @@ uniform float volumeExtent;
 uniform mat4 inverseViewProjection;
 uniform int traceStride;
 
+layout(binding = 5) uniform samplerCube coneEnvironment;
+const bool useEnvironment = true;
 #include "opengl/voxel/voxel_cones.glsl"
 
 const float voxelNearClip = -1.0;

@@ -1,6 +1,11 @@
 # VXGI improvement plan
 
-Use [Midnight Sponza](../PrehistoricEditor/res/world/sponza_midnight_gi.json) as the emissive-light benchmark. The OpenGL editor opens it with VXGI enabled on supported hardware, a 256³ grid subject to the GPU memory budget, four diffuse bounces, and directional mips. Half-resolution tracing is optional. The fixed sun sits below the planet, so the three scene emitters supply the voxel radiance. Use [Milky Way Sponza](../Prehistoric/res/world/sponza_night_gi.json) to check the same emitters with HDR environment lighting.
+Use [Midnight Sponza](../PrehistoricEditor/res/world/sponza_midnight_gi.json) as the emissive-light benchmark. The
+OpenGL editor opens it with VXGI enabled on supported hardware, a 256³ grid subject to the GPU memory budget, four
+diffuse bounces, and directional mips. Half-resolution tracing is optional. The fixed sun sits below the planet, so the
+three emissive cubes and one ground-floor curtain supply the voxel radiance. The startup camera disables bloom so the
+curtain and mirror silhouette remain visible together.
+Use [Milky Way Sponza](../Prehistoric/res/world/sponza_night_gi.json) for the HDR panorama comparison.
 
 ## References
 
@@ -15,8 +20,17 @@ IDKEngine describes rasterizing from three axes without a geometry shader, combi
 1. **Establish a GPU baseline.** Use the editor's **Voxel GPU Timings** to measure the occluder bake, radiance injection, bounce propagation, final mip generation, cone tracing, and filter/composite. The timers are in place. Record a repeatable fixed-camera and moving-camera sequence with bloom off. Keep output and voxel resolution, grid bounds, bounce count, GI strength, and exposure fixed. Collect warm frame samples for GI on and off, and measure cold bakes separately from light changes.
 2. **Reduce per-frame tracing cost.** The half-resolution prototype traces once per 2×2 block and upsamples using surface position and normal. Compare it against full-resolution tracing around silhouettes, floor detail, and thin curtains. Test IDKEngine-style temporal sampling with reprojection and history rejection for disocclusion, camera cuts, or radiance changes. Measure cost, stability, and ghosting before changing the default. [IDKEngine cone tracer](https://github.com/BoyBaykiller/IDKEngine/blob/master/IDKEngine/Source/Render/VXGI/ConeTracing/ConeTracer.cs)
 3. **Improve directional radiance filtering.** Six half-resolution mip chains now composite near voxels over far voxels and are used for bounce propagation and the final trace. Keep the isotropic toggle for A/B tests. Measure indirect energy on both sides of a solid wall or curtain from matched cameras and compare an exposed receiver alongside it to distinguish leaks from changes in overall bounce energy. Record bake time, trace time, and VRAM at matched grid and bounce settings. [Villegas's anisotropic voxels](https://jose-villegas.github.io/post/deferred_voxel_shading/#3-anisotropic-voxels)
-4. **Add roughness-aware indirect specular.** Use the existing normal, roughness, metallic, and view direction to trace a reflection cone. Compare polished and rough receivers around the emitters. Check energy when composing voxel reflections with environment reflections and measure the extra GPU cost. [Villegas's voxel cone tracing](https://jose-villegas.github.io/post/deferred_voxel_shading/#4-voxel-cone-tracing)
+4. **Add roughness-aware indirect specular.** Use the existing normal, roughness, metallic, and view direction to trace
+   a reflection cone. Use the polished metal sphere between the ground-floor curtains. The nearby fabric has an emission
+   override of 400. Compare the sphere at zero and increasing roughness. Check energy when composing voxel reflections
+   with environment reflections and measure the extra GPU
+   cost. [Villegas's voxel cone tracing](https://jose-villegas.github.io/post/deferred_voxel_shading/#4-voxel-cone-tracing)
 5. **Decouple voxelization from relighting.** Retain static voxel surface attributes and reinject radiance when a light changes. Define invalidation for geometry, transform, and material edits, then test overlapping static and dynamic surfaces. Benchmark the existing dominant-axis geometry shader against IDKEngine's three-axis raster path with matched coverage, resolution, and collision rules. Time rasterization, clearing, resolve, and relighting separately before choosing a path. [Villegas's deferred voxel shading](https://jose-villegas.github.io/post/deferred_voxel_shading/) · [IDKEngine voxelization](https://github.com/BoyBaykiller/IDKEngine#voxel-global-illumination)
+
+Diffuse cones on both backends sample the baked atmosphere or HDR cubemap when they exit the grid, weighted by remaining
+visibility. The first propagation step includes sky light, and later steps propagate the resulting bounce. Valid traced
+receivers replace the diffuse environment contribution. The PBR environment specular term still supplies the mirror
+sphere.
 
 ## Measurements so far
 

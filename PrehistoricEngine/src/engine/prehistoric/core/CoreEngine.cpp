@@ -98,11 +98,12 @@ namespace Prehistoric {
         this->scene = scene;
         renderingEngine->getRenderer()->SetSceneEnvironmentMap(scene->getEnvironmentMap());
 
-        if (const auto& pose = scene->getInitialCamera()) {
-            auto* camera = renderingEngine->getCamera();
+        if (const auto &pose = scene->getInitialCamera()) {
+            auto *camera = renderingEngine->getCamera();
             camera->setPosition(pose->position);
             camera->setForward(pose->forward);
             camera->setUp(pose->up);
+            if (pose->bloom) renderingEngine->getRenderer()->setBloomEnabled(*pose->bloom);
             if (pose->exposure) engineSettings.engineConfig.rendererExposure = *pose->exposure;
             camera->Update(renderingEngine->getWindow(), 0.0f);
         }

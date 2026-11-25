@@ -63,7 +63,7 @@ void main()
 
     // Keep one deterministic sample per cell, prioritising brighter radiance.
     vec3 radiance = base * (sunRadiance * (cosine * visibility / 3.14159) + emission);
-    vec3 encoded = clamp(log2(1.0 + radiance) / 8.0, 0.0, 1.0);
+    vec3 encoded = encodeVoxelRadiance(radiance);
     float priority = max(max(encoded.r, encoded.g), encoded.b);
     uint encodedVoxel = packUnorm4x8(vec4(encoded, (1.0 + 254.0 * priority) / 255.0));
     imageAtomicMax(packedVoxels, cell, encodedVoxel);

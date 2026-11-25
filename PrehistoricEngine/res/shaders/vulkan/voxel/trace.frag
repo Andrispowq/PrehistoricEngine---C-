@@ -13,6 +13,8 @@ int voxelGridSize() { return options.x; }
 #define directionalMips (options.y != 0)
 #define voxelOcclusionMin bounds.xyz
 #define voxelOcclusionExtent bounds.w
+layout(set = 1, binding = 1) uniform samplerCube coneEnvironment;
+const bool useEnvironment = true;
 #include "grid.glsl"
 void main()
 {

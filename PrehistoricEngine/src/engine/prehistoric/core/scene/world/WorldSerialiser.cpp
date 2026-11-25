@@ -26,6 +26,7 @@ namespace Prehistoric {
                 {"forward", {pose->forward.x, pose->forward.y, pose->forward.z}},
                 {"up", {pose->up.x, pose->up.y, pose->up.z}}
             };
+            if (pose->bloom) file_json["initial_camera"]["bloom"] = *pose->bloom;
             if (pose->exposure) file_json["initial_camera"]["exposure"] = *pose->exposure;
         }
 

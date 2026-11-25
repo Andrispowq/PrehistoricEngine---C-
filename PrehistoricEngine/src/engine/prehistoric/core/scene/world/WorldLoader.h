@@ -22,52 +22,54 @@
 
 #include "Includes.hpp"
 
-namespace Prehistoric
-{
-	struct WorldCameraPose
-	{
-		Vector3f position;
-		Vector3f forward;
-		Vector3f up;
-		std::optional<float> exposure;
-	};
+namespace Prehistoric {
+    struct WorldCameraPose {
+        Vector3f position;
+        Vector3f forward;
+        Vector3f up;
+        std::optional<float> exposure;
+        std::optional<bool> bloom;
+    };
 
-	class WorldLoader
-	{
-	public:
-		WorldLoader(Window* window, AssembledAssetManager* manager) 
-			: window(window), manager(manager) {}
-		virtual ~WorldLoader() {}
+    class WorldLoader {
+    public:
+        WorldLoader(Window *window, AssembledAssetManager *manager)
+            : window(window), manager(manager) {
+        }
 
-		void LoadWorld(const std::string& worldFile, GameObject* root);
-		void LoadWorldJSON(const std::string& worldFile, GameObject* root);
+        virtual ~WorldLoader() {
+        }
 
-	public:
-		std::string sceneName;
-		std::optional<WorldCameraPose> initialCamera;
-		std::string environmentMap;
+        void LoadWorld(const std::string &worldFile, GameObject *root);
 
-		std::string directoryModels;
-		std::string directoryTextures;
-		std::string directoryConfigs;
+        void LoadWorldJSON(const std::string &worldFile, GameObject *root);
 
-		//Rendering stuff
-		std::unordered_map<std::string, TextureHandle> textures;
-		std::vector<std::string> textureNames;
-		std::vector<std::string> textureDirectories;
-		std::unordered_map<std::string, MaterialHandle> materials;
+    public:
+        std::string sceneName;
+        std::optional<WorldCameraPose> initialCamera;
+        std::string environmentMap;
 
-		std::unordered_map<std::string, VertexBufferHandle> models;
-		std::vector<std::string> meshNames;
-		std::vector<std::string> meshDirectories;
-		std::vector<FrontFace> frontFaces;
-		std::unordered_map<std::string, ShaderHandle> shaders;
-		std::unordered_map<std::string, PipelineHandle> pipelines;
+        std::string directoryModels;
+        std::string directoryTextures;
+        std::string directoryConfigs;
 
-	private:
-		Window* window;
-		AssembledAssetManager* manager;
-	};
+        //Rendering stuff
+        std::unordered_map<std::string, TextureHandle> textures;
+        std::vector<std::string> textureNames;
+        std::vector<std::string> textureDirectories;
+        std::unordered_map<std::string, MaterialHandle> materials;
+
+        std::unordered_map<std::string, VertexBufferHandle> models;
+        std::vector<std::string> meshNames;
+        std::vector<std::string> meshDirectories;
+        std::vector<FrontFace> frontFaces;
+        std::unordered_map<std::string, ShaderHandle> shaders;
+        std::unordered_map<std::string, PipelineHandle> pipelines;
+
+    private:
+        Window *window;
+        AssembledAssetManager *manager;
+    };
 };
 
 #endif

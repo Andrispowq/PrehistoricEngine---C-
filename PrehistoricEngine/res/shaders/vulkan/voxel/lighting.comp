@@ -13,6 +13,8 @@ int voxelGridSize() { return stage.x; }
 layout(binding = 1) uniform sampler2D voxelShadowMap;
 #define voxelOcclusionExtent float(voxelGridSize())
 #define voxelOcclusionMin vec3(0)
+layout(binding = 2) uniform samplerCube coneEnvironment;
+#define useEnvironment ((stage.w & 4) != 0)
 #include "grid.glsl"
 #include "../../shared/voxel/voxel_surface.glsl"
 #include "../../shared/voxel/shadow.glsl"
@@ -56,7 +58,7 @@ void main()
                 voxelShadowVisibility((lightFromCell * vec4(vec3(p) + 0.5, 1)).xyz * 0.5 + 0.5,
                         1.5 * 1.7320508 / (1024.0 * 2.7320508));
             }
-            vec3 emission = exp2(8.0 * unpackUnorm4x8(cells[emissionOffset() + cell]).rgb) - 1.0;
+            vec3 emission = decodeVoxelRadiance(cells[emissionOffset() + cell]);
             v = vec4(emission + albedo * sunlight.rgb * (visibility * cosine / 3.141593), 1);
         }
         storeFlux(fluxAddress(p, 0, -1), v);

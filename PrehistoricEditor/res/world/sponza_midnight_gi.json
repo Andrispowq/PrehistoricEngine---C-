@@ -3,16 +3,56 @@
     "initial_camera": {
         "position": [-21, -42, -3],
         "forward": [-1, 0.08, 0],
-        "up": [0.08, 1, 0]
+      "up": [
+        0.08,
+        1,
+        0
+      ],
+      "exposure": 0.3,
+      "bloom": false
     },
     "directories": {"models": "", "textures": ""},
     "models": [
         {"name": "sponza", "directory": "sample://models/sponza.obj", "front-face": 0},
+      {
+        "name": "sphere",
+        "directory": "engine://models/sphere.obj",
+        "front-face": 0
+      },
         {"name": "cube", "directory": "engine://models/cube.obj", "front-face": 1}
     ],
     "textures": [],
     "materials": [
         {
+          "name": "polished_mirror",
+          "contents": [
+            {
+              "name": "colour",
+              "type": "vec3",
+              "value": [
+                1,
+                1,
+                1
+              ]
+            },
+            {
+              "name": "mrot",
+              "type": "vec4",
+              "value": [
+                1.0,
+                0.0,
+                1.0,
+                0.0
+              ]
+            },
+            {
+              "name": "emission",
+              "type": "float",
+              "value": 0.0
+            }
+          ]
+        },
+      {
             "name": "stone",
             "contents": [
                 {"name": "colour", "type": "vec3", "value": [0.64, 0.53, 0.23]},
@@ -60,7 +100,53 @@
                 "name": "Sponza",
                 "transform": {"position": [0, -50, 0], "scaling": [0.1, 0.1, 0.1]},
                 "components": [
-                    {"type": "Renderer", "model": "sponza", "shader": "pbr", "material": "stone"}
+                  {
+                    "type": "Renderer",
+                    "model": "sponza",
+                    "shader": "pbr",
+                    "material": "stone",
+                    "submesh_overrides": [
+                      {
+                        "index": 1,
+                        "name": "sponza_328_sponza_328_fabric_c",
+                        "colour": [
+                          -1,
+                          -1,
+                          -1
+                        ],
+                        "mrot": [
+                          0.0,
+                          0.3,
+                          1.0,
+                          -1.0
+                        ],
+                        "emission": 400.0
+                      }
+                    ]
+                  }
+                ]
+            },
+          {
+            "name": "Mirror Sphere",
+            "transform": {
+              "position": [
+                30.5,
+                -44.25,
+                -4.0
+              ],
+              "scaling": [
+                6,
+                6,
+                6
+              ]
+            },
+            "components": [
+              {
+                "type": "Renderer",
+                "model": "sphere",
+                "shader": "pbr",
+                "material": "polished_mirror"
+              }
                 ]
             },
             {

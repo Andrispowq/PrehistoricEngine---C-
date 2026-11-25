@@ -1,6 +1,7 @@
 #include "Includes.hpp"
 #include "VKVoxelView.h"
 #include "VKRenderer.h"
+#include "VKEnvironmentLighting.h"
 #include "VKShadowPass.h"
 #include "platform/vulkan/rendering/pipeline/VKGraphicsPipeline.h"
 #include "prehistoric/core/node/component/renderer/RenderableComponent.h"
@@ -66,13 +67,15 @@ namespace Prehistoric {
             cells = std::make_unique<VKBuffer>(gpu, GridBytes(resolution, lighting),
                                                VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                                                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-            auto layout = [&](VkShaderStageFlags stage, uint32_t count, uint32_t bytes, VkDescriptorSetLayout &set,
+            auto layout = [&](VkShaderStageFlags stage, uint32_t buffers, uint32_t images, uint32_t bytes,
+                              VkDescriptorSetLayout &set,
                               VkPipelineLayout &pipeline) {
+                const uint32_t count = buffers + images;
                 VkDescriptorSetLayoutBinding bindings[5]{};
                 for (uint32_t i = 0; i < count; ++i)
                     bindings[i] = {
                         i,
-                        i >= 3 || (count == 2 && i == 1)
+                        i >= buffers
                             ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
                             : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
                         1, stage, nullptr
@@ -88,8 +91,8 @@ namespace Prehistoric {
                 create.pPushConstantRanges = &push;
                 CheckVoxel(vkCreatePipelineLayout(device, &create, nullptr, &pipeline));
             };
-            layout(VK_SHADER_STAGE_COMPUTE_BIT, 5, sizeof(Surface), bakeSet, bakeLayout);
-            layout(VK_SHADER_STAGE_FRAGMENT_BIT, 1, 84, viewSet, viewLayout);
+            layout(VK_SHADER_STAGE_COMPUTE_BIT, 3, 2, sizeof(Surface), bakeSet, bakeLayout);
+            layout(VK_SHADER_STAGE_FRAGMENT_BIT, 1, lighting ? 1 : 0, 84, viewSet, viewLayout);
             auto compute = [&](const char *path, VkPipelineLayout layout, VkPipeline &out) {
                 auto code = ResourceLoader::LoadShaderVK(path);
                 VkShaderModuleCreateInfo moduleInfo{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
@@ -113,7 +116,7 @@ namespace Prehistoric {
             };
             compute("vulkan/voxel/occupancy.spv", bakeLayout, bakePipeline);
             if (lighting) {
-                layout(VK_SHADER_STAGE_COMPUTE_BIT, 2, 112, lightSet, lightLayout);
+                layout(VK_SHADER_STAGE_COMPUTE_BIT, 1, 2, 112, lightSet, lightLayout);
                 compute("vulkan/voxel/lighting.spv", lightLayout, lightPipeline);
             }
             viewPipeline = passes.CreateFullscreenPipeline("vulkan/postProcessing/hdr_VS.spv", "vulkan/voxel/view.spv",
@@ -210,7 +213,7 @@ namespace Prehistoric {
             }
             VkDescriptorPoolSize sizes[] = {
                 {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 3 * count + 2},
-                {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2 * count + 1}
+                {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2 * count + 3}
             };
             VkDescriptorPoolCreateInfo create{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
             create.maxSets = count + 1 + uint32_t(lighting);
@@ -331,11 +334,14 @@ namespace Prehistoric {
                     }
             }
         }
+        const auto sky = renderer.getEnvironmentLighting()->getEnvironment();
         int depth = renderer.voxelGI ? renderer.voxelBounces : 0;
-        if (!geometryChanged && depth == previousBounces && casters == previousCasters &&
+        if (!geometryChanged && sky.imageView == previousEnvironment && depth == previousBounces && casters ==
+            previousCasters &&
             renderer.voxelSunShadows == previousVoxelShadows && direction == previousDirection &&
             radiance == previousSun && renderer.voxelDirectional == previousDirectional)
             return;
+        previousEnvironment = sky.imageView;
         previousDirection = direction;
         previousSun = radiance;
         previousBounces = depth;
@@ -351,11 +357,16 @@ namespace Prehistoric {
             VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, lightInputs, 1, 0, 1,
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, &shadow
         };
-        vkUpdateDescriptorSets(device, 1, &shadowWrite, 0, nullptr);
+        VkWriteDescriptorSet inputs[] = {shadowWrite, shadowWrite, shadowWrite};
+        inputs[1].dstBinding = 2;
+        inputs[1].pImageInfo = &sky;
+        inputs[2].dstSet = viewInputs;
+        inputs[2].pImageInfo = &sky;
+        vkUpdateDescriptorSets(device, std::size(inputs), inputs, 0, nullptr);
         previousDirectional = renderer.voxelDirectional;
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, lightPipeline);
         vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, lightLayout, 0, 1, &lightInputs, 0, nullptr);
-        auto dispatch = [&](int stage, int level) {
+        auto dispatch = [&](int stage, int level, bool skyBounce = false) {
             struct {
                 Vec4 direction, radiance;
                 int settings[4];
@@ -363,7 +374,10 @@ namespace Prehistoric {
             } params{
                 direction,
                 radiance,
-                {int(resolution), stage, level, int(previousDirectional) | (int(previousVoxelShadows) << 1)}
+                {
+                    int(resolution), stage, level,
+                    int(previousDirectional) | (int(previousVoxelShadows) << 1) | (int(skyBounce) << 2)
+                }
             };
             std::copy_n(lightFromCell.m, 16, params.light);
             vkCmdPushConstants(cmd, lightLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(params), &params);
@@ -391,7 +405,7 @@ namespace Prehistoric {
         Mark(cmd, Bounces, false);
         for (int bounce = 1; bounce < previousBounces; ++bounce) {
             pyramid(2);
-            dispatch(3, 0);
+            dispatch(3, 0, bounce == 1);
             dispatch(bounce + 1 == previousBounces ? 5 : 4, 0);
         }
         Mark(cmd, Bounces, true);

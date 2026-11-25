@@ -164,5 +164,5 @@ void main()
 	outPositionMetallic = vec4(position_FS, metallic);
 	outAlbedoRoughness = vec4(albedoColour, roughness);
 	outNormal = vec4(N, 1);
-	outBloom = vec4(emissionColour * emissionFactor, 0.0);
+    outBloom = vec4(emissionColour * emissionFactor, 1.0 + occlusion);
 }

@@ -1,3 +1,14 @@
+// Logarithmic RGB8 packing covers HDR emitters through 1023 per channel.
+vec3 encodeVoxelRadiance(vec3 radiance)
+{
+    return clamp(log2(1.0 + radiance) / 10.0, 0.0, 1.0);
+}
+
+vec3 decodeVoxelRadiance(uint packed)
+{
+    return exp2(unpackUnorm4x8(packed).rgb * 10.0) - 1.0;
+}
+
 vec2 octFold(vec2 p)
 {
     return (1.0 - abs(p.yx)) * mix(vec2(-1), vec2(1), greaterThanEqual(p, vec2(0)));

@@ -70,9 +70,9 @@ void shadeSurface(vec3 albedoColour, float metallic, float roughness, float occl
         vec3 offset = (texelFetch(positionMetallic, pixel, 0).xyz - position_FS) / cellSize;
         if (receiver.a >= 0.99 && dot(receiver.xyz, N) > 0.85 && abs(dot(offset, N)) < 0.22)
         {
-            vec3 indirect = filteredIndirect(pixel, textureSize(normals, 0), position_FS, N,
+            vec4 indirect = filteredIndirect(pixel, textureSize(normals, 0), position_FS, N,
                     traceOptions.x, cellSize, voxelBounds.xyz, voxelBounds.w);
-            ambient += indirect * albedoColour * (1.0 - metallic) * voxelOptions.y;
+            ambient += diffuseTraceCorrection(indirect, irradiance, voxelOptions.y) * kD * albedoColour * occlusion;
         }
     }
 
