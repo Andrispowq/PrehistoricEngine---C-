@@ -84,7 +84,9 @@ namespace Prehistoric {
         glfwWindowHint(GLFW_RESIZABLE, __FrameworkConfig.windowResizable);
         glfwWindowHint(GLFW_SAMPLES, __FrameworkConfig.windowNumSamples);
 
-        window = glfwCreateWindow(width, height, title, fullscreen ? glfwGetPrimaryMonitor() : NULL, NULL);
+        const char* backend = __FrameworkConfig.api == OpenGL ? "OpenGL" : "Vulkan";
+        const std::string windowTitle = std::string(title) + " (" + backend + ")";
+        window = glfwCreateWindow(width, height, windowTitle.c_str(), fullscreen ? glfwGetPrimaryMonitor() : NULL, NULL);
 
         //Checking if a valid window was created
         if (window == NULL) {

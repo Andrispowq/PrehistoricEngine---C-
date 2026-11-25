@@ -68,6 +68,8 @@ namespace Prehistoric
 				engineConfig.rendererHighDetailRange = renderer_json["highDetailRange"];
 				engineConfig.rendererNearPlane = renderer_json["nearPlane"];
 				engineConfig.rendererFarPlane = renderer_json["farPlane"];
+				engineConfig.shadowSunAngularRadius = std::clamp(
+					renderer_json.value("shadowSunAngularRadius", engineConfig.shadowSunAngularRadius), 0.0f, 0.1f);
 			}
 
 			{

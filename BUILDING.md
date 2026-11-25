@@ -383,6 +383,12 @@ exposure, directional sun, and dust volumes. Open it in OpenGL to preview the
 shafts. For a clear-air comparison, set both volumes' density to zero and
 compare the light on the floor.
 
+Use **Sun Shadow Radius** in the OpenGL editor lighting controls to compare
+hard shadows at zero with contact-hardening soft shadows. The optional
+`engine.renderer.shadowSunAngularRadius` setting supplies the startup radius
+in radians (default `0.02`). This controls shadow filtering independently
+of the visible atmospheric sun disk.
+
 Open [the Sponza world](Prehistoric/res/world/sponza_volumetric.json) in the
 editor using File → Open. To launch the sample directly, set
 `PREHISTORIC_WORLD=res/world/sponza_volumetric.json` and run it from

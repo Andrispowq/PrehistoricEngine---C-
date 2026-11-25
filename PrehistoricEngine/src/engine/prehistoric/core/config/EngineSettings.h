@@ -53,6 +53,7 @@ namespace Prehistoric
         int rendererHighDetailRange = 100;
         float rendererNearPlane = 0.1f;
         float rendererFarPlane = 100;
+        float shadowSunAngularRadius = 0.02f; // Radians.
     };
 
     struct EnvironmentMapConfig

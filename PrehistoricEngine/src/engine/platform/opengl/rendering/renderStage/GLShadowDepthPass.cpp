@@ -185,7 +185,9 @@ namespace Prehistoric
 
 		// Stabilize the extent as the camera rotates and snap its center to texels.
 		radius = std::ceil(radius * 16.0f) / 16.0f;
-		radius *= SIZE / (SIZE - 4.0f);
+		// Reserve room for the soft-shadow kernel, plus the snapped center.
+		constexpr float filterPadding = 24.0f;
+		radius *= SIZE / (SIZE - 2.0f * filterPadding);
 		const float texel = 2.0f * radius / SIZE;
 		const float x = std::round(lightCenter.x / texel) * texel;
 		const float y = std::round(lightCenter.y / texel) * texel;

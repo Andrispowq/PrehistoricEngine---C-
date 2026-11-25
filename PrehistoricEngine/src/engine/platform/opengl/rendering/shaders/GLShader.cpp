@@ -13,6 +13,7 @@ namespace Prehistoric {
         AddUniform("shadowNearPlane");
         AddUniform("shadowView");
         AddUniform("cascadeBlendFraction");
+        AddUniform("shadowSunAngularRadius");
         AddUniform("sunDirection");
         AddUniform("sunRadiance");
         AddUniform("shadowMap");
@@ -32,6 +33,7 @@ namespace Prehistoric {
         SetUniformi("cascadeCount", static_cast<int>(distances.size()));
         SetUniformf("shadowNearPlane", __EngineConfig.rendererNearPlane);
         SetUniformf("cascadeBlendFraction", GLShadowDepthPass::CascadeBlendFraction);
+        SetUniformf("shadowSunAngularRadius", __EngineConfig.shadowSunAngularRadius);
         SetUniform("shadowView", shadows->getShadowView());
 
         const auto* sun = shadows->getSun();

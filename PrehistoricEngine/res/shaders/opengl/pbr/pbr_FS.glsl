@@ -136,8 +136,7 @@ void main()
     vec3 Lo = vec3(0.0);
     if (any(greaterThan(sunRadiance, vec3(0.0))))
     {
-        float bias = mix(2.0, 0.5, clamp(dot(N, sunDirection), 0.0, 1.0));
-        Lo = directionalVisibility(position_FS, bias) *
+        Lo = directionalVisibility(position_FS, normal, 0.65, false) *
             directPbrLight(N, V, sunDirection, F0, albedoColour, metallic, roughness, sunRadiance);
     }
 	uint offset = index * 1024;

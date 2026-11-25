@@ -150,6 +150,9 @@ void EditorLayer::ImGUIRender() {
     editSize("Prefilter map mip levels", __EnvironmentMapConfig.prefilterLevels);
 
     ImGui::SliderFloat("Exposure", &__EngineConfig.rendererExposure, 0.5f, 4.0f, "%.2f");
+    if (__FrameworkConfig.api == Prehistoric::OpenGL) {
+        ImGui::SliderFloat("Sun Shadow Radius", &__EngineConfig.shadowSunAngularRadius, 0.0f, 0.1f, "%.3f rad");
+    }
     ImGui::SliderFloat("Gamma", &__EngineConfig.rendererGamma, 1.0f, 5.0f, "%.2f");
 
     ImGui::End();
