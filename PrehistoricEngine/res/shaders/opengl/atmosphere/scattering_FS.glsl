@@ -55,9 +55,11 @@ void main()
 	
 
 
+    vec3 observer = vec3(0, planetRadius + 1000, 0);
+    vec3 ray = normalize(ray_world);
     vec3 out_Colour = atmosphere(
-        normalize(ray_world),        	        // normalized ray direction
-        vec3(0, planetRadius + 1000, 0),        // ray origin, originally: vec3(0, 6372e3, 0)
+        ray,                                   // normalized ray direction
+        observer,                              // ray origin
         sunPosition,                  	        // position of the sun
         sunIntensity,                           // intensity of the sun
         planetRadius,                           // radius of the planet in meters
@@ -69,12 +71,12 @@ void main()
         mieDirection                            // Mie preferred direction
     );
 	
-	float sunradius = length(normalize(ray_world) - normalize(sunPosition));
+	float sunradius = length(ray - normalize(sunPosition));
 
     out_Colour = 1.0 - exp(-out_Colour * exposure);
 
 	// no sun rendering when scene reflection
-	if(includeSunDisk != 0 && sunradius < sunRadius)
+	if(includeSunDisk != 0 && sunradius < sunRadius && !HitsPlanet(observer, ray, planetRadius))
 	{
 		float smoothRadius = SunDiskWeight(sunradius, sunRadius);
         out_Colour = mix(out_Colour, sunColour * 4, smoothRadius);

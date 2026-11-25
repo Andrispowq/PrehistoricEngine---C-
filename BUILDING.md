@@ -471,6 +471,12 @@ With bloom off, toggle **G** at a fixed camera position to compare emissive
 bounce on nearby surfaces. The panorama supplies the background and environment
 lighting. The voxel bake in this scene gets its radiance from the emitters.
 
+For the procedural-sky comparison, open `sponza_midnight_gi.json` or launch
+with `PREHISTORIC_WORLD=res/world/sponza_midnight_gi.json`. Its sun stays
+directly below the scene and supplies no direct light or voxel radiance.
+The planet occludes the solar disk and single-scattered sunlight at this
+sun angle, so the atmosphere and its baked environment are black.
+
 In the OpenGL editor, use **Render Settings** to set those options, the voxel
 volume center and width, GI strength, and **GI Trace Depth** from one to five
 diffuse bounces. The additional bounces run during the radiance bake. Each

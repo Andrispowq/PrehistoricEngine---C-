@@ -18,6 +18,12 @@ vec2 rsi(vec3 r0, vec3 rd, float sr)
     );
 }
 
+bool HitsPlanet(vec3 origin, vec3 direction, float radius)
+{
+    vec2 hit = rsi(origin, direction, radius);
+    return hit.x >= 0.0 && hit.x <= hit.y;
+}
+
 vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAtmos,
 				vec3 kRlh, float kMie, float shRlh, float shMie, float g) 
 {
@@ -66,6 +72,12 @@ vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAt
         // Accumulate optical depth.
         iOdRlh += odStepRlh;
         iOdMie += odStepMie;
+
+        if (HitsPlanet(iPos, pSun, rPlanet))
+        {
+            iTime += iStepSize;
+            continue;
+        }
 
         // Calculate the step size of the secondary ray.
         float jStepSize = rsi(iPos, pSun, rAtmos).y / float(jSteps);

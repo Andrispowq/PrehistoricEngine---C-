@@ -223,7 +223,7 @@ static void RunIBL(VkPhysicalDevice gpu, uint32_t family, const std::vector<char
     Check(vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &resources.pipeline));
 
     std::unique_ptr<VKEnvironmentLighting> previousLighting;
-    for (int pass = 0; pass < 5; ++pass) {
+    for (int pass = 0; pass < 6; ++pass) {
         // Black, constant HDR, analytic directional environment, then the actual
         // sample HDR with its small, bright sun. Exercise every source mip.
         float *mapped;
@@ -261,12 +261,14 @@ static void RunIBL(VkPhysicalDevice gpu, uint32_t family, const std::vector<char
         VKRecordImageMipmaps(command, resources.image, width, height, mipLevels);
         submit();
 
+        const bool midnight = pass == 5;
         const AtmosphereParameters sky
         {
-            {0, 1, 0, 0.14f}, {1, 0.79f, 0.43f, 48}, {5.5e-6f, 13e-6f, 22.4e-6f, 21e-6f},
-            {6371000, 6471000, 8000, 1200}, {0.758f, 0}
+            {0, midnight ? -1.0f : 1.0f, 0, 0.14f}, {1, 0.79f, 0.43f, 48},
+            {5.5e-6f, 13e-6f, 22.4e-6f, 21e-6f},
+            {6371000, 6471000, 8000, 1200}, {0.758f, midnight ? 0.1f : 0.0f}
         };
-        bool captureSky = pass == 4;
+        bool captureSky = pass >= 4;
         VkDescriptorImageInfo panorama{resources.sampler, resources.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
         VkImageView previousLut = previousLighting ? previousLighting->getBRDF().imageView : VK_NULL_HANDLE;
         auto nextLighting = std::make_unique<VKEnvironmentLighting>(gpu, device, queue, family,
@@ -309,6 +311,8 @@ static void RunIBL(VkPhysicalDevice gpu, uint32_t family, const std::vector<char
                 if (!std::isfinite(value) || value < 0) throw std::runtime_error("Non-finite/negative IBL result");
                 if (i >= 30) {
                     if (value > 1.05f) throw std::runtime_error("BRDF LUT outside expected range");
+                } else if (midnight) {
+                    if (value > 0.000001f) throw std::runtime_error("Midnight atmosphere injected solar energy");
                 } else if (pass < 2) {
                     if (fabsf(value - (pass == 0 ? 0 : float(2 + c) * (i < 6 ? 3.14159265f : 1.0f))) > 0.015f)
                         throw std::runtime_error("Constant HDR energy not preserved");
@@ -326,7 +330,7 @@ static void RunIBL(VkPhysicalDevice gpu, uint32_t family, const std::vector<char
         if (mapped[30 * 4] < 0.1f) throw std::runtime_error("BRDF integration returned zero");
         if (pass == 2 && mapped[24 * 4] >= mapped[6 * 4] - 0.15f)
             throw std::runtime_error("Roughness did not broaden reflections");
-        if (captureSky)
+        if (pass == 4)
         {
             float mirrorSun = mapped[8 * 4];
             float roughSun = mapped[26 * 4];
