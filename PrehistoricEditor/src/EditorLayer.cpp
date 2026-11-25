@@ -111,75 +111,55 @@ void EditorLayer::ImGUIRender() {
             if (ImGui::Checkbox("Bloom (K)", &bloom)) renderer->setBloomEnabled(bloom);
 
             auto *gl = dynamic_cast<Prehistoric::GLRenderer *>(renderer);
-            if (auto *vk = dynamic_cast<Prehistoric::VKRenderer *>(renderer)) {
-                ImGui::Checkbox("Voxel View (V)", &vk->voxelView);
-                ImGui::Checkbox("Voxel GI (G)", &vk->voxelGI);
-                ImGui::Checkbox("Voxel Sun Shadows", &vk->voxelSunShadows);
-                if (vk->voxelGI || vk->voxelView || vk->voxelSunShadows) {
-                    for (int size: {64, 128, 256, 512, 1024}) {
-                        if (!vk->SupportsVoxelResolution(size)) continue;
-                        if (ImGui::RadioButton((std::to_string(size) + " cubed").c_str(), vk->voxelResolution == size))
-                            vk->voxelResolution = size;
-                    }
-                    ImGui::Checkbox("Half-Resolution GI", &vk->voxelHalfResolution);
-                    ImGui::Checkbox("Directional Voxel Mips", &vk->voxelDirectional);
-                    ImGui::SliderFloat("GI Strength", &vk->voxelStrength, 0, 4);
-                    ImGui::SliderInt("GI Trace Depth", &vk->voxelBounces, 1, 5);
-                    if (vk->voxelGI && ImGui::TreeNode("Voxel GPU Timings")) {
-                        const char *labels[] = {
-                            "Geometry bake", "Occlusion and injection",
-                            "Bounce propagation", "Final radiance mips",
-                            "Cone tracing", "Main shading and GI composite"
-                        };
-                        for (unsigned i = 0; i < std::size(labels); ++i)
-                            if (vk->voxelMilliseconds[i] >= 0)
-                                ImGui::Text("%s  %.2f ms", labels[i], vk->voxelMilliseconds[i]);
-                        ImGui::TreePop();
-                    }
-                    ImGui::DragFloat3("Volume Center", &vk->voxelCenter.x, 1.0f);
-                    ImGui::DragFloat("Volume Width", &vk->voxelExtent, 1.0f, 1.0f, 100000.0f, "%.1f",
-                                     ImGuiSliderFlags_AlwaysClamp);
-                }
-            }
-            if (gl && gl->getVoxelPass()->IsSupported()) {
-                auto &settings = gl->getVoxelPass()->GetSettings();
+            auto *vk = dynamic_cast<Prehistoric::VKRenderer *>(renderer);
+            auto *pass = gl ? gl->getVoxelPass() : nullptr;
+            if (vk || (pass && pass->IsSupported())) {
+                using VoxelPass = Prehistoric::GLVoxelRendererPass;
+                auto *settings = pass ? &pass->GetSettings() : nullptr;
+                auto &gi = vk ? vk->voxelGI : settings->globalIllumination;
+                auto &width = vk ? vk->voxelExtent : settings->extent;
+                auto &center = vk ? vk->voxelCenter : settings->center;
                 ImGui::Separator();
-                ImGui::Checkbox("Voxel View (V)", &settings.debugView);
-                ImGui::Checkbox("Voxel GI (G)", &settings.globalIllumination);
-                ImGui::Checkbox("Half-Resolution GI", &settings.halfResolution);
-                ImGui::Checkbox("Directional Voxel Mips", &settings.directionalMips);
-                ImGui::Checkbox("Voxel Sun Shadows", &settings.voxelSunShadows);
-                const auto &resolutions = Prehistoric::GLVoxelRendererPass::Resolutions;
-                const auto resolutionLabel = [](int resolution) { return std::to_string(resolution) + " cubed"; };
-                if (ImGui::BeginCombo("Voxel Resolution (B)",
-                                      resolutionLabel(resolutions[settings.resolutionIndex]).c_str())) {
-                    for (int i = 0; i < static_cast<int>(std::size(resolutions)); ++i) {
-                        const bool available = gl->getVoxelPass()->CanUseResolution(i);
-                        if (ImGui::Selectable(resolutionLabel(resolutions[i]).c_str(), i == settings.resolutionIndex,
-                                              available ? ImGuiSelectableFlags_None : ImGuiSelectableFlags_Disabled))
-                            settings.resolutionIndex = i;
+                ImGui::Checkbox("Voxel View (V)", vk ? &vk->voxelView : &settings->debugView);
+                ImGui::Checkbox("Voxel GI (G)", &gi);
+                ImGui::Checkbox("Half-Resolution GI", vk ? &vk->voxelHalfResolution : &settings->halfResolution);
+                ImGui::Checkbox("Directional Voxel Mips", vk ? &vk->voxelDirectional : &settings->directionalMips);
+                ImGui::Checkbox("Voxel Sun Shadows", vk ? &vk->voxelSunShadows : &settings->voxelSunShadows);
+                int resolution = vk ? vk->voxelResolution : VoxelPass::Resolutions[settings->resolutionIndex];
+                const auto label = [](int size) { return std::to_string(size) + " cubed"; };
+                if (ImGui::BeginCombo("Voxel Resolution (B)", label(resolution).c_str())) {
+                    for (int i = 0; i < static_cast<int>(std::size(VoxelPass::Resolutions)); ++i) {
+                        const int size = VoxelPass::Resolutions[i];
+                        const bool available = vk ? vk->SupportsVoxelResolution(size) : pass->CanUseResolution(i);
+                        if (ImGui::Selectable(label(size).c_str(), size == resolution,
+                                              available ? ImGuiSelectableFlags_None : ImGuiSelectableFlags_Disabled)) {
+                            resolution = size;
+                            if (vk) vk->voxelResolution = size;
+                            else settings->resolutionIndex = i;
+                        }
                         if (!available && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
                             ImGui::SetTooltip("Grid exceeds the GPU budget for the current voxel settings.");
                     }
                     ImGui::EndCombo();
                 }
-                ImGui::DragFloat3("Volume Center", &settings.center.x, 1.0f);
-                ImGui::DragFloat("Volume Width", &settings.extent, 1.0f, 1.0f, 100000.0f, "%.1f",
-                                 ImGuiSliderFlags_AlwaysClamp);
-                ImGui::SliderFloat("GI Strength", &settings.giStrength, 0.0f, 4.0f);
-                ImGui::SliderInt("GI Trace Depth", &settings.traceDepth, 1,
-                                 Prehistoric::GLVoxelRendererPass::MaxTraceDepth, "%d", ImGuiSliderFlags_AlwaysClamp);
-                ImGui::Text("Voxel size %.2f",
-                            settings.extent / Prehistoric::GLVoxelRendererPass::Resolutions[settings.resolutionIndex]);
-                if (settings.globalIllumination && ImGui::TreeNode("Voxel GPU Timings")) {
-                    using Stage = Prehistoric::GLVoxelRendererPass::GpuStage;
+                ImGui::DragFloat3("Volume Center", &center.x, 1.0f);
+                ImGui::DragFloat("Volume Width", &width, 1.0f, 1.0f, 100000.0f, "%.1f", ImGuiSliderFlags_AlwaysClamp);
+                ImGui::SliderFloat("GI Strength", vk ? &vk->voxelStrength : &settings->giStrength, 0.0f, 4.0f);
+                ImGui::SliderInt("GI Trace Depth", vk ? &vk->voxelBounces : &settings->traceDepth, 1,
+                                 VoxelPass::MaxTraceDepth, "%d", ImGuiSliderFlags_AlwaysClamp);
+                ImGui::Text("Voxel size %.2f", width / resolution);
+                if (gi && ImGui::TreeNode("Voxel GPU Timings")) {
                     const char *labels[] = {
-                        "Occluder bake", "Radiance injection", "Bounce propagation",
-                        "Final radiance mips", "Cone tracing", "Filter and composite"
+                        vk ? "Geometry bake" : "Occluder bake",
+                        vk ? "Occlusion and injection" : "Radiance injection", "Bounce propagation",
+                        "Final radiance mips", "Cone tracing",
+                        vk ? "Main shading and GI composite" : "Filter and composite"
                     };
-                    for (int i = 0; i < static_cast<int>(Stage::Count); ++i) {
-                        const double ms = gl->getVoxelPass()->GetGpuMilliseconds(static_cast<Stage>(i));
-                        if (ms >= 0.0) ImGui::Text("%s  %.2f ms", labels[i], ms);
+                    for (unsigned i = 0; i < std::size(labels); ++i) {
+                        const double ms = vk
+                                              ? vk->voxelMilliseconds[i]
+                                              : pass->GetGpuMilliseconds(static_cast<VoxelPass::GpuStage>(i));
+                        if (ms >= 0) ImGui::Text("%s  %.2f ms", labels[i], ms);
                     }
                     ImGui::TreePop();
                 }

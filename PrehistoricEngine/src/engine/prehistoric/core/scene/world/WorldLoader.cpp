@@ -9,8 +9,8 @@
 #include <json.hpp>
 
 namespace Prehistoric {
-    static Vector3f ReadWorldVector(const nlohmann::json& value) {
-        const auto components = value.get<std::array<float, 3>>();
+    static Vector3f ReadWorldVector(const nlohmann::json &value) {
+        const auto components = value.get<std::array<float, 3> >();
         return {components[0], components[1], components[2]};
     }
 
@@ -463,9 +463,11 @@ namespace Prehistoric {
             sceneName = file_json["name"];
             environmentMap = file_json.value("environment_map", std::string{});
             if (const auto pose = file_json.find("initial_camera"); pose != file_json.end()) {
-                initialCamera = WorldCameraPose{ReadWorldVector(pose->at("position")),
-                                                ReadWorldVector(pose->at("forward")),
-                                                ReadWorldVector(pose->at("up"))};
+                initialCamera = WorldCameraPose{
+                    ReadWorldVector(pose->at("position")),
+                    ReadWorldVector(pose->at("forward")),
+                    ReadWorldVector(pose->at("up"))
+                };
                 if (const auto exposure = pose->find("exposure"); exposure != pose->end()) {
                     initialCamera->exposure = std::max(0.01f, exposure->get<float>());
                 }
@@ -579,7 +581,9 @@ namespace Prehistoric {
 
                         if (type == "texture") {
                             std::string value = content["value"];
-                            material->addTexture((name + "Map"), textures[value]);
+                            if (name == "DEFAULT_TEX") continue;
+                            if (name.size() < 3 || name.compare(name.size() - 3, 3, "Map") != 0) name += "Map";
+                            material->addTexture(name, textures.at(value));
                         } else if (type == "vec4") {
                             std::vector<float> value = content["value"];
                             material->addVector4f(name, Vector4f(value[0], value[1], value[2], value[3]));
@@ -670,6 +674,26 @@ namespace Prehistoric {
 
                             RendererComponent *rendererComponent = new RendererComponent(
                                 window, manager, pipeline, material);
+                            if (auto records = component.find("submesh_overrides"); records != component.end()) {
+                                auto *mesh = rendererComponent->getMeshBuffer();
+                                for (const auto &record: *records) {
+                                    uint32_t index = record.at("index");
+                                    const std::string partName = record.value("name", std::string{});
+                                    if (!mesh) continue;
+                                    if (!partName.empty() && (index >= mesh->getSubmeshCount() ||
+                                                              mesh->getModel().getMesh(index).getName() != partName)) {
+                                        for (index = 0; index < mesh->getSubmeshCount(); ++index)
+                                            if (mesh->getModel().getMesh(index).getName() == partName) break;
+                                    }
+                                    auto *part = rendererComponent->EditSubmesh(index);
+                                    if (!part) continue;
+                                    part->getVector3fs()[COLOUR] = ReadWorldVector(record.at("colour"));
+                                    const auto &mrot = record.at("mrot");
+                                    part->getVector4fs()[MROT] = Vector4f(
+                                        mrot.at(0), mrot.at(1), mrot.at(2), mrot.at(3));
+                                    part->getFloats()[EMISSION] = record.at("emission");
+                                }
+                            }
                             object->AddComponent(RENDERER_COMPONENT, rendererComponent);
                         } else if (type == "Light") {
                             std::vector<float> colour = component["colour"];
@@ -681,7 +705,7 @@ namespace Prehistoric {
                                                      component.value("cast_shadows", false));
                             object->AddComponent(LIGHT_COMPONENT, light);
                         } else if (type == VolumetricSphereComponent::Name) {
-                            auto* sphere = new VolumetricSphereComponent();
+                            auto *sphere = new VolumetricSphereComponent();
                             sphere->setRadius(component.value("radius", sphere->getRadius()));
                             sphere->setDensity(component.value("density", sphere->getDensity()));
                             sphere->setAnisotropy(component.value("anisotropy", sphere->getAnisotropy()));

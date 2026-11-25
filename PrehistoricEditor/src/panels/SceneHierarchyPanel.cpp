@@ -15,6 +15,7 @@ SceneHierarchyPanel::SceneHierarchyPanel(Prehistoric::GameObject *root) {
 
 void SceneHierarchyPanel::SetContext(Prehistoric::GameObject *root) {
     this->root = root;
+    InvalidateSelectionContext();
 }
 
 void SceneHierarchyPanel::ImGuiRender() {
@@ -30,12 +31,14 @@ void SceneHierarchyPanel::ImGuiRender() {
             root->AddChild("Empty Entity", new Prehistoric::GameObject());
 
         if (ImGui::MenuItem("Create Volumetric Sphere")) {
-            const auto* camera = Prehistoric::Application::Get().getEngineLayer()->getRenderingEngine()->getCamera();
-            auto* object = new Prehistoric::GameObject();
+            const auto *camera = Prehistoric::Application::Get().getEngineLayer()->getRenderingEngine()->getCamera();
+            auto *object = new Prehistoric::GameObject();
             object->SetPosition(camera->getPosition() - camera->getForward() * 15.0f);
-            object->AddComponent(Prehistoric::VolumetricSphereComponent::Name, new Prehistoric::VolumetricSphereComponent());
+            object->AddComponent(Prehistoric::VolumetricSphereComponent::Name,
+                                 new Prehistoric::VolumetricSphereComponent());
             root->AddChild("Volumetric Sphere", object);
             selectionContext = object;
+            selectedSubmesh.reset();
         }
 
         ImGui::EndPopup();
@@ -45,7 +48,9 @@ void SceneHierarchyPanel::ImGuiRender() {
 
     ImGui::Begin("Properties");
     if (selectionContext) {
-        DrawComponents(selectionContext);
+        auto *component = selectionContext->GetComponent<Prehistoric::RendererComponent>();
+        if (selectedSubmesh && component) DrawSubmesh(*component, *selectedSubmesh);
+        else DrawComponents(selectionContext);
     }
 
     ImGui::End();
@@ -54,12 +59,13 @@ void SceneHierarchyPanel::ImGuiRender() {
 void SceneHierarchyPanel::DrawGameObjectNode(Prehistoric::GameObject *object) {
     std::string tag = object->getName();
 
-    ImGuiTreeNodeFlags flags = ((selectionContext == object) ? ImGuiTreeNodeFlags_Selected : 0) |
+    ImGuiTreeNodeFlags flags = ((selectionContext == object && !selectedSubmesh) ? ImGuiTreeNodeFlags_Selected : 0) |
                                ImGuiTreeNodeFlags_OpenOnArrow;
     flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
     bool opened = ImGui::TreeNodeEx((void *) object, flags, "%s", tag.c_str());
     if (ImGui::IsItemClicked()) {
         selectionContext = object;
+        selectedSubmesh.reset();
     }
 
     bool entityDeleted = false;
@@ -71,6 +77,30 @@ void SceneHierarchyPanel::DrawGameObjectNode(Prehistoric::GameObject *object) {
     }
 
     if (opened) {
+        auto *renderer = object->GetComponent<Prehistoric::RendererComponent>();
+        auto *mesh = renderer ? renderer->getMeshBuffer() : nullptr;
+        if (mesh && mesh->getSubmeshCount() > 1) {
+            for (uint32_t i = 0; i < mesh->getSubmeshCount(); ++i) {
+                const auto &part = mesh->getModel().getMesh(i);
+                std::string label = part.getName();
+                if (label.empty()) {
+                    auto *mat = renderer->ResolveSubmeshMaterial(mesh->getModel(), i, renderer->getMaterial());
+                    label = (mat ? mat->getName() : "Submesh") + " [" + std::to_string(i + 1) + "]";
+                }
+                ImGui::PushID(static_cast<int>(i));
+                const bool selected = selectionContext == object && selectedSubmesh == i;
+                ImGui::TreeNodeEx("part", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen |
+                                          ImGuiTreeNodeFlags_SpanAvailWidth | (selected
+                                                                                   ? ImGuiTreeNodeFlags_Selected
+                                                                                   : 0), "%s", label.c_str());
+                if (ImGui::IsItemClicked()) {
+                    selectionContext = object;
+                    selectedSubmesh = i;
+                }
+                ImGui::PopID();
+            }
+        }
+
         for (const auto &child: object->getChildrenByID()) {
             if (auto *nested = dynamic_cast<Prehistoric::GameObject *>(child.second)) DrawGameObjectNode(nested);
         }
@@ -86,6 +116,34 @@ void SceneHierarchyPanel::DrawGameObjectNode(Prehistoric::GameObject *object) {
         }
         object->getParent()->RemoveChild(object);
     }
+}
+
+void SceneHierarchyPanel::DrawSubmesh(Prehistoric::RendererComponent &component, uint32_t index) {
+    using namespace Prehistoric;
+    auto *mesh = component.getMeshBuffer();
+    if (!mesh || index >= mesh->getSubmeshCount()) return;
+    auto *mat = component.ResolveSubmeshMaterial(mesh->getModel(), index, component.getMaterial());
+    if (!mat) return;
+    ImGui::TextUnformatted(mesh->getModel().getMesh(index).getName().c_str());
+    ImGui::Text("Material: %s", mat->getName().c_str());
+    auto colour = mat->getVector3f(COLOUR);
+    bool useTexture = mat->exists(ALBEDO_MAP) && colour.x < 0;
+    if (mat->exists(ALBEDO_MAP) && ImGui::Checkbox("Use albedo texture", &useTexture)) {
+        colour = Vector3f(useTexture ? -1.0f : 1.0f);
+        component.EditSubmesh(index)->getVector3fs()[COLOUR] = colour;
+    }
+    if (!useTexture && ImGui::ColorEdit3("Base colour", &colour.x))
+        component.EditSubmesh(index)->getVector3fs()[COLOUR] = colour;
+    auto mrot = mat->getVector4f(MROT);
+    bool changed = ImGui::SliderFloat("Metallic", &mrot.x, 0.0f, 1.0f);
+    changed |= ImGui::SliderFloat("Roughness", &mrot.y, 0.0f, 1.0f);
+    changed |= ImGui::SliderFloat("Occlusion", &mrot.z, 0.0f, 1.0f);
+    if (changed) component.EditSubmesh(index)->getVector4fs()[MROT] = mrot;
+    float emission = mat->getFloat(EMISSION);
+    if (ImGui::DragFloat("Emission", &emission, 0.05f, 0.0f, 10000.0f))
+        component.EditSubmesh(index)->getFloats()[EMISSION] = emission;
+    if (component.getSubmeshOverride(index) && ImGui::Button("Reset to imported material"))
+        component.ResetSubmesh(index);
 }
 
 template<typename T, typename UIFunction>
@@ -324,18 +382,28 @@ void SceneHierarchyPanel::DrawComponents(Prehistoric::GameObject *object) {
         }
     });
 
-    DrawComponent<Prehistoric::VolumetricSphereComponent>("Volumetric Sphere", object, [](Prehistoric::Component* comp) {
-        auto* sphere = static_cast<Prehistoric::VolumetricSphereComponent*>(comp);
-        float radius = sphere->getRadius();
-        float density = sphere->getDensity();
-        float anisotropy = sphere->getAnisotropy();
-        const auto& tint = sphere->getTint();
-        float colour[] = {tint.x, tint.y, tint.z};
-        if (ImGui::DragFloat("Radius", &radius, 0.1f, 0.0f, 0.0f, "%.2f")) sphere->setRadius(radius);
-        if (ImGui::DragFloat("Density", &density, 0.001f, 0.0f, 0.0f, "%.4f")) sphere->setDensity(density);
-        if (ImGui::ColorEdit3("Tint", colour)) sphere->setTint({colour[0], colour[1], colour[2]});
-        if (ImGui::SliderFloat("Anisotropy", &anisotropy, -0.95f, 0.95f)) sphere->setAnisotropy(anisotropy);
-    });
+    DrawComponent<Prehistoric::VolumetricSphereComponent>("Volumetric Sphere", object,
+                                                          [](Prehistoric::Component *comp) {
+                                                              auto *sphere = static_cast<
+                                                                  Prehistoric::VolumetricSphereComponent *>(comp);
+                                                              float radius = sphere->getRadius();
+                                                              float density = sphere->getDensity();
+                                                              float anisotropy = sphere->getAnisotropy();
+                                                              const auto &tint = sphere->getTint();
+                                                              float colour[] = {tint.x, tint.y, tint.z};
+                                                              if (ImGui::DragFloat(
+                                                                  "Radius", &radius, 0.1f, 0.0f, 0.0f,
+                                                                  "%.2f")) sphere->setRadius(radius);
+                                                              if (ImGui::DragFloat(
+                                                                  "Density", &density, 0.001f, 0.0f, 0.0f,
+                                                                  "%.4f")) sphere->setDensity(density);
+                                                              if (ImGui::ColorEdit3("Tint", colour)) sphere->setTint({
+                                                                  colour[0], colour[1], colour[2]
+                                                              });
+                                                              if (ImGui::SliderFloat(
+                                                                  "Anisotropy", &anisotropy, -0.95f,
+                                                                  0.95f)) sphere->setAnisotropy(anisotropy);
+                                                          });
 
     ImGui::PopItemWidth();
 }

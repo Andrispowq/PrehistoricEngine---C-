@@ -8,53 +8,74 @@
 #include "prehistoric/core/node/GameObject.h"
 #include "prehistoric/core/model/material/Material.h"
 
-namespace Prehistoric
-{
-	RendererComponent::RendererComponent(Window* window, AssembledAssetManager* manager, PipelineHandle pipeline, MaterialHandle material)
-		: RenderableComponent(window, manager, pipeline), material(material)
-	{
-		type = ComponentType::RendererComponent;
+namespace Prehistoric {
+    RendererComponent::RendererComponent(Window *window, AssembledAssetManager *manager, PipelineHandle pipeline,
+                                         MaterialHandle material)
+        : RenderableComponent(window, manager, pipeline), material(material) {
+        type = ComponentType::RendererComponent;
 
-		manager->addReference<Material>(material.handle);
-	}
+        manager->addReference<Material>(material.handle);
+    }
 
-	RendererComponent::RendererComponent(Window* window, AssembledAssetManager* manager)
-		: RenderableComponent(window, manager)
-	{
-		type = ComponentType::RendererComponent;
-	}
+    RendererComponent::RendererComponent(Window *window, AssembledAssetManager *manager)
+        : RenderableComponent(window, manager) {
+        type = ComponentType::RendererComponent;
+    }
 
-	RendererComponent::~RendererComponent()
-	{
-		//We can actually have null materials in here, hence the check against the handle not the pointer
-		if(material.handle != -1)
-			manager->removeReference<Material>(material.handle);
-	}
+    RendererComponent::~RendererComponent() {
+        //We can actually have null materials in here, hence the check against the handle not the pointer
+        if (material.handle != -1)
+            manager->removeReference<Material>(material.handle);
+    }
 
-	void RendererComponent::PreRender(Renderer* renderer)
-	{
-		if (pipeline.pointer == nullptr)
-		{
-			return;
-		}
+    MeshVertexBuffer *RendererComponent::getMeshBuffer() const {
+        auto *graphics = dynamic_cast<GraphicsPipeline *>(getPipeline());
+        return graphics ? dynamic_cast<MeshVertexBuffer *>(graphics->getVertexBuffer()) : nullptr;
+    }
 
-		renderer->RegisterModel(this);
-	}
+    Material *RendererComponent::getSubmeshOverride(uint32_t index) const {
+        const auto it = overrides.find(index);
+        return it == overrides.end() ? nullptr : it->second.get();
+    }
 
-	void RendererComponent::Render(Renderer* renderer) const
-	{
-		pipeline->BindPipeline(renderer->getDrawCommandBuffer());
-		pipeline->getShader()->UpdateGlobalUniforms(renderer);
-		pipeline->getShader()->UpdateMaterialUniforms(material.pointer, 0);
-		pipeline->getShader()->UpdateObjectUniforms(parent);
+    Material *RendererComponent::EditSubmesh(uint32_t index) {
+        if (auto *existing = getSubmeshOverride(index)) return existing;
+        auto *mesh = getMeshBuffer();
+        if (!mesh || index >= mesh->getSubmeshCount()) return nullptr;
+        auto *source = ResolveSubmeshMaterial(mesh->getModel(), index, getMaterial());
+        if (!source) return nullptr;
+        auto copy = std::make_unique<Material>(manager->getAssetManager(), source->getName());
+        for (const auto &[key, texture]: source->getTextures()) {
+            if (key != "DEFAULT_TEX") copy->addTexture(key, texture);
+        }
+        copy->getVector4fs() = source->getVector4fs();
+        copy->getVector3fs() = source->getVector3fs();
+        copy->getVector2fs() = source->getVector2fs();
+        copy->getFloats() = source->getFloats();
+        copy->getInts() = source->getInts();
+        return overrides.emplace(index, std::move(copy)).first->second.get();
+    }
 
-		pipeline->RenderPipeline();
-		pipeline->UnbindPipeline();
-	}
+    void RendererComponent::PreRender(Renderer *renderer) {
+        if (pipeline.pointer == nullptr) {
+            return;
+        }
 
-	void RendererComponent::BatchRender(uint32_t instance_index) const
-	{
-		pipeline->getShader()->UpdateObjectUniforms(parent);
-		pipeline->RenderPipeline();
-	}
+        renderer->RegisterModel(this);
+    }
+
+    void RendererComponent::Render(Renderer *renderer) const {
+        pipeline->BindPipeline(renderer->getDrawCommandBuffer());
+        pipeline->getShader()->UpdateGlobalUniforms(renderer);
+        pipeline->getShader()->UpdateMaterialUniforms(material.pointer, 0);
+        pipeline->getShader()->UpdateObjectUniforms(parent);
+
+        pipeline->RenderObject(*this);
+        pipeline->UnbindPipeline();
+    }
+
+    void RendererComponent::BatchRender(uint32_t instance_index) const {
+        pipeline->getShader()->UpdateObjectUniforms(parent);
+        pipeline->RenderObject(*this);
+    }
 };

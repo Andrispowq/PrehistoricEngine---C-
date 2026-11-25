@@ -9,77 +9,84 @@
 
 #include "prehistoric/core/resources/AssetManager.h"
 
-namespace Prehistoric
-{
-	enum class APIHashFlags
-	{
-		GL = 0x0,
-		VK = 0x1,
-		DX11 = 0x2,
-		DX12 = 0x3
-	};
+namespace Prehistoric {
+    enum class APIHashFlags {
+        GL = 0x0,
+        VK = 0x1,
+        DX11 = 0x2,
+        DX12 = 0x3
+    };
 
-	enum class PipelineTypeHashFlags
-	{
-		Graphics = 0x0,
-		Compute = 0x1,
-		RayTracing = 0x2
-	};
+    enum class PipelineTypeHashFlags {
+        Graphics = 0x0,
+        Compute = 0x1,
+        RayTracing = 0x2
+    };
 
-	class Pipeline
-	{
-	public:
-		Pipeline(Window* window, AssetManager* manager, ShaderHandle shader);
-		Pipeline() : window(nullptr), manager(nullptr), samples(0), buffer(nullptr) {}
+    class RendererComponent;
 
-		virtual ~Pipeline();
+    class Pipeline {
+    public:
+        Pipeline(Window *window, AssetManager *manager, ShaderHandle shader);
 
-		virtual void BindPipeline(CommandBuffer* buffer) const = 0;
-		virtual void RenderPipeline() const = 0;
-		virtual void UnbindPipeline() const = 0;
+        Pipeline() : window(nullptr), manager(nullptr), samples(0), buffer(nullptr) {
+        }
 
-		virtual void RecreatePipeline() {};
+        virtual ~Pipeline();
 
-		virtual uint64_t GetHash();
+        virtual void BindPipeline(CommandBuffer *buffer) const = 0;
 
-		static uint64_t GetHash(APIHashFlags apiFlags, PipelineTypeHashFlags typeFlags, size_t shaderHandle, size_t otherHandle);
+        virtual void RenderPipeline() const = 0;
 
-		Vector2f getViewportStart() const { return viewportStart; }
-		Vector2f getViewportSize() const { return viewportSize; }
-		Vector2u getScissorStart() const { return scissorStart; }
-		Vector2u getScissorSize() const { return scissorSize; }
-		int getSamples() const { return samples; }
+        virtual void RenderObject(const RendererComponent &) const { RenderPipeline(); }
 
-		Shader* getShader() const { return shader.pointer; }
-		ShaderHandle getShaderHandle() const { return shader; }
+        virtual void UnbindPipeline() const = 0;
 
-		void setViewportStart(const Vector2f& viewportStart) { this->viewportStart = viewportStart; }
-		void setViewportSize(const Vector2f& viewportSize) { this->viewportSize = viewportSize; }
-		void setScissorStart(const Vector2u& scissorStart) { this->scissorStart = scissorStart; }
-		void setScissorSize(const Vector2u& scissorSize) { this->scissorSize = scissorSize; }
-		void setSamples(int samples) { this->samples = samples; }
+        virtual void RecreatePipeline() {
+        };
 
-	protected:
-		void SetHashInternal(APIHashFlags apiFlags, PipelineTypeHashFlags typeFlags, size_t shaderHandle, size_t otherHandle);
+        virtual uint64_t GetHash();
 
-	public:
-		Window* window;
-		AssetManager* manager;
+        static uint64_t GetHash(APIHashFlags apiFlags, PipelineTypeHashFlags typeFlags, size_t shaderHandle,
+                                size_t otherHandle);
 
-		ShaderHandle shader;
+        Vector2f getViewportStart() const { return viewportStart; }
+        Vector2f getViewportSize() const { return viewportSize; }
+        Vector2u getScissorStart() const { return scissorStart; }
+        Vector2u getScissorSize() const { return scissorSize; }
+        int getSamples() const { return samples; }
 
-		Vector2f viewportStart;
-		Vector2f viewportSize;
-		Vector2u scissorStart;
-		Vector2u scissorSize;
+        Shader *getShader() const { return shader.pointer; }
+        ShaderHandle getShaderHandle() const { return shader; }
 
-		int samples;
+        void setViewportStart(const Vector2f &viewportStart) { this->viewportStart = viewportStart; }
+        void setViewportSize(const Vector2f &viewportSize) { this->viewportSize = viewportSize; }
+        void setScissorStart(const Vector2u &scissorStart) { this->scissorStart = scissorStart; }
+        void setScissorSize(const Vector2u &scissorSize) { this->scissorSize = scissorSize; }
+        void setSamples(int samples) { this->samples = samples; }
 
-		uint64_t hash = 0;
+    protected:
+        void SetHashInternal(APIHashFlags apiFlags, PipelineTypeHashFlags typeFlags, size_t shaderHandle,
+                             size_t otherHandle);
 
-	protected:
-		mutable CommandBuffer* buffer; //The current commandbuffer
-	};
+    public:
+        Window *window;
+        AssetManager *manager;
+
+        ShaderHandle shader;
+
+        Vector2f viewportStart;
+        Vector2f viewportSize;
+        Vector2u scissorStart;
+        Vector2u scissorSize;
+
+        int samples;
+
+        uint64_t hash = 0;
+
+    protected:
+        mutable CommandBuffer *buffer; //The current commandbuffer
+    };
 };
 
 #endif

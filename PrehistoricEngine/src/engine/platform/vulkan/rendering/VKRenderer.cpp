@@ -281,6 +281,12 @@ namespace Prehistoric {
                 }
                 for (const auto &[material, objects]: groups) {
                     frame.materials.try_emplace(material, frame.materials.size());
+                    for (auto *object: objects) {
+                        auto *component = dynamic_cast<RendererComponent *>(object);
+                        if (!component) continue;
+                        for (const auto &[index, overrideMaterial]: component->getSubmeshOverrides())
+                            frame.materials.try_emplace(overrideMaterial.get(), frame.materials.size());
+                    }
                     frame.objects += static_cast<uint32_t>(objects.size());
                 }
             }
@@ -300,12 +306,10 @@ namespace Prehistoric {
         std::unordered_map<VKShader *, uint32_t> objectSlots;
         Material *fallback = nullptr;
         MeshVertexBuffer *mesh = nullptr;
-        std::vector<Material *> imported;
         VKShader *shader = nullptr;
         auto begin = [&](Pipeline *pipeline, bool wireframe) {
             shader = static_cast<VKShader *>(pipeline->getShader());
             mesh = nullptr;
-            imported.clear();
             auto *graphics = static_cast<VKGraphicsPipeline *>(pipeline);
             if (receivers && !graphics->HasVoxelReceiver()) {
                 shader = nullptr;
@@ -318,10 +322,8 @@ namespace Prehistoric {
             if (!shader) return;
             if (buffer) {
                 auto *vertices = static_cast<VKGraphicsPipeline *>(pipeline)->getVertexBuffer();
-                if (vertices->getType() == VertexBufferType::MESH) {
+                if (vertices->getType() == VertexBufferType::MESH)
                     mesh = static_cast<MeshVertexBuffer *>(vertices);
-                    imported = mesh->getModel().getMaterials();
-                }
                 constexpr CaptureConstants mainView{};
                 vkCmdPushConstants(buffer->getCommandBuffer(), shader->GetPipelineLayout(),
                                    VK_SHADER_STAGE_ALL_GRAPHICS,
@@ -332,7 +334,7 @@ namespace Prehistoric {
         auto material = [&](Pipeline *, Material *material) {
             if (!shader) return;
             fallback = material;
-            if (buffer && imported.empty()) shader->BindTextureSets(frameDescriptors.at(shader).materials.at(material));
+            if (buffer && !mesh) shader->BindTextureSets(frameDescriptors.at(shader).materials.at(material));
         };
         auto object = [&](Pipeline *pipeline, RenderableComponent *renderable) {
             if (!shader) return;
@@ -340,17 +342,21 @@ namespace Prehistoric {
                 auto slot = objectSlots[shader]++;
                 if (capture && !renderable->hasReflection()) return;
                 shader->BindObjectSets(slot);
-                if (imported.empty()) {
+                if (!mesh) {
                     pipeline->RenderPipeline();
                     return;
                 }
                 const auto &materials = frameDescriptors.at(shader).materials;
+                const auto *component = dynamic_cast<const RendererComponent *>(renderable);
+                if (mesh->getModel().getMaterials().empty() && (
+                        !component || component->getSubmeshOverrides().empty())) {
+                    shader->BindTextureSets(materials.at(fallback));
+                    pipeline->RenderPipeline();
+                    return;
+                }
                 Material *bound = nullptr;
                 for (uint32_t i = 0; i < mesh->getSubmeshCount(); ++i) {
-                    const int index = mesh->getModel().getMesh(i).getMaterialIndex();
-                    auto *selected = index >= 0 && static_cast<size_t>(index) < imported.size() && imported[index]
-                                         ? imported[index]
-                                         : fallback;
+                    auto *selected = renderable->ResolveSubmeshMaterial(mesh->getModel(), i, fallback);
                     if (selected != bound) {
                         shader->BindTextureSets(materials.at(selected));
                         bound = selected;

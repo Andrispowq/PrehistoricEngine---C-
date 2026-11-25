@@ -20,7 +20,7 @@ namespace Prehistoric {
         nlohmann::json file_json;
         file_json["name"] = sceneName;
         if (!scene->getEnvironmentMap().empty()) file_json["environment_map"] = scene->getEnvironmentMap();
-        if (const auto& pose = scene->getInitialCamera()) {
+        if (const auto &pose = scene->getInitialCamera()) {
             file_json["initial_camera"] = {
                 {"position", {pose->position.x, pose->position.y, pose->position.z}},
                 {"forward", {pose->forward.x, pose->forward.y, pose->forward.z}},
@@ -81,6 +81,7 @@ namespace Prehistoric {
 
                 std::vector<nlohmann::json> contents_list;
                 for (auto &tex: material.second->getTextures()) {
+                    if (tex.first == "DEFAULT_TEX") continue;
                     nlohmann::json content;
                     content["name"] = tex.first;
                     content["type"] = "texture";
@@ -156,13 +157,15 @@ namespace Prehistoric {
             std::vector<GameObject *> children = root->getAllChildren();
             //For now we serialise everything to be root's child
             for (auto child: children) {
-                if (const auto* atmosphere = dynamic_cast<const Atmosphere*>(child)) {
-                    const auto sun = std::find_if(children.begin(), children.end(), [&](const GameObject* object) {
+                if (const auto *atmosphere = dynamic_cast<const Atmosphere *>(child)) {
+                    const auto sun = std::find_if(children.begin(), children.end(), [&](const GameObject *object) {
                         return atmosphere->getSun() && object->GetComponent<Light>() == atmosphere->getSun();
                     });
                     if (sun != children.end()) {
-                        worldObjects.push_back({{"name", child->getName()}, {"type", "scattering_atmosphere"},
-                                                {"sun", (*sun)->getName()}});
+                        worldObjects.push_back({
+                            {"name", child->getName()}, {"type", "scattering_atmosphere"},
+                            {"sun", (*sun)->getName()}
+                        });
                     }
                     continue;
                 }
@@ -200,6 +203,17 @@ namespace Prehistoric {
                             RendererComponent *rendComp = (RendererComponent *) comp;
 
                             comp_json["type"] = "Renderer";
+                            for (const auto &[index, overrideMaterial]: rendComp->getSubmeshOverrides()) {
+                                const auto colour = overrideMaterial->getVector3f(COLOUR);
+                                const auto mrot = overrideMaterial->getVector4f(MROT);
+                                comp_json["submesh_overrides"].push_back({
+                                    {"index", index},
+                                    {"name", rendComp->getMeshBuffer()->getModel().getMesh(index).getName()},
+                                    {"colour", {colour.x, colour.y, colour.z}},
+                                    {"mrot", {mrot.x, mrot.y, mrot.z, mrot.w}},
+                                    {"emission", overrideMaterial->getFloat(EMISSION)}
+                                });
+                            }
 
                             auto *graphics = dynamic_cast<GraphicsPipeline *>(rendComp->getPipeline());
                             if (!graphics) continue;
@@ -239,8 +253,8 @@ namespace Prehistoric {
                             comp_json["illuminate"] = lightComp->illuminates();
                             comp_json["cast_shadows"] = lightComp->castShadows();
                         } else if (comp->getComponentType() == ComponentType::VolumetricSphereComponent) {
-                            const auto* sphere = static_cast<const VolumetricSphereComponent*>(comp);
-                            const auto& tint = sphere->getTint();
+                            const auto *sphere = static_cast<const VolumetricSphereComponent *>(comp);
+                            const auto &tint = sphere->getTint();
                             comp_json = {
                                 {"type", VolumetricSphereComponent::Name},
                                 {"radius", sphere->getRadius()},

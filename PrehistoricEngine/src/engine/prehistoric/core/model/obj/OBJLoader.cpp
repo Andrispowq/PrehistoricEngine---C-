@@ -75,7 +75,7 @@ namespace Prehistoric {
         //Add materials
         size_t index = 0;
         for (const auto &material: materials) {
-            Material *new_mat = new Material(manager);
+            Material *new_mat = new Material(manager, material.name);
 
             if (!material.diffuse_texname.empty()) {
                 std::string location = "res/textures/" + material.diffuse_texname;
@@ -93,10 +93,11 @@ namespace Prehistoric {
                 model.AddTextureLocation(texture.pointer, location);
             }
 
-            if (material.diffuse_texname.empty()) new_mat->addVector3f(COLOUR, {
-                                                                           material.diffuse[0], material.diffuse[1],
-                                                                           material.diffuse[2]
-                                                                       });
+            if (material.diffuse_texname.empty())
+                new_mat->addVector3f(COLOUR, {
+                                         material.diffuse[0], material.diffuse[1],
+                                         material.diffuse[2]
+                                     });
             new_mat->addVector4f(MROT, {
                                      /*material.metallic*/ 0, /*material.roughness*/ 0.3f, 1, -1
                                  });
@@ -107,7 +108,9 @@ namespace Prehistoric {
 
         //Add meshes
         for (const auto &shape: shapes) {
+            if (shape.mesh.indices.empty()) continue;
             Mesh mesh;
+            mesh.setName(shape.name);
 
             std::unordered_map<Vertex, uint32_t> uniqueVertices{};
             std::vector<Vertex> vertices;

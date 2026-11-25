@@ -3,24 +3,36 @@
 
 #include "prehistoric/core/node/GameObject.h"
 
-class SceneHierarchyPanel
-{
+namespace Prehistoric {
+    class RendererComponent;
+}
+
+class SceneHierarchyPanel {
 public:
-	SceneHierarchyPanel() = default;
-	SceneHierarchyPanel(Prehistoric::GameObject* root);
+    SceneHierarchyPanel() = default;
 
-	void SetContext(Prehistoric::GameObject* root);
-	void InvalidateSelectionContext() { selectionContext = nullptr; }
+    SceneHierarchyPanel(Prehistoric::GameObject *root);
 
-	void ImGuiRender();
+    void SetContext(Prehistoric::GameObject *root);
+
+    void InvalidateSelectionContext() {
+        selectionContext = nullptr;
+        selectedSubmesh.reset();
+    }
+
+    void ImGuiRender();
 
 private:
-	void DrawGameObjectNode(Prehistoric::GameObject* object);
-	void DrawComponents(Prehistoric::GameObject* object);
+    void DrawGameObjectNode(Prehistoric::GameObject *object);
+
+    void DrawSubmesh(Prehistoric::RendererComponent &component, uint32_t index);
+
+    void DrawComponents(Prehistoric::GameObject *object);
 
 private:
-	Prehistoric::GameObject* root;
-	Prehistoric::GameObject* selectionContext = nullptr;
+    std::optional<uint32_t> selectedSubmesh;
+    Prehistoric::GameObject *root;
+    Prehistoric::GameObject *selectionContext = nullptr;
 };
 
 #endif

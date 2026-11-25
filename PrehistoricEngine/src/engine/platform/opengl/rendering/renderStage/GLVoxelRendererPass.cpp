@@ -42,26 +42,20 @@ namespace Prehistoric {
                 if (vertices->getType() != VertexBufferType::MESH) continue;
                 auto *mesh = static_cast<MeshVertexBuffer *>(vertices);
                 auto &batchStates = state[pipeline];
-                const auto submeshMaterials = mode == CaptureMode::ShadowCasters
-                                                  ? std::vector<Material *>()
-                                                  : mesh->getModel().getMaterials();
                 for (const auto &[material, objects]: materials) {
                     BatchState batch{mesh, {}, {}};
-                    if (mode != CaptureMode::ShadowCasters) {
+                    for (const auto *object: objects) {
+                        batch.transforms.push_back(
+                            CaptureMatrix(object->getParent()->getWorldTransform().getTransformationMatrix()));
+                        if (mode == CaptureMode::ShadowCasters) continue;
                         for (uint32_t i = 0; i < mesh->getSubmeshCount(); ++i) {
-                            const int index = mesh->getModel().getMesh(i).getMaterialIndex();
                             auto surface = GLVoxelisationShader::GetSurface(
-                                index < 0 ? material : submeshMaterials[index],
-                                captureBounceSurfaces);
+                                object->ResolveSubmeshMaterial(mesh->getModel(), i, material), captureBounceSurfaces);
                             if (mode == CaptureMode::DebugColour) surface.emission = 0.0f;
                             batch.surfaces.push_back(surface);
                         }
                     }
-                    batch.transforms.reserve(objects.size());
-                    for (const auto *object: objects)
-                        batch.transforms.push_back(
-                            CaptureMatrix(object->getParent()->getWorldTransform().getTransformationMatrix()));
-                    std::sort(batch.transforms.begin(), batch.transforms.end());
+                    if (mode == CaptureMode::ShadowCasters) std::sort(batch.transforms.begin(), batch.transforms.end());
                     batchStates.emplace(material, std::move(batch));
                 }
             }
@@ -582,14 +576,12 @@ namespace Prehistoric {
             auto *buffer = static_cast<GLGraphicsPipeline *>(pipeline)->getVertexBuffer();
             if (buffer->getType() != VertexBufferType::MESH) continue;
             auto &model = static_cast<MeshVertexBuffer *>(buffer)->getModel();
-            const auto materials = model.getMaterials();
             buffer->Bind(nullptr);
             for (const auto &[material, objects]: batches) {
                 for (uint32_t i = 0; i < buffer->getSubmeshCount(); ++i) {
-                    const int index = model.getMesh(i).getMaterialIndex();
-                    shader->SetSurface(GLVoxelisationShader::GetSurface(index < 0 ? material : materials[index],
-                                                                        captureBounceSurfaces));
                     for (const auto *object: objects) {
+                        shader->SetSurface(GLVoxelisationShader::GetSurface(
+                            object->ResolveSubmeshMaterial(model, i, material), captureBounceSurfaces));
                         shader->UpdateObjectUniforms(object->getParent());
                         buffer->Draw(nullptr, i);
                     }

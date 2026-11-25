@@ -150,7 +150,7 @@ namespace Prehistoric {
     Texture *Material::getTexture(const std::string &key) const {
         auto index = textures.find(key);
         if (index == textures.end())
-            return textures.begin()->second.pointer;
+            return getDefault();
 
         return index->second.pointer;
     }

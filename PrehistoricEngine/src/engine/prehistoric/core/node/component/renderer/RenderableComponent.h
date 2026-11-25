@@ -10,55 +10,65 @@
 
 #include "Includes.hpp"
 
-namespace Prehistoric
-{
-	class AssembledAssetManager;
+namespace Prehistoric {
+    class AssembledAssetManager;
 
-	enum class RenderPriority : uint64_t
-	{
-		_3D = 0,
-		_TRANSPARENCY = 1,
-		_2D = 2,
-		_POST_PROCESSING = 3
-	};
+    enum class RenderPriority : uint64_t {
+        _3D = 0,
+        _TRANSPARENCY = 1,
+        _2D = 2,
+        _POST_PROCESSING = 3
+    };
 
-	class RenderableComponent : public Component
-	{
-	public:
-		RenderableComponent(Window* window, AssembledAssetManager* manager, PipelineHandle pipeline);
-		RenderableComponent(Window* window, AssembledAssetManager* manager);
-		virtual ~RenderableComponent();
+    class RenderableComponent : public Component {
+    public:
+        RenderableComponent(Window *window, AssembledAssetManager *manager, PipelineHandle pipeline);
 
-		virtual void Render(Renderer* renderer) const = 0;
-		virtual void BatchRender(uint32_t instance_index = 0) const = 0;
+        RenderableComponent(Window *window, AssembledAssetManager *manager);
 
-		Pipeline* getPipeline() const { return pipeline.pointer; }
-		PipelineHandle getPipelineHandle() const { return pipeline; }
+        virtual ~RenderableComponent();
 
-		void setPipeline(PipelineHandle handle) { this->pipeline.handle = handle.handle; this->pipeline.pointer = handle.pointer; }
+        virtual void Render(Renderer *renderer) const = 0;
 
-		inline RenderPriority getPriority() const { return priority; }
-		inline void setPriority(RenderPriority priority) { this->priority = priority; }
+        virtual void BatchRender(uint32_t instance_index = 0) const = 0;
 
-		inline bool hasReflection() const { return reflect_water; }
-		inline void setReflection(bool reflect) { this->reflect_water = reflect; }
+        virtual Material *getSubmeshOverride(uint32_t) const { return nullptr; }
 
-		static ComponentType getStaticComponentType() { return ComponentType::RenderableComponent; }
+        Material *ResolveSubmeshMaterial(const Model &model, uint32_t index, Material *fallback) const;
 
-		RenderableComponent(const RenderableComponent&) = delete;
-		RenderableComponent(const RenderableComponent&&) = delete;
-		RenderableComponent& operator=(RenderableComponent) = delete;
-	protected:
-		AssembledAssetManager* manager;
+        Pipeline *getPipeline() const { return pipeline.pointer; }
+        PipelineHandle getPipelineHandle() const { return pipeline; }
 
-		Window* window;
+        void setPipeline(PipelineHandle handle) {
+            this->pipeline.handle = handle.handle;
+            this->pipeline.pointer = handle.pointer;
+        }
 
-		PipelineHandle pipeline;
-		RenderPriority priority;
+        inline RenderPriority getPriority() const { return priority; }
+        inline void setPriority(RenderPriority priority) { this->priority = priority; }
 
-		bool registered = false;
-		bool reflect_water = true;
-	};
+        inline bool hasReflection() const { return reflect_water; }
+        inline void setReflection(bool reflect) { this->reflect_water = reflect; }
+
+        static ComponentType getStaticComponentType() { return ComponentType::RenderableComponent; }
+
+        RenderableComponent(const RenderableComponent &) = delete;
+
+        RenderableComponent(const RenderableComponent &&) = delete;
+
+        RenderableComponent &operator=(RenderableComponent) = delete;
+
+    protected:
+        AssembledAssetManager *manager;
+
+        Window *window;
+
+        PipelineHandle pipeline;
+        RenderPriority priority;
+
+        bool registered = false;
+        bool reflect_water = true;
+    };
 };
 
 #endif

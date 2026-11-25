@@ -12,11 +12,10 @@ OpenGL and Vulkan water are enabled in the sample. Vulkan selects its geometry o
 
 ## Remaining work
 
-**Next after Vulkan VXGI:** expose each imported submesh as an editable child of
-its model instance in the editor hierarchy. Preserve OBJ and PMF submesh names
-and support per-instance material overrides without changing other instances.
-Verify by editing one curtain under Sponza, saving the world, and reopening it.
-Preserve sub-object transforms and check PRM support if it is a separate format.
+Imported OBJ and PMF submeshes appear under each model instance in the editor
+hierarchy. Selecting a part opens its material controls. Edits and resets apply
+to that instance, and world JSON stores edited parts with the model renderer.
+Parts use the parent model transform. Individual submesh transforms remain open.
 
 7. Compare the existing Vulkan terrain against the corrected OpenGL terrain at matched camera positions, including LOD
    transitions and wireframe.

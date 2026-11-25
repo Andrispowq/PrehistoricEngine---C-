@@ -156,15 +156,11 @@ namespace Prehistoric {
                 graphics->getVertexBuffer()->getType() != VertexBufferType::MESH)
                 continue;
             auto *mesh = static_cast<VKMeshVertexBuffer *>(graphics->getVertexBuffer());
-            const auto materials = mesh->getModel().getMaterials();
             for (const auto &[fallback, objects]: batches)
                 for (const auto *object: objects) {
                     const auto transform = object->getParent()->getWorldTransform().getTransformationMatrix();
                     for (uint32_t i = 0; i < mesh->getSubmeshCount(); ++i) {
-                        const int index = mesh->getModel().getMesh(i).getMaterialIndex();
-                        auto *material = index >= 0 && size_t(index) < materials.size() && materials[index]
-                                             ? materials[index]
-                                             : fallback;
+                        auto *material = object->ResolveSubmeshMaterial(mesh->getModel(), i, fallback);
                         if (!material || mesh->IndexCount(i) < 3) continue;
                         auto colour = material->getVector3f(COLOUR);
                         bool mapped = colour.x < 0 && material->exists(ALBEDO_MAP);

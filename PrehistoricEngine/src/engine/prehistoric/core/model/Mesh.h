@@ -3,42 +3,52 @@
 
 #include "Vertex.h"
 
-namespace Prehistoric
-{
-	class Mesh
-	{
-	public:
-		Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, int materialIndex = -1)
-			: vertices(vertices), indices(indices), materialIndex(materialIndex) {}
-		Mesh() {}
+namespace Prehistoric {
+    class Mesh {
+    public:
+        Mesh(const std::vector<Vertex> &vertices, const std::vector<uint32_t> &indices, int materialIndex = -1)
+            : vertices(vertices), indices(indices), materialIndex(materialIndex) {
+        }
 
-		~Mesh() {}
+        Mesh() {
+        }
 
-		//They return a pointer as returning a vector would result in a huge copy, but they should get deleted later on
-		std::vector<float> GetVertexData() const;
-		std::vector<uint32_t> GetIndexData() const;
+        ~Mesh() {
+        }
 
-		void AddVertex(const Vertex& vertex) { vertices.push_back(vertex); }
-		void AddIndex(const uint32_t& index) { indices.push_back(index); }
+        //They return a pointer as returning a vector would result in a huge copy, but they should get deleted later on
+        std::vector<float> GetVertexData() const;
 
-		inline std::vector<Vertex> getVertices() const { return vertices; }
-		inline std::vector<uint32_t> getIndices() const { return indices; }
-		inline int getMaterialIndex() const { return materialIndex; }
+        std::vector<uint32_t> GetIndexData() const;
 
-		inline void setVertices(std::vector<Vertex>&& vertices) { this->vertices = vertices; }
-		inline void setIndices(std::vector<uint32_t>&& indices) { this->indices = indices; }
-		inline void setMaterialIndex(int materialIndex) { this->materialIndex = materialIndex; }
+        void AddVertex(const Vertex &vertex) { vertices.push_back(vertex); }
+        void AddIndex(const uint32_t &index) { indices.push_back(index); }
 
-		Mesh(const Mesh&) = default;
-		Mesh(Mesh&&) = default;
-		Mesh& operator=(const Mesh& mesh) = default;
-		Mesh& operator=(Mesh&& mesh) = default;
-	private:
-		std::vector<Vertex> vertices;
-		std::vector<uint32_t> indices;
+        inline std::vector<Vertex> getVertices() const { return vertices; }
+        inline std::vector<uint32_t> getIndices() const { return indices; }
+        const std::string &getName() const { return name; }
+        void setName(const std::string &value) { name = value; }
+        inline int getMaterialIndex() const { return materialIndex; }
 
-		int materialIndex;
-	};
+        inline void setVertices(std::vector<Vertex> &&vertices) { this->vertices = vertices; }
+        inline void setIndices(std::vector<uint32_t> &&indices) { this->indices = indices; }
+        inline void setMaterialIndex(int materialIndex) { this->materialIndex = materialIndex; }
+
+        Mesh(const Mesh &) = default;
+
+        Mesh(Mesh &&) = default;
+
+        Mesh &operator=(const Mesh &mesh) = default;
+
+        Mesh &operator=(Mesh &&mesh) = default;
+
+    private:
+        std::vector<Vertex> vertices;
+        std::vector<uint32_t> indices;
+
+        std::string name;
+        int materialIndex = -1;
+    };
 };
 
 #endif
