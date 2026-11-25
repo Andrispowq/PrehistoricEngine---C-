@@ -44,10 +44,11 @@ namespace Prehistoric {
     VKEnvironmentLighting::VKEnvironmentLighting(VkPhysicalDevice physicalDevice, VkDevice device, VkQueue queue,
                                                  uint32_t queueFamily, VkDescriptorImageInfo source,
                                                  uint32_t irradianceSize, uint32_t prefilterSize, uint32_t levels,
-                                                 uint32_t cubeSize, const std::vector<char>& conversion, const std::vector<char>& shader, uint32_t lutSize, uint32_t samples,
-                                                 const AtmosphereParameters* sky, VKEnvironmentLighting* reuseLutFrom)
-        : physicalDevice(physicalDevice), device(device), lutSamples(samples)
-    {
+                                                 uint32_t cubeSize, const std::vector<char> &conversion,
+                                                 const std::vector<char> &shader, uint32_t lutSize, uint32_t samples,
+                                                 const AtmosphereParameters *sky, VKEnvironmentLighting *reuseLutFrom,
+                                                 bool includeSunDisk)
+        : physicalDevice(physicalDevice), device(device), lutSamples(samples) {
         if (!cubeSize || !irradianceSize || !prefilterSize || !levels || !lutSize || !samples)
             throw std::invalid_argument("Vulkan IBL dimensions and sample count must be positive");
 
@@ -57,18 +58,18 @@ namespace Prehistoric {
         if ((properties.optimalTilingFeatures & required) != required)
             throw std::runtime_error("Vulkan IBL requires sampled/storage RGBA32F images");
 
-        try 
-        {
+        try {
             levels = (std::min)(levels, uint32_t(std::floor(std::log2(prefilterSize))) + 1);
             const auto blitFeatures = VK_FORMAT_FEATURE_BLIT_SRC_BIT | VK_FORMAT_FEATURE_BLIT_DST_BIT |
                                       VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
             uint32_t cubeLevels = (properties.optimalTilingFeatures & blitFeatures) == blitFeatures
-                ? uint32_t(std::floor(std::log2(cubeSize))) + 1 : 1;
+                                      ? uint32_t(std::floor(std::log2(cubeSize))) + 1
+                                      : 1;
             CreateMap(environment, cubeSize, cubeLevels, 6);
             CreateMap(irradiance, irradianceSize, 1, 6);
             CreateMap(prefilter, prefilterSize, levels, 6);
             bool reuseLut = reuseLutFrom && reuseLutFrom->device == device && reuseLutFrom->brdf.size == lutSize &&
-                reuseLutFrom->lutSamples == samples;
+                            reuseLutFrom->lutSamples == samples;
             if (!reuseLut) CreateMap(brdf, lutSize, 1, 1);
 
             VkSamplerCreateInfo samplerInfo{VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
@@ -79,11 +80,9 @@ namespace Prehistoric {
                                        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
             samplerInfo.maxLod = float((std::max)(levels, environment.levels) - 1);
             Check(vkCreateSampler(device, &samplerInfo, nullptr, &sampler));
-            Bake(queue, queueFamily, source, conversion, shader, samples, sky);
+            Bake(queue, queueFamily, source, conversion, shader, samples, sky, includeSunDisk);
             if (reuseLut) std::swap(brdf, reuseLutFrom->brdf);
-        } 
-        catch (...)
-        {
+        } catch (...) {
             vkDestroySampler(device, sampler, nullptr);
             DestroyMap(brdf);
             DestroyMap(prefilter);
@@ -93,8 +92,7 @@ namespace Prehistoric {
         }
     }
 
-    VKEnvironmentLighting::~VKEnvironmentLighting() 
-    {
+    VKEnvironmentLighting::~VKEnvironmentLighting() {
         vkDestroySampler(device, sampler, nullptr);
         DestroyMap(brdf);
         DestroyMap(prefilter);
@@ -102,8 +100,7 @@ namespace Prehistoric {
         DestroyMap(environment);
     }
 
-    void VKEnvironmentLighting::CreateMap(Map& map, uint32_t size, uint32_t levels, uint32_t layers)
-    {
+    void VKEnvironmentLighting::CreateMap(Map &map, uint32_t size, uint32_t levels, uint32_t layers) {
         map.size = size;
         map.levels = levels;
         map.layers = layers;
@@ -127,18 +124,15 @@ namespace Prehistoric {
         VkPhysicalDeviceMemoryProperties memoryProperties{};
         vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
         uint32_t memoryType = UINT32_MAX;
-        for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; ++i)
-        {
+        for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; ++i) {
             if ((requirements.memoryTypeBits & (1u << i)) &&
-                (memoryProperties.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) 
-            {
+                (memoryProperties.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
                 memoryType = i;
                 break;
             }
         }
 
-        if (memoryType == UINT32_MAX)
-        {
+        if (memoryType == UINT32_MAX) {
             throw std::runtime_error("No device-local memory for Vulkan IBL");
         }
 
@@ -156,8 +150,7 @@ namespace Prehistoric {
         Check(vkCreateImageView(device, &viewInfo, nullptr, &map.view));
         map.storageViews.resize(levels, VK_NULL_HANDLE);
 
-        for (uint32_t level = 0; level < levels; ++level)
-        {
+        for (uint32_t level = 0; level < levels; ++level) {
             viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
             viewInfo.subresourceRange.baseMipLevel = level;
             viewInfo.subresourceRange.levelCount = 1;
@@ -165,38 +158,33 @@ namespace Prehistoric {
         }
     }
 
-    void VKEnvironmentLighting::DestroyMap(Map& map) 
-    {
-        for (auto view : map.storageViews) vkDestroyImageView(device, view, nullptr);
+    void VKEnvironmentLighting::DestroyMap(Map &map) {
+        for (auto view: map.storageViews) vkDestroyImageView(device, view, nullptr);
         vkDestroyImageView(device, map.view, nullptr);
         vkDestroyImage(device, map.image, nullptr);
         vkFreeMemory(device, map.memory, nullptr);
     }
 
-    VkDescriptorImageInfo VKEnvironmentLighting::getEnvironment() const
-    {
+    VkDescriptorImageInfo VKEnvironmentLighting::getEnvironment() const {
         return {sampler, environment.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
     }
 
-    VkDescriptorImageInfo VKEnvironmentLighting::getIrradiance() const 
-    {
+    VkDescriptorImageInfo VKEnvironmentLighting::getIrradiance() const {
         return {sampler, irradiance.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
     }
 
-    VkDescriptorImageInfo VKEnvironmentLighting::getPrefilter() const 
-    {
+    VkDescriptorImageInfo VKEnvironmentLighting::getPrefilter() const {
         return {sampler, prefilter.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
     }
 
-    VkDescriptorImageInfo VKEnvironmentLighting::getBRDF() const 
-    {
+    VkDescriptorImageInfo VKEnvironmentLighting::getBRDF() const {
         return {sampler, brdf.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
     }
 
     void VKEnvironmentLighting::Bake(VkQueue queue, uint32_t queueFamily, VkDescriptorImageInfo source,
-                                     const std::vector<char>& conversion, const std::vector<char>& shader, uint32_t samples,
-                                     const AtmosphereParameters* sky)
-    {
+                                     const std::vector<char> &conversion, const std::vector<char> &shader,
+                                     uint32_t samples,
+                                     const AtmosphereParameters *sky, bool includeSunDisk) {
         BakeResources resources{device};
         VkDescriptorSetLayoutBinding bindings[2]{};
         bindings[0] = {0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr};
@@ -214,7 +202,10 @@ namespace Prehistoric {
         };
         static_assert(sizeof(Parameters) == 16);
 
-        VkPushConstantRange push{VK_SHADER_STAGE_COMPUTE_BIT, 0, sky ? uint32_t(AtmospherePushOffset + sizeof(*sky)) : uint32_t(sizeof(Parameters))};
+        VkPushConstantRange push{
+            VK_SHADER_STAGE_COMPUTE_BIT, 0,
+            sky ? uint32_t(AtmospherePushOffset + sizeof(*sky)) : uint32_t(sizeof(Parameters))
+        };
         VkPipelineLayoutCreateInfo layoutInfo{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
         layoutInfo.setLayoutCount = 1;
         layoutInfo.pSetLayouts = &resources.setLayout;
@@ -236,13 +227,14 @@ namespace Prehistoric {
         Check(vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &resources.pipeline));
 
         moduleInfo.codeSize = conversion.size();
-        moduleInfo.pCode = reinterpret_cast<const uint32_t*>(conversion.data());
+        moduleInfo.pCode = reinterpret_cast<const uint32_t *>(conversion.data());
         Check(vkCreateShaderModule(device, &moduleInfo, nullptr, &resources.conversionModule));
         pipelineInfo.stage.module = resources.conversionModule;
-        Check(vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &resources.conversionPipeline));
+        Check(vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
+                                       &resources.conversionPipeline));
 
         uint32_t count = prefilter.levels + 3;
-        VkDescriptorPoolSize poolSizes[] = 
+        VkDescriptorPoolSize poolSizes[] =
         {
             {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, count}, {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, count}
         };
@@ -283,13 +275,12 @@ namespace Prehistoric {
         vkCmdPipelineBarrier(command, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                              0, 1, &sourceBarrier, 0, nullptr, 0, nullptr);
 
-        Map* maps[] = {&environment, &irradiance, &prefilter, &brdf};
+        Map *maps[] = {&environment, &irradiance, &prefilter, &brdf};
         uint32_t setIndex = 0;
         VkDescriptorImageInfo cubeSource{sampler, environment.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
-        for (int mode = -1; mode < (brdf.image ? 3 : 2); ++mode)
-        {
+        for (int mode = -1; mode < (brdf.image ? 3 : 2); ++mode) {
             bool converting = mode == -1;
-            Map& map = *maps[mode + 1];
+            Map &map = *maps[mode + 1];
             vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_COMPUTE,
                               converting ? resources.conversionPipeline : resources.pipeline);
             VkImageMemoryBarrier barrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
@@ -302,12 +293,10 @@ namespace Prehistoric {
             vkCmdPipelineBarrier(command, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                                  0, 0, nullptr, 0, nullptr, 1, &barrier);
 
-            for (uint32_t level = 0; level < (converting ? 1u : map.levels); ++level) 
-            {
+            for (uint32_t level = 0; level < (converting ? 1u : map.levels); ++level) {
                 VkDescriptorImageInfo output{VK_NULL_HANDLE, map.storageViews[level], VK_IMAGE_LAYOUT_GENERAL};
                 VkWriteDescriptorSet writes[2]{};
-                for (uint32_t i = 0; i < 2; ++i) 
-                {
+                for (uint32_t i = 0; i < 2; ++i) {
                     writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     writes[i].dstSet = sets[setIndex];
                     writes[i].dstBinding = i;
@@ -327,20 +316,20 @@ namespace Prehistoric {
                 {
                     mode, int(size), map.levels > 1 ? float(level) / float(map.levels - 1) : 0.0f, int(samples)
                 };
-                if (converting && sky)
-                {
+                if (converting && sky) {
+                    const uint32_t includeDisk = includeSunDisk ? 1u : 0u;
+                    vkCmdPushConstants(command, resources.pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT,
+                                       0, sizeof(includeDisk), &includeDisk);
                     vkCmdPushConstants(command, resources.pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT,
                                        AtmospherePushOffset, sizeof(*sky), sky);
-                }
-                else
-                {
-                    vkCmdPushConstants(command, resources.pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(parameters), &parameters);
+                } else {
+                    vkCmdPushConstants(command, resources.pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0,
+                                       sizeof(parameters), &parameters);
                 }
                 vkCmdDispatch(command, (size + 7) / 8, (size + 7) / 8, map.layers);
             }
 
-            if (converting && map.levels > 1)
-            {
+            if (converting && map.levels > 1) {
                 barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
                 barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
                 barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;

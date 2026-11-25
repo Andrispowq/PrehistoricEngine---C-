@@ -1,5 +1,6 @@
 #include "Includes.hpp"
 #include "VKRenderer.h"
+#include "VKShadowPass.h"
 #include "VKWaterSimulation.h"
 #include "prehistoric/core/modules/water/Water.h"
 #include "prehistoric/core/modules/water/WaterCapture.h"
@@ -27,6 +28,7 @@ namespace Prehistoric {
 
         VKDevice *device = (VKDevice *) context->getDevices();
 
+        shadows = std::make_unique<VKShadowPass>(device);
         renderpass = std::make_unique<VKRenderpass>(device, swapchain);
 
         size_t NumImages = swapchain->getSwapchainImages().size();
@@ -56,6 +58,7 @@ namespace Prehistoric {
         auto capture = EnvironmentCaptureSource::FromScene(
             !panoramaOverride && __AtmosphereConfig.scatteringEnabled ? atmosphere : nullptr, 0,
             panoramaOverride ? std::string{} : sceneEnvironmentMap);
+        capture.includeSunDisk = !capture.scattering || ShadowCascades::FindSun(*this) != atmosphere->getSun();
         if (!bakeRequested && !environmentCapture.NeedsBake(capture, __EnvironmentMapConfig.atmosphereRefreshSeconds))
             return;
         bool captureSky = capture.scattering;
@@ -92,7 +95,8 @@ namespace Prehistoric {
             std::clamp(__EnvironmentMapConfig.environmentMapResolution, 1u, limit),
             ResourceLoader::LoadShaderVK(captureShader),
             ResourceLoader::LoadShaderVK("vulkan/ibl/ibl_CS.spv"), VKEnvironmentLighting::DefaultLutSize,
-            VKEnvironmentLighting::DefaultSamples, captureSky ? &capture.sky : nullptr, environmentLighting.get());
+            VKEnvironmentLighting::DefaultSamples, captureSky ? &capture.sky : nullptr, environmentLighting.get(),
+            capture.includeSunDisk);
         environmentCapture.Complete(capture);
         bakeRequested = false;
         if (!captureSky && !fallback) background->SetPrefilter(environmentLighting->getPrefilter());
@@ -165,12 +169,15 @@ namespace Prehistoric {
             water->captureDepthScale = MakeWaterCapture(camera->getViewMatrix(), camera->getProjectionMatrix(),
                                                         camera->getPosition(), water->height(), false, true).depthScale;
         }
+        const auto extent = static_cast<VKSwapchain *>(window->getSwapchain())->getSwapchainExtent();
+        shadows->Prepare(*this, float(extent.width) / extent.height);
         ProcessDraws(nullptr);
 
         auto *swapchain = static_cast<VKSwapchain *>(window->getSwapchain());
         uint32_t index = swapchain->getAquiredImageIndex();
         VKCommandBuffer *buffer = commandPool->getCommandBuffer(index);
         buffer->BindBuffer();
+        shadows->Record(*this, buffer);
         for (auto *water: waters) {
             water->simulation().Record(buffer->getCommandBuffer(), float(Time::getTimeFromStartNanoseconds() * 1.0e-9));
             auto &targets = renderpass->GetWaterTargets(water);

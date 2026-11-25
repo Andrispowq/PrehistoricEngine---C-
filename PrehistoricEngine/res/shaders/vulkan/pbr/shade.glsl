@@ -1,3 +1,21 @@
+layout(set = 0, binding = 7) uniform sampler2DArray shadowMap;
+layout(set = 0, binding = 8, std140) uniform ShadowParameters
+{
+    mat4 m_LightSpace[7];
+    mat4 shadowView;
+    vec4 splits[2];
+    vec4 sunDirection;
+    vec4 sunRadiance;
+    vec4 shadowSettings;
+};
+const int cascadeCount = 6;
+#define shadowNearPlane shadowSettings.x
+#define cascadeBlendFraction shadowSettings.y
+#define shadowSunAngularRadius shadowSettings.z
+float cascadeSplit(int layer) { return splits[layer / 4][layer % 4]; }
+
+#include "../../shared/shadow/cascades.glsl"
+
 void shadeSurface(vec3 albedoColour, float metallic, float roughness, float occlusion, vec3 N, float emission)
 {
 	vec3 V = normalize((waterView.eyeAndCapture.w != 0.0 ? waterView.eyeAndCapture.xyz : cameraPosition) - position_FS);
@@ -8,6 +26,12 @@ void shadeSurface(vec3 albedoColour, float metallic, float roughness, float occl
 
     vec3 Lo = vec3(0);
 
+    if (any(greaterThan(sunRadiance.rgb, vec3(0))))
+    {
+        float visibility = cascadeSunVisibility(position_FS, normalize(normal_FS), 0.65, false);
+        Lo = visibility * directPbrLight(N, V, sunDirection.xyz, F0, albedoColour, metallic, roughness, sunRadiance.rgb);
+    }
+
     // reflectance equation
 	for(int i = 0; i < numberOfLights; ++i)
     {
@@ -15,6 +39,7 @@ void shadeSurface(vec3 albedoColour, float metallic, float roughness, float occl
         vec3 L = normalize(lights.position[i].xyz - position_FS);
 
         float dist = length(lights.position[i].xyz - position_FS);
+        if (dist > lights.intensity[i].g) continue;
         float attenuation = 1 / pow(dist, 2);
         vec3 radiance = lights.colour[i].rgb * lights.intensity[i].r * attenuation;
 

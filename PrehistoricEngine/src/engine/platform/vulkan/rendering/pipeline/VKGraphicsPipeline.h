@@ -32,6 +32,7 @@ namespace Prehistoric {
 
         virtual uint64_t GetHash() override;
 
+        VkPrimitiveTopology getTopology() const { return topology; }
         bool hasWireframePipeline() const { return wireframePipeline != VK_NULL_HANDLE; }
         VkPipeline getGraphicsPipeline() const { return graphicsPipeline; }
 
@@ -41,6 +42,7 @@ namespace Prehistoric {
     private:
         VKRenderpass *renderpass;
 
+        VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         VkPipeline graphicsPipeline;
         VkPipeline wireframePipeline = VK_NULL_HANDLE;
     };

@@ -89,7 +89,7 @@ void EditorLayer::ImGUIRender() {
 
     style.WindowMinSize.x = minWinSizeX;
 
-    auto* renderer = Prehistoric::Application::Get().getEngineLayer()->getRenderingEngine()->getRenderer();
+    auto *renderer = Prehistoric::Application::Get().getEngineLayer()->getRenderingEngine()->getRenderer();
     if (ImGui::BeginMenuBar()) {
         if (ImGui::BeginMenu("File")) {
             // Disabling fullscreen would allow the window to be moved to the front of other windows, 
@@ -103,29 +103,26 @@ void EditorLayer::ImGUIRender() {
             ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu("Render Settings"))
-        {
+        if (ImGui::BeginMenu("Render Settings")) {
             bool wireframe = renderer->isWireframeMode();
             if (ImGui::Checkbox("Wireframe (E)", &wireframe)) renderer->setWireframeMode(wireframe);
             bool bloom = renderer->isBloomEnabled();
             if (ImGui::Checkbox("Bloom (K)", &bloom)) renderer->setBloomEnabled(bloom);
 
-            auto* gl = dynamic_cast<Prehistoric::GLRenderer*>(renderer);
-            if (gl && gl->getVoxelPass()->IsSupported())
-            {
-                auto& settings = gl->getVoxelPass()->GetSettings();
+            auto *gl = dynamic_cast<Prehistoric::GLRenderer *>(renderer);
+            if (gl && gl->getVoxelPass()->IsSupported()) {
+                auto &settings = gl->getVoxelPass()->GetSettings();
                 ImGui::Separator();
                 ImGui::Checkbox("Voxel View (V)", &settings.debugView);
                 ImGui::Checkbox("Voxel GI (G)", &settings.globalIllumination);
                 ImGui::Checkbox("Half-Resolution GI", &settings.halfResolution);
                 ImGui::Checkbox("Directional Voxel Mips", &settings.directionalMips);
                 ImGui::Checkbox("Voxel Sun Shadows", &settings.voxelSunShadows);
-                const auto& resolutions = Prehistoric::GLVoxelRendererPass::Resolutions;
+                const auto &resolutions = Prehistoric::GLVoxelRendererPass::Resolutions;
                 const auto resolutionLabel = [](int resolution) { return std::to_string(resolution) + " cubed"; };
-                if (ImGui::BeginCombo("Voxel Resolution (B)", resolutionLabel(resolutions[settings.resolutionIndex]).c_str()))
-                {
-                    for (int i = 0; i < static_cast<int>(std::size(resolutions)); ++i)
-                    {
+                if (ImGui::BeginCombo("Voxel Resolution (B)",
+                                      resolutionLabel(resolutions[settings.resolutionIndex]).c_str())) {
+                    for (int i = 0; i < static_cast<int>(std::size(resolutions)); ++i) {
                         const bool available = gl->getVoxelPass()->CanUseResolution(i);
                         if (ImGui::Selectable(resolutionLabel(resolutions[i]).c_str(), i == settings.resolutionIndex,
                                               available ? ImGuiSelectableFlags_None : ImGuiSelectableFlags_Disabled))
@@ -136,18 +133,20 @@ void EditorLayer::ImGUIRender() {
                     ImGui::EndCombo();
                 }
                 ImGui::DragFloat3("Volume Center", &settings.center.x, 1.0f);
-                ImGui::DragFloat("Volume Width", &settings.extent, 1.0f, 1.0f, 100000.0f, "%.1f", ImGuiSliderFlags_AlwaysClamp);
+                ImGui::DragFloat("Volume Width", &settings.extent, 1.0f, 1.0f, 100000.0f, "%.1f",
+                                 ImGuiSliderFlags_AlwaysClamp);
                 ImGui::SliderFloat("GI Strength", &settings.giStrength, 0.0f, 4.0f);
                 ImGui::SliderInt("GI Trace Depth", &settings.traceDepth, 1,
                                  Prehistoric::GLVoxelRendererPass::MaxTraceDepth, "%d", ImGuiSliderFlags_AlwaysClamp);
-                ImGui::Text("Voxel size %.2f", settings.extent / Prehistoric::GLVoxelRendererPass::Resolutions[settings.resolutionIndex]);
-                if (settings.globalIllumination && ImGui::TreeNode("Voxel GPU Timings"))
-                {
+                ImGui::Text("Voxel size %.2f",
+                            settings.extent / Prehistoric::GLVoxelRendererPass::Resolutions[settings.resolutionIndex]);
+                if (settings.globalIllumination && ImGui::TreeNode("Voxel GPU Timings")) {
                     using Stage = Prehistoric::GLVoxelRendererPass::GpuStage;
-                    const char* labels[] = {"Occluder bake", "Radiance injection", "Bounce propagation",
-                                            "Final radiance mips", "Cone tracing", "Filter and composite"};
-                    for (int i = 0; i < static_cast<int>(Stage::Count); ++i)
-                    {
+                    const char *labels[] = {
+                        "Occluder bake", "Radiance injection", "Bounce propagation",
+                        "Final radiance mips", "Cone tracing", "Filter and composite"
+                    };
+                    for (int i = 0; i < static_cast<int>(Stage::Count); ++i) {
                         const double ms = gl->getVoxelPass()->GetGpuMilliseconds(static_cast<Stage>(i));
                         if (ms >= 0.0) ImGui::Text("%s  %.2f ms", labels[i], ms);
                     }
@@ -205,9 +204,7 @@ void EditorLayer::ImGUIRender() {
     editSize("Prefilter map mip levels", __EnvironmentMapConfig.prefilterLevels);
 
     ImGui::SliderFloat("Exposure", &__EngineConfig.rendererExposure, 0.5f, 4.0f, "%.2f");
-    if (__FrameworkConfig.api == Prehistoric::OpenGL) {
-        ImGui::SliderFloat("Sun Shadow Radius", &__EngineConfig.shadowSunAngularRadius, 0.0f, 0.1f, "%.3f rad");
-    }
+    ImGui::SliderFloat("Sun Shadow Radius", &__EngineConfig.shadowSunAngularRadius, 0.0f, 0.1f, "%.3f rad");
     ImGui::SliderFloat("Gamma", &__EngineConfig.rendererGamma, 1.0f, 5.0f, "%.2f");
 
     ImGui::End();

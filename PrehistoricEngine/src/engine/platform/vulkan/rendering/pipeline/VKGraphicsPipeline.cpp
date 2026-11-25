@@ -87,6 +87,7 @@ namespace Prehistoric {
                 inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_PATCH_LIST;
             }
         }
+        topology = inputAssembly.topology;
         inputAssembly.primitiveRestartEnable = VK_FALSE;
 
         VkDynamicState states[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};

@@ -1,6 +1,7 @@
 #include "Includes.hpp"
 #include <algorithm>
 #include "VKPBRShader.h"
+#include "platform/vulkan/rendering/VKShadowPass.h"
 #include "prehistoric/core/modules/terrain/Terrain.h"
 #include "platform/vulkan/rendering/VKRenderer.h"
 #include "platform/vulkan/rendering/VKEnvironmentLighting.h"
@@ -8,27 +9,25 @@
 #include "prehistoric/application/Application.h"
 
 namespace Prehistoric {
-    VKPBRShader::VKPBRShader(Window *window, bool terrain) : VKShader(window->getContext(), window->getSwapchain()), terrain(terrain) {
+    VKPBRShader::VKPBRShader(Window *window, bool terrain) : VKShader(window->getContext(), window->getSwapchain()),
+                                                             terrain(terrain) {
         uint32_t terrainStages = 0;
-        if (terrain)
-        {
+        if (terrain) {
             VkPhysicalDeviceFeatures features{};
             vkGetPhysicalDeviceFeatures(device->getPhysicalDevice(), &features);
             terrainGeometry = features.geometryShader;
             terrainStages = TESSELLATION_CONTROL_SHADER | TESSELLATION_EVALUATION_SHADER;
             AddShader(ResourceLoader::LoadShaderVK("vulkan/terrain/terrain.vert.spv"), VERTEX_SHADER);
             AddShader(ResourceLoader::LoadShaderVK("vulkan/terrain/terrain.tesc.spv"), TESSELLATION_CONTROL_SHADER);
-            const char* evaluation = terrainGeometry ? "geometry.tese.spv" : "terrain.tese.spv";
-            AddShader(ResourceLoader::LoadShaderVK(std::string("vulkan/terrain/") + evaluation), TESSELLATION_EVALUATION_SHADER);
-            if (terrainGeometry)
-            {
+            const char *evaluation = terrainGeometry ? "geometry.tese.spv" : "terrain.tese.spv";
+            AddShader(ResourceLoader::LoadShaderVK(std::string("vulkan/terrain/") + evaluation),
+                      TESSELLATION_EVALUATION_SHADER);
+            if (terrainGeometry) {
                 terrainStages |= GEOMETRY_SHADER;
                 AddShader(ResourceLoader::LoadShaderVK("vulkan/terrain/terrain.geom.spv"), GEOMETRY_SHADER);
             }
             AddShader(ResourceLoader::LoadShaderVK("vulkan/terrain/terrain.frag.spv"), FRAGMENT_SHADER);
-        }
-        else
-        {
+        } else {
             AddShader(ResourceLoader::LoadShaderVK("vulkan/pbr/pbr_VS.spv"), VERTEX_SHADER);
             AddShader(ResourceLoader::LoadShaderVK("vulkan/pbr/pbr_FS.spv"), FRAGMENT_SHADER);
         }
@@ -43,23 +42,27 @@ namespace Prehistoric {
         AddUniform("brdfLUT", FRAGMENT_SHADER, CombinedImageSampler, 0, 5, 0, nullptr);
         AddUniform("environment", FRAGMENT_SHADER, UniformBuffer, 0, 6, sizeof(float) * 4);
 
-        if (terrain)
-        {
-            AddUniform("heightMap", VERTEX_SHADER | TESSELLATION_EVALUATION_SHADER, CombinedImageSampler, 1, 0, 0, nullptr);
+        if (!terrain) {
+            AddUniform("shadowMap", FRAGMENT_SHADER, CombinedImageSampler, 0, 7, 0);
+            AddUniform("shadowParameters", FRAGMENT_SHADER, UniformBuffer, 0, 8, sizeof(VKShadowPass::Uniforms));
+        }
+
+        if (terrain) {
+            AddUniform("heightMap", VERTEX_SHADER | TESSELLATION_EVALUATION_SHADER, CombinedImageSampler, 1, 0, 0,
+                       nullptr);
             uint32_t binding = 1;
-            for (int i = 0; i < 3; ++i)
-            {
-                for (const char* map : {"albedoMap", "normalMap", "mrotMap"})
-                    AddUniform(map + std::to_string(i), FRAGMENT_SHADER | (std::string(map) == "mrotMap" ? terrainStages : 0), CombinedImageSampler, 1, binding++, 0, nullptr);
+            for (int i = 0; i < 3; ++i) {
+                for (const char *map: {"albedoMap", "normalMap", "mrotMap"})
+                    AddUniform(map + std::to_string(i),
+                               FRAGMENT_SHADER | (std::string(map) == "mrotMap" ? terrainStages : 0),
+                               CombinedImageSampler, 1, binding++, 0, nullptr);
             }
             AddUniform("terrainNormal", FRAGMENT_SHADER, SampledImage, 1, binding++, 0);
             AddUniform("terrainSplat", terrainStages | FRAGMENT_SHADER, SampledImage, 1, binding++, 0);
             for (int i = 0; i < 3; ++i)
                 AddUniform("emissionMap" + std::to_string(i), FRAGMENT_SHADER, CombinedImageSampler, 1, binding++, 0);
             AddUniform("mapSampler", terrainStages | FRAGMENT_SHADER, Sampler, 1, binding++, 0);
-        }
-        else
-        {
+        } else {
             AddUniform(ALBEDO_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 0, 0, nullptr);
             AddUniform(NORMAL_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 1, 0, nullptr);
             AddUniform(MROT_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 2, 0, nullptr);
@@ -68,8 +71,7 @@ namespace Prehistoric {
         AddUniform("material", FRAGMENT_SHADER, UniformBuffer, 2, 1,
                    Vector4f::size() * 2 + sizeof(int) + sizeof(float) * 4);
 
-        if (terrain)
-        {
+        if (terrain) {
             AddUniform("terrainParams", terrainStages | FRAGMENT_SHADER, UniformBuffer, 2, 2, 112);
             AddUniform("leaves", VERTEX_SHADER, StorageBuffer, 2, 3, TerrainQuadtree::maxNodes * sizeof(QuadPatch));
         }
@@ -113,6 +115,15 @@ namespace Prehistoric {
         Camera *camera = renderer->getCamera();
         std::vector<Light *> lights = renderer->getLights();
 
+        const auto &shadows = static_cast<VKRenderer *>(renderer)->GetShadows();
+        if (!terrain) {
+            SetSampledImage("shadowMap", shadows.GetDepth());
+            SetUniform("shadowParameters", &shadows.GetUniforms(), sizeof(VKShadowPass::Uniforms), 0);
+        }
+        lights.erase(std::remove_if(lights.begin(), lights.end(), [&](const Light *light) {
+            return !light->illuminates() || light == shadows.GetSun();
+        }), lights.end());
+
         //Offset values copied from the shader
         SetUniform("camera", camera->getViewMatrix(), 0);
         SetUniform("camera", camera->getProjectionMatrix(), 64);
@@ -152,16 +163,13 @@ namespace Prehistoric {
     }
 
     void VKPBRShader::UpdateMaterialUniforms(Material *material, uint32_t descriptor_index) const {
-        if (terrain)
-        {
+        if (terrain) {
             SetTexture("mapSampler", material->getTexture("terrainNormal"), descriptor_index);
             SetTexture("terrainNormal", material->getTexture("terrainNormal"), descriptor_index);
             SetTexture("terrainSplat", material->getTexture("terrainSplat"), descriptor_index);
             SetTexture("heightMap", material->getTexture("heightMap"), descriptor_index);
-            for (int i = 0; i < 3; ++i)
-            {
-                for (const char* map : {"albedoMap", "normalMap", "mrotMap", "emissionMap"})
-                {
+            for (int i = 0; i < 3; ++i) {
+                for (const char *map: {"albedoMap", "normalMap", "mrotMap", "emissionMap"}) {
                     auto name = map + std::to_string(i);
                     SetTexture(name, material->getTexture(name), descriptor_index);
                 }
@@ -174,29 +182,35 @@ namespace Prehistoric {
     }
 
     void VKPBRShader::UpdateObjectUniforms(GameObject *object, uint32_t instance_index) const {
-        auto* component = static_cast<RendererComponent*>(object->GetComponent(RENDERER_COMPONENT));
-        Material* material = component->getMaterial();
+        auto *component = static_cast<RendererComponent *>(object->GetComponent(RENDERER_COMPONENT));
+        Material *material = component->getMaterial();
 
         //Offset values are copied from shaders
         SetUniform("m_transform", object->getWorldTransform().getTransformationMatrix(), 0, instance_index);
 
-        if (terrain)
-        {
-            auto* surface = static_cast<Terrain*>(object);
-            const auto& leaves = surface->getQuadtree()->getLeaves();
-            auto* pipeline = static_cast<VKGraphicsPipeline*>(component->getPipeline());
-            static_cast<VKMeshVertexBuffer*>(pipeline->getVertexBuffer())->setInstanceCount(static_cast<uint32_t>(leaves.size()));
+        if (terrain) {
+            auto *surface = static_cast<Terrain *>(object);
+            const auto &leaves = surface->getQuadtree()->getLeaves();
+            auto *pipeline = static_cast<VKGraphicsPipeline *>(component->getPipeline());
+            static_cast<VKMeshVertexBuffer *>(pipeline->getVertexBuffer())->setInstanceCount(
+                static_cast<uint32_t>(leaves.size()));
             static_assert(sizeof(QuadPatch) == 32, "Terrain patch must match the std430 array stride");
             SetUniform("leaves", leaves.data(), leaves.size() * sizeof(QuadPatch), 0, instance_index);
             SetUniform("terrainParams", Vector4f(material->getFloat("heightScale0"), material->getFloat("heightScale1"),
-                material->getFloat("heightScale2"), float(__EngineConfig.rendererHighDetailRange)), 80, instance_index);
+                                                 material->getFloat("heightScale2"),
+                                                 float(__EngineConfig.rendererHighDetailRange)), 80, instance_index);
             SetUniform("terrainParams", Vector4f(material->getFloat("hasEmission0"), material->getFloat("hasEmission1"),
-                material->getFloat("hasEmission2"), terrainGeometry ? 1.0f : 0.0f), 96, instance_index);
-            Vector4f tess(float(__TerrainConfig.tessellationFactor), __TerrainConfig.tessellationSlope, __TerrainConfig.tessellationShift, TerrainMaps::normalStrength);
+                                                 material->getFloat("hasEmission2"), terrainGeometry ? 1.0f : 0.0f), 96,
+                       instance_index);
+            Vector4f tess(float(__TerrainConfig.tessellationFactor), __TerrainConfig.tessellationSlope,
+                          __TerrainConfig.tessellationShift, TerrainMaps::normalStrength);
             SetUniform("terrainParams", tess, 0, instance_index);
-            SetUniform("terrainParams", Vector4f(material->getFloat("tiling0"), material->getFloat("tiling1"), material->getFloat("tiling2"), 0), 16, instance_index);
+            SetUniform("terrainParams",
+                       Vector4f(material->getFloat("tiling0"), material->getFloat("tiling1"),
+                                material->getFloat("tiling2"), 0), 16, instance_index);
             for (int i = 0; i < 3; ++i)
-                SetUniform("terrainParams", material->getVector4f("mrot" + std::to_string(i)), 32 + 16 * i, instance_index);
+                SetUniform("terrainParams", material->getVector4f("mrot" + std::to_string(i)), 32 + 16 * i,
+                           instance_index);
             return;
         }
         SetUniform("material", material->getVector4f(MROT), 0, instance_index);

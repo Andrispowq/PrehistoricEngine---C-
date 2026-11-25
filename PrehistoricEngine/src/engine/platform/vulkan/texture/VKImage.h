@@ -8,39 +8,41 @@
 #include "prehistoric/common/texture/Texture.h"
 #include "prehistoric/core/resources/loaders/TextureLoader.h"
 
-namespace Prehistoric
-{
-	class VKImage
-	{
-	public:
-		VKImage(VKDevice* device, uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format, VkImageTiling tiling, 
-			VkImageUsageFlags usage, VkSampleCountFlagBits samples, VkMemoryPropertyFlags memoryFlags, VkImageAspectFlagBits aspect);
-		VKImage(VKDevice* device, VkImage image, uint32_t mipLevels, VkFormat format, VkImageAspectFlagBits aspect);
-		~VKImage();
+namespace Prehistoric {
+    class VKImage {
+    public:
+        VKImage(VKDevice *device, uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format,
+                VkImageTiling tiling,
+                VkImageUsageFlags usage, VkSampleCountFlagBits samples, VkMemoryPropertyFlags memoryFlags,
+                VkImageAspectFlagBits aspect, uint32_t layers = 1);
 
-		void UploadImageData(ImageData data);
+        VKImage(VKDevice *device, VkImage image, uint32_t mipLevels, VkFormat format, VkImageAspectFlagBits aspect);
 
-		VkImageView getImageView() const { return imageView; }
-		VkImage getImage() const { return image; }
-		VkDeviceMemory getImageMemory() const { return imageMemory; }
+        ~VKImage();
 
-		uint32_t getMipLevels() const { return mipLevels; }
-		VkFormat getImageFormat() const { return format; }
+        void UploadImageData(ImageData data);
 
-		static VkFormat getFormat(ImageFormat format);
+        VkImageView getImageView() const { return imageView; }
+        VkImage getImage() const { return image; }
+        VkDeviceMemory getImageMemory() const { return imageMemory; }
 
-	private:
-		VKDevice* device;
+        uint32_t getMipLevels() const { return mipLevels; }
+        VkFormat getImageFormat() const { return format; }
 
-		uint32_t width, height, mipLevels;
+        static VkFormat getFormat(ImageFormat format);
 
-		VkFormat format;
-		VkImageLayout layout;
+    private:
+        VKDevice *device;
 
-		VkImageView imageView;
-		VkImage image;
-		VkDeviceMemory imageMemory;
-	};
+        uint32_t width, height, mipLevels;
+
+        VkFormat format;
+        VkImageLayout layout;
+
+        VkImageView imageView;
+        VkImage image;
+        VkDeviceMemory imageMemory;
+    };
 };
 
 #endif

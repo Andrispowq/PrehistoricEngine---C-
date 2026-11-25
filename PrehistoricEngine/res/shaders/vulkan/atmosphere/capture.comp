@@ -3,6 +3,7 @@
 layout(local_size_x = 8, local_size_y = 8) in;
 layout(binding = 1, rgba32f) uniform writeonly image2DArray outputMap;
 
+#define ATMOSPHERE_CAPTURE
 #include "sky.glsl"
 #include "../../shared/environmentMap/cubeDirection.glsl"
 

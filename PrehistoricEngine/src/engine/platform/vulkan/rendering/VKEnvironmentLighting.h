@@ -4,13 +4,11 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
-namespace Prehistoric
-{
+namespace Prehistoric {
     struct AtmosphereParameters;
 
     // Owns immutable, linear HDR IBL maps. Baking completes before scene rendering.
-    class VKEnvironmentLighting
-    {
+    class VKEnvironmentLighting {
     public:
         static constexpr uint32_t DefaultLutSize = 256;
         static constexpr uint32_t DefaultSamples = 512;
@@ -18,18 +16,23 @@ namespace Prehistoric
         VKEnvironmentLighting(VkPhysicalDevice physicalDevice, VkDevice device, VkQueue queue,
                               uint32_t queueFamily, VkDescriptorImageInfo source,
                               uint32_t irradianceSize, uint32_t prefilterSize, uint32_t levels,
-                              uint32_t cubeSize, const std::vector<char>& conversion, const std::vector<char>& shader,
+                              uint32_t cubeSize, const std::vector<char> &conversion, const std::vector<char> &shader,
                               uint32_t lutSize = DefaultLutSize, uint32_t samples = DefaultSamples,
-                              const AtmosphereParameters* sky = nullptr, VKEnvironmentLighting* reuseLutFrom = nullptr);
+                              const AtmosphereParameters *sky = nullptr, VKEnvironmentLighting *reuseLutFrom = nullptr,
+                              bool includeSunDisk = true);
 
         ~VKEnvironmentLighting();
 
         VKEnvironmentLighting(const VKEnvironmentLighting &) = delete;
+
         VKEnvironmentLighting &operator=(const VKEnvironmentLighting &) = delete;
 
         VkDescriptorImageInfo getEnvironment() const;
+
         VkDescriptorImageInfo getIrradiance() const;
+
         VkDescriptorImageInfo getPrefilter() const;
+
         VkDescriptorImageInfo getBRDF() const;
 
         float getMaxReflectionLOD() const {
@@ -48,10 +51,12 @@ namespace Prehistoric
         };
 
         void CreateMap(Map &map, uint32_t size, uint32_t levels, uint32_t layers);
+
         void DestroyMap(Map &map);
+
         void Bake(VkQueue queue, uint32_t queueFamily, VkDescriptorImageInfo source,
-                  const std::vector<char>& conversion, const std::vector<char>& shader, uint32_t samples,
-                  const AtmosphereParameters* sky);
+                  const std::vector<char> &conversion, const std::vector<char> &shader, uint32_t samples,
+                  const AtmosphereParameters *sky, bool includeSunDisk);
 
         VkPhysicalDevice physicalDevice;
         VkDevice device;

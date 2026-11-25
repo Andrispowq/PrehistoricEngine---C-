@@ -1,5 +1,8 @@
 layout(push_constant) uniform Atmosphere
 {
+#ifdef ATMOSPHERE_CAPTURE
+    layout(offset = 0) uint includeSunDisk;
+#endif
     layout(offset = 48) vec4 sunPositionRadius;
     vec4 sunColourIntensity;
     vec4 rayleighMie;
@@ -17,6 +20,9 @@ vec3 SkyRadiance(vec3 direction, bool capture)
     vec3 observer = vec3(0.0, scales.x + 1000.0, 0.0);
     vec3 radiance = atmosphere(ray, observer, sun, sky.sunColourIntensity.w,
         scales.x, scales.y, sky.rayleighMie.rgb, sky.rayleighMie.w, scales.z, scales.w, sky.anisotropyAndShift.x);
+    #ifdef ATMOSPHERE_CAPTURE
+    if (sky.includeSunDisk == 0u) return radiance;
+    #endif
     if (HitsPlanet(observer, ray, scales.x)) return radiance;
     float distanceToSun = length(ray - sun);
     float disk = SunDiskWeight(distanceToSun, sky.sunPositionRadius.w);

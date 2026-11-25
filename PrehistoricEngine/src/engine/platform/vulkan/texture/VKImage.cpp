@@ -9,7 +9,7 @@ namespace Prehistoric {
     VKImage::VKImage(VKDevice *device, uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format,
                      VkImageTiling tiling,
                      VkImageUsageFlags usage, VkSampleCountFlagBits samples, VkMemoryPropertyFlags memoryFlags,
-                     VkImageAspectFlagBits aspect)
+                     VkImageAspectFlagBits aspect, uint32_t layers)
         : device(device), mipLevels(mipLevels), format(format) {
         //Create the image
         VkImageCreateInfo imageCI = {};
@@ -19,7 +19,7 @@ namespace Prehistoric {
         imageCI.extent.height = height;
         imageCI.extent.depth = 1;
         imageCI.mipLevels = mipLevels;
-        imageCI.arrayLayers = 1;
+        imageCI.arrayLayers = layers;
         imageCI.format = format;
         imageCI.tiling = tiling;
         imageCI.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -51,7 +51,7 @@ namespace Prehistoric {
         VkImageViewCreateInfo imageViewCI = {};
         imageViewCI.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         imageViewCI.image = image;
-        imageViewCI.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        imageViewCI.viewType = layers == 1 ? VK_IMAGE_VIEW_TYPE_2D : VK_IMAGE_VIEW_TYPE_2D_ARRAY;
         imageViewCI.format = format;
 
         imageViewCI.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -63,7 +63,7 @@ namespace Prehistoric {
         imageViewCI.subresourceRange.baseMipLevel = 0;
         imageViewCI.subresourceRange.levelCount = mipLevels;
         imageViewCI.subresourceRange.baseArrayLayer = 0;
-        imageViewCI.subresourceRange.layerCount = 1;
+        imageViewCI.subresourceRange.layerCount = layers;
 
         if (vkCreateImageView(device->getDevice(), &imageViewCI, nullptr, &imageView) != VK_SUCCESS) {
             PR_LOG_RUNTIME_ERROR("Failed to create an image view!\n");

@@ -107,21 +107,20 @@ namespace Prehistoric {
 
     void GLRenderer::UpdateEnvironmentLighting() {
         // The directional light already supplies direct sun with scene shadows.
-        const auto* sun = GLShadowDepthPass::FindSun(*this);
+        const auto *sun = ShadowCascades::FindSun(*this);
         environmentLighting->UpdateEnvironment(atmosphere, !atmosphere || sun != atmosphere->getSun(),
                                                sceneEnvironmentMap);
     }
 
     void GLRenderer::RenderScene() {
-        const auto& voxelSettings = voxelPass->GetSettings();
+        const auto &voxelSettings = voxelPass->GetSettings();
         voxelPass->Render();
         if (voxelSettings.debugView && voxelPass->IsReady()) return;
 
         depthPass->Render();
 
         //shadow pass
-        if (!voxelPass->UsesVoxelSunShadows())
-        {
+        if (!voxelPass->UsesVoxelSunShadows()) {
             renderingShadow = true;
             shadowDepthPass->Render();
             renderingShadow = false;
@@ -135,21 +134,17 @@ namespace Prehistoric {
         mainPass->Render();
     }
 
-    bool GLRenderer::isUnderwater() const
-    {
-        for (const Water* water : waters)
-        {
+    bool GLRenderer::isUnderwater() const {
+        for (const Water *water: waters) {
             if (water->isCameraUnderwater()) return true;
         }
         return false;
     }
 
     void GLRenderer::RenderHDR() {
-        if (voxelPass->IsReady())
-        {
-            const auto& settings = voxelPass->GetSettings();
-            if (settings.debugView)
-            {
+        if (voxelPass->IsReady()) {
+            const auto &settings = voxelPass->GetSettings();
+            if (settings.debugView) {
                 voxelPass->Composite(getOutputTexture());
                 return;
             }

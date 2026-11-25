@@ -27,12 +27,13 @@
   is supplied through `scripts/native-openal.cmake`; do not patch vendor config headers.
 - Run applications with `Prehistoric/` or `PrehistoricEditor/` as their working
   directory so relative resource paths resolve.
-- Validate changes with the relevant build or smoke check from `BUILDING.md`.
+- Run a full build and boot the affected application through its first rendered frames before handing back project
+  changes. Record startup errors and report any runtime verification blocked by the environment.
+- Run the relevant additional checks from `BUILDING.md`.
   `tests/openal_smoke.cpp` checks OpenAL; `tests/vulkan_compute_smoke.cpp` checks
   Vulkan compute. Neither validates the full renderer. Report checks actually run
   and distinguish source inspection from runtime verification.
-- Documentation and ignore-only changes need link/path and Git diff checks,
-  not a full engine rebuild.
+- For documentation and ignore changes, also check links, paths and the Git diff.
 
 ## Code and assets
 

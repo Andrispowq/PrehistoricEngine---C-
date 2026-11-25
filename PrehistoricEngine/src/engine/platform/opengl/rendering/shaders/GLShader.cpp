@@ -7,8 +7,7 @@
 #include "prehistoric/core/modules/environmentMapRenderer/EnvironmentMapRenderer.h"
 
 namespace Prehistoric {
-    void GLShader::AddShadowUniforms()
-    {
+    void GLShader::AddShadowUniforms() {
         AddUniform("cascadeCount");
         AddUniform("shadowNearPlane");
         AddUniform("shadowView");
@@ -21,48 +20,43 @@ namespace Prehistoric {
         AddUniform("voxelOccluders");
         AddUniform("voxelOcclusionMin");
         AddUniform("voxelOcclusionExtent");
-        for (size_t i = 0; i < GLShadowDepthPass::CascadeCount; ++i)
-        {
+        for (size_t i = 0; i < (ShadowCascades::Count - 1); ++i) {
             AddUniform("cascadePlaneDistances[" + std::to_string(i) + "]");
         }
     }
 
-    void GLShader::BindShadowUniforms(Renderer* renderer, uint32_t textureUnit) const
-    {
-        const auto* gl = static_cast<GLRenderer*>(renderer);
-        const auto* shadows = gl->getShadowDepthPass();
+    void GLShader::BindShadowUniforms(Renderer *renderer, uint32_t textureUnit) const {
+        const auto *gl = static_cast<GLRenderer *>(renderer);
+        const auto *shadows = gl->getShadowDepthPass();
         const bool voxelSun = gl->getVoxelPass()->UsesVoxelSunShadows();
         gl->getVoxelPass()->BindOccluders(*this, 8);
         SetUniformi("useVoxelSunShadows", voxelSun);
         shadows->BindMatrices();
         shadows->getDepthTexture()->Bind(textureUnit);
         SetUniformi("shadowMap", textureUnit);
-        const auto& distances = shadows->getCascadeDistances();
+        const auto &distances = shadows->getCascadeDistances();
         SetUniformi("cascadeCount", static_cast<int>(distances.size()));
         SetUniformf("shadowNearPlane", __EngineConfig.rendererNearPlane);
-        SetUniformf("cascadeBlendFraction", GLShadowDepthPass::CascadeBlendFraction);
+        SetUniformf("cascadeBlendFraction", ShadowCascades::BlendFraction);
         SetUniformf("shadowSunAngularRadius", __EngineConfig.shadowSunAngularRadius);
         SetUniform("shadowView", shadows->getShadowView());
 
-        const auto* sun = voxelSun ? GLShadowDepthPass::FindSun(*renderer) : shadows->getSun();
+        const auto *sun = voxelSun ? ShadowCascades::FindSun(*renderer) : shadows->getSun();
         Vector3f direction(0, 1, 0);
         Vector3f radiance(0);
-        if (sun)
-        {
+        if (sun) {
             direction = sun->getParent()->getWorldTransform().getPosition().normalise();
             radiance = sun->getColour() * sun->getIntensity();
         }
         SetUniform("sunDirection", direction);
         SetUniform("sunRadiance", radiance);
-        for (size_t i = 0; i < distances.size(); ++i)
-        {
+        for (size_t i = 0; i < distances.size(); ++i) {
             SetUniformf("cascadePlaneDistances[" + std::to_string(i) + "]", distances[i]);
         }
     }
 
-    void GLShader::BindEnvironmentLighting(Renderer* renderer, uint32_t firstUnit) const
-    {
-        const auto& lighting = static_cast<GLRenderer*>(renderer)->getEnvironmentLighting();
+    void GLShader::BindEnvironmentLighting(Renderer *renderer, uint32_t firstUnit) const {
+        const auto &lighting = static_cast<GLRenderer *>(renderer)->getEnvironmentLighting();
         lighting.getIrradianceMap()->Bind(firstUnit);
         SetUniformi("irradianceMap", firstUnit);
         lighting.getPrefilterMap()->Bind(firstUnit + 1);

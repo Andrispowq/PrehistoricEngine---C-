@@ -32,9 +32,10 @@ OpenGL and Vulkan water are enabled in the sample. Vulkan selects its geometry o
    include bloom throughout the underwater blur, and share the blue wireframe color. Vulkan wireframe requires non-solid
    fill support. Vulkan still stores depth in refraction color alpha and resolves it with color under MSAA. OpenGL
    samples a depth texture.
-2. **Shadows and volumetrics.** Port the directional sun and its separation from point lights, the stabilized 4096²
-   depth-array cascades (six splits, seven layers), cascade blending, hard and contact-hardening filtering, and
-   solar-disk exclusion from the matching atmosphere lighting bake. Add readable scene depth and composite the existing
+2. **Shadows and volumetrics.** Vulkan PBR meshes now use the directional sun and seven stabilized shadow layers.
+   Both backends share cascade placement, blending and contact-hardening filtering. The matching atmosphere bake
+   excludes the directly lit solar disk. Vulkan draws each layer separately on devices including Apple Silicon.
+   Add readable scene depth and composite the existing
    editable volumetric spheres after bloom and before underwater processing and tone mapping. Match density falloff,
    anisotropy, overlapping volumes, irradiance lighting, opaque clipping, and shadowed sun shafts. Compare Sponza Sun
    Shafts with the same camera and zero-density control.
@@ -44,7 +45,7 @@ OpenGL and Vulkan water are enabled in the sample. Vulkan selects its geometry o
    editor controls, shortcuts and stage timings. Use Midnight Sponza with bloom disabled.
    See [the VXGI plan](VXGI_PLAN.md) for the OpenGL baseline.
 4. **Forward+ and surface buffers.** OpenGL shades materials in its main forward pass. Vulkan needs the depth prepass
-   and tiled point-light lists, including radius and illumination flags, plus the position/metallic, albedo/roughness,
+   and tiled point-light lists, plus the position/metallic, albedo/roughness,
    and normal outputs consumed by screen-space effects. Introduce each attachment with its first consumer. Bloom, tone
    mapping, exposure, gamma, and the editor scene target already exist on Vulkan.
 
