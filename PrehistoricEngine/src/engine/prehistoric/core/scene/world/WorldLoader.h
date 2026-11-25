@@ -45,6 +45,7 @@ namespace Prehistoric
 	public:
 		std::string sceneName;
 		std::optional<WorldCameraPose> initialCamera;
+		std::string environmentMap;
 
 		std::string directoryModels;
 		std::string directoryTextures;

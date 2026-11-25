@@ -46,11 +46,12 @@ namespace Prehistoric
             anisotropyAndShift == other.anisotropyAndShift;
     }
 
-    EnvironmentCaptureSource EnvironmentCaptureSource::FromScene(const Atmosphere* atmosphere, float captureExposure)
+    EnvironmentCaptureSource EnvironmentCaptureSource::FromScene(const Atmosphere* atmosphere, float captureExposure,
+                                                               const std::string& scenePanorama)
     {
         EnvironmentCaptureSource source;
         source.atmosphere = atmosphere;
-        if (!atmosphere) source.panorama = __EnvironmentMapConfig.environmentMapLocation;
+        if (!atmosphere) source.panorama = scenePanorama.empty() ? __EnvironmentMapConfig.environmentMapLocation : scenePanorama;
         source.scattering = atmosphere && __AtmosphereConfig.scatteringEnabled;
 
         if (source.scattering)

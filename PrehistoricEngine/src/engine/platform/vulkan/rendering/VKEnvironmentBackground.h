@@ -26,7 +26,7 @@ namespace Prehistoric {
 
         void Draw(VkCommandBuffer commandBuffer, const Camera *camera, const Atmosphere *atmosphere, float lod) const;
 
-        VkDescriptorImageInfo LoadSource(Window *window);
+        VkDescriptorImageInfo LoadSource(Window *window, const std::string& location);
 
     private:
         VKDevice *device;

@@ -96,6 +96,7 @@ namespace Prehistoric {
     void CoreEngine::SetScene(Scene *scene) {
         this->sceneRoot = scene->getSceneRoot();
         this->scene = scene;
+        renderingEngine->getRenderer()->SetSceneEnvironmentMap(scene->getEnvironmentMap());
 
         if (const auto& pose = scene->getInitialCamera()) {
             auto* camera = renderingEngine->getCamera();

@@ -99,9 +99,10 @@ namespace Prehistoric {
         requested = true;
     }
 
-    void EnvironmentMapRenderer::UpdateEnvironment(const Atmosphere *atmosphere, bool includeSunDisk) {
+    void EnvironmentMapRenderer::UpdateEnvironment(const Atmosphere *atmosphere, bool includeSunDisk, const std::string& scenePanorama) {
         auto source = EnvironmentCaptureSource::FromScene(panoramaOverride ? nullptr : atmosphere,
-                                                          __EngineConfig.rendererExposure);
+                                                          __EngineConfig.rendererExposure,
+                                                          panoramaOverride ? std::string{} : scenePanorama);
         source.includeSunDisk = !source.scattering || includeSunDisk;
         if (!requested && !capture.NeedsBake(source, __EnvironmentMapConfig.atmosphereRefreshSeconds)) return;
         GenerateEnvironmentMap(source);

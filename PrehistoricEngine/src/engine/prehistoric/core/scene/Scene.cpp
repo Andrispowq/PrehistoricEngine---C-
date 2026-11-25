@@ -18,6 +18,7 @@ namespace Prehistoric {
 
         name = loader.sceneName;
         initialCamera = loader.initialCamera;
+        environmentMap = loader.environmentMap;
 
         auto tex = loader.textures;
         for (auto elem: tex) {

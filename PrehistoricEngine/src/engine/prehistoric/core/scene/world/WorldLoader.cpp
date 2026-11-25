@@ -461,6 +461,7 @@ namespace Prehistoric {
 
             nlohmann::json file_json = nlohmann::json::parse(contents);
             sceneName = file_json["name"];
+            environmentMap = file_json.value("environment_map", std::string{});
             if (const auto pose = file_json.find("initial_camera"); pose != file_json.end()) {
                 initialCamera = WorldCameraPose{ReadWorldVector(pose->at("position")),
                                                 ReadWorldVector(pose->at("forward")),

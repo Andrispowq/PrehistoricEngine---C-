@@ -31,7 +31,8 @@ namespace Prehistoric
         float exposure = 0;
         bool includeSunDisk = true;
 
-        static EnvironmentCaptureSource FromScene(const Atmosphere* atmosphere, float captureExposure);
+        static EnvironmentCaptureSource FromScene(const Atmosphere* atmosphere, float captureExposure,
+                                                  const std::string& scenePanorama = {});
     };
 
     class AtmosphereCapture

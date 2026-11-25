@@ -112,7 +112,10 @@ namespace Prehistoric {
             }
         }
 
+        void SetSceneEnvironmentMap(const std::string& location) { sceneEnvironmentMap = location; }
+
     protected:
+        std::string sceneEnvironmentMap;
         virtual void UpdateEnvironmentLighting() = 0;
 
         virtual void RenderScene() = 0;

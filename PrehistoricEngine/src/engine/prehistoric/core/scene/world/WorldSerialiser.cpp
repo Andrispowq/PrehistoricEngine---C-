@@ -19,6 +19,7 @@ namespace Prehistoric {
 
         nlohmann::json file_json;
         file_json["name"] = sceneName;
+        if (!scene->getEnvironmentMap().empty()) file_json["environment_map"] = scene->getEnvironmentMap();
         if (const auto& pose = scene->getInitialCamera()) {
             file_json["initial_camera"] = {
                 {"position", {pose->position.x, pose->position.y, pose->position.z}},

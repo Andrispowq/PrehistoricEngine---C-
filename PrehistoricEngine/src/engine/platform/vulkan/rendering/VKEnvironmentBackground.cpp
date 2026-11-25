@@ -79,8 +79,7 @@ namespace Prehistoric {
         vkUpdateDescriptorSets(device->getDevice(), 1, &write, 0, nullptr);
     }
 
-    VkDescriptorImageInfo VKEnvironmentBackground::LoadSource(Window *window) {
-        const auto &location = __EnvironmentMapConfig.environmentMapLocation;
+    VkDescriptorImageInfo VKEnvironmentBackground::LoadSource(Window *window, const std::string& location) {
         if (location != sourceLocation) {
             texture.reset();
             vkDestroySampler(device->getDevice(), sampler, nullptr);

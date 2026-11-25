@@ -54,7 +54,8 @@ namespace Prehistoric {
 
     void VKRenderer::UpdateEnvironmentLighting() {
         auto capture = EnvironmentCaptureSource::FromScene(
-            !panoramaOverride && __AtmosphereConfig.scatteringEnabled ? atmosphere : nullptr, 0);
+            !panoramaOverride && __AtmosphereConfig.scatteringEnabled ? atmosphere : nullptr, 0,
+            panoramaOverride ? std::string{} : sceneEnvironmentMap);
         if (!bakeRequested && !environmentCapture.NeedsBake(capture, __EnvironmentMapConfig.atmosphereRefreshSeconds))
             return;
         bool captureSky = capture.scattering;
@@ -62,7 +63,7 @@ namespace Prehistoric {
         VkDescriptorImageInfo source{};
         std::unique_ptr<VKTexture> fallback;
         if (!captureSky) {
-            source = background->LoadSource(window);
+            source = background->LoadSource(window, capture.panorama);
             if (!source.imageView) {
                 fallback.reset(static_cast<VKTexture *>(TextureLoader::LoadTexture(window,
                     "engine://textures/default.png", Bilinear, ClampToEdge)));

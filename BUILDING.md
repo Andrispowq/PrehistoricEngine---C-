@@ -463,6 +463,14 @@ green emitter sits in the top-floor side aisle above the amber cube. Toggle
 **G** to compare the light on nearby stone. Toggle
 **K** to disable bloom for the comparison.
 
+For the same emitters under a night sky, launch with
+`PREHISTORIC_WORLD=res/world/sponza_night_gi.json` from `Prehistoric/`, or open
+that world in the OpenGL editor. The world's optional `environment_map` field
+selects the shared Milky Way HDR panorama. This scene has no atmosphere or sun.
+With bloom off, toggle **G** at a fixed camera position to compare emissive
+bounce on nearby surfaces. The panorama supplies the background and environment
+lighting. The voxel bake in this scene gets its radiance from the emitters.
+
 In the OpenGL editor, use **Render Settings** to set those options, the voxel
 volume center and width, GI strength, and **GI Trace Depth** from one to five
 diffuse bounces. The additional bounces run during the radiance bake. Each
