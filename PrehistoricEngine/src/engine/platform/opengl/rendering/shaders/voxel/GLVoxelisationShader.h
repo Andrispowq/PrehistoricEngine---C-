@@ -24,7 +24,6 @@ namespace Prehistoric
 
         static Surface GetSurface(Material* material);
 
-        void UpdateGlobalUniforms(Renderer* renderer) const override;
         void UpdateMaterialUniforms(Material* material, uint32_t descriptorIndex = 0) const override;
         void UpdateObjectUniforms(GameObject* object, uint32_t instanceIndex = 0) const override;
     };

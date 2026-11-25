@@ -39,10 +39,12 @@ namespace Prehistoric
         bool Initialise();
         void SetResolution(int size);
         GLuint GetPackedVolume(GLuint& texture);
+        void AllocateRadianceVolume();
+        void GenerateRadianceMips() const;
+        Matrix4f RenderSunShadow(const Vector3f& direction);
 
         struct BakeCache;
         std::unique_ptr<BakeCache> cache;
-        void AllocateRadianceVolume();
 
         Settings settings;
         bool initialisationAttempted = false;
@@ -52,8 +54,12 @@ namespace Prehistoric
         GLuint debugVolume = 0;
         GLuint packedRadiance = 0;
         GLuint radianceVolume = 0;
+        GLuint shadowFramebuffer = 0;
+        GLuint shadowDepth = 0;
         ShaderHandle voxelisationShader;
+        std::unique_ptr<GLShader> shadowShader;
         std::unique_ptr<GLShader> resolveShader;
+        std::unique_ptr<GLShader> mipShader;
         std::unique_ptr<GLShader> compositeShader;
     };
 }

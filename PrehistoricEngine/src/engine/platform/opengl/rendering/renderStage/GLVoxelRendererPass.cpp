@@ -8,6 +8,7 @@
 #include "prehistoric/application/Application.h"
 
 #include <array>
+#include <chrono>
 #include <optional>
 
 namespace Prehistoric
@@ -73,38 +74,54 @@ namespace Prehistoric
             return state;
         }
 
+        using BakeClock = std::chrono::steady_clock;
+        constexpr int VoxelShadowSize = 1024;
+        constexpr float CubeDiagonal = 1.7320508f;
+
+        class VoxelShadowShader final : public GLShader
+        {
+        public:
+            void UpdateObjectUniforms(GameObject* object, uint32_t) const override
+            {
+                SetUniform("m_transform", object->getWorldTransform().getTransformationMatrix());
+            }
+        };
+
         struct LightingState
         {
-            Vector3f direction;
-            Vector3f radiance;
-            MatrixState view;
-            float fov;
-            float aspect;
-            float nearPlane;
-            float farPlane;
-            float sunAngularRadius;
-            SceneState transparentCasters;
+            const Light* source = nullptr;
+            Vector3f direction = Vector3f(0, 1, 0);
+            Vector3f radiance = Vector3f(0);
 
             bool operator==(const LightingState& other) const
             {
-                return direction == other.direction && radiance == other.radiance && view == other.view
-                    && fov == other.fov && aspect == other.aspect
-                    && nearPlane == other.nearPlane && farPlane == other.farPlane
-                    && sunAngularRadius == other.sunAngularRadius && transparentCasters == other.transparentCasters;
+                return source == other.source && direction == other.direction && radiance == other.radiance;
             }
         };
+
+        LightingState CaptureSun(const Renderer& renderer)
+        {
+            const auto* sun = GLShadowDepthPass::FindSun(renderer);
+            if (sun)
+            {
+                const Vector3f radiance = sun->getColour() * sun->getIntensity();
+                if (radiance.x > 0 || radiance.y > 0 || radiance.z > 0)
+                    return {sun, sun->getParent()->getWorldTransform().getPosition().normalise(), radiance};
+            }
+            return {};
+        }
 
         struct BakeInputs
         {
             Vector3f center;
             float extent;
             SceneState meshes;
-            std::optional<LightingState> lighting;
+            SceneState transparentCasters;
 
             bool operator==(const BakeInputs& other) const
             {
                 return center == other.center && extent == other.extent
-                    && meshes == other.meshes && lighting == other.lighting;
+                    && meshes == other.meshes && transparentCasters == other.transparentCasters;
             }
         };
     }
@@ -113,6 +130,8 @@ namespace Prehistoric
     {
         std::optional<BakeInputs> debug;
         std::optional<BakeInputs> radiance;
+        LightingState lighting;
+        BakeClock::time_point completed;
     };
 
     GLVoxelRendererPass::GLVoxelRendererPass(Renderer* renderer)
@@ -125,6 +144,8 @@ namespace Prehistoric
         if (voxelisationShader.pointer)
             manager->getAssetManager()->removeReference<Shader>(voxelisationShader.handle);
         if (framebuffer) glDeleteFramebuffers(1, &framebuffer);
+        if (shadowFramebuffer) glDeleteFramebuffers(1, &shadowFramebuffer);
+        if (shadowDepth) glDeleteTextures(1, &shadowDepth);
         if (debugVolume) glDeleteTextures(1, &debugVolume);
         if (packedRadiance) glDeleteTextures(1, &packedRadiance);
         if (radianceVolume) glDeleteTextures(1, &radianceVolume);
@@ -141,13 +162,26 @@ namespace Prehistoric
         voxelisationShader = *shader;
         assets->addReference<Shader>(voxelisationShader.handle);
 
-        resolveShader = std::make_unique<GLShader>();
-        compositeShader = std::make_unique<GLShader>();
-        if (!resolveShader->AddShader(ResourceLoader::LoadShaderGL("opengl/voxel/voxel_resolve_CS.glsl"), COMPUTE_SHADER)
-            || !resolveShader->CompileShader()
-            || !compositeShader->AddShader(ResourceLoader::LoadShaderGL("opengl/voxel/voxel_view_CS.glsl"), COMPUTE_SHADER)
-            || !compositeShader->CompileShader())
+        auto loadCompute = [](const char* path) -> std::unique_ptr<GLShader>
+        {
+            auto program = std::make_unique<GLShader>();
+            if (!program->AddShader(ResourceLoader::LoadShaderGL(path), COMPUTE_SHADER) || !program->CompileShader())
+                return nullptr;
+            return program;
+        };
+
+        resolveShader = loadCompute("opengl/voxel/voxel_resolve_CS.glsl");
+        mipShader = loadCompute("opengl/voxel/voxel_mip_CS.glsl");
+        compositeShader = loadCompute("opengl/voxel/voxel_view_CS.glsl");
+        if (!resolveShader || !mipShader || !compositeShader) return false;
+
+        shadowShader = std::make_unique<VoxelShadowShader>();
+        if (!shadowShader->AddShader(ResourceLoader::LoadShaderGL("opengl/voxel/voxel_shadow_VS.glsl"), VERTEX_SHADER)
+            || !shadowShader->AddShader(ResourceLoader::LoadShaderGL("opengl/shadow/depth_pass_FS.glsl"), FRAGMENT_SHADER)
+            || !shadowShader->CompileShader())
             return false;
+        shadowShader->AddUniform("m_transform");
+        shadowShader->AddUniform("lightViewProjection");
 
         for (const char* uniform : {"debugView", "volumeMin", "volumeExtent", "giStrength", "inverseViewProjection"})
             compositeShader->AddUniform(uniform);
@@ -201,34 +235,95 @@ namespace Prehistoric
         glTextureParameteri(radianceVolume, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     }
 
+    void GLVoxelRendererPass::GenerateRadianceMips() const
+    {
+        PR_PROFILE("Generate voxel radiance mips");
+        mipShader->Bind(nullptr);
+        int size = resolution;
+        for (int level = 1; size > 1; ++level)
+        {
+            size /= 2;
+            glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+            glBindImageTexture(0, radianceVolume, level - 1, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA16F);
+            glBindImageTexture(1, radianceVolume, level, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+            glDispatchCompute((size + 3) / 4, (size + 3) / 4, (size + 3) / 4);
+        }
+        mipShader->Unbind();
+        glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT);
+    }
+
+    Matrix4f GLVoxelRendererPass::RenderSunShadow(const Vector3f& direction)
+    {
+        PR_PROFILE("Bake voxel sun shadow");
+        if (!shadowDepth)
+        {
+            glCreateTextures(GL_TEXTURE_2D, 1, &shadowDepth);
+            glTextureStorage2D(shadowDepth, 1, GL_DEPTH_COMPONENT32F, VoxelShadowSize, VoxelShadowSize);
+            glTextureParameteri(shadowDepth, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTextureParameteri(shadowDepth, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTextureParameteri(shadowDepth, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTextureParameteri(shadowDepth, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTextureParameteri(shadowDepth, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+            glTextureParameteri(shadowDepth, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+
+            glCreateFramebuffers(1, &shadowFramebuffer);
+            glNamedFramebufferTexture(shadowFramebuffer, GL_DEPTH_ATTACHMENT, shadowDepth, 0);
+            glNamedFramebufferDrawBuffer(shadowFramebuffer, GL_NONE);
+            glNamedFramebufferReadBuffer(shadowFramebuffer, GL_NONE);
+        }
+
+        const Vector3f up = std::abs(direction.y) > 0.9999f ? Vector3f(0, 0, 1) : Vector3f(0, 1, 0);
+        const Vector3f lightUp = direction.cross(up).normalise().cross(direction).normalise();
+        const float radius = settings.extent * CubeDiagonal * 0.5f;
+        // Include casters on the light-facing side of the cube.
+        const auto projection = Matrix4f::OrthographicProjection(-radius, radius, -radius, radius,
+                                                                 -(radius + settings.extent), radius);
+        const auto lightSpace = projection * Matrix4f::View(direction, lightUp)
+                             * Matrix4f::Translation(settings.center * -1.0f);
+
+        const bool depthTest = glIsEnabled(GL_DEPTH_TEST);
+        GLboolean depthWrite;
+        GLint depthFunction;
+        glGetBooleanv(GL_DEPTH_WRITEMASK, &depthWrite);
+        glGetIntegerv(GL_DEPTH_FUNC, &depthFunction);
+        glEnable(GL_DEPTH_TEST);
+        glDepthMask(GL_TRUE);
+        glDepthFunc(GL_LESS);
+
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, shadowFramebuffer);
+        glViewport(0, 0, VoxelShadowSize, VoxelShadowSize);
+        const GLfloat farDepth = 1.0f;
+        glClearBufferfv(GL_DEPTH, 0, &farDepth);
+        shadowShader->Bind(nullptr);
+        shadowShader->SetUniform("lightViewProjection", lightSpace);
+        GLDepthPass::DrawBatches(renderer->getModels3D(), *shadowShader);
+        GLDepthPass::DrawBatches(renderer->getModelsTransparency(), *shadowShader);
+        shadowShader->Unbind();
+
+        glDepthMask(depthWrite);
+        glDepthFunc(depthFunction);
+        if (!depthTest) glDisable(GL_DEPTH_TEST);
+        return lightSpace;
+    }
+
     void GLVoxelRendererPass::Render()
     {
         if (!IsSupported() || (!settings.debugView && !settings.globalIllumination) || !Initialise()) return;
         SetResolution(Resolutions[settings.resolutionIndex]);
 
+        const auto lighting = settings.debugView ? LightingState{} : CaptureSun(*renderer);
         BakeInputs inputs{settings.center, settings.extent, CaptureBatches(renderer->getModels3D(),
-            settings.debugView ? CaptureMode::DebugColour : CaptureMode::Radiance), std::nullopt};
+            settings.debugView ? CaptureMode::DebugColour : CaptureMode::Radiance), {}};
+        if (lighting.source)
+            inputs.transparentCasters = CaptureBatches(renderer->getModelsTransparency(), CaptureMode::ShadowCasters);
+
         auto& previous = settings.debugView ? cache->debug : cache->radiance;
-        if (!settings.debugView)
+        if (previous && *previous == inputs)
         {
-            const auto* shadows = static_cast<GLRenderer*>(renderer)->getShadowDepthPass();
-            if (const auto* sun = shadows->getSun())
-            {
-                const Vector3f radiance = sun->getColour() * sun->getIntensity();
-                if (radiance.x > 0 || radiance.y > 0 || radiance.z > 0)
-                {
-                    // The shadow cascades used for injection follow the camera.
-                    inputs.lighting = LightingState{
-                        sun->getParent()->getWorldTransform().getPosition().normalise(), radiance,
-                        CaptureMatrix(shadows->getShadowView()), renderer->getCamera()->getFov(),
-                        static_cast<float>(window->getWidth()) / window->getHeight(),
-                        __EngineConfig.rendererNearPlane, __EngineConfig.rendererFarPlane, __EngineConfig.shadowSunAngularRadius,
-                        CaptureBatches(renderer->getModelsTransparency(), CaptureMode::ShadowCasters)
-                    };
-                }
-            }
+            if (settings.debugView || lighting == cache->lighting) return;
+            const auto interval = std::chrono::duration<float>(__EnvironmentMapConfig.atmosphereRefreshSeconds);
+            if (lighting.source == cache->lighting.source && BakeClock::now() - cache->completed < interval) return;
         }
-        if (previous && *previous == inputs) return;
 
         PR_PROFILE(settings.debugView ? "Bake voxel debug volume" : "Bake voxel radiance");
         const GLuint packedVolume = GetPackedVolume(settings.debugView ? debugVolume : packedRadiance);
@@ -244,18 +339,26 @@ namespace Prehistoric
         const bool culling = glIsEnabled(GL_CULL_FACE);
         const bool scissor = glIsEnabled(GL_SCISSOR_TEST);
         const bool rasterizerDiscard = glIsEnabled(GL_RASTERIZER_DISCARD);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
-        glViewport(0, 0, resolution, resolution);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glDisable(GL_CULL_FACE);
         glDisable(GL_SCISSOR_TEST);
         glDisable(GL_RASTERIZER_DISCARD);
 
+        const auto lightSpace = lighting.source ? RenderSunShadow(lighting.direction) : Matrix4f::Identity();
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
+        glViewport(0, 0, resolution, resolution);
+
         auto* shader = static_cast<GLVoxelisationShader*>(voxelisationShader.pointer);
         shader->Bind(nullptr);
         shader->SetUniformi("injectRadiance", !settings.debugView);
-        if (settings.debugView) shader->SetUniformi("shadowMap", 1);
-        else shader->UpdateGlobalUniforms(renderer);
+        glBindTextureUnit(1, shadowDepth);
+        if (!settings.debugView)
+        {
+            shader->SetUniform("sunDirection", lighting.direction);
+            shader->SetUniform("sunRadiance", lighting.radiance);
+            shader->SetUniform("lightViewProjection", lightSpace);
+            shader->SetUniformf("shadowBias", 1.5f * CubeDiagonal / (VoxelShadowSize * (CubeDiagonal + 1.0f)));
+        }
         shader->SetUniform("volumeMin", settings.center - Vector3f(settings.extent * 0.5f));
         shader->SetUniformf("volumeExtent", settings.extent);
 
@@ -282,6 +385,7 @@ namespace Prehistoric
             buffer->Unbind();
         }
         shader->Unbind();
+        glBindTextureUnit(1, 0);
 
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFramebuffer);
         glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
@@ -304,11 +408,12 @@ namespace Prehistoric
         resolveShader->Bind(nullptr);
         glDispatchCompute(resolution / 4, resolution / 4, resolution / 4);
         resolveShader->Unbind();
-        glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
-        glGenerateTextureMipmap(radianceVolume);
-        glBindImageTexture(0, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
+        GenerateRadianceMips();
+        glBindImageTexture(0, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F);
         glBindImageTexture(1, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F);
         previous = std::move(inputs);
+        cache->lighting = lighting;
+        cache->completed = BakeClock::now();
     }
 
     void GLVoxelRendererPass::Composite(Texture* output) const

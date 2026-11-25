@@ -13,14 +13,9 @@ namespace Prehistoric
         AddShader(ResourceLoader::LoadShaderGL("opengl/voxel/voxelisation_FS.glsl"), FRAGMENT_SHADER);
         CompileShader();
 
-        for (const char* uniform : {"m_transform", "volumeMin", "volumeExtent", "albedo", "hasAlbedoMap", "emission", "injectRadiance"})
+        for (const char* uniform : {"m_transform", "volumeMin", "volumeExtent", "albedo", "hasAlbedoMap", "emission", "injectRadiance",
+                                   "sunDirection", "sunRadiance", "lightViewProjection", "shadowBias"})
             AddUniform(uniform);
-        AddShadowUniforms();
-    }
-
-    void GLVoxelisationShader::UpdateGlobalUniforms(Renderer* renderer) const
-    {
-        BindShadowUniforms(renderer, 1);
     }
 
     GLVoxelisationShader::Surface GLVoxelisationShader::GetSurface(Material* material)

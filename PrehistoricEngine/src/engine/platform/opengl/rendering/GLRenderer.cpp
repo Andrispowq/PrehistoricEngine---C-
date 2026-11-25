@@ -113,11 +113,8 @@ namespace Prehistoric {
 
     void GLRenderer::RenderScene() {
         const auto& voxelSettings = voxelPass->GetSettings();
-        if (voxelSettings.debugView)
-        {
-            voxelPass->Render();
-            if (voxelPass->IsReady()) return;
-        }
+        if (voxelSettings.debugView || voxelSettings.globalIllumination) voxelPass->Render();
+        if (voxelSettings.debugView && voxelPass->IsReady()) return;
 
         depthPass->Render();
 
@@ -125,8 +122,6 @@ namespace Prehistoric {
         renderingShadow = true;
         shadowDepthPass->Render();
         renderingShadow = false;
-
-        if (!voxelSettings.debugView && voxelSettings.globalIllumination) voxelPass->Render();
 
         lightCullingPass->Render();
         for (Water *water: waters) {

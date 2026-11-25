@@ -472,11 +472,16 @@ wireframe and bloom toggles.
 
 OpenGL caches the debug and GI volumes independently. Grid bounds, resolution,
 and changes to opaque mesh submissions, transforms, or sampled materials can
-invalidate a bake. Camera movement reuses the debug volume. GI injects the
-shadow-casting sun and emission, so changes to lighting or the camera-relative
-shadow cascades can invalidate the radiance bake. Changing GI strength affects
-the fullscreen composite only. The debug ray march and GI cone tracing still
-run every displayed frame.
+invalidate a bake. GI uses a shadow map fitted to the voxel volume, so camera
+movement reuses both volumes. Changes to the same sun's direction, colour, or
+intensity refresh the radiance volume at most once per
+`environmentMap.atmosphereRefreshSeconds` interval (10 seconds by default) while
+GI is active. A geometry change or a change of sun source can trigger an
+immediate bake. The last completed GI volume remains visible between refreshes.
+
+Radiance mipmaps are generated on the GPU with a compute downsample. Changing
+GI strength affects the fullscreen composite only. The debug ray march and GI
+cone tracing run every displayed frame.
 
 Terrain and water patches can receive the screen-space GI contribution through
 their surface buffers, while only opaque meshes populate the volume. Thin

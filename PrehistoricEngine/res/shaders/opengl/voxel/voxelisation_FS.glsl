@@ -11,7 +11,15 @@ uniform bool injectRadiance;
 uniform vec3 sunDirection;
 uniform vec3 sunRadiance;
 
-#include "opengl/shadow/cascades.glsl"
+layout(binding = 1) uniform sampler2DShadow voxelShadowMap;
+uniform mat4 lightViewProjection;
+uniform float shadowBias;
+
+float voxelShadowVisibility(vec3 worldPosition)
+{
+    vec3 shadowPosition = (lightViewProjection * vec4(worldPosition, 1.0)).xyz * 0.5 + 0.5;
+    return texture(voxelShadowMap, vec3(shadowPosition.xy, shadowPosition.z - shadowBias));
+}
 
 in Fragment
 {
@@ -39,7 +47,7 @@ void main()
     float cosine = max(dot(normal, sunDirection), 0.0);
     float visibility = 0.0;
     if (cosine > 0.0 && any(greaterThan(sunRadiance, vec3(0))))
-        visibility = directionalVisibility(fragment.position, normal, 1.5, true);
+        visibility = voxelShadowVisibility(fragment.position);
 
     // Keep one deterministic sample per cell, prioritising brighter radiance.
     vec3 radiance = base * (sunRadiance * (cosine * visibility / 3.14159) + emission);
