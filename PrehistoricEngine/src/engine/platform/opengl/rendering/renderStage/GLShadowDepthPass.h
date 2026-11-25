@@ -10,6 +10,7 @@ namespace Prehistoric
 {
 	class AssembledAssetManager;
 	class Renderer;
+	class Light;
 
 	constexpr float SIZE = 4096;
 
@@ -24,6 +25,10 @@ namespace Prehistoric
 		virtual void Render() override;
 
 		static constexpr size_t CascadeCount = 6;
+		static constexpr float CascadeBlendFraction = 0.1f;
+		static const Light* FindSun(const Renderer& renderer);
+		const Light* getSun() const { return rendered ? sun : nullptr; }
+		const Matrix4f& getShadowView() const { return shadowView; }
 		const std::array<float, CascadeCount>& getCascadeDistances() const { return shadowCascadeLevels; }
 		void BindMatrices() const;
 		bool hasShadowMap() const { return rendered; }
@@ -40,6 +45,8 @@ namespace Prehistoric
 
 		std::array<float, CascadeCount> shadowCascadeLevels;
 		bool rendered = false;
+		const Light* sun = nullptr;
+		Matrix4f shadowView = Matrix4f::Identity();
 		std::unique_ptr<UniformBufferObject> matrices;
 	};
 };

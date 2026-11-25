@@ -25,7 +25,7 @@ namespace Prehistoric {
 
         virtual ~EnvironmentMapRenderer();
 
-        void UpdateEnvironment(const Atmosphere *atmosphere);
+        void UpdateEnvironment(const Atmosphere *atmosphere, bool includeSunDisk);
 
         void RequestBake(bool usePanorama);
 

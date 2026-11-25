@@ -465,6 +465,9 @@ namespace Prehistoric {
                 initialCamera = WorldCameraPose{ReadWorldVector(pose->at("position")),
                                                 ReadWorldVector(pose->at("forward")),
                                                 ReadWorldVector(pose->at("up"))};
+                if (const auto exposure = pose->find("exposure"); exposure != pose->end()) {
+                    initialCamera->exposure = std::max(0.01f, exposure->get<float>());
+                }
             }
 
             {

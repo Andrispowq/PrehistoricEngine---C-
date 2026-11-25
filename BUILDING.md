@@ -377,6 +377,12 @@ repairs are listed in the [rendering backlog](docs/RENDERING_BACKLOG.md).
 
 ## OpenGL volumetric lighting test
 
+For a backlit arcade view, open [Sponza Sun Shafts](PrehistoricEditor/res/world/sponza_sun_shafts.json)
+from the editor's `res/world` folder. The world sets the starting camera,
+exposure, directional sun, and dust volumes. Open it in OpenGL to preview the
+shafts. For a clear-air comparison, set both volumes' density to zero and
+compare the light on the floor.
+
 Open [the Sponza world](Prehistoric/res/world/sponza_volumetric.json) in the
 editor using File → Open. To launch the sample directly, set
 `PREHISTORIC_WORLD=res/world/sponza_volumetric.json` and run it from
@@ -407,8 +413,10 @@ Both backends use the Rayleigh/Mie integration and disk profile in
 final HDR pass. In worlds without an active scattering atmosphere, the HDR
 environment background is used when configured. Vulkan bakes the registered scattering atmosphere into a linear
 HDR cubemap
-before the first PBR draw, including the bright solar core used in OpenGL captures.
-The existing irradiance and GGX prefilter stages consume that cube.
+before the first PBR draw, including the bright solar core. OpenGL leaves the
+solar disk out of its lighting bake when the same sun supplies shadowed direct
+lighting. The disk remains visible in the sky. The irradiance and GGX prefilter
+stages consume the resulting cubemap.
 
 ### Atmosphere capture timing
 

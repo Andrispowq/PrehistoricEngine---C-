@@ -99,9 +99,10 @@ namespace Prehistoric {
         requested = true;
     }
 
-    void EnvironmentMapRenderer::UpdateEnvironment(const Atmosphere *atmosphere) {
+    void EnvironmentMapRenderer::UpdateEnvironment(const Atmosphere *atmosphere, bool includeSunDisk) {
         auto source = EnvironmentCaptureSource::FromScene(panoramaOverride ? nullptr : atmosphere,
                                                           __EngineConfig.rendererExposure);
+        source.includeSunDisk = !source.scattering || includeSunDisk;
         if (!requested && !capture.NeedsBake(source, __EnvironmentMapConfig.atmosphereRefreshSeconds)) return;
         GenerateEnvironmentMap(source);
         capture.Complete(source);

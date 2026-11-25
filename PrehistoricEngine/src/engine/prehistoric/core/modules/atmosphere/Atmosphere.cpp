@@ -65,7 +65,7 @@ namespace Prehistoric
     bool AtmosphereCapture::NeedsBake(const EnvironmentCaptureSource& source, float interval, Clock::time_point now) const
     {
         if (!previous || source.atmosphere != previous->atmosphere || source.panorama != previous->panorama ||
-            source.scattering != previous->scattering)
+            source.scattering != previous->scattering || source.includeSunDisk != previous->includeSunDisk)
         {
             return true;
         }

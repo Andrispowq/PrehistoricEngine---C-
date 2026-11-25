@@ -59,9 +59,10 @@ namespace Prehistoric
         Renderer::VisitBatches(batches, [&](Pipeline* pipeline)
         {
             vertices = static_cast<GLGraphicsPipeline*>(pipeline)->getVertexBuffer();
-            vertices->Bind(nullptr);
+            if (vertices->getType() == VertexBufferType::MESH) vertices->Bind(nullptr);
         }, [](Pipeline*, Material*) {}, [&](Pipeline*, RenderableComponent* object)
         {
+            if (vertices->getType() != VertexBufferType::MESH) return;
             shader.UpdateObjectUniforms(object->getParent());
             for (uint32_t i = 0; i < vertices->getSubmeshCount(); ++i)
             {
@@ -69,7 +70,7 @@ namespace Prehistoric
             }
         }, [&](Pipeline*)
         {
-            vertices->Unbind();
+            if (vertices->getType() == VertexBufferType::MESH) vertices->Unbind();
         });
     }
 

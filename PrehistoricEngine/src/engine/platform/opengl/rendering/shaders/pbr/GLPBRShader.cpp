@@ -36,10 +36,6 @@ namespace Prehistoric
 		AddUniform("numberOfTilesX");
 		AddUniform("max_reflection_lod");
 
-		AddUniform("sunPosition");
-		AddUniform("sunColour");
-		AddUniform("sunIndex");
-
 		AddShadowUniforms();
 		AddUniform("time");
 	}
@@ -47,7 +43,7 @@ namespace Prehistoric
 	void GLPBRShader::UpdateGlobalUniforms(Renderer* renderer) const
 	{
 		Camera* camera = renderer->getCamera();
-		const std::vector<Light*>& lights = renderer->getLights();
+		const auto* culling = static_cast<GLRenderer*>(renderer)->getLightCullingPass();
 
 		SetUniform("m_view", camera->getViewMatrix());
 		SetUniform("m_projection", camera->getProjectionMatrix());
@@ -56,22 +52,9 @@ namespace Prehistoric
 
 		BindEnvironmentLighting(renderer, 4);
 
-		SetUniformi("captureLightCount", __WaterConfig.stage == WaterRenderStage::Default ? -1 : static_cast<int>(lights.size()));
+		SetUniformi("captureLightCount", __WaterConfig.stage == WaterRenderStage::Default ? -1 : culling->getUploadedLightCount());
 		SetUniformi("numberOfTilesX", GLLightCullingPass::TileCount(renderer->getWindow()->getWidth()));
 		SetUniformf("max_reflection_lod", __EnvironmentMapConfig.prefilterLevels - 1.0f);
-
-		SetUniformi("sunIndex", -1);
-		for (size_t i = 0; i < lights.size(); ++i)
-		{
-			Light* light = lights[i];
-			if (light->castShadows())
-			{
-				SetUniform("sunPosition", light->getParent()->getWorldTransform().getPosition());
-				SetUniform("sunColour", light->getColour());
-				if (static_cast<GLRenderer*>(renderer)->getShadowDepthPass()->hasShadowMap()) SetUniformi("sunIndex", static_cast<int>(i));
-				break;
-			}
-		}
 
 		BindShadowUniforms(renderer, 3);
 		SetUniformf("time", (float)Time::getTimeFromStart());

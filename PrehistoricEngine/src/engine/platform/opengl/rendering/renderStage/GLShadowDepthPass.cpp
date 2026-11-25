@@ -26,7 +26,10 @@ namespace Prehistoric
 		: RenderStage(renderer), framebuffer{ nullptr }
 	{
 		float farPlane = __EngineConfig.rendererFarPlane;
-		shadowCascadeLevels = { farPlane / 250.0f, farPlane / 100.0f, farPlane / 50.0f, farPlane / 25.0f, farPlane / 10.0f, farPlane / 2.0f};
+		const float nearPlane = __EngineConfig.rendererNearPlane;
+		const float fractions[] = { 0.004f, 0.01f, 0.02f, 0.04f, 0.1f, 0.5f };
+		for (size_t i = 0; i < shadowCascadeLevels.size(); ++i)
+			shadowCascadeLevels[i] = nearPlane + (farPlane - nearPlane) * fractions[i];
 
 		matrices = std::make_unique<GLUniformBufferObject>(window, nullptr, 16 * 16 * sizeof(float));
 
@@ -40,6 +43,8 @@ namespace Prehistoric
 		framebuffer = std::make_unique<GLFramebuffer>(window);
 		framebuffer->Bind();
 		framebuffer->addColourAttachment2D(depthTexture.pointer);
+		glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
 		framebuffer->Check();
 		framebuffer->Unbind();
 	}
@@ -56,6 +61,16 @@ namespace Prehistoric
 		matrices->BindBase(nullptr, 0);
 	}
 
+	const Light* GLShadowDepthPass::FindSun(const Renderer& renderer)
+	{
+		for (const auto* light : renderer.getLights())
+		{
+			if (light->castShadows() && light->getParent()->getWorldTransform().getPosition().lengthSquared() > 0.0f)
+				return light;
+		}
+		return nullptr;
+	}
+
 	void GLShadowDepthPass::Render()
 	{
 		PR_PROFILE("Depth pass");
@@ -64,15 +79,7 @@ namespace Prehistoric
 		uint32_t width = window->getWidth();
 		uint32_t height = window->getHeight();
 
-		Light* sun = nullptr;
-		for (auto light : rend->getLights())
-		{
-			if (light->castShadows())
-			{
-				sun = light;
-				break;
-			}
-		}
+		sun = FindSun(*renderer);
 
 		if (sun == nullptr)
 		{
@@ -82,6 +89,7 @@ namespace Prehistoric
 
 		//update stuff
 		Vector3f sunPos = sun->getParent()->getWorldTransform().getPosition();
+		shadowView = renderer->getCamera()->getViewMatrix();
 		std::vector<Matrix4f> lightMatrices = GetLightSpaceMatrices(sunPos.normalise());
 
 
@@ -97,8 +105,6 @@ namespace Prehistoric
 		matrices->Unbind();
 
 		framebuffer->Bind();
-		uint32_t arr[] = { GL_COLOR_ATTACHMENT0 };
-		framebuffer->SetDrawAttachments(1, arr);
 		framebuffer->Clear(0.0f);
 
 		window->getSwapchain()->SetWindowSize((uint32_t)SIZE, (uint32_t)SIZE);
@@ -106,54 +112,13 @@ namespace Prehistoric
 		depthShader->Bind(nullptr);
 		dynamic_cast<GLShadowDepthPassShader*>(depthShader.pointer)->UpdateGlobalUniforms(matrices.get());
 
-		for (auto pipeline : rend->getModels3D())
-		{
-			Pipeline* pl = pipeline.first;
-			VertexBuffer* vbo = static_cast<GLGraphicsPipeline*>(pl)->getVertexBuffer();
-			vbo->Bind(nullptr);
-
-			for (auto material : pipeline.second)
-			{
-				if (material.first == nullptr)
-				{
-					if (material.second.size() < 2)
-					{
-						continue;
-					}
-
-					pl->BindPipeline(nullptr);
-					pl->getShader()->UpdateGlobalUniforms(rend);
-					pl->getShader()->UpdateMaterialUniforms(material.first, 0);
-
-					for (auto renderer_ : material.second)
-					{
-						renderer_->BatchRender();
-					}
-
-					pl->UnbindPipeline();
-
-					depthShader->Bind(nullptr);
-					dynamic_cast<GLShadowDepthPassShader*>(depthShader.pointer)->UpdateGlobalUniforms(matrices.get());
-				}
-				else
-				{
-					/*for (auto renderer_ : material.second)
-					{
-						depthShader->UpdateObjectUniforms(renderer_->getParent());
-
-						for (uint32_t i = 0; i < vbo->getSubmeshCount(); i++)
-						{
-							vbo->Draw(nullptr, i);
-						}
-					}*/
-				}
-			}
-
-			static_cast<GLGraphicsPipeline*>(pl)->getVertexBuffer()->Unbind();
-		}
-
-		//TODO: enable alpha blending
+		// Use mesh geometry for both opaque and transparent casters. The depth
+		// shader currently treats transparent materials as solid silhouettes.
+		const bool cullingEnabled = glIsEnabled(GL_CULL_FACE);
+		glDisable(GL_CULL_FACE);
+		GLDepthPass::DrawBatches(rend->getModels3D(), *depthShader.pointer);
 		GLDepthPass::DrawBatches(rend->getModelsTransparency(), *depthShader.pointer);
+		if (cullingEnabled) glEnable(GL_CULL_FACE);
 
 		window->getSwapchain()->SetWindowSize(width, height);
 
@@ -191,8 +156,7 @@ namespace Prehistoric
 	Matrix4f GLShadowDepthPass::GetViewProjMatrix(Vector3f lightDir, float nearPlane, float farPlane)
 	{
 		Matrix4f cam_proj = Matrix4f::PerspectiveProjection(renderer->getCamera()->getFov(), ((float)window->getWidth()) / ((float)window->getHeight()), nearPlane, farPlane);
-		Matrix4f cam_view = renderer->getCamera()->getViewMatrix();
-		std::vector<Vector4f> corners = GetFrustumCornersWorldSpace(cam_proj, cam_view);
+		std::vector<Vector4f> corners = GetFrustumCornersWorldSpace(cam_proj, shadowView);
 
 		//view matrix
 		Vector3f centre;
@@ -207,47 +171,30 @@ namespace Prehistoric
 		up = right.cross(lightDir).normalise();
 		Matrix4f lightView = Matrix4f::View(lightDir, up);
 
-		//projection
-		float minX = std::numeric_limits<float>::max();
-		float maxX = std::numeric_limits<float>::lowest();
-		float minY = std::numeric_limits<float>::max();
-		float maxY = std::numeric_limits<float>::lowest();
+		const Vector4f lightCenter = lightView * Vector4f(centre.x, centre.y, centre.z, 1.0f);
+		float radius = 0.0f;
 		float minZ = std::numeric_limits<float>::max();
 		float maxZ = std::numeric_limits<float>::lowest();
-
-		for (const auto& v : corners)
+		for (const auto& corner : corners)
 		{
-			const auto trf = lightView * v;
-			minX = std::min(minX, trf.x);
-			maxX = std::max(maxX, trf.x);
-			minY = std::min(minY, trf.y);
-			maxY = std::max(maxY, trf.y);
-			minZ = std::min(minZ, trf.z);
-			maxZ = std::max(maxZ, trf.z);
+			radius = std::max(radius, (corner.xyz() - centre).length());
+			const float z = (lightView * corner).z;
+			minZ = std::min(minZ, z);
+			maxZ = std::max(maxZ, z);
 		}
 
-		//Tuneable
-		constexpr float zMult = 5.0f; //10.0f
-		if (minZ < 0)
-		{
-			minZ *= zMult;
-		}
-		else
-		{
-			minZ /= zMult;
-		}
+		// Stabilize the extent as the camera rotates and snap its center to texels.
+		radius = std::ceil(radius * 16.0f) / 16.0f;
+		radius *= SIZE / (SIZE - 4.0f);
+		const float texel = 2.0f * radius / SIZE;
+		const float x = std::round(lightCenter.x / texel) * texel;
+		const float y = std::round(lightCenter.y / texel) * texel;
 
-		if (maxZ < 0)
-		{
-			maxZ /= zMult;
-		}
-		else
-		{
-			maxZ *= zMult;
-		}
+		// Include casters on the sunward side of the camera slice.
+		const float casterReach = std::max(150.0f, farPlane - nearPlane);
+		Matrix4f lightProj = Matrix4f::OrthographicProjection(
+			x - radius, x + radius, y - radius, y + radius, -(maxZ + casterReach), -minZ);
 
-		// OrthographicProjection takes near/far distances along negative view Z.
-		Matrix4f lightProj = Matrix4f::OrthographicProjection(minX, maxX, minY, maxY, -maxZ, -minZ);
 		return lightProj * lightView;
 	}
 
@@ -255,20 +202,14 @@ namespace Prehistoric
 	{
 		std::vector<Matrix4f> ret;
 
-		for (size_t i = 0; i < (shadowCascadeLevels.size() + 1); ++i)
+		const float cameraNear = __EngineConfig.rendererNearPlane;
+		for (size_t i = 0; i <= shadowCascadeLevels.size(); ++i)
 		{
-			if (i == 0)
-			{
-				ret.push_back(GetViewProjMatrix(lightDir, __EngineConfig.rendererNearPlane, shadowCascadeLevels[i]));
-			}
-			else if (i < shadowCascadeLevels.size())
-			{
-				ret.push_back(GetViewProjMatrix(lightDir, shadowCascadeLevels[i - 1], shadowCascadeLevels[i]));
-			}
-			else
-			{
-				ret.push_back(GetViewProjMatrix(lightDir, shadowCascadeLevels[i - 1], __EngineConfig.rendererFarPlane));
-			}
+			const float sliceNear = i == 0 ? cameraNear : shadowCascadeLevels[i - 1];
+			const float sliceFar = i < shadowCascadeLevels.size() ? shadowCascadeLevels[i] : __EngineConfig.rendererFarPlane;
+			const float previousNear = i > 1 ? shadowCascadeLevels[i - 2] : cameraNear;
+			const float overlap = (sliceNear - previousNear) * CascadeBlendFraction;
+			ret.push_back(GetViewProjMatrix(lightDir, sliceNear - overlap, sliceFar));
 		}
 
 		return ret;

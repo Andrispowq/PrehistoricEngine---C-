@@ -62,97 +62,11 @@ uniform float max_reflection_lod;
 uniform float threshold;
 
 uniform mat4 m_view;
-layout(std140, binding = 0) uniform LightSpaceMatrices
-{
-	mat4 m_LightSpace[16];
-};
-
-uniform float time;
-
-uniform vec3 sunPosition;
-uniform vec3 sunColour;
-uniform int sunIndex;
-
-uniform int cascadeCount;
-uniform float cascadePlaneDistances[16];
-uniform float farPlane;
-uniform sampler2DArray shadowMap;
+uniform vec3 sunDirection;
+uniform vec3 sunRadiance;
 
 #include "shared/pbr/lighting.glsl"
-
-
-float getShadow(vec3 fragPosWorldSpace, vec3 lightDir, vec3 normal)
-{
-	// select cascade layer
-	vec4 fragPosViewSpace = m_view * vec4(fragPosWorldSpace, 1.0);
-	float depthValue = abs(fragPosViewSpace.z);
-
-	int layer = -1;
-	for (int i = 0; i < cascadeCount; ++i)
-	{
-		if (depthValue < cascadePlaneDistances[i])
-		{
-			layer = i;
-			break;
-		}
-	}
-	if (layer == -1)
-	{
-		layer = cascadeCount;
-	}
-
-	vec4 fragPosLightSpace = m_LightSpace[layer] * vec4(fragPosWorldSpace, 1.0);
-
-	// perform perspective divide
-	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-	// transform to [0,1] range
-	projCoords = projCoords * 0.5 + 0.5;
-
-	// get depth of current fragment from light's perspective
-	float currentDepth = projCoords.z;
-	if (currentDepth > 1.0)
-	{
-		//return 0.0;
-	}
-
-	// calculate bias (based on depth map resolution and slope)
-	float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
-	if (layer == cascadeCount)
-	{
-		bias *= 1 / max(farPlane * 0.5f, 0.005);
-	}
-	else
-	{
-		bias *= 1 / max(cascadePlaneDistances[layer] * 0.5f, 0.005);
-	}
-
-	// PCF
-	float weights[] = { 0.0093, 0.028, 0.065, 0.0659, 0.1217, 0.19859, 0.1757, 0.1217, 0.0659, 0.028, 0.0093 };
-	float shadow = 0.0;
-	vec2 texelSize = 1.0 / vec2(textureSize(shadowMap, 0));
-
-	for (int x = -5; x <= 5; ++x)
-	{
-		for (int y = -5; y <= 5; ++y)
-		{
-			float pcfDepth = texture(
-				shadowMap,
-				vec3(projCoords.xy + vec2(x, y) * texelSize,
-					layer)
-				).r;
-			shadow += (((currentDepth - bias) > pcfDepth) ? 1.0 : 0.0) * weights[x + 5] * weights[y + 5];
-		}
-	}
-	//shadow /= 9.0;
-
-	// keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
-	if (projCoords.z > 1.0)
-	{
-		//shadow = 0.0;
-	}
-
-	return shadow;
-}
+#include "opengl/shadow/cascades.glsl"
 
 void main()
 {
@@ -219,10 +133,13 @@ void main()
     vec3 F0 = vec3(pow(reflectance, 2) * 0.16);
     F0 = mix(F0, albedoColour, metallic);
 
-	vec3 sunDirection = normalize(-sunPosition);
-	float shadow = getShadow(position_FS, sunDirection, N);
-
-    vec3 Lo = vec3(0);
+    vec3 Lo = vec3(0.0);
+    if (any(greaterThan(sunRadiance, vec3(0.0))))
+    {
+        float bias = mix(2.0, 0.5, clamp(dot(N, sunDirection), 0.0, 1.0));
+        Lo = directionalVisibility(position_FS, bias) *
+            directPbrLight(N, V, sunDirection, F0, albedoColour, metallic, roughness, sunRadiance);
+    }
 	uint offset = index * 1024;
     for (uint i = 0; i < (captureLightCount >= 0 ? uint(captureLightCount) : 1024u); i++)
     {
@@ -244,7 +161,7 @@ void main()
 
         vec3 radiance = light.colour.rgb * light.intensity_radius.r * attenuation;
 
-        Lo += directPbrLight(N, V, L, F0, albedoColour, metallic, roughness, radiance) * (sunIndex == index ? 1.0 - shadow : 1.0);
+        Lo += directPbrLight(N, V, L, F0, albedoColour, metallic, roughness, radiance);
     }
 
     vec3 F = FresnelSchlickRoughness(max(dot(N, V), 0), F0, roughness);
@@ -281,7 +198,6 @@ void main()
 		colour = vec3(0.0);
 	}
 
-	colour *= max((1 - shadow), 0.2);
 
 	outColour = vec4(colour, 1);
 	outPositionMetallic = vec4(position_FS, metallic);

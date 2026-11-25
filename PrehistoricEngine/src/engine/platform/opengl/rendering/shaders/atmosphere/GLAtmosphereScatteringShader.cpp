@@ -37,6 +37,7 @@ namespace Prehistoric
 		AddUniform("height");
 		AddUniform("isReflection");
 		AddUniform("isCubemap");
+		AddUniform("includeSunDisk");
 
 		AddUniform("exposure");
 	}
@@ -70,6 +71,7 @@ namespace Prehistoric
 		SetUniformi("height", __FrameworkConfig.windowHeight);
 		SetUniformi("isReflection", !capture && __WaterConfig.stage == WaterRenderStage::Reflection ? 1 : 0);
 		SetUniformi("isCubemap", capture);
+		SetUniformi("includeSunDisk", !capture || source.includeSunDisk);
 
 		SetUniformf("exposure", source.exposure);
 	}

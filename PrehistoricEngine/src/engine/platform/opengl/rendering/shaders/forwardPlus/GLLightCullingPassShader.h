@@ -15,7 +15,7 @@ namespace Prehistoric
 		GLLightCullingPassShader();
 		virtual ~GLLightCullingPassShader() {}
 
-		void UpdateUniforms(Renderer* renderer, Texture* depthMap);
+		void UpdateUniforms(Renderer* renderer, Texture* depthMap, int lightCount);
 	};
 };
 

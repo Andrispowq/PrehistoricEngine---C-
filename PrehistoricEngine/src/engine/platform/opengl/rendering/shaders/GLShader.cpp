@@ -1,6 +1,7 @@
 #include "Includes.hpp"
 #include "prehistoric/core/resources/EngineResources.h"
 #include "GLShader.h"
+#include "prehistoric/core/node/component/light/Light.h"
 #include "prehistoric/application/Application.h"
 #include "platform/opengl/rendering/GLRenderer.h"
 #include "prehistoric/core/modules/environmentMapRenderer/EnvironmentMapRenderer.h"
@@ -9,7 +10,11 @@ namespace Prehistoric {
     void GLShader::AddShadowUniforms()
     {
         AddUniform("cascadeCount");
-        AddUniform("farPlane");
+        AddUniform("shadowNearPlane");
+        AddUniform("shadowView");
+        AddUniform("cascadeBlendFraction");
+        AddUniform("sunDirection");
+        AddUniform("sunRadiance");
         AddUniform("shadowMap");
         for (size_t i = 0; i < GLShadowDepthPass::CascadeCount; ++i)
         {
@@ -25,7 +30,20 @@ namespace Prehistoric {
         SetUniformi("shadowMap", textureUnit);
         const auto& distances = shadows->getCascadeDistances();
         SetUniformi("cascadeCount", static_cast<int>(distances.size()));
-        SetUniformf("farPlane", __EngineConfig.rendererFarPlane);
+        SetUniformf("shadowNearPlane", __EngineConfig.rendererNearPlane);
+        SetUniformf("cascadeBlendFraction", GLShadowDepthPass::CascadeBlendFraction);
+        SetUniform("shadowView", shadows->getShadowView());
+
+        const auto* sun = shadows->getSun();
+        Vector3f direction(0, 1, 0);
+        Vector3f radiance(0);
+        if (sun)
+        {
+            direction = sun->getParent()->getWorldTransform().getPosition().normalise();
+            radiance = sun->getColour() * sun->getIntensity();
+        }
+        SetUniform("sunDirection", direction);
+        SetUniform("sunRadiance", radiance);
         for (size_t i = 0; i < distances.size(); ++i)
         {
             SetUniformf("cascadePlaneDistances[" + std::to_string(i) + "]", distances[i]);

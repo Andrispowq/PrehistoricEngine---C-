@@ -108,7 +108,9 @@ namespace Prehistoric {
     }
 
     void GLRenderer::UpdateEnvironmentLighting() {
-        environmentLighting->UpdateEnvironment(atmosphere);
+        // The directional light already supplies direct sun with scene shadows.
+        const auto* sun = GLShadowDepthPass::FindSun(*this);
+        environmentLighting->UpdateEnvironment(atmosphere, !atmosphere || sun != atmosphere->getSun());
     }
 
     void GLRenderer::RenderScene() {

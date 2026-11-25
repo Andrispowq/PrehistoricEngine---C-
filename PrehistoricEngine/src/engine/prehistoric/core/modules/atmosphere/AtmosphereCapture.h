@@ -29,6 +29,7 @@ namespace Prehistoric
         AtmosphereParameters sky{};
         bool scattering = false;
         float exposure = 0;
+        bool includeSunDisk = true;
 
         static EnvironmentCaptureSource FromScene(const Atmosphere* atmosphere, float captureExposure);
     };

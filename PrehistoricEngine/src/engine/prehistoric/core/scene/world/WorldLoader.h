@@ -29,6 +29,7 @@ namespace Prehistoric
 		Vector3f position;
 		Vector3f forward;
 		Vector3f up;
+		std::optional<float> exposure;
 	};
 
 	class WorldLoader

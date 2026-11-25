@@ -102,6 +102,7 @@ namespace Prehistoric {
             camera->setPosition(pose->position);
             camera->setForward(pose->forward);
             camera->setUp(pose->up);
+            if (pose->exposure) engineSettings.engineConfig.rendererExposure = *pose->exposure;
             camera->Update(renderingEngine->getWindow(), 0.0f);
         }
 

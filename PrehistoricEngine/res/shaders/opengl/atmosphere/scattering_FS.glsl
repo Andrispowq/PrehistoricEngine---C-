@@ -32,6 +32,7 @@ uniform int width;
 uniform int height;
 uniform int isReflection;
 uniform int isCubemap;
+uniform int includeSunDisk;
 
 uniform float exposure;
 
@@ -73,7 +74,7 @@ void main()
     out_Colour = 1.0 - exp(-out_Colour * exposure);
 
 	// no sun rendering when scene reflection
-	if(sunradius < sunRadius)
+	if(includeSunDisk != 0 && sunradius < sunRadius)
 	{
 		float smoothRadius = SunDiskWeight(sunradius, sunRadius);
         out_Colour = mix(out_Colour, sunColour * 4, smoothRadius);

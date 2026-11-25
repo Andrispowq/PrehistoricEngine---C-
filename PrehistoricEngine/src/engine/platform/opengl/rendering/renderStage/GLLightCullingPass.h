@@ -25,7 +25,9 @@ namespace Prehistoric
 
 		GLShaderStorageBuffer* getLightBuffer() const { return lightBuffer.get(); }
 		GLShaderStorageBuffer* getVisibleLightIndicesBuffer() const { return visibleLightIndicesBuffer.get(); }
+		int getUploadedLightCount() const { return uploadedLightCount; }
 	private:
+		int uploadedLightCount = 0;
 		std::unique_ptr<GLShaderStorageBuffer> lightBuffer;
 		std::unique_ptr<GLShaderStorageBuffer> visibleLightIndicesBuffer;
 

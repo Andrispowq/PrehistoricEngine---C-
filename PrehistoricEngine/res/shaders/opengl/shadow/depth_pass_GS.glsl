@@ -1,6 +1,7 @@
 #version 430
 
-layout(triangles, invocations = 5) in;
+// One invocation per split plus the far slice. Keep in sync with GLShadowDepthPass::CascadeCount.
+layout(triangles, invocations = 7) in;
 layout(triangle_strip, max_vertices = 3) out;
     
 layout (std140, binding = 0) uniform LightSpaceMatrices

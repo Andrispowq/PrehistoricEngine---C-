@@ -60,11 +60,12 @@ namespace Prehistoric
 		InternalLight* light = (InternalLight*)lightBuffer->getMappedData();
 		memset(light, 0, __EngineConfig.lightsMaxNumber * sizeof(InternalLight));
 
-		for (size_t i = 0; i < rend->getLights().size(); i++)
+		uploadedLightCount = 0;
+		const auto* sun = rend->getShadowDepthPass()->getSun();
+		for (Light* l : rend->getLights())
 		{
-			Light* l = rend->getLights()[i];
-
-			if (!l->illuminates())
+			if (uploadedLightCount >= __EngineConfig.lightsMaxNumber) break;
+			if (!l->illuminates() || l == sun)
 			{
 				continue;
 			}
@@ -74,6 +75,7 @@ namespace Prehistoric
 			light->intensity_radius = Vector4f(l->getIntensity(), l->getRadius(), 0, 0);
 
 			light++;
+			++uploadedLightCount;
 		}
 
 		lightBuffer->UnmapBuffer();
@@ -81,7 +83,7 @@ namespace Prehistoric
 
 		//Render
 		lightCullingPipeline->BindPipeline(nullptr);
-		static_cast<GLLightCullingPassShader*>(lightCullingPipeline->getShader())->UpdateUniforms(rend, rend->getDepthPass()->getDepthTexture().pointer);
+		static_cast<GLLightCullingPassShader*>(lightCullingPipeline->getShader())->UpdateUniforms(rend, rend->getDepthPass()->getDepthTexture().pointer, uploadedLightCount);
 		lightCullingPipeline->RenderPipeline();
 		lightCullingPipeline->UnbindPipeline();
 	}

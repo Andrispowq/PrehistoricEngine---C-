@@ -2,7 +2,7 @@
 #include "GLVolumetricPostProcessingShader.h"
 
 #include "platform/opengl/rendering/GLRenderer.h"
-#include "prehistoric/core/node/GameObject.h"
+#include "prehistoric/core/modules/environmentMapRenderer/EnvironmentMapRenderer.h"
 
 namespace Prehistoric
 {
@@ -18,11 +18,9 @@ namespace Prehistoric
 
 		AddUniform("scene");
 		AddUniform("sceneDepth");
+		AddUniform("irradianceMap");
 		AddUniform("cameraPosition");
 		AddUniform("inverseViewProjection");
-		AddUniform("m_view");
-		AddUniform("sunDirection");
-		AddUniform("sunRadiance");
 		AddUniform("sphereCount");
 		for (size_t i = 0; i < MaxSpheres; ++i)
 		{
@@ -41,29 +39,12 @@ namespace Prehistoric
 		depth->Bind(1);
 		SetUniformi("sceneDepth", 1);
 		BindShadowUniforms(renderer, 2);
+		static_cast<GLRenderer*>(renderer)->getEnvironmentLighting().getIrradianceMap()->Bind(3);
+		SetUniformi("irradianceMap", 3);
 
 		const Camera* camera = renderer->getCamera();
 		SetUniform("cameraPosition", camera->getPosition());
 		SetUniform("inverseViewProjection", camera->getViewProjectionMatrix().Invert());
-		SetUniform("m_view", camera->getViewMatrix());
-
-		Vector3f sunDirection(0, 1, 0);
-		Vector3f sunRadiance(0);
-		for (const auto* light : renderer->getLights())
-		{
-			if (!light->castShadows()) continue;
-
-			const Vector3f position = light->getParent()->getWorldTransform().getPosition();
-			if (position.dot(position) > 0.0f)
-			{
-				sunDirection = position.normalise();
-				sunRadiance = light->getColour() * light->getIntensity();
-			}
-			break; // Match the directional light chosen by GLShadowDepthPass.
-		}
-		SetUniform("sunDirection", sunDirection);
-		SetUniform("sunRadiance", sunRadiance);
-
 		const auto& spheres = renderer->getVolumetricSpheres();
 		size_t count = 0;
 		for (const auto& sphere : spheres)
