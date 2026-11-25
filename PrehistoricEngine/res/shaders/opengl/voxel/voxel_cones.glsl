@@ -1,5 +1,26 @@
 #include "opengl/voxel/voxel_visibility.glsl"
 
+layout(binding = 9) uniform sampler3D directionalRadiance[6];
+uniform bool directionalMips;
+
+vec4 sampleConeRadiance(vec3 p, vec3 direction, float lod)
+{
+    if (!directionalMips) return textureLod(radianceVolume, p, lod);
+    if (lod <= 0.0) return textureLod(radianceVolume, p, 0.0);
+
+    float directionalLod = max(0.0, lod - 1.0);
+    vec4 x = direction.x >= 0.0 ? textureLod(directionalRadiance[0], p, directionalLod)
+                                 : textureLod(directionalRadiance[1], p, directionalLod);
+    vec4 y = direction.y >= 0.0 ? textureLod(directionalRadiance[2], p, directionalLod)
+                                 : textureLod(directionalRadiance[3], p, directionalLod);
+    vec4 z = direction.z >= 0.0 ? textureLod(directionalRadiance[4], p, directionalLod)
+                                 : textureLod(directionalRadiance[5], p, directionalLod);
+    vec3 weight = direction * direction;
+    vec4 radiance = x * weight.x + y * weight.y + z * weight.z;
+    if (lod < 1.0) return mix(textureLod(radianceVolume, p, 0.0), radiance, lod);
+    return radiance;
+}
+
 bool inside(vec3 p)
 {
     return all(greaterThanEqual(p, vec3(0))) && all(lessThan(p, vec3(1)));
@@ -51,7 +72,7 @@ vec3 traceCone(vec3 origin, vec3 direction, float cellSize)
         if (!inside(p)) break;
         float diameter = max(cellSize, distance * 0.9);
         if (blocked) diameter = min(diameter, max(cellSize, 2.0 * (stop - distance)));
-        vec4 sampleValue = textureLod(radianceVolume, p, log2(diameter / cellSize));
+        vec4 sampleValue = sampleConeRadiance(p, direction, log2(diameter / cellSize));
         sum += (1.0 - sum.a) * sampleValue;
         distance += diameter;
     }

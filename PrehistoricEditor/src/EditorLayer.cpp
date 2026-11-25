@@ -117,6 +117,8 @@ void EditorLayer::ImGUIRender() {
                 ImGui::Separator();
                 ImGui::Checkbox("Voxel View (V)", &settings.debugView);
                 ImGui::Checkbox("Voxel GI (G)", &settings.globalIllumination);
+                ImGui::Checkbox("Half-Resolution GI", &settings.halfResolution);
+                ImGui::Checkbox("Directional Voxel Mips", &settings.directionalMips);
                 ImGui::Checkbox("Voxel Sun Shadows", &settings.voxelSunShadows);
                 const auto& resolutions = Prehistoric::GLVoxelRendererPass::Resolutions;
                 const auto resolutionLabel = [](int resolution) { return std::to_string(resolution) + " cubed"; };
@@ -139,6 +141,18 @@ void EditorLayer::ImGUIRender() {
                 ImGui::SliderInt("GI Trace Depth", &settings.traceDepth, 1,
                                  Prehistoric::GLVoxelRendererPass::MaxTraceDepth, "%d", ImGuiSliderFlags_AlwaysClamp);
                 ImGui::Text("Voxel size %.2f", settings.extent / Prehistoric::GLVoxelRendererPass::Resolutions[settings.resolutionIndex]);
+                if (settings.globalIllumination && ImGui::TreeNode("Voxel GPU Timings"))
+                {
+                    using Stage = Prehistoric::GLVoxelRendererPass::GpuStage;
+                    const char* labels[] = {"Occluder bake", "Radiance injection", "Bounce propagation",
+                                            "Final radiance mips", "Cone tracing", "Filter and composite"};
+                    for (int i = 0; i < static_cast<int>(Stage::Count); ++i)
+                    {
+                        const double ms = gl->getVoxelPass()->GetGpuMilliseconds(static_cast<Stage>(i));
+                        if (ms >= 0.0) ImGui::Text("%s  %.2f ms", labels[i], ms);
+                    }
+                    ImGui::TreePop();
+                }
             }
             ImGui::EndMenu();
         }

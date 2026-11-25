@@ -12,6 +12,7 @@ uniform bool debugView;
 uniform vec3 volumeMin;
 uniform float volumeExtent;
 uniform mat4 inverseViewProjection;
+uniform int traceStride;
 
 #include "opengl/voxel/voxel_cones.glsl"
 
@@ -69,13 +70,14 @@ void main()
         return;
     }
 
-    vec4 surface = texelFetch(normals, pixel, 0);
+    ivec2 receiver = min(pixel * traceStride + traceStride / 2, textureSize(normals, 0) - 1);
+    vec4 surface = texelFetch(normals, receiver, 0);
     if (surface.a < 0.99 || dot(surface.xyz, surface.xyz) < 0.01)
     {
         imageStore(indirectImage, pixel, vec4(0));
         return;
     }
-    vec4 position = texelFetch(positionMetallic, pixel, 0);
+    vec4 position = texelFetch(positionMetallic, receiver, 0);
     vec3 origin = (position.xyz - volumeMin) / volumeExtent;
     if (!inside(origin))
     {

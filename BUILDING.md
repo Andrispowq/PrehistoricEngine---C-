@@ -471,11 +471,14 @@ With bloom off, toggle **G** at a fixed camera position to compare emissive
 bounce on nearby surfaces. The panorama supplies the background and environment
 lighting. The voxel bake in this scene gets its radiance from the emitters.
 
-For the procedural-sky comparison, open `sponza_midnight_gi.json` or launch
-with `PREHISTORIC_WORLD=res/world/sponza_midnight_gi.json`. Its sun stays
-directly below the scene and supplies no direct light or voxel radiance.
-The planet occludes the solar disk and single-scattered sunlight at this
-sun angle, so the atmosphere and its baked environment are black.
+The editor opens [Sponza Midnight Atmosphere](PrehistoricEditor/res/world/sponza_midnight_gi.json)
+by default. The OpenGL editor starts with voxel GI enabled on supported GPUs,
+four diffuse bounces, and a 256³ grid subject to the renderer's memory budget.
+The sun stays directly below the scene and supplies no direct light or voxel
+radiance. The planet occludes the solar disk and single-scattered sunlight at
+this angle, so the atmosphere and its baked environment are black.
+To launch the same world from the sample in a repository checkout, set
+`PREHISTORIC_WORLD=../PrehistoricEditor/res/world/sponza_midnight_gi.json`.
 
 In the OpenGL editor, use **Render Settings** to set those options, the voxel
 volume center and width, GI strength, and **GI Trace Depth** from one to five
@@ -488,6 +491,20 @@ GPU memory and the selected bounce depth. Switching to a more expensive mode
 can select a smaller grid that fits the memory budget. Use a tighter volume for smaller scenes. Voxel
 settings are local to the renderer session. The menu also exposes the existing
 wireframe and bloom toggles.
+
+Use **Half-Resolution GI** in **Render Settings** to compare one trace per
+2×2 block with the full-resolution default. The composite uses surface
+position and normal to reject samples from neighboring surfaces. Expand
+**Voxel GPU Timings** for the latest available GPU measurements. Bounce
+propagation includes its intermediate radiance mips. Final radiance mips and
+the per-frame tracing and composite passes have separate timings.
+
+**Directional Voxel Mips** switches radiance filtering from box averages to
+six half-resolution mip chains that composite the near layer over the far
+layer. It rebakes radiance, including all diffuse bounces, and keeps the same
+first-hit occlusion test. At 256³ the directional chains add about 110 MiB to
+the voxel allocation. The selected grid remains subject to the GPU memory
+budget.
 
 OpenGL caches the debug and GI volumes independently. Grid bounds, resolution,
 and changes to opaque mesh submissions, transforms, or sampled materials can

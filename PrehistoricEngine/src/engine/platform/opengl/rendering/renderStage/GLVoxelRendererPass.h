@@ -14,15 +14,20 @@ namespace Prehistoric
             bool debugView = false;
             bool globalIllumination = false;
             bool voxelSunShadows = false;
+            bool halfResolution = false;
             int resolutionIndex = 1;
             Vector3f center = Vector3f(0);
             float extent = 400.0f;
             float giStrength = 1.0f;
             int traceDepth = 1;
+            bool directionalMips = false;
         };
 
         static constexpr int Resolutions[] = {64, 128, 256, 512, 1024};
         static constexpr int MaxTraceDepth = 5;
+
+        enum class GpuStage { Occluders, Injection, Propagation, RadianceMips, Trace, Composite, Count };
+        double GetGpuMilliseconds(GpuStage stage) const;
 
         explicit GLVoxelRendererPass(Renderer* renderer);
         ~GLVoxelRendererPass() override;
@@ -46,8 +51,10 @@ namespace Prehistoric
         void RenderVolume(bool debugView);
         void GenerateOccluderMips() const;
         void AllocateIndirectImage(uint32_t width, uint32_t height);
-        void AllocateRadianceVolume(GLuint& texture);
-        void GenerateRadianceMips(GLuint texture) const;
+        void AllocateRadianceVolume(GLuint& texture, int size);
+        void GenerateRadianceMips(GLuint texture);
+        void BindDirectionalMips(const GLShader& shader, bool enabled) const;
+        void ReleaseDirectionalMips();
         void PropagateBounces(int traceDepth);
         void ReleaseBounceVolumes();
         Matrix4f RenderSunShadow(const Vector3f& direction);

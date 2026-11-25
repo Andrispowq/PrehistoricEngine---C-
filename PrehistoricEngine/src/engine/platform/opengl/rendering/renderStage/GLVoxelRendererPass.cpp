@@ -118,15 +118,66 @@ namespace Prehistoric
             float extent;
             int traceDepth;
             bool voxelSunShadows;
+            bool directionalMips;
             SceneState meshes;
             SceneState transparentCasters;
 
             bool operator==(const BakeInputs& other) const
             {
                 return center == other.center && extent == other.extent && traceDepth == other.traceDepth
-                    && voxelSunShadows == other.voxelSunShadows
+                    && voxelSunShadows == other.voxelSunShadows && directionalMips == other.directionalMips
                     && meshes == other.meshes && transparentCasters == other.transparentCasters;
             }
+        };
+    }
+
+    namespace
+    {
+        struct GpuTimer
+        {
+            GLuint query = 0;
+            bool pending = false;
+            double milliseconds = -1.0;
+
+            ~GpuTimer()
+            {
+                if (query) glDeleteQueries(1, &query);
+            }
+
+            void Collect()
+            {
+                if (!pending) return;
+                GLint available = GL_FALSE;
+                glGetQueryObjectiv(query, GL_QUERY_RESULT_AVAILABLE, &available);
+                if (available != GL_TRUE) return;
+                GLuint64 nanoseconds = 0;
+                glGetQueryObjectui64v(query, GL_QUERY_RESULT, &nanoseconds);
+                milliseconds = static_cast<double>(nanoseconds) / 1.0e6;
+                pending = false;
+            }
+        };
+
+        struct ScopedGpuTimer
+        {
+            explicit ScopedGpuTimer(GpuTimer& timer) : timer(timer), active(!timer.pending)
+            {
+                if (!active) return;
+                if (!timer.query) glCreateQueries(GL_TIME_ELAPSED, 1, &timer.query);
+                glBeginQuery(GL_TIME_ELAPSED, timer.query);
+            }
+
+            ~ScopedGpuTimer() { Stop(); }
+
+            void Stop()
+            {
+                if (!active) return;
+                glEndQuery(GL_TIME_ELAPSED);
+                timer.pending = true;
+                active = false;
+            }
+
+            GpuTimer& timer;
+            bool active;
         };
     }
 
@@ -136,7 +187,17 @@ namespace Prehistoric
         std::optional<BakeInputs> radiance;
         LightingState lighting;
         BakeClock::time_point completed;
+        GpuTimer timings[static_cast<size_t>(GpuStage::Count)];
+        GLuint directionalVolumes[6] = {};
+        std::unique_ptr<GLShader> directionalMipShader;
+
+        GpuTimer& Timer(GpuStage stage) { return timings[static_cast<size_t>(stage)]; }
     };
+
+    double GLVoxelRendererPass::GetGpuMilliseconds(GpuStage stage) const
+    {
+        return cache->Timer(stage).milliseconds;
+    }
 
     GLVoxelRendererPass::GLVoxelRendererPass(Renderer* renderer)
         : RenderStage(renderer), cache(std::make_unique<BakeCache>())
@@ -154,6 +215,7 @@ namespace Prehistoric
         if (debugVolume) glDeleteTextures(1, &debugVolume);
         if (packedRadiance) glDeleteTextures(1, &packedRadiance);
         if (radianceVolume) glDeleteTextures(1, &radianceVolume);
+        ReleaseDirectionalMips();
         ReleaseBounceVolumes();
     }
 
@@ -178,14 +240,23 @@ namespace Prehistoric
 
         resolveShader = loadCompute("opengl/voxel/voxel_resolve_CS.glsl");
         mipShader = loadCompute("opengl/voxel/voxel_mip_CS.glsl");
+        cache->directionalMipShader = loadCompute("opengl/voxel/voxel_directional_mip_CS.glsl");
         compositeShader = loadCompute("opengl/voxel/voxel_view_CS.glsl");
         bounceShader = loadCompute("opengl/voxel/voxel_bounce_CS.glsl");
         occluderMipShader = loadCompute("opengl/voxel/voxel_occluder_mip_CS.glsl");
         filterShader = loadCompute("opengl/voxel/voxel_filter_CS.glsl");
-        if (!resolveShader || !mipShader || !compositeShader || !bounceShader || !occluderMipShader || !filterShader)
+        if (!resolveShader || !mipShader || !cache->directionalMipShader || !compositeShader ||
+            !bounceShader || !occluderMipShader || !filterShader)
             return false;
+        cache->directionalMipShader->AddUniform("directionIndex");
+        compositeShader->AddUniform("directionalMips");
+        bounceShader->AddUniform("directionalMips");
         filterShader->AddUniform("giStrength");
         filterShader->AddUniform("voxelSize");
+        filterShader->AddUniform("traceStride");
+        filterShader->AddUniform("volumeMin");
+        filterShader->AddUniform("volumeExtent");
+        compositeShader->AddUniform("traceStride");
         bounceShader->AddUniform("writeNext");
 
         shadowShader = std::make_unique<VoxelShadowShader>();
@@ -213,6 +284,7 @@ namespace Prehistoric
         glDeleteTextures(1, &debugVolume);
         glDeleteTextures(1, &packedRadiance);
         glDeleteTextures(1, &radianceVolume);
+        ReleaseDirectionalMips();
         ReleaseBounceVolumes();
         debugVolume = packedRadiance = radianceVolume = 0;
         cache->debug.reset();
@@ -239,10 +311,9 @@ namespace Prehistoric
         return texture;
     }
 
-    void GLVoxelRendererPass::AllocateRadianceVolume(GLuint& texture)
+    void GLVoxelRendererPass::AllocateRadianceVolume(GLuint& texture, int size)
     {
         if (texture) return;
-        const int size = resolution;
         int levels = 1;
         for (int width = size; width > 1; width /= 2) ++levels;
         glCreateTextures(GL_TEXTURE_3D, 1, &texture);
@@ -272,9 +343,33 @@ namespace Prehistoric
         glBindImageTexture(1, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
     }
 
-    void GLVoxelRendererPass::GenerateRadianceMips(GLuint texture) const
+    void GLVoxelRendererPass::GenerateRadianceMips(GLuint texture)
     {
         PR_PROFILE("Generate voxel radiance mips");
+        if (settings.directionalMips)
+        {
+            auto& shader = *cache->directionalMipShader;
+            shader.Bind(nullptr);
+            for (int direction = 0; direction < 6; ++direction)
+            {
+                GLuint& volume = cache->directionalVolumes[direction];
+                AllocateRadianceVolume(volume, resolution / 2);
+                shader.SetUniformi("directionIndex", direction);
+                int size = resolution / 2;
+                for (int level = 0; size > 0; ++level, size /= 2)
+                {
+                    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+                    glBindImageTexture(0, level == 0 ? texture : volume, std::max(0, level - 1),
+                                       GL_TRUE, 0, GL_READ_ONLY, GL_RGBA16F);
+                    glBindImageTexture(1, volume, level, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+                    glDispatchCompute((size + 3) / 4, (size + 3) / 4, (size + 3) / 4);
+                }
+            }
+            shader.Unbind();
+            glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT);
+            return;
+        }
+
         mipShader->Bind(nullptr);
         int size = resolution;
         for (int level = 1; size > 1; ++level)
@@ -289,6 +384,21 @@ namespace Prehistoric
         glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT);
     }
 
+    void GLVoxelRendererPass::BindDirectionalMips(const GLShader& shader, bool enabled) const
+    {
+        shader.SetUniformi("directionalMips", enabled);
+        if (enabled) glBindTextures(9, 6, cache->directionalVolumes);
+    }
+
+    void GLVoxelRendererPass::ReleaseDirectionalMips()
+    {
+        if (!cache->directionalVolumes[0]) return;
+        glBindTextures(9, 6, nullptr);
+        glDeleteTextures(6, cache->directionalVolumes);
+        for (auto& volume : cache->directionalVolumes) volume = 0;
+        cache->radiance.reset();
+    }
+
     void GLVoxelRendererPass::ReleaseBounceVolumes()
     {
         if (bounceSurfaces) glDeleteTextures(1, &bounceSurfaces);
@@ -299,8 +409,8 @@ namespace Prehistoric
     void GLVoxelRendererPass::PropagateBounces(int traceDepth)
     {
         PR_PROFILE("Propagate voxel diffuse bounces");
-        AllocateRadianceVolume(bounceVolumes[0]);
-        if (traceDepth > 2) AllocateRadianceVolume(bounceVolumes[1]);
+        AllocateRadianceVolume(bounceVolumes[0], resolution);
+        if (traceDepth > 2) AllocateRadianceVolume(bounceVolumes[1], resolution);
 
         // The source of the first propagation is the directly lit volume. Copy it
         // so the filter can sample it while writing the separate accumulated volume.
@@ -320,6 +430,7 @@ namespace Prehistoric
             glBindImageTexture(1, radianceVolume, 0, GL_TRUE, 0, GL_READ_WRITE, GL_RGBA16F);
             glBindImageTexture(2, writeNext ? bounceVolumes[1 - source] : 0, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
             bounceShader->Bind(nullptr);
+            BindDirectionalMips(*bounceShader, settings.directionalMips);
             bounceShader->SetUniformi("writeNext", writeNext);
             glDispatchCompute(resolution / 4, resolution / 4, resolution / 4);
             bounceShader->Unbind();
@@ -328,6 +439,7 @@ namespace Prehistoric
 
         glBindTextureUnit(0, 0);
         glBindTextureUnit(8, 0);
+        if (settings.directionalMips) glBindTextures(9, 6, nullptr);
         glBindImageTexture(2, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F);
     }
 
@@ -413,6 +525,7 @@ namespace Prehistoric
             bytes += 4 * cells + 8 * mipCells;
             if (settings.traceDepth > 1) bytes += 4 * cells + 8 * mipCells;
             if (settings.traceDepth > 2) bytes += 8 * mipCells;
+            if (settings.directionalMips) bytes += 6 * 8 * (mipCells - cells);
         }
         return bytes <= voxelBudget;
     }
@@ -428,6 +541,8 @@ namespace Prehistoric
     void GLVoxelRendererPass::Render()
     {
         usesOccluders = false;
+        for (auto& timer : cache->timings) timer.Collect();
+        if (!settings.directionalMips) ReleaseDirectionalMips();
         if (!IsSupported() || (!settings.debugView && !settings.globalIllumination && !settings.voxelSunShadows)
             || !Initialise()) return;
 
@@ -448,7 +563,8 @@ namespace Prehistoric
         const int traceDepth = debugView ? 1 : std::clamp(settings.traceDepth, 1, MaxTraceDepth);
         const bool captureBounceSurfaces = traceDepth > 1;
         const bool voxelSunShadows = !debugView && UsesVoxelSunShadows();
-        BakeInputs inputs{settings.center, settings.extent, traceDepth, voxelSunShadows, CaptureBatches(renderer->getModels3D(),
+        BakeInputs inputs{settings.center, settings.extent, traceDepth, voxelSunShadows,
+            !debugView && settings.directionalMips, CaptureBatches(renderer->getModels3D(),
             debugView ? CaptureMode::DebugColour : CaptureMode::Radiance, captureBounceSurfaces), {}};
         if (lighting.source && !voxelSunShadows)
             inputs.transparentCasters = CaptureBatches(renderer->getModelsTransparency(), CaptureMode::ShadowCasters);
@@ -462,6 +578,7 @@ namespace Prehistoric
         }
 
         PR_PROFILE(debugView ? "Bake voxel colour and occlusion" : "Bake voxel radiance");
+        ScopedGpuTimer bakeTimer(cache->Timer(debugView ? GpuStage::Occluders : GpuStage::Injection));
         const GLuint packedVolume = GetPackedVolume(debugView ? debugVolume : packedRadiance, debugView);
 
         const GLuint empty = 0;
@@ -552,14 +669,22 @@ namespace Prehistoric
             return;
         }
 
-        AllocateRadianceVolume(radianceVolume);
+        AllocateRadianceVolume(radianceVolume, resolution);
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
         glBindImageTexture(1, radianceVolume, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
         resolveShader->Bind(nullptr);
         glDispatchCompute(resolution / 4, resolution / 4, resolution / 4);
         resolveShader->Unbind();
-        if (captureBounceSurfaces) PropagateBounces(traceDepth);
-        GenerateRadianceMips(radianceVolume);
+        bakeTimer.Stop();
+        if (captureBounceSurfaces)
+        {
+            ScopedGpuTimer timer(cache->Timer(GpuStage::Propagation));
+            PropagateBounces(traceDepth);
+        }
+        {
+            ScopedGpuTimer timer(cache->Timer(GpuStage::RadianceMips));
+            GenerateRadianceMips(radianceVolume);
+        }
         glBindImageTexture(0, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F);
         glBindImageTexture(1, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F);
         previous = std::move(inputs);
@@ -604,7 +729,10 @@ namespace Prehistoric
         }
         else
         {
-            AllocateIndirectImage(width, height);
+            const uint32_t stride = settings.halfResolution ? 2 : 1;
+            AllocateIndirectImage((width + stride - 1) / stride, (height + stride - 1) / stride);
+            compositeShader->SetUniformi("traceStride", stride);
+            BindDirectionalMips(*compositeShader, settings.directionalMips);
             const auto* main = static_cast<GLRenderer*>(renderer)->getMainPass();
             glBindTextureUnit(0, radianceVolume);
             glBindTextureUnit(8, debugVolume);
@@ -612,18 +740,28 @@ namespace Prehistoric
             main->getAlbedoRoughnessImage()->Bind(2);
             main->getNormalImage()->Bind(3);
             glBindImageTexture(1, indirectImage, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F);
-            glDispatchCompute(groupsX, groupsY, 1);
-            glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT);
+            {
+                ScopedGpuTimer timer(cache->Timer(GpuStage::Trace));
+                glDispatchCompute((indirectWidth + 7) / 8, (indirectHeight + 7) / 8, 1);
+                glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT);
+            }
             glBindImageTexture(1, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F);
 
             filterShader->Bind(nullptr);
             filterShader->SetUniformf("giStrength", settings.giStrength);
             filterShader->SetUniformf("voxelSize", settings.extent / resolution);
+            filterShader->SetUniformi("traceStride", stride);
+            filterShader->SetUniform("volumeMin", settings.center - Vector3f(settings.extent * 0.5f));
+            filterShader->SetUniformf("volumeExtent", settings.extent);
             glBindTextureUnit(0, indirectImage);
             glBindImageTexture(0, outputId, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
-            glDispatchCompute(groupsX, groupsY, 1);
+            {
+                ScopedGpuTimer timer(cache->Timer(GpuStage::Composite));
+                glDispatchCompute(groupsX, groupsY, 1);
+            }
             glBindTextureUnit(0, 0);
             glBindTextureUnit(8, 0);
+            if (settings.directionalMips) glBindTextures(9, 6, nullptr);
         }
 
         glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT | GL_FRAMEBUFFER_BARRIER_BIT
