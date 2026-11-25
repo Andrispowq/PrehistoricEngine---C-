@@ -216,7 +216,7 @@ namespace Prehistoric {
     void VKRenderer::RenderHDR() {
         const bool underwater = __WaterConfig.underwaterPostProcessing && std::any_of(waters.begin(), waters.end(),
                                     [](const Water *water) { return water->isCameraUnderwater(); });
-        renderpass->RenderHDR(getDrawCommandBuffer(), bloomEnabled, underwater);
+        renderpass->RenderHDR(getDrawCommandBuffer(), *this, bloomEnabled, underwater);
     }
 
     void VKRenderer::FinishFrame() {

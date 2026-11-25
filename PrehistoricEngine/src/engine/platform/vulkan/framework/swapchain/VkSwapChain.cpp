@@ -108,13 +108,14 @@ namespace Prehistoric {
         VkFormat depthFormat = FindSupportedFormat(
             {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
             VK_IMAGE_TILING_OPTIMAL,
-            VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+            VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT
         );
 
         VkImageFormatProperties depthProperties{};
         if (vkGetPhysicalDeviceImageFormatProperties(device->getPhysicalDevice(), depthFormat, VK_IMAGE_TYPE_2D,
                                                      VK_IMAGE_TILING_OPTIMAL,
-                                                     VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 0,
+                                                     VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
+                                                     VK_IMAGE_USAGE_SAMPLED_BIT, 0,
                                                      &depthProperties) != VK_SUCCESS) {
             PR_LOG_RUNTIME_ERROR("Scene depth attachment is unavailable!\n");
         }
@@ -136,7 +137,8 @@ namespace Prehistoric {
                                                  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
         }
         depthImage = new VKImage(device, swapchainExtent.width, swapchainExtent.height, 1, depthFormat,
-                                 VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, sceneSamples,
+                                 VK_IMAGE_TILING_OPTIMAL,
+                                 VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, sceneSamples,
                                  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
 
         VKUtil::TransitionImageLayout(device, depthImage->getImage(), depthFormat, VK_IMAGE_LAYOUT_UNDEFINED,

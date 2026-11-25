@@ -375,15 +375,15 @@ and add the levels together. The presentation pass combines bloom with scene col
 The renderer owns the passes and baked maps for its backend. Outstanding rendering
 repairs are listed in the [rendering backlog](docs/RENDERING_BACKLOG.md).
 
-## OpenGL volumetric lighting test
+## Volumetric lighting test
 
 For a backlit arcade view, open [Sponza Sun Shafts](PrehistoricEditor/res/world/sponza_sun_shafts.json)
 from the editor's `res/world` folder. The world sets the starting camera,
-exposure, directional sun, and dust volumes. Open it in OpenGL to preview the
-shafts. For a clear-air comparison, set both volumes' density to zero and
+exposure, directional sun, and dust volumes. Both renderers preview the shafts. For a clear-air comparison, set both
+volumes' density to zero and
 compare the light on the floor.
 
-Use **Sun Shadow Radius** in the OpenGL editor lighting controls to compare
+Use **Sun Shadow Radius** in the editor lighting controls to compare
 hard shadows at zero with contact-hardening soft shadows. The optional
 `engine.renderer.shadowSunAngularRadius` setting supplies the startup radius
 in radians (default `0.02`). This controls shadow filtering independently
@@ -392,8 +392,7 @@ of the visible atmospheric sun disk.
 Open [the Sponza world](Prehistoric/res/world/sponza_volumetric.json) in the
 editor using File → Open. To launch the sample directly, set
 `PREHISTORIC_WORLD=res/world/sponza_volumetric.json` and run it from
-`Prehistoric/`. Select OpenGL 4.5 in the application's settings to preview
-the haze. Both backends can edit and save the objects.
+`Prehistoric/`. Both backends can preview, edit and save the volumes.
 
 Right-click empty space in the Scene Hierarchy and choose **Create Volumetric
 Sphere**, or add **Volumetric Sphere** to an existing object's components.
@@ -403,7 +402,7 @@ is in world units and is independent of the object's scale. Density is the
 center extinction per world unit. Set it to zero for a clear-air comparison.
 Positive anisotropy favors looking toward the light.
 
-OpenGL renders up to eight spheres with positive radius and density. The
+Each backend renders up to eight spheres with positive radius and density. The
 first shadow-casting light supplies directional lighting. Density fades
 smoothly to zero at the edge, and opaque surfaces clip the haze.
 

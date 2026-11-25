@@ -4,9 +4,9 @@ Step 4 established the [shared renderer frame order](../BUILDING.md#renderer-fra
 
 Step 5 added emissive bloom to Vulkan before HDR tone mapping.
 
-OpenGL composites spherical volumetric media before tone mapping. Volumetric
+Both renderers composite spherical volumetric media before tone mapping. Volumetric
 spheres are editable scene components, and the
-[Sponza world](../BUILDING.md#opengl-volumetric-lighting-test) provides two examples.
+[Sponza world](../BUILDING.md#volumetric-lighting-test) provides two examples.
 
 OpenGL and Vulkan water are enabled in the sample. Vulkan selects its geometry or tessellation-only pipeline from device capabilities. Native OpenGL GPU captures exercised the surface, reflection and refraction above and below the waterline. Set `water.reflectionParameters.underwaterPostProcessing` to `false` to disable the underwater tint and blur.
 
@@ -35,10 +35,9 @@ OpenGL and Vulkan water are enabled in the sample. Vulkan selects its geometry o
 2. **Shadows and volumetrics.** Vulkan PBR meshes now use the directional sun and seven stabilized shadow layers.
    Both backends share cascade placement, blending and contact-hardening filtering. The matching atmosphere bake
    excludes the directly lit solar disk. Vulkan draws each layer separately on devices including Apple Silicon.
-   Add readable scene depth and composite the existing
-   editable volumetric spheres after bloom and before underwater processing and tone mapping. Match density falloff,
-   anisotropy, overlapping volumes, irradiance lighting, opaque clipping, and shadowed sun shafts. Compare Sponza Sun
-   Shafts with the same camera and zero-density control.
+   Vulkan composites the editable spheres after bloom and before underwater effects and tone mapping. Both backends
+   share the volume integration shader. Vulkan clips rays against sampled scene depth, using the nearest depth sample
+   at MSAA edges. Voxel-based sun visibility depends on the voxel rendering port.
 3. **Voxel rendering.** Port the occupied-voxel debug view, cached occluder and radiance volumes, emissive and sun
    injection, diffuse bounce propagation, isotropic and six-direction mip chains, full- and half-resolution cone tracing
    and surface-aware composite. Include voxel sun and point-light visibility, grid and memory limits, invalidation,

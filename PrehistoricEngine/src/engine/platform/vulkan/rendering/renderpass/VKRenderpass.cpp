@@ -1,5 +1,9 @@
 #include "Includes.hpp"
 #include "VKRenderpass.h"
+#include "platform/vulkan/rendering/VKRenderer.h"
+#include "platform/vulkan/rendering/VKShadowPass.h"
+#include "platform/vulkan/rendering/VKEnvironmentLighting.h"
+#include "platform/vulkan/buffer/VKBuffer.h"
 #include "prehistoric/core/modules/water/Water.h"
 #include "prehistoric/application/Application.h"
 #include "prehistoric/common/rendering/shaders/Shader.h"
@@ -147,9 +151,10 @@ namespace Prehistoric {
                 0
             },
             {
-                0, VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                0, VK_SUBPASS_EXTERNAL, writes,
                 VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, 0
+                VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+                VK_ACCESS_SHADER_READ_BIT, 0
             }
         };
         VkRenderPassCreateInfo info{VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO};
@@ -176,7 +181,7 @@ namespace Prehistoric {
                                      ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
                                      : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         auto depth = Attachment(swapchain->getDepthImage()->getImageFormat(), samples, VK_ATTACHMENT_LOAD_OP_CLEAR,
-                                VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+                                VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL);
         auto resolved = Attachment(colour.format, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
                                    VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         VkAttachmentDescription attachments[] = {colour, colour, depth, resolved, resolved};
@@ -283,7 +288,7 @@ namespace Prehistoric {
 
     void VKRenderpass::CreatePostProcessing() {
         constexpr uint32_t levels = 8;
-        constexpr uint32_t maxSets = levels * 2 + (levels - 1) + 2;
+        constexpr uint32_t maxSets = levels * 2 + (levels - 1) + 3;
         VkDevice handle = device->getDevice();
         VkExtent2D extent = swapchain->getSwapchainExtent();
         bloomPass = CreateOutputPass(emission->getImageFormat(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -362,8 +367,153 @@ namespace Prehistoric {
         hdrInputs[1] = CreateInputs(scene, source);
     }
 
+    namespace {
+        constexpr size_t MaxVolumeSpheres = 8;
+
+        struct VolumeUniforms {
+            float inverseViewProjection[16];
+            std::array<float, 4> cameraAndCount;
+            std::array<float, 4> bounds[MaxVolumeSpheres];
+            std::array<float, 4> media[MaxVolumeSpheres];
+            float anisotropy[MaxVolumeSpheres];
+        };
+
+        static_assert(sizeof(VolumeUniforms) == 368);
+    }
+
+    void VKRenderpass::CreateVolumePass() {
+        auto handle = device->getDevice();
+        const auto extent = swapchain->getSwapchainExtent();
+        auto view = CreateImage(extent, VK_SAMPLE_COUNT_1_BIT)->getImageView();
+        volumeFramebuffer = CreateFramebuffer(bloomPass, extent, 1, &view)->getFramebuffer();
+        volumeOutput = CreateInputs(view, view);
+
+        VkSamplerCreateInfo nearest{VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
+        nearest.addressModeU = nearest.addressModeV = nearest.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        Check(vkCreateSampler(handle, &nearest, nullptr, &depthSampler));
+
+        const VkDescriptorSetLayoutBinding bindings[] = {
+            {0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+            {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+            {2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+            {7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+            {8, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}
+        };
+        VkDescriptorSetLayoutCreateInfo set{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
+        set.bindingCount = std::size(bindings);
+        set.pBindings = bindings;
+        Check(vkCreateDescriptorSetLayout(handle, &set, nullptr, &volumeSetLayout));
+        const auto count = static_cast<uint32_t>(swapchain->getSwapchainImages().size());
+        const VkDescriptorPoolSize sizes[] = {
+            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3 * count}, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2 * count}
+        };
+        VkDescriptorPoolCreateInfo pool{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
+        pool.maxSets = count;
+        pool.poolSizeCount = std::size(sizes);
+        pool.pPoolSizes = sizes;
+        Check(vkCreateDescriptorPool(handle, &pool, nullptr, &volumePool));
+        std::vector<VkDescriptorSetLayout> layouts(count, volumeSetLayout);
+        VkDescriptorSetAllocateInfo alloc{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
+        alloc.descriptorPool = volumePool;
+        alloc.descriptorSetCount = count;
+        alloc.pSetLayouts = layouts.data();
+        volumeSets.resize(count);
+        Check(vkAllocateDescriptorSets(handle, &alloc, volumeSets.data()));
+        const auto buffer = [&](size_t size) {
+            return std::make_unique<VKBuffer>(device, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                              VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                              VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        };
+        for (auto descriptor: volumeSets) {
+            auto &frame = volumeBuffers.emplace_back(VolumeFrame{
+                buffer(sizeof(VolumeUniforms)), buffer(sizeof(VKShadowPass::Uniforms))
+            });
+            VkDescriptorImageInfo depth{
+                depthSampler, swapchain->getDepthImage()->getImageView(),
+                VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
+            };
+            VkDescriptorBufferInfo media{frame.media->getBuffer(), 0, frame.media->getSize()};
+            VkDescriptorBufferInfo shadows{frame.shadows->getBuffer(), 0, frame.shadows->getSize()};
+            VkWriteDescriptorSet writes[] = {
+                {
+                    VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, descriptor, 0, 0, 1,
+                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, &depth
+                },
+                {
+                    VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, descriptor, 1, 0, 1,
+                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, nullptr, &media
+                },
+                {
+                    VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, descriptor, 8, 0, 1,
+                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, nullptr, &shadows
+                }
+            };
+            vkUpdateDescriptorSets(handle, std::size(writes), writes, 0, nullptr);
+        }
+        const VkDescriptorSetLayout inputs[] = {hdrSetLayout, volumeSetLayout};
+        VkPushConstantRange range{VK_SHADER_STAGE_FRAGMENT_BIT, 0, 4 * sizeof(float)};
+        VkPipelineLayoutCreateInfo layout{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
+        layout.setLayoutCount = std::size(inputs);
+        layout.pSetLayouts = inputs;
+        layout.pushConstantRangeCount = 1;
+        layout.pPushConstantRanges = &range;
+        Check(vkCreatePipelineLayout(handle, &layout, nullptr, &volumeLayout));
+        const char *fragment = swapchain->getSceneSamples() == VK_SAMPLE_COUNT_1_BIT
+                                   ? "vulkan/postProcessing/volumetric_FS.spv"
+                                   : "vulkan/postProcessing/volumetric_ms_FS.spv";
+        volumePipeline = CreateFullscreenPipeline("vulkan/postProcessing/hdr_VS.spv", fragment, volumeLayout,
+                                                  bloomPass);
+    }
+
+    void VKRenderpass::UpdateVolumeInputs(VKRenderer &renderer) {
+        const auto index = swapchain->getAquiredImageIndex();
+        auto &frame = volumeBuffers[index];
+        const auto *camera = renderer.getCamera();
+        VolumeUniforms uniforms{};
+        const auto inverse = camera->getViewProjectionMatrix().Invert();
+        std::copy_n(inverse.m, 16, uniforms.inverseViewProjection);
+        const auto &spheres = renderer.getVolumetricSpheres();
+        const auto count = std::min(spheres.size(), MaxVolumeSpheres);
+        const auto eye = camera->getPosition();
+        uniforms.cameraAndCount = {eye.x, eye.y, eye.z, static_cast<float>(count)};
+        for (size_t i = 0; i < count; ++i) {
+            const auto &sphere = spheres[i];
+            uniforms.bounds[i] = {sphere.center.x, sphere.center.y, sphere.center.z, sphere.radius};
+            uniforms.media[i] = {
+                sphere.scatteringTint.x, sphere.scatteringTint.y, sphere.scatteringTint.z, sphere.density
+            };
+            uniforms.anisotropy[i] = sphere.anisotropy;
+        }
+        frame.media->MapMemory();
+        frame.media->Store(&uniforms);
+        frame.media->UnmapMemory();
+        auto shadowUniforms = renderer.GetShadows().GetUniforms();
+        frame.shadows->MapMemory();
+        frame.shadows->Store(&shadowUniforms);
+        frame.shadows->UnmapMemory();
+
+        auto irradiance = renderer.getEnvironmentLighting()->getIrradiance();
+        auto shadowMap = renderer.GetShadows().GetDepth();
+        VkWriteDescriptorSet writes[] = {
+            {
+                VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, volumeSets[index], 2, 0, 1,
+                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, &irradiance
+            },
+            {
+                VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, volumeSets[index], 7, 0, 1,
+                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, &shadowMap
+            }
+        };
+        vkUpdateDescriptorSets(device->getDevice(), std::size(writes), writes, 0, nullptr);
+    }
+
     VKRenderpass::~VKRenderpass() {
         VkDevice handle = device->getDevice();
+        vkDestroyPipeline(handle, volumePipeline, nullptr);
+        vkDestroyPipelineLayout(handle, volumeLayout, nullptr);
+        vkDestroyDescriptorPool(handle, volumePool, nullptr);
+        vkDestroyDescriptorSetLayout(handle, volumeSetLayout, nullptr);
+        vkDestroySampler(handle, depthSampler, nullptr);
         waterTargets.clear();
         framebuffers.clear();
         vkDestroyRenderPass(handle, editorPass, nullptr);
@@ -397,10 +547,12 @@ namespace Prehistoric {
         vkCmdSetScissor(commandBuffer->getCommandBuffer(), 0, 1, &info.renderArea);
     }
 
-    void VKRenderpass::RenderHDR(VKCommandBuffer *commandBuffer, bool bloomEnabled, bool underwater) {
+    void VKRenderpass::RenderHDR(VKCommandBuffer *commandBuffer, VKRenderer &renderer, bool bloomEnabled,
+                                 bool underwater) {
         VkCommandBuffer command = commandBuffer->getCommandBuffer();
         vkCmdEndRenderPass(command);
-        auto draw = [&](VkRenderPass pass, VkPipeline pipeline, const BloomDraw &draw) {
+        auto draw = [&](VkRenderPass pass, VkPipeline pipeline, const BloomDraw &draw,
+                        VkDescriptorSet volumes = VK_NULL_HANDLE) {
             VkRenderPassBeginInfo info{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
             info.renderPass = pass;
             info.framebuffer = draw.framebuffer;
@@ -410,9 +562,11 @@ namespace Prehistoric {
             vkCmdSetViewport(command, 0, 1, &viewport);
             vkCmdSetScissor(command, 0, 1, &info.renderArea);
             vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-            vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, hdrLayout, 0, 1, &draw.inputs, 0,
+            const VkDescriptorSet sets[] = {draw.inputs, volumes};
+            const auto layout = volumes ? volumeLayout : hdrLayout;
+            vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, volumes ? 2 : 1, sets, 0,
                                     nullptr);
-            vkCmdPushConstants(command, hdrLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(draw.settings),
+            vkCmdPushConstants(command, layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(draw.settings),
                                draw.settings);
             vkCmdDraw(command, 3, 1, 0, 0);
         };
@@ -424,13 +578,26 @@ namespace Prehistoric {
         }
         auto extent = swapchain->getSwapchainExtent();
         auto framebuffer = presentFramebuffers[swapchain->getAquiredImageIndex()];
+        auto inputs = hdrInputs[bloomEnabled];
+        bool addBloom = bloomEnabled;
+        if (!renderer.getVolumetricSpheres().empty()) {
+            if (!volumePipeline) CreateVolumePass();
+            UpdateVolumeInputs(renderer);
+            draw(bloomPass, volumePipeline, {
+                     volumeFramebuffer, extent, inputs,
+                     {float(bloomEnabled), float(swapchain->getSceneSamples())}
+                 }, volumeSets[swapchain->getAquiredImageIndex()]);
+            vkCmdEndRenderPass(command);
+            inputs = volumeOutput;
+            addBloom = false;
+        }
         draw(editorOutput ? editorPass : presentPass, hdrPipeline,
              {
                  editorOutput ? editorFramebuffer : framebuffer, extent,
-                 hdrInputs[bloomEnabled], {
+                 inputs, {
                      __EngineConfig.rendererExposure,
                      VKPBRShaderGamma(swapchain->getSwapchainImageFormat(), __EngineConfig.rendererGamma),
-                     float(bloomEnabled), float(underwater)
+                     float(addBloom), float(underwater)
                  }
              });
         if (editorOutput) {

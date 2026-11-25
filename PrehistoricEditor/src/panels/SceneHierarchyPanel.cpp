@@ -335,9 +335,6 @@ void SceneHierarchyPanel::DrawComponents(Prehistoric::GameObject *object) {
         if (ImGui::DragFloat("Density", &density, 0.001f, 0.0f, 0.0f, "%.4f")) sphere->setDensity(density);
         if (ImGui::ColorEdit3("Tint", colour)) sphere->setTint({colour[0], colour[1], colour[2]});
         if (ImGui::SliderFloat("Anisotropy", &anisotropy, -0.95f, 0.95f)) sphere->setAnisotropy(anisotropy);
-        if (__FrameworkConfig.api != Prehistoric::OpenGL) {
-            ImGui::TextUnformatted("Volume preview requires OpenGL.");
-        }
     });
 
     ImGui::PopItemWidth();

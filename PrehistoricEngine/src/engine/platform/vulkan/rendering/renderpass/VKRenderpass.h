@@ -10,6 +10,8 @@
 
 namespace Prehistoric {
     class Water;
+    class VKBuffer;
+    class VKRenderer;
     class VKSwapchain;
     class VKImage;
 
@@ -34,7 +36,7 @@ namespace Prehistoric {
         Texture *getEditorOutput() const { return editorOutput.get(); }
         VkRenderPass getPresentPass() const { return presentPass; }
 
-        void RenderHDR(VKCommandBuffer *commandBuffer, bool bloomEnabled, bool underwater = false);
+        void RenderHDR(VKCommandBuffer *commandBuffer, VKRenderer &renderer, bool bloomEnabled, bool underwater);
 
         VkPipeline CreateFullscreenPipeline(const char *vertexPath, const char *fragmentPath, VkPipelineLayout layout,
                                             VkRenderPass postPass = VK_NULL_HANDLE);
@@ -50,6 +52,26 @@ namespace Prehistoric {
         };
 
         void CreateScenePass();
+
+        void CreateVolumePass();
+
+        void UpdateVolumeInputs(VKRenderer &renderer);
+
+        VkDescriptorSetLayout volumeSetLayout{};
+        VkPipelineLayout volumeLayout{};
+        VkPipeline volumePipeline{};
+        VkDescriptorPool volumePool{};
+        VkSampler depthSampler{};
+        VkFramebuffer volumeFramebuffer{};
+        VkDescriptorSet volumeOutput{};
+        std::vector<VkDescriptorSet> volumeSets;
+
+        struct VolumeFrame {
+            std::unique_ptr<VKBuffer> media;
+            std::unique_ptr<VKBuffer> shadows;
+        };
+
+        std::vector<VolumeFrame> volumeBuffers;
 
         void CreatePostProcessing();
 
