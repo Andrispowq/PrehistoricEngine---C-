@@ -1,0 +1,90 @@
+{
+    "name": "Sponza Emissive Voxel GI",
+    "initial_camera": {
+        "position": [-21, -42, -3],
+        "forward": [-1, 0.08, 0],
+        "up": [0.08, 1, 0]
+    },
+    "directories": {"models": "", "textures": ""},
+    "models": [
+        {"name": "sponza", "directory": "sample://models/sponza.obj", "front-face": 0},
+        {"name": "cube", "directory": "engine://models/cube.obj", "front-face": 1}
+    ],
+    "textures": [],
+    "materials": [
+        {
+            "name": "stone",
+            "contents": [
+                {"name": "colour", "type": "vec3", "value": [0.64, 0.53, 0.23]},
+                {"name": "mrot", "type": "vec4", "value": [1.0, 0.3, 1.0, 0.0]}
+            ]
+        },
+        {
+            "name": "amber_emitter",
+            "contents": [
+                {"name": "colour", "type": "vec3", "value": [1.0, 0.36, 0.07]},
+                {"name": "mrot", "type": "vec4", "value": [0.0, 0.65, 1.0, 0.0]},
+                {"name": "emission", "type": "float", "value": 40.0}
+            ]
+        },
+        {
+            "name": "cyan_emitter",
+            "contents": [
+                {"name": "colour", "type": "vec3", "value": [0.06, 0.65, 1.0]},
+                {"name": "mrot", "type": "vec4", "value": [0.0, 0.65, 1.0, 0.0]},
+                {"name": "emission", "type": "float", "value": 40.0}
+            ]
+        },
+        {
+            "name": "green_emitter",
+            "contents": [
+                {"name": "colour", "type": "vec3", "value": [0.08, 1.0, 0.17]},
+                {"name": "mrot", "type": "vec4", "value": [0.0, 0.65, 1.0, 0.0]},
+                {"name": "emission", "type": "float", "value": 40.0}
+            ]
+        }
+    ],
+    "world_objects": [
+        {"name": "atmosphere", "type": "scattering_atmosphere", "sun": "sun"}
+    ],
+    "root": {
+        "children": [
+            {
+                "name": "Sponza",
+                "transform": {"position": [0, -50, 0], "scaling": [0.1, 0.1, 0.1]},
+                "components": [
+                    {"type": "Renderer", "model": "sponza", "shader": "pbr", "material": "stone"}
+                ]
+            },
+            {
+                "name": "sun",
+                "transform": {"position": [8000, 30000, -8000]},
+                "components": [
+                    {"type": "Light", "colour": [1, 0.95, 0.87], "intensity": 0.8, "range": 50000, "illuminate": false, "cast_shadows": true}
+                ]
+            },
+            {
+                "name": "Amber Cube Behind Red Curtain",
+                "transform": {"position": [30, -46.25, -37], "scaling": [4, 4, 4]},
+                "components": [
+                    {"type": "Renderer", "model": "cube", "shader": "pbr", "material": "amber_emitter"}
+                ]
+            },
+            {
+                "name": "Cyan Cube Behind Green Curtain",
+                "transform": {"position": [30, -46.25, 29], "scaling": [4, 4, 4]},
+                "components": [
+                    {"type": "Renderer", "model": "cube", "shader": "pbr", "material": "cyan_emitter"}
+                ]
+            },
+            {
+                "name": "Green Cube on Upper Side Aisle",
+                "transform": {"position": [30, -4, -44], "scaling": [3.5, 3.5, 3.5]},
+                "components": [
+                    {"type": "Renderer", "model": "cube", "shader": "pbr", "material": "green_emitter"}
+                ]
+            }
+        ]
+    }
+}
+

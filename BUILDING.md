@@ -455,21 +455,33 @@ and run from `Prehistoric/`. Press **V** to display occupied voxels, **G** to to
 one-bounce diffuse GI, and **B** to cycle between 64³, 128³, and 256³ grids.
 The debug view takes precedence while both modes are enabled.
 
+For an emissive GI comparison, launch
+`PREHISTORIC_WORLD=res/world/sponza_gi.json`. Two emissive cubes sit at floor
+level behind the red and green curtains in opposite side aisles. A third,
+green emitter sits in the top-floor side aisle above the amber cube. Toggle
+**G** to compare the light on nearby stone. Toggle
+**K** to disable bloom for the comparison.
+
 In the OpenGL editor, use **Render Settings** to set those options, the voxel
-volume center and width, and GI strength. Voxel size is the volume width divided
+volume center and width, and GI strength. **GI Trace Depth** displays the fixed
+one-bounce depth. Voxel size is the volume width divided
 by grid resolution. The default 400-unit cube is centered at the origin and
 covers the Sponza test world. Use a tighter volume for smaller scenes. Voxel
 settings are local to the renderer session. The menu also exposes the existing
 wireframe and bloom toggles.
 
-The volume is rebuilt from opaque meshes while a voxel mode is active.
-The debug view reads the mesh occupancy and colour grid directly. GI injects
-the shadow-casting sun and material emission, then adds diffuse indirect
-light before bloom, volumetrics, and tone mapping. Terrain and water patches
-can receive the screen-space GI contribution through their surface buffers,
-while only opaque meshes populate the volume. Thin geometry can produce gaps
-at coarse resolutions. The 256³ grid uses 64 MiB for occupancy and about
-210 MiB with the additional mipmapped radiance texture for GI.
+OpenGL caches the debug and GI volumes independently. Grid bounds, resolution,
+and changes to opaque mesh submissions, transforms, or sampled materials can
+invalidate a bake. Camera movement reuses the debug volume. GI injects the
+shadow-casting sun and emission, so changes to lighting or the camera-relative
+shadow cascades can invalidate the radiance bake. Changing GI strength affects
+the fullscreen composite only. The debug ray march and GI cone tracing still
+run every displayed frame.
+
+Terrain and water patches can receive the screen-space GI contribution through
+their surface buffers, while only opaque meshes populate the volume. Thin
+geometry can produce gaps at coarse resolutions. At 256³ the debug cache uses
+64 MiB, and GI uses about 210 MiB including its packed work texture.
 
 ## CPU math tests and CI
 

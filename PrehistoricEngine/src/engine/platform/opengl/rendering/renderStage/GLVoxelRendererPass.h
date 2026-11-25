@@ -11,6 +11,9 @@ namespace Prehistoric
     public:
         struct Settings
         {
+            // The composite traces directly injected radiance for one diffuse bounce.
+            static constexpr int TraceDepth = 1;
+
             bool debugView = false;
             bool globalIllumination = false;
             int resolutionIndex = 1;
@@ -34,7 +37,11 @@ namespace Prehistoric
 
     private:
         bool Initialise();
-        void AllocateVolume(int resolution);
+        void SetResolution(int size);
+        GLuint GetPackedVolume(GLuint& texture);
+
+        struct BakeCache;
+        std::unique_ptr<BakeCache> cache;
         void AllocateRadianceVolume();
 
         Settings settings;
@@ -42,7 +49,8 @@ namespace Prehistoric
         bool ready = false;
         int resolution = 0;
         GLuint framebuffer = 0;
-        GLuint packedVolume = 0;
+        GLuint debugVolume = 0;
+        GLuint packedRadiance = 0;
         GLuint radianceVolume = 0;
         ShaderHandle voxelisationShader;
         std::unique_ptr<GLShader> resolveShader;
