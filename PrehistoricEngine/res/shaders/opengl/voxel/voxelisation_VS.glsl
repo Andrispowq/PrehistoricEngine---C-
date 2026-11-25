@@ -1,23 +1,21 @@
-#version 460
+#version 450 core
 
-layout(location = 0) in vec3 position_VS;
-layout(location = 1) in vec2 texture_VS;
-layout(location = 2) in vec3 normal_VS;
-layout(location = 3) in vec3 tangent_VS;
-
-out vec3 position_GS;
-out vec3 normal_GS;
+layout(location = 0) in vec3 position;
+layout(location = 1) in vec2 uv;
+layout(location = 2) in vec3 normal;
 
 uniform mat4 m_transform;
-uniform mat4 m_view;
-uniform mat4 m_projection;
+out Vertex
+{
+    vec3 position;
+    vec3 normal;
+    vec2 uv;
+} vertex;
 
 void main()
 {
-	vec4 worldPosition = m_transform * vec4(position_VS, 1.0);
-	vec4 positionViewSpace = m_view * worldPosition;
-	gl_Position = m_projection * positionViewSpace;
-
-	position_GS = worldPosition.xyz;
-	normal_GS = normalize(mat3(transpose(inverse(m_transform))) * normal_VS);
+    vertex.position = (m_transform * vec4(position, 1.0)).xyz;
+    vertex.normal = transpose(inverse(mat3(m_transform))) * normal;
+    vertex.uv = uv;
+    gl_Position = vec4(vertex.position, 1.0);
 }

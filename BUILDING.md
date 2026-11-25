@@ -446,6 +446,27 @@ In the OpenGL editor, loading an HDR file selects it as the lighting source.
 Regenerate returns to the scene source. Both actions request a bake on the next
 rendered frame and bypass the refresh interval.
 
+## OpenGL voxel rendering
+
+Select OpenGL 4.5 or later in the application settings. In the sample launcher,
+set `PREHISTORIC_WORLD=res/world/sponza_volumetric.json` and run from
+`Prehistoric/`. Press **V** to display occupied voxels, **G** to toggle
+one-bounce diffuse GI, and **B** to cycle between 64³, 128³, and 256³ grids.
+The debug view takes precedence while both modes are enabled.
+
+In the OpenGL editor, use **Render Settings** to set those options, the voxel
+volume center and width, and GI strength. Voxel size is the volume width divided
+by grid resolution. The default 400-unit cube is centered at the origin and
+covers the Sponza test world. Use a tighter volume for smaller scenes. Voxel
+settings are local to the renderer session. The menu also exposes the existing
+wireframe and bloom toggles.
+
+The volume is rebuilt from opaque mesh submissions while a voxel mode is active.
+GI injects the shadow-casting sun and material emission, then adds diffuse
+indirect light before bloom, volumetrics, and tone mapping. Thin geometry can
+produce gaps at coarse resolutions, and the 256³ grid uses about 210 MiB for
+occupancy and mipmapped radiance.
+
 ## CPU math tests and CI
 
 The first unit-test milestone uses Catch2 3.8.1 and CTest. Generate the build graph

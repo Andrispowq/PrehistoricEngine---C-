@@ -1,4 +1,5 @@
 #include "Includes.hpp"
+#include "imgui.h"
 #include "RenderingEngine.h"
 
 #include "platform/opengl/rendering/GLRenderer.h"
@@ -95,6 +96,16 @@ namespace Prehistoric
 		if (InputInstance.IsKeyPushed(PR_KEY_E))
 		{
 			renderer->setWireframeMode(!renderer->isWireframeMode());
+		}
+
+		auto* glRenderer = dynamic_cast<GLRenderer*>(renderer.get());
+		if (glRenderer && glRenderer->getVoxelPass()->IsSupported()
+			&& (!ImGui::GetCurrentContext() || !ImGui::GetIO().WantCaptureKeyboard))
+		{
+			auto& settings = glRenderer->getVoxelPass()->GetSettings();
+			if (InputInstance.IsKeyPushed(PR_KEY_V)) settings.debugView = !settings.debugView;
+			if (InputInstance.IsKeyPushed(PR_KEY_G)) settings.globalIllumination = !settings.globalIllumination;
+			if (InputInstance.IsKeyPushed(PR_KEY_B)) settings.resolutionIndex = (settings.resolutionIndex + 1) % 3;
 		}
 
 		defaultCamera->Update(window.get(), delta);

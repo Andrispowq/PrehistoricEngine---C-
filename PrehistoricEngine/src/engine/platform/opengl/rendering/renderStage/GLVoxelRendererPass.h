@@ -2,39 +2,51 @@
 #define GL_VOXEL_RENDERER_PASS_H
 
 #include "prehistoric/common/rendering/renderStage/RenderStage.h"
-#include "prehistoric/common/rendering/pipeline/Pipeline.h"
-
-#include "platform/opengl/rendering/pipeline/GLGraphicsPipeline.h"
-#include "platform/opengl/rendering/framebuffer/GLFramebuffer.h"
-#include "platform/opengl/texture/GLTexture.h"
-#include "platform/opengl/buffer/GLShaderStorageBuffer.h"
+#include "platform/opengl/rendering/shaders/GLShader.h"
 
 namespace Prehistoric
 {
-	class GLVoxelRendererPass : public RenderStage
-	{
-	public:
-		GLVoxelRendererPass(Renderer* renderer);
-		virtual ~GLVoxelRendererPass();
+    class GLVoxelRendererPass : public RenderStage
+    {
+    public:
+        struct Settings
+        {
+            bool debugView = false;
+            bool globalIllumination = false;
+            int resolutionIndex = 1;
+            Vector3f center = Vector3f(0);
+            float extent = 400.0f;
+            float giStrength = 1.0f;
+        };
 
-		virtual void OnResized() override;
-		virtual void Render() override;
+        static constexpr int Resolutions[] = {64, 128, 256};
 
-		TextureHandle getVoxelImage() const { return voxelImage; }
-		TextureHandle getOutputImage() const { return outputImage; }
+        explicit GLVoxelRendererPass(Renderer* renderer);
+        ~GLVoxelRendererPass() override;
 
-	private:
-		const static int voxel_size = 64;
+        void OnResized() override {}
+        void Render() override;
+        void Composite(Texture* output) const;
 
-		std::unique_ptr<GLFramebuffer> voxel_fbo;
-		std::unique_ptr<GLFramebuffer> fbo;
+        bool IsSupported() const { return GLAD_GL_VERSION_4_5; }
+        bool IsReady() const { return ready; }
+        Settings& GetSettings() { return settings; }
 
-		TextureHandle voxelImage;
-		TextureHandle outputImage;
+    private:
+        bool Initialise();
+        void AllocateVolume(int resolution);
 
-		ShaderHandle voxelisationShader;
-		ShaderHandle coneTracingShader;
-	};
+        Settings settings;
+        bool initialisationAttempted = false;
+        bool ready = false;
+        int resolution = 0;
+        GLuint framebuffer = 0;
+        GLuint packedVolume = 0;
+        GLuint radianceVolume = 0;
+        ShaderHandle voxelisationShader;
+        std::unique_ptr<GLShader> resolveShader;
+        std::unique_ptr<GLShader> compositeShader;
+    };
 }
 
 #endif

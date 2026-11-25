@@ -62,8 +62,6 @@ namespace Prehistoric {
             volumetricPostProcessingPass->OnResized();
             hdrPass->OnResized();
 
-            voxelPass->OnResized();
-
             rtxPass->OnResized();
 
             window->getSwapchain()->SetWindowSize(width, height);
@@ -121,6 +119,9 @@ namespace Prehistoric {
         shadowDepthPass->Render();
         renderingShadow = false;
 
+        voxelPass->Render();
+        if (voxelPass->IsReady() && voxelPass->GetSettings().debugView) return;
+
         lightCullingPass->Render();
         for (Water *water: waters) {
             water->RenderCaptures(this);
@@ -139,6 +140,17 @@ namespace Prehistoric {
     }
 
     void GLRenderer::RenderHDR() {
+        if (voxelPass->IsReady())
+        {
+            const auto& settings = voxelPass->GetSettings();
+            if (settings.debugView)
+            {
+                voxelPass->Composite(getOutputTexture());
+                return;
+            }
+            if (settings.globalIllumination)
+                voxelPass->Composite(mainPass->getColourImage().pointer);
+        }
         if (bloomEnabled) {
             bloomPass->Render();
         }

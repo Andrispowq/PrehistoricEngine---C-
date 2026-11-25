@@ -1,6 +1,7 @@
 #include "EditorLayer.h"
 
 #include "prehistoric/application/Application.h"
+#include "platform/opengl/rendering/GLRenderer.h"
 
 #include "imgui.h"
 #include "imgui_internal.h"
@@ -88,6 +89,7 @@ void EditorLayer::ImGUIRender() {
 
     style.WindowMinSize.x = minWinSizeX;
 
+    auto* renderer = Prehistoric::Application::Get().getEngineLayer()->getRenderingEngine()->getRenderer();
     if (ImGui::BeginMenuBar()) {
         if (ImGui::BeginMenu("File")) {
             // Disabling fullscreen would allow the window to be moved to the front of other windows, 
@@ -98,6 +100,29 @@ void EditorLayer::ImGUIRender() {
             if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S")) SaveButton();
             if (ImGui::MenuItem("Exit")) QuitButton();
 
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Render Settings"))
+        {
+            bool wireframe = renderer->isWireframeMode();
+            if (ImGui::Checkbox("Wireframe (E)", &wireframe)) renderer->setWireframeMode(wireframe);
+            bool bloom = renderer->isBloomEnabled();
+            if (ImGui::Checkbox("Bloom (K)", &bloom)) renderer->setBloomEnabled(bloom);
+
+            auto* gl = dynamic_cast<Prehistoric::GLRenderer*>(renderer);
+            if (gl && gl->getVoxelPass()->IsSupported())
+            {
+                auto& settings = gl->getVoxelPass()->GetSettings();
+                ImGui::Separator();
+                ImGui::Checkbox("Voxel View (V)", &settings.debugView);
+                ImGui::Checkbox("Voxel GI (G)", &settings.globalIllumination);
+                ImGui::Combo("Voxel Resolution (B)", &settings.resolutionIndex, "64 cubed\0" "128 cubed\0" "256 cubed\0");
+                ImGui::DragFloat3("Volume Center", &settings.center.x, 1.0f);
+                ImGui::DragFloat("Volume Width", &settings.extent, 1.0f, 1.0f, 100000.0f, "%.1f", ImGuiSliderFlags_AlwaysClamp);
+                ImGui::SliderFloat("GI Strength", &settings.giStrength, 0.0f, 4.0f);
+                ImGui::Text("Voxel size %.2f", settings.extent / Prehistoric::GLVoxelRendererPass::Resolutions[settings.resolutionIndex]);
+            }
             ImGui::EndMenu();
         }
 
@@ -122,7 +147,6 @@ void EditorLayer::ImGUIRender() {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0, 0});
     ImGui::Begin("Environment map configurations");
 
-    auto *renderer = Prehistoric::Application::Get().getEngineLayer()->getRenderingEngine()->getRenderer();
     auto *ui = Prehistoric::Application::Get().getImGuiLayer();
     if (ImGui::Button("Load environment map")) {
         std::optional<std::string> path = Prehistoric::FileDialogues::Get()->OpenFile(

@@ -53,7 +53,9 @@ namespace Prehistoric {
 
         void Render();
 
-        void ToggleBloom() { bloomEnabled = !bloomEnabled; }
+        bool isBloomEnabled() const { return bloomEnabled; }
+        void setBloomEnabled(bool enabled) { bloomEnabled = enabled; }
+        void ToggleBloom() { setBloomEnabled(!isBloomEnabled()); }
 
         virtual CommandBuffer *getDrawCommandBuffer() const { return nullptr; }
 

@@ -2,117 +2,40 @@
 #include "GLVoxelisationShader.h"
 
 #include "prehistoric/application/Application.h"
+#include "prehistoric/core/model/material/Material.h"
 
 namespace Prehistoric
 {
-	GLVoxelisationShader::GLVoxelisationShader() : GLShader()
-	{
-		AddShader(ResourceLoader::LoadShaderGL("opengl/voxel/voxelisation_VS.glsl"), VERTEX_SHADER);
-		AddShader(ResourceLoader::LoadShaderGL("opengl/voxel/voxelisation_GS.glsl"), GEOMETRY_SHADER);
-		AddShader(ResourceLoader::LoadShaderGL("opengl/voxel/voxelisation_FS.glsl"), FRAGMENT_SHADER);
-		CompileShader();
+    GLVoxelisationShader::GLVoxelisationShader()
+    {
+        AddShader(ResourceLoader::LoadShaderGL("opengl/voxel/voxelisation_VS.glsl"), VERTEX_SHADER);
+        AddShader(ResourceLoader::LoadShaderGL("opengl/voxel/voxelisation_GS.glsl"), GEOMETRY_SHADER);
+        AddShader(ResourceLoader::LoadShaderGL("opengl/voxel/voxelisation_FS.glsl"), FRAGMENT_SHADER);
+        CompileShader();
 
-		m_transform = glGetUniformLocation(program, "m_transform");
-		AddUniform("m_view");
-		AddUniform("m_projection");
+        for (const char* uniform : {"m_transform", "volumeMin", "volumeExtent", "albedo", "hasAlbedoMap", "emission"})
+            AddUniform(uniform);
+        AddShadowUniforms();
+    }
 
-		AddUniform("cameraPosition");
-		/*AddUniform("highDetailRange");
+    void GLVoxelisationShader::UpdateGlobalUniforms(Renderer* renderer) const
+    {
+        BindShadowUniforms(renderer, 1);
+    }
 
-		albedoMap = glGetUniformLocation(program, (std::string("material.") + ALBEDO_MAP).c_str());
-		normalMap = glGetUniformLocation(program, (std::string("material.") + NORMAL_MAP).c_str());
-		mrotMap = glGetUniformLocation(program, (std::string("material.") + MROT_MAP).c_str());
+    void GLVoxelisationShader::UpdateMaterialUniforms(Material* material, uint32_t descriptorIndex) const
+    {
+        const Vector3f colour = material ? material->getVector3f(COLOUR) : Vector3f(-1);
+        Texture* albedoMap = material && material->exists(ALBEDO_MAP) ? material->getTexture(ALBEDO_MAP) : nullptr;
+        const bool useTexture = colour.x < 0.0f && albedoMap;
+        if (useTexture) albedoMap->Bind(0);
+        SetUniformi("hasAlbedoMap", useTexture);
+        SetUniform("albedo", colour.x < 0.0f ? Vector3f(1) : colour);
+        SetUniformf("emission", material ? std::max(0.0f, material->getFloat(EMISSION)) : 0.0f);
+    }
 
-		colour = glGetUniformLocation(program, (std::string("material.") + COLOUR).c_str());
-		usesNormalMap = glGetUniformLocation(program, (std::string("material.") + USES_NORMAL_MAP).c_str());
-		mrot = glGetUniformLocation(program, (std::string("material.") + MROT).c_str());
-		emission = glGetUniformLocation(program, (std::string("material.") + EMISSION).c_str());
-
-		AddUniform("irradianceMap");
-		AddUniform("prefilterMap");
-		AddUniform("brdfLUT");
-
-		AddUniform("numberOfTilesX");
-		AddUniform("max_reflection_lod");*/
-
-
-		AddUniform("material.diffuseColour");
-		AddUniform("material.specularColour");
-		AddUniform("material.diffuseReflectivity");
-		AddUniform("material.specularReflectivity");
-		AddUniform("material.emissivity");
-		AddUniform("material.transparency");
-
-		AddUniform("pointLights[0].position");
-		AddUniform("pointLights[0].colour");
-		AddUniform("pointLights[0].intensity");
-
-		AddUniform("numberOfLights");
-		AddUniform("farPlane");
-		AddUniform("texture3D");
-	}
-
-	void GLVoxelisationShader::UpdateGlobalUniforms(Renderer* renderer) const
-	{
-		Camera* camera = renderer->getCamera();
-		const std::vector<Light*>& lights = renderer->getLights();
-
-		SetUniform("m_view", camera->getViewMatrix());
-		SetUniform("m_projection", camera->getProjectionMatrix());
-		SetUniform("cameraPosition", camera->getPosition());
-		/*SetUniformi("highDetailRange", __EngineConfig.rendererHighDetailRange);
-
-		BindEnvironmentLighting(renderer, 4);
-
-		SetUniformi("numberOfTilesX", __FrameworkConfig.windowWidth / 16);
-		SetUniformf("max_reflection_lod", __EnvironmentMapConfig.prefilterLevels - 1.0f);*/
-
-		SetUniform("pointLights[0].position", Vector3f(0, 50, 0));
-		SetUniform("pointLights[0].colour", Vector3f(1, 1, 1));
-		SetUniformf("pointLights[0].intensity", 4000);
-
-		SetUniformi("numberOfLights", 1);
-		SetUniformf("farPlane", __EngineConfig.rendererFarPlane);
-		SetUniformi("texture3D", 0); //It will be bound as tex num 0
-	}
-
-	void GLVoxelisationShader::UpdateMaterialUniforms(Material* material, uint32_t descriptor_index) const
-	{
-		/*material->getTexture(ALBEDO_MAP)->Bind(0);
-		SetUniformi(albedoMap, 0);
-		material->getTexture(NORMAL_MAP)->Bind(1);
-		SetUniformi(normalMap, 1);
-		material->getTexture(MROT_MAP)->Bind(2);
-		SetUniformi(mrotMap, 2);
-
-		SetUniform(colour, material->getVector3f(COLOUR));
-		SetUniformi(usesNormalMap, material->exists(NORMAL_MAP));
-		SetUniform(mrot, material->getVector4f(MROT));
-		SetUniformf(emission, material->getFloat(EMISSION));*/
-
-		Vector3f diffuse = material->getVector3f(COLOUR);
-		if (diffuse == -1)
-		{
-			diffuse = Vector3f(1, 0, 0);
-		}
-
-		Vector4f mrot = material->getVector4f(MROT);
-		if (mrot == -1)
-		{
-			mrot = Vector4f(0.5f, 0.5f, 0.0f, 1.0f);
-		}
-
-		SetUniform("material.diffuseColour", diffuse);
-		SetUniform("material.specularColour", diffuse);
-		SetUniformf("material.diffuseReflectivity", mrot.r);
-		SetUniformf("material.specularReflectivity", mrot.g);
-		float emission = material->getFloat(EMISSION);
-		SetUniformf("material.emissivity", (emission < 0.0f) ? 0.0f : emission);
-		SetUniformf("material.transparency", 0.0f);
-	}
-
-	void GLVoxelisationShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const
-	{
-		SetUniform(m_transform, object->getWorldTransform().getTransformationMatrix());
-	}
+    void GLVoxelisationShader::UpdateObjectUniforms(GameObject* object, uint32_t instanceIndex) const
+    {
+        SetUniform("m_transform", object->getWorldTransform().getTransformationMatrix());
+    }
 }

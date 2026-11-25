@@ -2,168 +2,181 @@
 #include "GLVoxelRendererPass.h"
 
 #include "platform/opengl/rendering/GLRenderer.h"
-#include "prehistoric/application/Application.h"
-#include "prehistoric/core/node/component/renderer/RendererComponent.h"
-
-#include "platform/opengl/texture/GLTexture.h"
-#include "platform/opengl/rendering/pipeline/GLGraphicsPipeline.h"
+#include "platform/opengl/rendering/shaders/voxel/GLVoxelisationShader.h"
+#include "prehistoric/common/buffer/MeshVertexBuffer.h"
+#include "prehistoric/core/node/component/renderer/RenderableComponent.h"
 
 namespace Prehistoric
 {
-	GLVoxelRendererPass::GLVoxelRendererPass(Renderer* renderer)
-		: RenderStage(renderer), fbo{ nullptr }, voxel_fbo{ nullptr }
-	{
-		uint32_t width = window->getWidth();
-		uint32_t height = window->getHeight();
+    GLVoxelRendererPass::GLVoxelRendererPass(Renderer* renderer)
+        : RenderStage(renderer)
+    {
+    }
 
-		AssetManager* man = manager->getAssetManager();
-		voxelImage = man->storeTexture(GLTexture::StorageTrue3D(voxel_size, voxel_size, voxel_size, R8G8B8A8_LINEAR, Trilinear, ClampToEdge, true));
-		outputImage = man->storeTexture(GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge));
-		man->addReference<Texture>(voxelImage.handle);
+    GLVoxelRendererPass::~GLVoxelRendererPass()
+    {
+        if (voxelisationShader.pointer)
+            manager->getAssetManager()->removeReference<Shader>(voxelisationShader.handle);
+        if (framebuffer) glDeleteFramebuffers(1, &framebuffer);
+        if (packedVolume) glDeleteTextures(1, &packedVolume);
+        if (radianceVolume) glDeleteTextures(1, &radianceVolume);
+    }
 
-		voxel_fbo = std::make_unique<GLFramebuffer>(window);
-		voxel_fbo->Bind();
-		voxel_fbo->addDepthAttachment(voxel_size, voxel_size, true);
-		voxel_fbo->Check();
-		voxel_fbo->Unbind();
+    bool GLVoxelRendererPass::Initialise()
+    {
+        if (initialisationAttempted) return ready;
+        initialisationAttempted = true;
 
-		fbo = std::make_unique<GLFramebuffer>(window);
-		fbo->Bind();
-		fbo->addDepthAttachment(width, height, true);
-		fbo->addColourAttachment2D(outputImage.pointer);
-		fbo->Check();
-		fbo->Unbind();
+        AssetManager* assets = manager->getAssetManager();
+        auto shader = assets->loadShader(ShaderName::Voxelisation);
+        if (!shader) return false;
+        voxelisationShader = *shader;
+        assets->addReference<Shader>(voxelisationShader.handle);
 
-		voxelisationShader = man->loadShader(ShaderName::Voxelisation).value();
-		coneTracingShader = man->loadShader(ShaderName::ConeTracing).value();
-		man->addReference<Shader>(voxelisationShader.handle);
-		man->addReference<Shader>(coneTracingShader.handle);
-	}
+        resolveShader = std::make_unique<GLShader>();
+        compositeShader = std::make_unique<GLShader>();
+        if (!resolveShader->AddShader(ResourceLoader::LoadShaderGL("opengl/voxel/voxel_resolve_CS.glsl"), COMPUTE_SHADER)
+            || !resolveShader->CompileShader()
+            || !compositeShader->AddShader(ResourceLoader::LoadShaderGL("opengl/voxel/voxel_view_CS.glsl"), COMPUTE_SHADER)
+            || !compositeShader->CompileShader())
+            return false;
 
-	GLVoxelRendererPass::~GLVoxelRendererPass()
-	{
-		AssetManager* man = manager->getAssetManager();
-		man->removeReference<Shader>(coneTracingShader.handle);
-		man->removeReference<Shader>(voxelisationShader.handle);
-		man->removeReference<Texture>(outputImage.handle);
-		man->removeReference<Texture>(voxelImage.handle);
-	}
+        for (const char* uniform : {"debugView", "volumeMin", "volumeExtent", "giStrength", "inverseViewProjection"})
+            compositeShader->AddUniform(uniform);
 
-	void GLVoxelRendererPass::OnResized()
-	{
-		uint32_t width = window->getWidth();
-		uint32_t height = window->getHeight();
+        glCreateFramebuffers(1, &framebuffer);
+        glNamedFramebufferDrawBuffer(framebuffer, GL_NONE);
+        glNamedFramebufferReadBuffer(framebuffer, GL_NONE);
+        ready = true;
+        return true;
+    }
 
-		AssetManager* man = manager->getAssetManager();
-		man->removeReference<Texture>(voxelImage.handle);
-		man->removeReference<Texture>(outputImage.handle);
-		voxelImage = man->storeTexture(GLTexture::StorageTrue3D(512, 512, 512, R8G8B8A8_LINEAR, Trilinear, ClampToEdge, false));
-		outputImage = man->storeTexture(GLTexture::Storage2D(width, height, 1, R8G8B8A8_LINEAR, Bilinear, ClampToEdge));
-		man->addReference<Texture>(voxelImage.handle);
+    void GLVoxelRendererPass::AllocateVolume(int size)
+    {
+        if (size == resolution) return;
+        resolution = size;
+        glDeleteTextures(1, &packedVolume);
+        glDeleteTextures(1, &radianceVolume);
+        glCreateTextures(GL_TEXTURE_3D, 1, &packedVolume);
+        glTextureStorage3D(packedVolume, 1, GL_R32UI, size, size, size);
+        glTextureParameteri(packedVolume, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTextureParameteri(packedVolume, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-		voxel_fbo->Bind();
-		voxel_fbo->addDepthAttachment(voxel_size, voxel_size, true);
-		voxel_fbo->Check();
-		voxel_fbo->Unbind();
+        int levels = 1;
+        for (int width = size; width > 1; width /= 2) ++levels;
+        glCreateTextures(GL_TEXTURE_3D, 1, &radianceVolume);
+        glTextureStorage3D(radianceVolume, levels, GL_RGBA16F, size, size, size);
+        glTextureParameteri(radianceVolume, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTextureParameteri(radianceVolume, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTextureParameteri(radianceVolume, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTextureParameteri(radianceVolume, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTextureParameteri(radianceVolume, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-		fbo->Bind();
-		fbo->addDepthAttachment(width, height, true);
-		fbo->addColourAttachment2D(outputImage.pointer);
-		fbo->Check();
-		fbo->Unbind();
-	}
+        glNamedFramebufferParameteri(framebuffer, GL_FRAMEBUFFER_DEFAULT_WIDTH, size);
+        glNamedFramebufferParameteri(framebuffer, GL_FRAMEBUFFER_DEFAULT_HEIGHT, size);
+    }
 
-	void GLVoxelRendererPass::Render()
-	{
-		GLRenderer* rend = (GLRenderer*)renderer;
+    void GLVoxelRendererPass::Render()
+    {
+        if (!IsSupported() || (!settings.debugView && !settings.globalIllumination) || !Initialise()) return;
+        PR_PROFILE("Voxelisation");
+        AllocateVolume(Resolutions[settings.resolutionIndex]);
 
-		uint32_t width = window->getWidth();
-		uint32_t height = window->getHeight();
-		voxel_fbo->Bind();
-		window->getSwapchain()->SetWindowSize(voxel_size, voxel_size);
+        const GLuint empty = 0;
+        glClearTexImage(packedVolume, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, &empty);
+        glBindImageTexture(0, packedVolume, 0, GL_TRUE, 0, GL_READ_WRITE, GL_R32UI);
 
-		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-		glDisable(GL_CULL_FACE);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_BLEND);
+        GLint viewport[4], drawFramebuffer, polygonMode[2];
+        glGetIntegerv(GL_VIEWPORT, viewport);
+        glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &drawFramebuffer);
+        glGetIntegerv(GL_POLYGON_MODE, polygonMode);
+        const bool culling = glIsEnabled(GL_CULL_FACE);
+        const bool scissor = glIsEnabled(GL_SCISSOR_TEST);
+        const bool rasterizerDiscard = glIsEnabled(GL_RASTERIZER_DISCARD);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
+        glViewport(0, 0, resolution, resolution);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        glDisable(GL_CULL_FACE);
+        glDisable(GL_SCISSOR_TEST);
+        glDisable(GL_RASTERIZER_DISCARD);
 
-		float clearColor[] = {0.0f, 0.0f, 0.0f, 0.0f};
-		int previousBoundTextureID;
-		glGetIntegerv(GL_TEXTURE_BINDING_3D, &previousBoundTextureID);
-		glBindTexture(GL_TEXTURE_3D, ((GLTexture*)voxelImage.pointer)->getTextureID());
-		glClearTexImage(((GLTexture*)voxelImage.pointer)->getTextureID(), 0, GL_RGBA, GL_FLOAT, &clearColor);
-		glBindTexture(GL_TEXTURE_3D, previousBoundTextureID);
-		voxelImage->BindImage();
+        auto* shader = static_cast<GLVoxelisationShader*>(voxelisationShader.pointer);
+        shader->Bind(nullptr);
+        shader->UpdateGlobalUniforms(renderer);
+        shader->SetUniform("volumeMin", settings.center - Vector3f(settings.extent * 0.5f));
+        shader->SetUniformf("volumeExtent", settings.extent);
 
-		voxelisationShader->Bind(nullptr);
-		voxelisationShader->UpdateGlobalUniforms(rend);
-		for (auto pipeline : rend->getModels3D())
-		{
-			Pipeline* pl = pipeline.first;
-			VertexBuffer* vbo = static_cast<GLGraphicsPipeline*>(pl)->getVertexBuffer();
-			vbo->Bind(nullptr);
+        for (const auto& [pipeline, batches] : renderer->getModels3D())
+        {
+            auto* buffer = static_cast<GLGraphicsPipeline*>(pipeline)->getVertexBuffer();
+            if (buffer->getType() != VertexBufferType::MESH) continue;
+            auto& model = static_cast<MeshVertexBuffer*>(buffer)->getModel();
+            const auto materials = model.getMaterials();
+            buffer->Bind(nullptr);
+            for (const auto& [material, objects] : batches)
+            {
+                for (uint32_t i = 0; i < buffer->getSubmeshCount(); ++i)
+                {
+                    const int index = model.getMesh(i).getMaterialIndex();
+                    shader->UpdateMaterialUniforms(index < 0 ? material : materials[index]);
+                    for (const auto* object : objects)
+                    {
+                        shader->UpdateObjectUniforms(object->getParent());
+                        buffer->Draw(nullptr, i);
+                    }
+                }
+            }
+            buffer->Unbind();
+        }
+        shader->Unbind();
 
-			for (auto material : pipeline.second)
-			{
-				if (material.first != nullptr)
-				{
-					voxelisationShader->UpdateMaterialUniforms(material.first);
-				}
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFramebuffer);
+        glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+        glPolygonMode(GL_FRONT_AND_BACK, polygonMode[0]);
+        if (culling) glEnable(GL_CULL_FACE);
+        if (scissor) glEnable(GL_SCISSOR_TEST);
+        if (rasterizerDiscard) glEnable(GL_RASTERIZER_DISCARD);
 
-				for (auto renderer_ : material.second)
-				{
-					voxelisationShader->UpdateObjectUniforms(renderer_->getParent());
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+        glBindImageTexture(1, radianceVolume, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+        resolveShader->Bind(nullptr);
+        glDispatchCompute(resolution / 4, resolution / 4, resolution / 4);
+        resolveShader->Unbind();
+        glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
+        if (settings.globalIllumination && !settings.debugView) glGenerateTextureMipmap(radianceVolume);
+        glBindImageTexture(0, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
+        glBindImageTexture(1, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F);
+    }
 
-					for (uint32_t i = 0; i < vbo->getSubmeshCount(); i++)
-					{
-						vbo->Draw(nullptr, i);
-					}
-				}
-			}
-			static_cast<GLGraphicsPipeline*>(pl)->getVertexBuffer()->Unbind();
-		}
+    void GLVoxelRendererPass::Composite(Texture* output) const
+    {
+        PR_PROFILE("Voxel composite");
+        const auto* main = static_cast<GLRenderer*>(renderer)->getMainPass();
+        glBindTextureUnit(0, radianceVolume);
+        if (!settings.debugView)
+        {
+            main->getPositionMetallicImage()->Bind(1);
+            main->getAlbedoRoughnessImage()->Bind(2);
+            main->getNormalImage()->Bind(3);
+        }
 
-		voxelImage->Bind();
-		voxelImage->GenerateMipmaps();
-		voxelImage->Unbind();
+        compositeShader->Bind(nullptr);
+        compositeShader->SetUniformi("debugView", settings.debugView);
+        compositeShader->SetUniform("volumeMin", settings.center - Vector3f(settings.extent * 0.5f));
+        compositeShader->SetUniformf("volumeExtent", settings.extent);
+        compositeShader->SetUniformf("giStrength", settings.giStrength);
+        if (settings.debugView)
+        {
+            const Camera* camera = renderer->getCamera();
+            compositeShader->SetUniform("inverseViewProjection",
+                (camera->getProjectionMatrix() * camera->getViewMatrix()).Invert());
+        }
 
-		window->getSwapchain()->SetWindowSize(width, height);
-
-		glEnable(GL_DEPTH_TEST);
-		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-
-		fbo->Bind();
-		uint32_t arr[] = { GL_COLOR_ATTACHMENT0 };
-		fbo->SetDrawAttachments(1, arr);
-		fbo->Clear(0.0f);
-
-		coneTracingShader->Bind(nullptr);
-		coneTracingShader->UpdateGlobalUniforms(rend);
-		for (auto pipeline : rend->getModels3D())
-		{
-			Pipeline* pl = pipeline.first;
-			VertexBuffer* vbo = static_cast<GLGraphicsPipeline*>(pl)->getVertexBuffer();
-			vbo->Bind(nullptr);
-
-			for (auto material : pipeline.second)
-			{
-				if (material.first != nullptr)
-				{
-					coneTracingShader->UpdateMaterialUniforms(material.first);
-				}
-
-				for (auto renderer_ : material.second)
-				{
-					coneTracingShader->UpdateObjectUniforms(renderer_->getParent());
-
-					for (uint32_t i = 0; i < vbo->getSubmeshCount(); i++)
-					{
-						vbo->Draw(nullptr, i);
-					}
-				}
-			}
-			static_cast<GLGraphicsPipeline*>(pl)->getVertexBuffer()->Unbind();
-		}
-		fbo->Unbind();
-	}
+        glBindImageTexture(0, static_cast<GLTexture*>(output)->getTextureID(), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+        glDispatchCompute((window->getWidth() + 7) / 8, (window->getHeight() + 7) / 8, 1);
+        glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT | GL_FRAMEBUFFER_BARRIER_BIT);
+        glBindImageTexture(0, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
+        glBindTextureUnit(0, 0);
+        compositeShader->Unbind();
+    }
 }

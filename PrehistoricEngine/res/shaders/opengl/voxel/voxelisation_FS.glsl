@@ -1,91 +1,42 @@
-#version 460
+#version 450 core
 
-// Lighting settings.
-#define MAX_LIGHTS 1
+layout(binding = 0, r32ui) uniform uimage3D packedVoxels;
+layout(binding = 0) uniform sampler2D albedoMap;
+uniform vec3 volumeMin;
+uniform float volumeExtent;
+uniform vec3 albedo;
+uniform bool hasAlbedoMap;
+uniform float emission;
+uniform vec3 sunDirection;
+uniform vec3 sunRadiance;
 
-// Lighting attenuation factors.
-#define DIST_FACTOR 1.1f /* Distance is multiplied by this when calculating attenuation. */
-#define CONSTANT 1
-#define LINEAR 0
-#define QUADRATIC 1
+#include "opengl/shadow/cascades.glsl"
 
-// Returns an attenuation factor given a distance.
-float attenuate(float dist)
-{ 
-	dist *= DIST_FACTOR; 
-	return 1.0f / (CONSTANT + LINEAR * dist + QUADRATIC * dist * dist); 
-}
-
-struct PointLight 
+in Fragment
 {
-	vec3 position;
-	vec3 colour;
-	float intensity;
-};
-
-struct Material 
-{
-	vec3 diffuseColour;
-	vec3 specularColour;
-	float diffuseReflectivity;
-	float specularReflectivity;
-	float emissivity;
-	float transparency;
-};
-
-uniform Material material;
-uniform PointLight pointLights[MAX_LIGHTS];
-uniform int numberOfLights;
-uniform vec3 cameraPosition;
-uniform float farPlane;
-
-layout(RGBA8) uniform image3D texture3D;
-
-in vec3 position_FS;
-in vec3 normal_FS;
-
-vec3 calculatePointLight(const PointLight light)
-{
-	const vec3 direction = normalize(light.position - position_FS);
-	const float distanceToLight = distance(light.position, position_FS);
-	const float attenuation = attenuate(distanceToLight);
-	const float d = max(dot(normalize(normal_FS), direction), 0.0f);
-	return d * light.intensity * attenuation * light.colour;
-}
-
-vec3 scaleAndBias(vec3 p) 
-{ 
-	return 0.5f * p + vec3(0.5f); 
-}
-
-bool isInsideCube(const vec3 p, float e) 
-{ 
-	return abs(p.x) < 1 + e && abs(p.y) < 1 + e && abs(p.z) < 1 + e; 
-}
+    vec3 position;
+    vec3 normal;
+    vec2 uv;
+} fragment;
 
 void main()
 {
-	vec3 color = vec3(1.0f);
-	
-	vec3 pos_n = normalize(position_FS);
-	if(!isInsideCube(pos_n, 0)) 
-		return;
+    vec3 uvw = (fragment.position - volumeMin) / volumeExtent;
+    if (any(lessThan(uvw, vec3(0))) || any(greaterThanEqual(uvw, vec3(1)))) return;
 
-	// Calculate diffuse lighting fragment contribution.
-	const uint maxLights = min(numberOfLights, MAX_LIGHTS);
-	for(uint i = 0; i < maxLights; ++i) 
-	{
-		color += calculatePointLight(pointLights[i]);
-	}
-	
-	vec3 spec = material.specularReflectivity * material.specularColour;
-	vec3 diff = material.diffuseReflectivity * material.diffuseColour;
-	color = (diff + spec) * color + material.emissivity * material.diffuseColour;
+    vec4 texel = hasAlbedoMap ? texture(albedoMap, fragment.uv) : vec4(1);
+    if (texel.a < 0.5) discard;
+    vec3 base = albedo * pow(texel.rgb, vec3(2.2));
+    vec3 normal = normalize(fragment.normal);
+    float cosine = max(dot(normal, sunDirection), 0.0);
+    float visibility = 0.0;
+    if (cosine > 0.0 && any(greaterThan(sunRadiance, vec3(0))))
+        visibility = directionalVisibility(fragment.position, normal, 1.5, true);
 
-	// Output lighting to 3D texture.
-	vec3 voxel = scaleAndBias(pos_n);
-	ivec3 dim = imageSize(texture3D);
-	float alpha = pow(1 - material.transparency, 4); // For soft shadows to work better with transparent materials.
-	vec4 res = alpha * vec4(vec3(color), 1);
-    imageStore(texture3D, ivec3(dim * voxel), res);
+    // Keep one deterministic sample per cell, prioritising brighter radiance.
+    vec3 radiance = base * (sunRadiance * (cosine * visibility / 3.14159) + emission);
+    vec3 encoded = clamp(log2(1.0 + radiance) / 8.0, 0.0, 1.0);
+    float priority = max(max(encoded.r, encoded.g), encoded.b);
+    uint encodedVoxel = packUnorm4x8(vec4(encoded, (1.0 + 254.0 * priority) / 255.0));
+    imageAtomicMax(packedVoxels, ivec3(uvw * vec3(imageSize(packedVoxels))), encodedVoxel);
 }

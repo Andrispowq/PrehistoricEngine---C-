@@ -24,11 +24,9 @@ OpenGL and Vulkan water are enabled in the sample. Vulkan selects its geometry o
 13. Improve physics.
 14. Improve scripting.
 
-### Renderer fixes
-
-- Restore OpenGL voxel rendering. Verify voxelization first with the existing [voxel visualization shaders](../PrehistoricEngine/res/shaders/opengl/voxel/Visualisation/), then verify that cone tracing produces visible indirect lighting in a small test scene.
-
 ### Engine maintenance
+
+- Review the world file format and loader/editor round-trip. Compare existing worlds for schema consistency, asset references, defaults, validation and versioning. Propose improvements and a migration path that preserves existing worlds.
 
 - Migrate native vector, quaternion, and matrix operations to GLM incrementally behind the existing math API. Start with matrix multiplication and inversion. Preserve transform order, angle and clip-space conventions, and GPU and scripting layouts. Run the [math suite](../tests/unit/math/MathTests.cpp) and smoke-test both renderers before changing public types.
 
