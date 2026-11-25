@@ -463,9 +463,11 @@ green emitter sits in the top-floor side aisle above the amber cube. Toggle
 **K** to disable bloom for the comparison.
 
 In the OpenGL editor, use **Render Settings** to set those options, the voxel
-volume center and width, and GI strength. **GI Trace Depth** displays the fixed
-one-bounce depth. Voxel size is the volume width divided
-by grid resolution. The default 400-unit cube is centered at the origin and
+volume center and width, GI strength, and **GI Trace Depth** from one to five
+diffuse bounces. The additional bounces run during the radiance bake. Each
+propagation traces the preceding bounce and adds its output to the volume
+sampled by the fullscreen pass. Voxel size is the volume width divided by grid
+resolution. The default 400-unit cube is centered at the origin and
 covers the Sponza test world. Use a tighter volume for smaller scenes. Voxel
 settings are local to the renderer session. The menu also exposes the existing
 wireframe and bloom toggles.
@@ -480,8 +482,16 @@ GI is active. A geometry change or a change of sun source can trigger an
 immediate bake. The last completed GI volume remains visible between refreshes.
 
 Radiance mipmaps are generated on the GPU with a compute downsample. Changing
-GI strength affects the fullscreen composite only. The debug ray march and GI
-cone tracing run every displayed frame.
+trace depth rebakes radiance. Changing GI strength affects the fullscreen
+composite only. The debug ray march and GI cone tracing run every displayed
+frame. Voxel GI contributes indirect light to shadowed surfaces. Direct sun
+visibility still uses the scene shadow cascades, and the radiance bake uses
+its own volume-fitted sun shadow map.
+
+At trace depths above one, the bake stores one representative diffuse surface
+per voxel. At 256³ this adds a 64 MiB surface grid and up to two 146 MiB
+radiance volumes for propagation. Higher depth and resolution increase the
+cost of each bake.
 
 Terrain and water patches can receive the screen-space GI contribution through
 their surface buffers, while only opaque meshes populate the volume. Thin

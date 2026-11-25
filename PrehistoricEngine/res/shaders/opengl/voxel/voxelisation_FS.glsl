@@ -8,6 +8,12 @@ uniform vec3 albedo;
 uniform bool hasAlbedoMap;
 uniform float emission;
 uniform bool injectRadiance;
+uniform bool captureBounceSurfaces;
+uniform float metallic;
+layout(binding = 2) uniform sampler2D metallicMap;
+layout(binding = 1, r32ui) uniform uimage3D bounceSurfaces;
+
+#include "opengl/voxel/voxel_surface.glsl"
 uniform vec3 sunDirection;
 uniform vec3 sunRadiance;
 
@@ -43,7 +49,13 @@ void main()
     }
 
     vec3 base = albedo * pow(texel.rgb, vec3(2.2));
-    vec3 normal = normalize(fragment.normal);
+    vec3 normal = dot(fragment.normal, fragment.normal) > 0.0 ? normalize(fragment.normal) : vec3(0, 1, 0);
+    ivec3 cell = ivec3(uvw * vec3(imageSize(packedVoxels)));
+    if (captureBounceSurfaces)
+    {
+        float metalness = metallic < 0.0 ? texture(metallicMap, fragment.uv).r : metallic;
+        imageAtomicMax(bounceSurfaces, cell, packBounceSurface(base * (1.0 - clamp(metalness, 0.0, 1.0)), normal));
+    }
     float cosine = max(dot(normal, sunDirection), 0.0);
     float visibility = 0.0;
     if (cosine > 0.0 && any(greaterThan(sunRadiance, vec3(0))))
@@ -54,5 +66,5 @@ void main()
     vec3 encoded = clamp(log2(1.0 + radiance) / 8.0, 0.0, 1.0);
     float priority = max(max(encoded.r, encoded.g), encoded.b);
     uint encodedVoxel = packUnorm4x8(vec4(encoded, (1.0 + 254.0 * priority) / 255.0));
-    imageAtomicMax(packedVoxels, ivec3(uvw * vec3(imageSize(packedVoxels))), encodedVoxel);
+    imageAtomicMax(packedVoxels, cell, encodedVoxel);
 }

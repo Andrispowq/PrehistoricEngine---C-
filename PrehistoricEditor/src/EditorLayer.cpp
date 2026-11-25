@@ -121,7 +121,8 @@ void EditorLayer::ImGUIRender() {
                 ImGui::DragFloat3("Volume Center", &settings.center.x, 1.0f);
                 ImGui::DragFloat("Volume Width", &settings.extent, 1.0f, 1.0f, 100000.0f, "%.1f", ImGuiSliderFlags_AlwaysClamp);
                 ImGui::SliderFloat("GI Strength", &settings.giStrength, 0.0f, 4.0f);
-                ImGui::Text("GI Trace Depth %d bounce", Prehistoric::GLVoxelRendererPass::Settings::TraceDepth);
+                ImGui::SliderInt("GI Trace Depth", &settings.traceDepth, 1,
+                                 Prehistoric::GLVoxelRendererPass::MaxTraceDepth, "%d", ImGuiSliderFlags_AlwaysClamp);
                 ImGui::Text("Voxel size %.2f", settings.extent / Prehistoric::GLVoxelRendererPass::Resolutions[settings.resolutionIndex]);
             }
             ImGui::EndMenu();

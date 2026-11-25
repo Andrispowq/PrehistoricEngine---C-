@@ -40,7 +40,7 @@ namespace Prehistoric
 
         enum class CaptureMode { DebugColour, Radiance, ShadowCasters };
 
-        SceneState CaptureBatches(const ModelBatches& batches, CaptureMode mode)
+        SceneState CaptureBatches(const ModelBatches& batches, CaptureMode mode, bool captureBounceSurfaces = false)
         {
             SceneState state;
             for (const auto& [pipeline, materials] : batches)
@@ -59,7 +59,8 @@ namespace Prehistoric
                         for (uint32_t i = 0; i < mesh->getSubmeshCount(); ++i)
                         {
                             const int index = mesh->getModel().getMesh(i).getMaterialIndex();
-                            auto surface = GLVoxelisationShader::GetSurface(index < 0 ? material : submeshMaterials[index]);
+                            auto surface = GLVoxelisationShader::GetSurface(index < 0 ? material : submeshMaterials[index],
+                                                                         captureBounceSurfaces);
                             if (mode == CaptureMode::DebugColour) surface.emission = 0.0f;
                             batch.surfaces.push_back(surface);
                         }
@@ -115,12 +116,13 @@ namespace Prehistoric
         {
             Vector3f center;
             float extent;
+            int traceDepth;
             SceneState meshes;
             SceneState transparentCasters;
 
             bool operator==(const BakeInputs& other) const
             {
-                return center == other.center && extent == other.extent
+                return center == other.center && extent == other.extent && traceDepth == other.traceDepth
                     && meshes == other.meshes && transparentCasters == other.transparentCasters;
             }
         };
@@ -149,6 +151,7 @@ namespace Prehistoric
         if (debugVolume) glDeleteTextures(1, &debugVolume);
         if (packedRadiance) glDeleteTextures(1, &packedRadiance);
         if (radianceVolume) glDeleteTextures(1, &radianceVolume);
+        ReleaseBounceVolumes();
     }
 
     bool GLVoxelRendererPass::Initialise()
@@ -173,7 +176,9 @@ namespace Prehistoric
         resolveShader = loadCompute("opengl/voxel/voxel_resolve_CS.glsl");
         mipShader = loadCompute("opengl/voxel/voxel_mip_CS.glsl");
         compositeShader = loadCompute("opengl/voxel/voxel_view_CS.glsl");
-        if (!resolveShader || !mipShader || !compositeShader) return false;
+        bounceShader = loadCompute("opengl/voxel/voxel_bounce_CS.glsl");
+        if (!resolveShader || !mipShader || !compositeShader || !bounceShader) return false;
+        bounceShader->AddUniform("writeNext");
 
         shadowShader = std::make_unique<VoxelShadowShader>();
         if (!shadowShader->AddShader(ResourceLoader::LoadShaderGL("opengl/voxel/voxel_shadow_VS.glsl"), VERTEX_SHADER)
@@ -200,6 +205,7 @@ namespace Prehistoric
         glDeleteTextures(1, &debugVolume);
         glDeleteTextures(1, &packedRadiance);
         glDeleteTextures(1, &radianceVolume);
+        ReleaseBounceVolumes();
         debugVolume = packedRadiance = radianceVolume = 0;
         cache->debug.reset();
         cache->radiance.reset();
@@ -220,22 +226,22 @@ namespace Prehistoric
         return texture;
     }
 
-    void GLVoxelRendererPass::AllocateRadianceVolume()
+    void GLVoxelRendererPass::AllocateRadianceVolume(GLuint& texture)
     {
-        if (radianceVolume) return;
+        if (texture) return;
         const int size = resolution;
         int levels = 1;
         for (int width = size; width > 1; width /= 2) ++levels;
-        glCreateTextures(GL_TEXTURE_3D, 1, &radianceVolume);
-        glTextureStorage3D(radianceVolume, levels, GL_RGBA16F, size, size, size);
-        glTextureParameteri(radianceVolume, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTextureParameteri(radianceVolume, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTextureParameteri(radianceVolume, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTextureParameteri(radianceVolume, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTextureParameteri(radianceVolume, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        glCreateTextures(GL_TEXTURE_3D, 1, &texture);
+        glTextureStorage3D(texture, levels, GL_RGBA16F, size, size, size);
+        glTextureParameteri(texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTextureParameteri(texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTextureParameteri(texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTextureParameteri(texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTextureParameteri(texture, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     }
 
-    void GLVoxelRendererPass::GenerateRadianceMips() const
+    void GLVoxelRendererPass::GenerateRadianceMips(GLuint texture) const
     {
         PR_PROFILE("Generate voxel radiance mips");
         mipShader->Bind(nullptr);
@@ -244,12 +250,52 @@ namespace Prehistoric
         {
             size /= 2;
             glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-            glBindImageTexture(0, radianceVolume, level - 1, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA16F);
-            glBindImageTexture(1, radianceVolume, level, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+            glBindImageTexture(0, texture, level - 1, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA16F);
+            glBindImageTexture(1, texture, level, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
             glDispatchCompute((size + 3) / 4, (size + 3) / 4, (size + 3) / 4);
         }
         mipShader->Unbind();
         glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT);
+    }
+
+    void GLVoxelRendererPass::ReleaseBounceVolumes()
+    {
+        if (bounceSurfaces) glDeleteTextures(1, &bounceSurfaces);
+        if (bounceVolumes[0]) glDeleteTextures(2, bounceVolumes);
+        bounceSurfaces = bounceVolumes[0] = bounceVolumes[1] = 0;
+    }
+
+    void GLVoxelRendererPass::PropagateBounces(int traceDepth)
+    {
+        PR_PROFILE("Propagate voxel diffuse bounces");
+        AllocateRadianceVolume(bounceVolumes[0]);
+        if (traceDepth > 2) AllocateRadianceVolume(bounceVolumes[1]);
+
+        // The source of the first propagation is the directly lit volume. Copy it
+        // so the filter can sample it while writing the separate accumulated volume.
+        glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
+        glCopyImageSubData(radianceVolume, GL_TEXTURE_3D, 0, 0, 0, 0,
+                           bounceVolumes[0], GL_TEXTURE_3D, 0, 0, 0, 0, resolution, resolution, resolution);
+
+        for (int bounce = 1; bounce < traceDepth; ++bounce)
+        {
+            const int source = (bounce - 1) % 2;
+            const bool writeNext = bounce + 1 < traceDepth;
+            GenerateRadianceMips(bounceVolumes[source]);
+
+            glBindTextureUnit(0, bounceVolumes[source]);
+            glBindImageTexture(0, bounceSurfaces, 0, GL_TRUE, 0, GL_READ_ONLY, GL_R32UI);
+            glBindImageTexture(1, radianceVolume, 0, GL_TRUE, 0, GL_READ_WRITE, GL_RGBA16F);
+            glBindImageTexture(2, writeNext ? bounceVolumes[1 - source] : 0, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+            bounceShader->Bind(nullptr);
+            bounceShader->SetUniformi("writeNext", writeNext);
+            glDispatchCompute(resolution / 4, resolution / 4, resolution / 4);
+            bounceShader->Unbind();
+            glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+        }
+
+        glBindTextureUnit(0, 0);
+        glBindImageTexture(2, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F);
     }
 
     Matrix4f GLVoxelRendererPass::RenderSunShadow(const Vector3f& direction)
@@ -312,8 +358,10 @@ namespace Prehistoric
         SetResolution(Resolutions[settings.resolutionIndex]);
 
         const auto lighting = settings.debugView ? LightingState{} : CaptureSun(*renderer);
-        BakeInputs inputs{settings.center, settings.extent, CaptureBatches(renderer->getModels3D(),
-            settings.debugView ? CaptureMode::DebugColour : CaptureMode::Radiance), {}};
+        const int traceDepth = settings.debugView ? 1 : std::clamp(settings.traceDepth, 1, MaxTraceDepth);
+        const bool captureBounceSurfaces = traceDepth > 1;
+        BakeInputs inputs{settings.center, settings.extent, traceDepth, CaptureBatches(renderer->getModels3D(),
+            settings.debugView ? CaptureMode::DebugColour : CaptureMode::Radiance, captureBounceSurfaces), {}};
         if (lighting.source)
             inputs.transparentCasters = CaptureBatches(renderer->getModelsTransparency(), CaptureMode::ShadowCasters);
 
@@ -331,6 +379,16 @@ namespace Prehistoric
         const GLuint empty = 0;
         glClearTexImage(packedVolume, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, &empty);
         glBindImageTexture(0, packedVolume, 0, GL_TRUE, 0, GL_READ_WRITE, GL_R32UI);
+        if (captureBounceSurfaces)
+        {
+            GetPackedVolume(bounceSurfaces);
+            glClearTexImage(bounceSurfaces, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, &empty);
+            glBindImageTexture(1, bounceSurfaces, 0, GL_TRUE, 0, GL_READ_WRITE, GL_R32UI);
+        }
+        else if (!settings.debugView)
+        {
+            ReleaseBounceVolumes();
+        }
 
         GLint viewport[4], drawFramebuffer, polygonMode[2];
         glGetIntegerv(GL_VIEWPORT, viewport);
@@ -351,6 +409,7 @@ namespace Prehistoric
         auto* shader = static_cast<GLVoxelisationShader*>(voxelisationShader.pointer);
         shader->Bind(nullptr);
         shader->SetUniformi("injectRadiance", !settings.debugView);
+        shader->SetUniformi("captureBounceSurfaces", captureBounceSurfaces);
         glBindTextureUnit(1, shadowDepth);
         if (!settings.debugView)
         {
@@ -374,7 +433,8 @@ namespace Prehistoric
                 for (uint32_t i = 0; i < buffer->getSubmeshCount(); ++i)
                 {
                     const int index = model.getMesh(i).getMaterialIndex();
-                    shader->UpdateMaterialUniforms(index < 0 ? material : materials[index]);
+                    shader->SetSurface(GLVoxelisationShader::GetSurface(index < 0 ? material : materials[index],
+                                                                         captureBounceSurfaces));
                     for (const auto* object : objects)
                     {
                         shader->UpdateObjectUniforms(object->getParent());
@@ -402,13 +462,14 @@ namespace Prehistoric
             return;
         }
 
-        AllocateRadianceVolume();
+        AllocateRadianceVolume(radianceVolume);
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
         glBindImageTexture(1, radianceVolume, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
         resolveShader->Bind(nullptr);
         glDispatchCompute(resolution / 4, resolution / 4, resolution / 4);
         resolveShader->Unbind();
-        GenerateRadianceMips();
+        if (captureBounceSurfaces) PropagateBounces(traceDepth);
+        GenerateRadianceMips(radianceVolume);
         glBindImageTexture(0, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F);
         glBindImageTexture(1, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F);
         previous = std::move(inputs);

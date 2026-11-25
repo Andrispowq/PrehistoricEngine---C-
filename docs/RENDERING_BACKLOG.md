@@ -24,10 +24,6 @@ OpenGL and Vulkan water are enabled in the sample. Vulkan selects its geometry o
 13. Improve physics.
 14. Improve scripting.
 
-### OpenGL voxel GI
-
-- Make GI trace depth configurable. Add radiance propagation for additional diffuse bounces, expose the setting in Render Settings, and verify lighting and GPU cost at each supported depth.
-
 ### Engine maintenance
 
 - Review the world file format and loader/editor round-trip. Compare existing worlds for schema consistency, asset references, defaults, validation and versioning. Propose improvements and a migration path that preserves existing worlds.
