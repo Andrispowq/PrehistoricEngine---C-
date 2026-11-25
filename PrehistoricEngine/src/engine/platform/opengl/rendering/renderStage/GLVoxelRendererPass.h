@@ -13,6 +13,7 @@ namespace Prehistoric
         {
             bool debugView = false;
             bool globalIllumination = false;
+            bool voxelSunShadows = false;
             int resolutionIndex = 1;
             Vector3f center = Vector3f(0);
             float extent = 400.0f;
@@ -20,7 +21,7 @@ namespace Prehistoric
             int traceDepth = 1;
         };
 
-        static constexpr int Resolutions[] = {64, 128, 256};
+        static constexpr int Resolutions[] = {64, 128, 256, 512, 1024};
         static constexpr int MaxTraceDepth = 5;
 
         explicit GLVoxelRendererPass(Renderer* renderer);
@@ -28,16 +29,23 @@ namespace Prehistoric
 
         void OnResized() override {}
         void Render() override;
-        void Composite(Texture* output) const;
+        void Composite(Texture* output);
 
         bool IsSupported() const { return GLAD_GL_VERSION_4_5; }
         bool IsReady() const { return ready; }
         Settings& GetSettings() { return settings; }
+        bool CanUseResolution(int index) const;
+        bool HasOccluders() const { return usesOccluders; }
+        bool UsesVoxelSunShadows() const { return HasOccluders() && settings.voxelSunShadows; }
+        void BindOccluders(const GLShader& shader, uint32_t textureUnit) const;
 
     private:
         bool Initialise();
         void SetResolution(int size);
-        GLuint GetPackedVolume(GLuint& texture);
+        GLuint GetPackedVolume(GLuint& texture, bool mipmaps = false);
+        void RenderVolume(bool debugView);
+        void GenerateOccluderMips() const;
+        void AllocateIndirectImage(uint32_t width, uint32_t height);
         void AllocateRadianceVolume(GLuint& texture);
         void GenerateRadianceMips(GLuint texture) const;
         void PropagateBounces(int traceDepth);
@@ -50,6 +58,9 @@ namespace Prehistoric
         Settings settings;
         bool initialisationAttempted = false;
         bool ready = false;
+        bool usesOccluders = false;
+        mutable uint64_t voxelBudget = 0;
+        mutable GLint maxVolumeSize = 0;
         int resolution = 0;
         GLuint framebuffer = 0;
         GLuint debugVolume = 0;
@@ -57,14 +68,19 @@ namespace Prehistoric
         GLuint radianceVolume = 0;
         GLuint bounceSurfaces = 0;
         GLuint bounceVolumes[2] = {};
+        GLuint indirectImage = 0;
+        uint32_t indirectWidth = 0;
+        uint32_t indirectHeight = 0;
         GLuint shadowFramebuffer = 0;
         GLuint shadowDepth = 0;
         ShaderHandle voxelisationShader;
         std::unique_ptr<GLShader> shadowShader;
         std::unique_ptr<GLShader> resolveShader;
         std::unique_ptr<GLShader> mipShader;
+        std::unique_ptr<GLShader> occluderMipShader;
         std::unique_ptr<GLShader> bounceShader;
         std::unique_ptr<GLShader> compositeShader;
+        std::unique_ptr<GLShader> filterShader;
     };
 }
 

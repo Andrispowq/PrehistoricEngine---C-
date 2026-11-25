@@ -86,7 +86,16 @@ namespace Prehistoric {
         if (ImGui::IsKeyPressed(ImGuiKey_V, false)) settings.debugView = !settings.debugView;
         if (ImGui::IsKeyPressed(ImGuiKey_G, false)) settings.globalIllumination = !settings.globalIllumination;
         if (ImGui::IsKeyPressed(ImGuiKey_B, false))
-            settings.resolutionIndex = (settings.resolutionIndex + 1) % std::size(GLVoxelRendererPass::Resolutions);
+        {
+            const int count = static_cast<int>(std::size(GLVoxelRendererPass::Resolutions));
+            for (int step = 1; step <= count; ++step)
+            {
+                const int index = (settings.resolutionIndex + step) % count;
+                if (!voxels->CanUseResolution(index)) continue;
+                settings.resolutionIndex = index;
+                break;
+            }
+        }
     }
 
     void ImGuiLayer::End() {

@@ -17,6 +17,10 @@ namespace Prehistoric {
         AddUniform("sunDirection");
         AddUniform("sunRadiance");
         AddUniform("shadowMap");
+        AddUniform("useVoxelSunShadows");
+        AddUniform("voxelOccluders");
+        AddUniform("voxelOcclusionMin");
+        AddUniform("voxelOcclusionExtent");
         for (size_t i = 0; i < GLShadowDepthPass::CascadeCount; ++i)
         {
             AddUniform("cascadePlaneDistances[" + std::to_string(i) + "]");
@@ -25,7 +29,11 @@ namespace Prehistoric {
 
     void GLShader::BindShadowUniforms(Renderer* renderer, uint32_t textureUnit) const
     {
-        const auto* shadows = static_cast<GLRenderer*>(renderer)->getShadowDepthPass();
+        const auto* gl = static_cast<GLRenderer*>(renderer);
+        const auto* shadows = gl->getShadowDepthPass();
+        const bool voxelSun = gl->getVoxelPass()->UsesVoxelSunShadows();
+        gl->getVoxelPass()->BindOccluders(*this, 8);
+        SetUniformi("useVoxelSunShadows", voxelSun);
         shadows->BindMatrices();
         shadows->getDepthTexture()->Bind(textureUnit);
         SetUniformi("shadowMap", textureUnit);
@@ -36,7 +44,7 @@ namespace Prehistoric {
         SetUniformf("shadowSunAngularRadius", __EngineConfig.shadowSunAngularRadius);
         SetUniform("shadowView", shadows->getShadowView());
 
-        const auto* sun = shadows->getSun();
+        const auto* sun = voxelSun ? GLShadowDepthPass::FindSun(*renderer) : shadows->getSun();
         Vector3f direction(0, 1, 0);
         Vector3f radiance(0);
         if (sun)

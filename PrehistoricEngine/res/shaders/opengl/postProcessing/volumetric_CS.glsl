@@ -12,7 +12,6 @@ uniform sampler2D sceneDepth;
 uniform samplerCube irradianceMap;
 uniform vec3 cameraPosition;
 uniform mat4 inverseViewProjection;
-uniform vec3 sunDirection;
 uniform vec3 sunRadiance;
 uniform int sphereCount;
 uniform vec4 sphereBounds[MaxSpheres];

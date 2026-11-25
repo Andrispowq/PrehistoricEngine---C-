@@ -117,7 +117,22 @@ void EditorLayer::ImGUIRender() {
                 ImGui::Separator();
                 ImGui::Checkbox("Voxel View (V)", &settings.debugView);
                 ImGui::Checkbox("Voxel GI (G)", &settings.globalIllumination);
-                ImGui::Combo("Voxel Resolution (B)", &settings.resolutionIndex, "64 cubed\0" "128 cubed\0" "256 cubed\0");
+                ImGui::Checkbox("Voxel Sun Shadows", &settings.voxelSunShadows);
+                const auto& resolutions = Prehistoric::GLVoxelRendererPass::Resolutions;
+                const auto resolutionLabel = [](int resolution) { return std::to_string(resolution) + " cubed"; };
+                if (ImGui::BeginCombo("Voxel Resolution (B)", resolutionLabel(resolutions[settings.resolutionIndex]).c_str()))
+                {
+                    for (int i = 0; i < static_cast<int>(std::size(resolutions)); ++i)
+                    {
+                        const bool available = gl->getVoxelPass()->CanUseResolution(i);
+                        if (ImGui::Selectable(resolutionLabel(resolutions[i]).c_str(), i == settings.resolutionIndex,
+                                              available ? ImGuiSelectableFlags_None : ImGuiSelectableFlags_Disabled))
+                            settings.resolutionIndex = i;
+                        if (!available && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                            ImGui::SetTooltip("Grid exceeds the GPU budget for the current voxel settings.");
+                    }
+                    ImGui::EndCombo();
+                }
                 ImGui::DragFloat3("Volume Center", &settings.center.x, 1.0f);
                 ImGui::DragFloat("Volume Width", &settings.extent, 1.0f, 1.0f, 100000.0f, "%.1f", ImGuiSliderFlags_AlwaysClamp);
                 ImGui::SliderFloat("GI Strength", &settings.giStrength, 0.0f, 4.0f);

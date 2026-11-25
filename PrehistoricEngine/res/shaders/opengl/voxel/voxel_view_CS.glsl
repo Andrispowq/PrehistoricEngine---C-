@@ -1,17 +1,16 @@
 #version 450 core
 
 layout(local_size_x = 8, local_size_y = 8) in;
-layout(binding = 0, rgba32f) uniform image2D outputImage;
+layout(binding = 0, rgba32f) uniform writeonly image2D outputImage;
+layout(binding = 1, rgba16f) uniform writeonly image2D indirectImage;
 layout(binding = 0) uniform sampler3D radianceVolume;
 layout(binding = 1) uniform sampler2D positionMetallic;
-layout(binding = 2) uniform sampler2D albedoRoughness;
 layout(binding = 3) uniform sampler2D normals;
 layout(binding = 4) uniform usampler3D packedVoxels;
 
 uniform bool debugView;
 uniform vec3 volumeMin;
 uniform float volumeExtent;
-uniform float giStrength;
 uniform mat4 inverseViewProjection;
 
 #include "opengl/voxel/voxel_cones.glsl"
@@ -61,7 +60,7 @@ vec3 drawVoxels(vec2 ndc)
 void main()
 {
     ivec2 pixel = ivec2(gl_GlobalInvocationID.xy);
-    ivec2 size = imageSize(outputImage);
+    ivec2 size = debugView ? imageSize(outputImage) : imageSize(indirectImage);
     if (any(greaterThanEqual(pixel, size))) return;
     if (debugView)
     {
@@ -71,17 +70,22 @@ void main()
     }
 
     vec4 surface = texelFetch(normals, pixel, 0);
-    if (surface.a < 0.99 || dot(surface.xyz, surface.xyz) < 0.01) return;
+    if (surface.a < 0.99 || dot(surface.xyz, surface.xyz) < 0.01)
+    {
+        imageStore(indirectImage, pixel, vec4(0));
+        return;
+    }
     vec4 position = texelFetch(positionMetallic, pixel, 0);
     vec3 origin = (position.xyz - volumeMin) / volumeExtent;
-    if (!inside(origin)) return;
+    if (!inside(origin))
+    {
+        imageStore(indirectImage, pixel, vec4(0));
+        return;
+    }
 
     vec3 normal = normalize(surface.xyz);
     float cellSize = 1.0 / float(textureSize(radianceVolume, 0).x);
     vec3 radiance = traceHemisphere(origin, normal, cellSize);
 
-    vec3 albedo = texelFetch(albedoRoughness, pixel, 0).rgb;
-    vec4 scene = imageLoad(outputImage, pixel);
-    scene.rgb += radiance * albedo * (1.0 - clamp(position.w, 0.0, 1.0)) * giStrength;
-    imageStore(outputImage, pixel, scene);
+    imageStore(indirectImage, pixel, vec4(radiance, 1.0));
 }

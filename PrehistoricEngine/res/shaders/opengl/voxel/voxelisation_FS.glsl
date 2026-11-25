@@ -14,17 +14,32 @@ layout(binding = 2) uniform sampler2D metallicMap;
 layout(binding = 1, r32ui) uniform uimage3D bounceSurfaces;
 
 #include "opengl/voxel/voxel_surface.glsl"
+#include "opengl/voxel/voxel_visibility.glsl"
+uniform bool useVoxelSunShadows;
 uniform vec3 sunDirection;
 uniform vec3 sunRadiance;
 
-layout(binding = 1) uniform sampler2DShadow voxelShadowMap;
+layout(binding = 1) uniform sampler2D voxelShadowMap;
 uniform mat4 lightViewProjection;
 uniform float shadowBias;
 
 float voxelShadowVisibility(vec3 worldPosition)
 {
     vec3 shadowPosition = (lightViewProjection * vec4(worldPosition, 1.0)).xyz * 0.5 + 0.5;
-    return texture(voxelShadowMap, vec3(shadowPosition.xy, shadowPosition.z - shadowBias));
+    ivec2 size = textureSize(voxelShadowMap, 0);
+    vec2 texel = shadowPosition.xy * vec2(size) - 0.5;
+    ivec2 base = ivec2(floor(texel));
+    vec2 fraction = fract(texel);
+    float visibility = 0.0;
+    for (int y = 0; y < 2; ++y)
+        for (int x = 0; x < 2; ++x)
+        {
+            ivec2 pixel = clamp(base + ivec2(x, y), ivec2(0), size - 1);
+            vec2 weight = mix(1.0 - fraction, fraction, vec2(x, y));
+            float depth = texelFetch(voxelShadowMap, pixel, 0).r;
+            visibility += weight.x * weight.y * step(shadowPosition.z - shadowBias, depth);
+        }
+    return visibility;
 }
 
 in Fragment
@@ -59,7 +74,9 @@ void main()
     float cosine = max(dot(normal, sunDirection), 0.0);
     float visibility = 0.0;
     if (cosine > 0.0 && any(greaterThan(sunRadiance, vec3(0))))
-        visibility = voxelShadowVisibility(fragment.position);
+        visibility = useVoxelSunShadows
+            ? voxelVisibility(fragment.position, normal, sunDirection, 2.0 * voxelOcclusionExtent)
+            : voxelShadowVisibility(fragment.position);
 
     // Keep one deterministic sample per cell, prioritising brighter radiance.
     vec3 radiance = base * (sunRadiance * (cosine * visibility / 3.14159) + emission);

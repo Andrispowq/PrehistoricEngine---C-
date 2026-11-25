@@ -37,6 +37,7 @@ namespace Prehistoric
 		AddUniform("max_reflection_lod");
 
 		AddShadowUniforms();
+		AddUniform("useVoxelPointShadows");
 		AddUniform("time");
 	}
 
@@ -57,6 +58,9 @@ namespace Prehistoric
 		SetUniformf("max_reflection_lod", __EnvironmentMapConfig.prefilterLevels - 1.0f);
 
 		BindShadowUniforms(renderer, 3);
+        auto* voxels = static_cast<GLRenderer*>(renderer)->getVoxelPass();
+        SetUniformi("useVoxelPointShadows", voxels->HasOccluders()
+            && voxels->GetSettings().globalIllumination);
 		SetUniformf("time", (float)Time::getTimeFromStart());
 	}
 

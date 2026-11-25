@@ -119,8 +119,15 @@ float cascadeVisibility(vec3 position, vec3 normal, int layer, float biasInTexel
     return visibility / float(taps + 1);
 }
 
+#include "opengl/voxel/voxel_visibility.glsl"
+uniform bool useVoxelSunShadows;
+uniform vec3 sunDirection;
+
 float directionalVisibility(vec3 position, vec3 normal, float biasInTexels, bool volume)
 {
+    if (useVoxelSunShadows)
+        return voxelVisibility(position, normal, sunDirection, 2.0 * voxelOcclusionExtent);
+
     float depth = -(shadowView * vec4(position, 1.0)).z;
     if (depth < shadowNearPlane) return 1.0;
 

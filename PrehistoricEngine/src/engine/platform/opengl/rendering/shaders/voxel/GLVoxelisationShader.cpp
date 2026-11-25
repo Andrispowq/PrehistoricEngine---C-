@@ -15,7 +15,8 @@ namespace Prehistoric
 
         for (const char* uniform : {"m_transform", "volumeMin", "volumeExtent", "albedo", "hasAlbedoMap", "emission", "injectRadiance",
                                    "sunDirection", "sunRadiance", "lightViewProjection", "shadowBias",
-                                   "captureBounceSurfaces", "metallic"})
+                                   "captureBounceSurfaces", "metallic", "useVoxelSunShadows",
+                                   "voxelOccluders", "voxelOcclusionMin", "voxelOcclusionExtent"})
             AddUniform(uniform);
     }
 

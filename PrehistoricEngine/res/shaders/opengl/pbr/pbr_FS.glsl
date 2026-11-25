@@ -58,11 +58,11 @@ uniform vec3 cameraPosition;
 uniform int highDetailRange;
 uniform int numberOfTilesX;
 uniform int captureLightCount;
+uniform bool useVoxelPointShadows;
 uniform float max_reflection_lod; 
 uniform float threshold;
 
 uniform mat4 m_view;
-uniform vec3 sunDirection;
 uniform vec3 sunRadiance;
 
 #include "shared/pbr/lighting.glsl"
@@ -160,7 +160,10 @@ void main()
 
         vec3 radiance = light.colour.rgb * light.intensity_radius.r * attenuation;
 
-        Lo += directPbrLight(N, V, L, F0, albedoColour, metallic, roughness, radiance);
+        float visibility = 1.0;
+        if (useVoxelPointShadows && attenuation > 0.0 && dot(N, L) > 0.0)
+            visibility = voxelVisibility(position_FS, normalize(normal_FS), L, dist);
+        Lo += visibility * directPbrLight(N, V, L, F0, albedoColour, metallic, roughness, radiance);
     }
 
     vec3 F = FresnelSchlickRoughness(max(dot(N, V), 0), F0, roughness);

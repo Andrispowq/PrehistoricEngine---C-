@@ -26,6 +26,8 @@ OpenGL and Vulkan water are enabled in the sample. Vulkan selects its geometry o
 
 ### Engine maintenance
 
+- Preserve named sub-objects from OBJ and native model imports, then expose their transforms and materials in the editor. Verify the scene round-trip on Sponza curtains. The current native loader uses PMF. Include PRM support if it refers to a separate format.
+
 - Review the world file format and loader/editor round-trip. Compare existing worlds for schema consistency, asset references, defaults, validation and versioning. Propose improvements and a migration path that preserves existing worlds.
 
 - Migrate native vector, quaternion, and matrix operations to GLM incrementally behind the existing math API. Start with matrix multiplication and inversion. Preserve transform order, angle and clip-space conventions, and GPU and scripting layouts. Run the [math suite](../tests/unit/math/MathTests.cpp) and smoke-test both renderers before changing public types.

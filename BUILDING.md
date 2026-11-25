@@ -452,7 +452,8 @@ Set `framework.api.active` to `OpenGL` in the application's
 `res/config/settings.json`. The voxel path requires OpenGL 4.5 or later.
 In the sample launcher, set `PREHISTORIC_WORLD=res/world/sponza_volumetric.json`
 and run from `Prehistoric/`. Press **V** to display occupied voxels, **G** to toggle
-one-bounce diffuse GI, and **B** to cycle between 64³, 128³, and 256³ grids.
+voxel GI, and **B** to cycle through the available grids from
+64³ to 1024³.
 The debug view takes precedence while both modes are enabled.
 
 For an emissive GI comparison, launch
@@ -468,7 +469,9 @@ diffuse bounces. The additional bounces run during the radiance bake. Each
 propagation traces the preceding bounce and adds its output to the volume
 sampled by the fullscreen pass. Voxel size is the volume width divided by grid
 resolution. The default 400-unit cube is centered at the origin and
-covers the Sponza test world. Use a tighter volume for smaller scenes. Voxel
+covers the Sponza test world. The 512³ and 1024³ options depend on available
+GPU memory and the selected bounce depth. Switching to a more expensive mode
+can select a smaller grid that fits the memory budget. Use a tighter volume for smaller scenes. Voxel
 settings are local to the renderer session. The menu also exposes the existing
 wireframe and bloom toggles.
 
@@ -484,9 +487,21 @@ immediate bake. The last completed GI volume remains visible between refreshes.
 Radiance mipmaps are generated on the GPU with a compute downsample. Changing
 trace depth rebakes radiance. Changing GI strength affects the fullscreen
 composite only. The debug ray march and GI cone tracing run every displayed
-frame. Voxel GI contributes indirect light to shadowed surfaces. Direct sun
-visibility still uses the scene shadow cascades, and the radiance bake uses
-its own volume-fitted sun shadow map.
+frame.
+
+**Voxel Sun Shadows** in the editor switches direct sunlight between the
+default shadow cascades and rays through the opaque voxel grid. The voxel
+mode skips the cascades and the volume-fitted sun shadow map. Compare the
+modes in Sponza with the same camera and grid settings. Voxel shadows can miss
+thin geometry and cover only receivers and casters within the volume.
+
+GI adds bounced light from sun and emissive materials. With GI enabled,
+OpenGL PBR point lights also test voxel visibility to reduce direct light
+through walls. Cone tracing stops at the first occupied cell along the cone
+axis to reduce indirect leaks. The hit radiance is filtered across that voxel
+face, and a screen-space filter smooths indirect light using receiver position
+and normal before the result is added to the scene. Local point lights still
+use the direct PBR lighting path.
 
 At trace depths above one, the bake stores one representative diffuse surface
 per voxel. At 256³ this adds a 64 MiB surface grid and up to two 146 MiB
