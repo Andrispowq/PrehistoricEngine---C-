@@ -17,6 +17,7 @@ EditorApp::EditorApp() : Application(true) {
         settings.globalIllumination = voxelPass->IsSupported();
         settings.resolutionIndex = 2; // 256³
         settings.traceDepth = 4;
+        settings.directionalMips = true;
     }
 
     editor = new EditorLayer(std::move(scene));

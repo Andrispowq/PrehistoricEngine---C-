@@ -473,7 +473,8 @@ lighting. The voxel bake in this scene gets its radiance from the emitters.
 
 The editor opens [Sponza Midnight Atmosphere](PrehistoricEditor/res/world/sponza_midnight_gi.json)
 by default. The OpenGL editor starts with voxel GI enabled on supported GPUs,
-four diffuse bounces, and a 256³ grid subject to the renderer's memory budget.
+four diffuse bounces, directional voxel mips, and a 256³ grid subject to the
+renderer’s memory budget.
 The sun stays directly below the scene and supplies no direct light or voxel
 radiance. The planet occludes the solar disk and single-scattered sunlight at
 this angle, so the atmosphere and its baked environment are black.
@@ -499,12 +500,12 @@ position and normal to reject samples from neighboring surfaces. Expand
 propagation includes its intermediate radiance mips. Final radiance mips and
 the per-frame tracing and composite passes have separate timings.
 
-**Directional Voxel Mips** switches radiance filtering from box averages to
-six half-resolution mip chains that composite the near layer over the far
-layer. It rebakes radiance, including all diffuse bounces, and keeps the same
-first-hit occlusion test. At 256³ the directional chains add about 110 MiB to
-the voxel allocation. The selected grid remains subject to the GPU memory
-budget.
+Toggle **Directional Voxel Mips** off to use isotropic box averages. The
+directional mode uses six half-resolution mip chains that composite the near
+layer over the far layer. Switching modes rebakes radiance, including all
+diffuse bounces. Both modes use the same first-hit occlusion test. At 256³
+the directional chains add about 110 MiB to the voxel allocation. See the
+[VXGI improvement plan](docs/VXGI_PLAN.md) for references and A/B results.
 
 OpenGL caches the debug and GI volumes independently. Grid bounds, resolution,
 and changes to opaque mesh submissions, transforms, or sampled materials can
