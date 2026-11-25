@@ -11,6 +11,7 @@
 #include "platform/vulkan/framework/context/VKContext.h"
 #include "platform/vulkan/rendering/VKImGui.h"
 #include "platform/opengl/texture/GLTexture.h"
+#include "platform/opengl/rendering/GLRenderer.h"
 
 namespace Prehistoric {
     ImGuiLayer::ImGuiLayer() {
@@ -75,6 +76,17 @@ namespace Prehistoric {
         else ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+
+        if (vulkan || ImGui::GetIO().WantTextInput) return;
+        auto* renderer = Application::Get().getEngineLayer()->getRenderingEngine()->getRenderer();
+        auto* voxels = static_cast<GLRenderer*>(renderer)->getVoxelPass();
+        if (!voxels->IsSupported()) return;
+
+        auto& settings = voxels->GetSettings();
+        if (ImGui::IsKeyPressed(ImGuiKey_V, false)) settings.debugView = !settings.debugView;
+        if (ImGui::IsKeyPressed(ImGuiKey_G, false)) settings.globalIllumination = !settings.globalIllumination;
+        if (ImGui::IsKeyPressed(ImGuiKey_B, false))
+            settings.resolutionIndex = (settings.resolutionIndex + 1) % std::size(GLVoxelRendererPass::Resolutions);
     }
 
     void ImGuiLayer::End() {

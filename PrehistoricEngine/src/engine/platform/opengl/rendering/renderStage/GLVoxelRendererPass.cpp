@@ -57,11 +57,20 @@ namespace Prehistoric
         resolution = size;
         glDeleteTextures(1, &packedVolume);
         glDeleteTextures(1, &radianceVolume);
+        radianceVolume = 0;
         glCreateTextures(GL_TEXTURE_3D, 1, &packedVolume);
         glTextureStorage3D(packedVolume, 1, GL_R32UI, size, size, size);
         glTextureParameteri(packedVolume, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTextureParameteri(packedVolume, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
+        glNamedFramebufferParameteri(framebuffer, GL_FRAMEBUFFER_DEFAULT_WIDTH, size);
+        glNamedFramebufferParameteri(framebuffer, GL_FRAMEBUFFER_DEFAULT_HEIGHT, size);
+    }
+
+    void GLVoxelRendererPass::AllocateRadianceVolume()
+    {
+        if (radianceVolume) return;
+        const int size = resolution;
         int levels = 1;
         for (int width = size; width > 1; width /= 2) ++levels;
         glCreateTextures(GL_TEXTURE_3D, 1, &radianceVolume);
@@ -71,9 +80,6 @@ namespace Prehistoric
         glTextureParameteri(radianceVolume, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTextureParameteri(radianceVolume, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTextureParameteri(radianceVolume, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-        glNamedFramebufferParameteri(framebuffer, GL_FRAMEBUFFER_DEFAULT_WIDTH, size);
-        glNamedFramebufferParameteri(framebuffer, GL_FRAMEBUFFER_DEFAULT_HEIGHT, size);
     }
 
     void GLVoxelRendererPass::Render()
@@ -102,7 +108,9 @@ namespace Prehistoric
 
         auto* shader = static_cast<GLVoxelisationShader*>(voxelisationShader.pointer);
         shader->Bind(nullptr);
-        shader->UpdateGlobalUniforms(renderer);
+        shader->SetUniformi("injectRadiance", !settings.debugView);
+        if (settings.debugView) shader->SetUniformi("shadowMap", 1);
+        else shader->UpdateGlobalUniforms(renderer);
         shader->SetUniform("volumeMin", settings.center - Vector3f(settings.extent * 0.5f));
         shader->SetUniformf("volumeExtent", settings.extent);
 
@@ -137,13 +145,21 @@ namespace Prehistoric
         if (scissor) glEnable(GL_SCISSOR_TEST);
         if (rasterizerDiscard) glEnable(GL_RASTERIZER_DISCARD);
 
+        if (settings.debugView)
+        {
+            glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT | GL_TEXTURE_UPDATE_BARRIER_BIT);
+            glBindImageTexture(0, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
+            return;
+        }
+
+        AllocateRadianceVolume();
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
         glBindImageTexture(1, radianceVolume, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
         resolveShader->Bind(nullptr);
         glDispatchCompute(resolution / 4, resolution / 4, resolution / 4);
         resolveShader->Unbind();
         glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
-        if (settings.globalIllumination && !settings.debugView) glGenerateTextureMipmap(radianceVolume);
+        glGenerateTextureMipmap(radianceVolume);
         glBindImageTexture(0, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
         glBindImageTexture(1, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F);
     }
@@ -152,9 +168,10 @@ namespace Prehistoric
     {
         PR_PROFILE("Voxel composite");
         const auto* main = static_cast<GLRenderer*>(renderer)->getMainPass();
-        glBindTextureUnit(0, radianceVolume);
-        if (!settings.debugView)
+        if (settings.debugView) glBindTextureUnit(4, packedVolume);
+        else
         {
+            glBindTextureUnit(0, radianceVolume);
             main->getPositionMetallicImage()->Bind(1);
             main->getAlbedoRoughnessImage()->Bind(2);
             main->getNormalImage()->Bind(3);
@@ -176,7 +193,7 @@ namespace Prehistoric
         glDispatchCompute((window->getWidth() + 7) / 8, (window->getHeight() + 7) / 8, 1);
         glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT | GL_FRAMEBUFFER_BARRIER_BIT);
         glBindImageTexture(0, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
-        glBindTextureUnit(0, 0);
+        glBindTextureUnit(settings.debugView ? 4 : 0, 0);
         compositeShader->Unbind();
     }
 }

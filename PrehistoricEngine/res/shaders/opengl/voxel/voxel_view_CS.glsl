@@ -6,6 +6,7 @@ layout(binding = 0) uniform sampler3D radianceVolume;
 layout(binding = 1) uniform sampler2D positionMetallic;
 layout(binding = 2) uniform sampler2D albedoRoughness;
 layout(binding = 3) uniform sampler2D normals;
+layout(binding = 4) uniform usampler3D packedVoxels;
 
 uniform bool debugView;
 uniform vec3 volumeMin;
@@ -35,7 +36,7 @@ vec3 drawVoxels(vec2 ndc)
     vec3 background = vec3(0.025, 0.035, 0.05);
     if (start >= end) return background;
 
-    int size = textureSize(radianceVolume, 0).x;
+    int size = textureSize(packedVoxels, 0).x;
     vec3 p = (origin + direction * start) * float(size);
     ivec3 cell = clamp(ivec3(floor(p)), ivec3(0), ivec3(size - 1));
     ivec3 stepDirection = ivec3(sign(direction));
@@ -46,11 +47,11 @@ vec3 drawVoxels(vec2 ndc)
     for (int i = 0; i < 3 * size; ++i)
     {
         if (any(lessThan(cell, ivec3(0))) || any(greaterThanEqual(cell, ivec3(size)))) break;
-        vec4 voxel = texelFetch(radianceVolume, cell, 0);
-        if (voxel.a > 0.0)
+        uint voxel = texelFetch(packedVoxels, cell, 0).r;
+        if (voxel != 0u)
         {
             float shade = axis == 0 ? 0.65 : (axis == 1 ? 1.0 : 0.8);
-            return shade * pow(vec3(0.12, 0.2, 0.28) + 0.7 * voxel.rgb / (1.0 + voxel.rgb), vec3(1.0 / 2.2));
+            return shade * mix(vec3(0.21, 0.28, 0.35), unpackUnorm4x8(voxel).rgb, 0.65);
         }
         axis = next.x <= min(next.y, next.z) ? 0 : (next.y <= next.z ? 1 : 2);
         if (start + next[axis] >= end) break;

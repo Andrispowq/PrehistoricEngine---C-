@@ -448,9 +448,10 @@ rendered frame and bypass the refresh interval.
 
 ## OpenGL voxel rendering
 
-Select OpenGL 4.5 or later in the application settings. In the sample launcher,
-set `PREHISTORIC_WORLD=res/world/sponza_volumetric.json` and run from
-`Prehistoric/`. Press **V** to display occupied voxels, **G** to toggle
+Set `framework.api.active` to `OpenGL` in the application's
+`res/config/settings.json`. The voxel path requires OpenGL 4.5 or later.
+In the sample launcher, set `PREHISTORIC_WORLD=res/world/sponza_volumetric.json`
+and run from `Prehistoric/`. Press **V** to display occupied voxels, **G** to toggle
 one-bounce diffuse GI, and **B** to cycle between 64³, 128³, and 256³ grids.
 The debug view takes precedence while both modes are enabled.
 
@@ -461,11 +462,14 @@ covers the Sponza test world. Use a tighter volume for smaller scenes. Voxel
 settings are local to the renderer session. The menu also exposes the existing
 wireframe and bloom toggles.
 
-The volume is rebuilt from opaque mesh submissions while a voxel mode is active.
-GI injects the shadow-casting sun and material emission, then adds diffuse
-indirect light before bloom, volumetrics, and tone mapping. Thin geometry can
-produce gaps at coarse resolutions, and the 256³ grid uses about 210 MiB for
-occupancy and mipmapped radiance.
+The volume is rebuilt from opaque meshes while a voxel mode is active.
+The debug view reads the mesh occupancy and colour grid directly. GI injects
+the shadow-casting sun and material emission, then adds diffuse indirect
+light before bloom, volumetrics, and tone mapping. Terrain and water patches
+can receive the screen-space GI contribution through their surface buffers,
+while only opaque meshes populate the volume. Thin geometry can produce gaps
+at coarse resolutions. The 256³ grid uses 64 MiB for occupancy and about
+210 MiB with the additional mipmapped radiance texture for GI.
 
 ## CPU math tests and CI
 

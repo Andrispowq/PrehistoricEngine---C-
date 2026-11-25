@@ -13,7 +13,7 @@ namespace Prehistoric
         AddShader(ResourceLoader::LoadShaderGL("opengl/voxel/voxelisation_FS.glsl"), FRAGMENT_SHADER);
         CompileShader();
 
-        for (const char* uniform : {"m_transform", "volumeMin", "volumeExtent", "albedo", "hasAlbedoMap", "emission"})
+        for (const char* uniform : {"m_transform", "volumeMin", "volumeExtent", "albedo", "hasAlbedoMap", "emission", "injectRadiance"})
             AddUniform(uniform);
         AddShadowUniforms();
     }

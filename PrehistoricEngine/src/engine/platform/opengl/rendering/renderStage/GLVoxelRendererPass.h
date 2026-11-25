@@ -35,6 +35,7 @@ namespace Prehistoric
     private:
         bool Initialise();
         void AllocateVolume(int resolution);
+        void AllocateRadianceVolume();
 
         Settings settings;
         bool initialisationAttempted = false;
