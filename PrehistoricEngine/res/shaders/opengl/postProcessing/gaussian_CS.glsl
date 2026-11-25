@@ -20,28 +20,13 @@ void main()
     if (any(greaterThanEqual(x, ivec2(targetSize)))) return;
     vec2 texCoord = (vec2(x) + 0.5) / targetSize;
 
-	vec2 texelSize = 1.0 / sceneSize;
+    vec2 stepUV = horizontal == 1 ? vec2(1.0 / sceneSize.x, 0.0) : vec2(0.0, 1.0 / sceneSize.y);
+    vec3 combined = texture(scene, texCoord).rgb * weights[0];
+    for (int i = 1; i < KERNEL_SIZE; ++i)
+    {
+        vec2 offset = stepUV * i;
+        combined += (texture(scene, texCoord + offset).rgb + texture(scene, texCoord - offset).rgb) * weights[i];
+    }
 
-	vec3 combined = vec3(0);
-	combined = texture(scene, texCoord).rgb * weights[0];
-
-	if(horizontal == 1)
-	{	
-        for(int i = 1; i < KERNEL_SIZE; ++i)
-        {
-            combined += texture(scene, texCoord + vec2(texelSize.x * i, 0.0)).rgb * weights[i];
-            combined += texture(scene, texCoord + vec2(texelSize.x * i, 0.0)).rgb * weights[i];
-        }
-	}
-	else
-	{
-		for(int i = 1; i < KERNEL_SIZE; ++i)
-        {
-            combined += texture(scene, texCoord + vec2(0.0, texelSize.y * i)).rgb * weights[i];
-            combined += texture(scene, texCoord + vec2(0.0, texelSize.y * i)).rgb * weights[i];
-        }
-	}
-
-	
-	imageStore(outColour, x, vec4(combined, 1.0));
+    imageStore(outColour, x, vec4(combined, 1.0));
 }
