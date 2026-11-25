@@ -1,6 +1,7 @@
 #include "Includes.hpp"
 #include "VKRenderer.h"
 #include "VKShadowPass.h"
+#include "VKVoxelView.h"
 #include "VKWaterSimulation.h"
 #include "prehistoric/core/modules/water/Water.h"
 #include "prehistoric/core/modules/water/WaterCapture.h"
@@ -162,7 +163,32 @@ namespace Prehistoric {
         ClearFrameSubmissions();
     }
 
+    bool VKRenderer::SupportsVoxelResolution(int size) const {
+        auto *gpu = static_cast<VKDevice *>(window->getContext()->getDevices());
+        VkPhysicalDeviceProperties properties;
+        vkGetPhysicalDeviceProperties(gpu->getPhysicalDevice(), &properties);
+        VkPhysicalDeviceMemoryProperties memory;
+        vkGetPhysicalDeviceMemoryProperties(gpu->getPhysicalDevice(), &memory);
+        VkDeviceSize heap = 0;
+        for (unsigned i = 0; i < memory.memoryHeapCount; ++i)
+            if (memory.memoryHeaps[i].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)
+                heap = std::max(heap, memory.memoryHeaps[i].size);
+        auto bytes = VKVoxelView::GridBytes(size, voxelGI || voxelSunShadows);
+        return bytes <= properties.limits.maxStorageBufferRange && bytes <= heap / 4 && bytes <= 768ull * 1024 * 1024;
+    }
+
+    VkDescriptorImageInfo VKRenderer::GetVoxelScreenInput(int index) const {
+        return voxelGI ? renderpass->VoxelScreenInput(index, voxelHalfResolution) : environmentLighting->getBRDF();
+    }
+
+    VkBuffer VKRenderer::GetVoxelBuffer() const {
+        return voxelGI || voxelSunShadows ? renderpass->Voxels(voxelResolution, true).Buffer() : VK_NULL_HANDLE;
+    }
+
     void VKRenderer::RenderScene() {
+        while ((voxelView || voxelGI || voxelSunShadows) && voxelResolution > 64 && !SupportsVoxelResolution(
+                   voxelResolution))
+            voxelResolution /= 2;
         if (voxelView) {
             getDrawCommandBuffer()->BindBuffer();
             return;
@@ -175,6 +201,7 @@ namespace Prehistoric {
         }
         const auto extent = static_cast<VKSwapchain *>(window->getSwapchain())->getSwapchainExtent();
         shadows->Prepare(*this, float(extent.width) / extent.height);
+        if (voxelGI) renderpass->PrepareVoxelScreen();
         PrepareDescriptors();
         ProcessDraws(nullptr);
 
@@ -182,7 +209,15 @@ namespace Prehistoric {
         uint32_t index = swapchain->getAquiredImageIndex();
         VKCommandBuffer *buffer = commandPool->getCommandBuffer(index);
         buffer->BindBuffer();
+        if (voxelGI || voxelSunShadows)
+            renderpass->Voxels(voxelResolution, true).Prepare(buffer->getCommandBuffer(), *this);
         shadows->Record(*this, buffer);
+        if (voxelGI) {
+            renderpass->BeginVoxelReceivers(buffer);
+            ProcessDraws(buffer, nullptr, true);
+            vkCmdEndRenderPass(buffer->getCommandBuffer());
+            renderpass->TraceVoxelScreen(buffer, *this);
+        }
         for (auto *water: waters) {
             water->simulation().Record(buffer->getCommandBuffer(), float(Time::getTimeFromStartNanoseconds() * 1.0e-9));
             auto &targets = renderpass->GetWaterTargets(water);
@@ -211,10 +246,14 @@ namespace Prehistoric {
                 vkCmdEndRenderPass(buffer->getCommandBuffer());
             }
         }
+        if (voxelGI)
+            renderpass->Voxels(voxelResolution, true).Mark(buffer->getCommandBuffer(), VKVoxelView::Shading, false);
         renderpass->BeginRenderpass(buffer, swapchain->getClearColour(), nullptr, !getVolumetricSpheres().empty());
         background->Draw(buffer->getCommandBuffer(), camera,
                          __AtmosphereConfig.scatteringEnabled ? atmosphere : nullptr, environmentPreviewLod);
         ProcessDraws(buffer);
+        if (voxelGI)
+            renderpass->Voxels(voxelResolution, true).Mark(buffer->getCommandBuffer(), VKVoxelView::Shading, true);
     }
 
     void VKRenderer::RenderHDR() {
@@ -256,7 +295,7 @@ namespace Prehistoric {
         }
     }
 
-    void VKRenderer::ProcessDraws(VKCommandBuffer *buffer, const CaptureConstants *capture) {
+    void VKRenderer::ProcessDraws(VKCommandBuffer *buffer, const CaptureConstants *capture, bool receivers) {
         // Each shader owns its descriptor pool. Both traversals assign the same slots.
         std::unordered_map<VKShader *, uint32_t> objectSlots;
         Material *fallback = nullptr;
@@ -267,10 +306,16 @@ namespace Prehistoric {
             shader = static_cast<VKShader *>(pipeline->getShader());
             mesh = nullptr;
             imported.clear();
-            if (buffer) static_cast<VKGraphicsPipeline *>(pipeline)->BindPipeline(buffer, wireframe);
+            auto *graphics = static_cast<VKGraphicsPipeline *>(pipeline);
+            if (receivers && !graphics->HasVoxelReceiver()) {
+                shader = nullptr;
+                return;
+            }
+            if (buffer) graphics->BindPipeline(buffer, wireframe, receivers);
         };
         auto beginScene = [&](Pipeline *pipeline) {
             begin(pipeline, isWireframeMode());
+            if (!shader) return;
             if (buffer) {
                 auto *vertices = static_cast<VKGraphicsPipeline *>(pipeline)->getVertexBuffer();
                 if (vertices->getType() == VertexBufferType::MESH) {
@@ -285,10 +330,12 @@ namespace Prehistoric {
             } else shader->UpdateGlobalUniforms(this);
         };
         auto material = [&](Pipeline *, Material *material) {
+            if (!shader) return;
             fallback = material;
             if (buffer && imported.empty()) shader->BindTextureSets(frameDescriptors.at(shader).materials.at(material));
         };
         auto object = [&](Pipeline *pipeline, RenderableComponent *renderable) {
+            if (!shader) return;
             if (buffer) {
                 auto slot = objectSlots[shader]++;
                 if (capture && !renderable->hasReflection()) return;
@@ -315,10 +362,10 @@ namespace Prehistoric {
             }
         };
         auto end = [&](Pipeline *pipeline) {
-            if (buffer) pipeline->UnbindPipeline();
+            if (buffer && shader) pipeline->UnbindPipeline();
         };
         VisitBatches(models_3d, beginScene, material, object, end);
-        if (capture) return;
+        if (capture || receivers) return;
         VisitBatches(models_transparency, beginScene, material, object, end);
         for (const auto &[pipeline, objects]: models_2d) {
             begin(pipeline, false);

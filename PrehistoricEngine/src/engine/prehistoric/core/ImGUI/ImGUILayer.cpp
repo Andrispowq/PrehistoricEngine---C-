@@ -83,6 +83,10 @@ namespace Prehistoric {
         if (vulkan) {
             auto *vk = static_cast<VKRenderer *>(renderer);
             if (ImGui::IsKeyPressed(ImGuiKey_V, false)) vk->voxelView = !vk->voxelView;
+            if (ImGui::IsKeyPressed(ImGuiKey_G, false)) vk->voxelGI = !vk->voxelGI;
+            if (ImGui::IsKeyPressed(ImGuiKey_B, false))
+                vk->voxelResolution =
+                        vk->SupportsVoxelResolution(vk->voxelResolution * 2) ? vk->voxelResolution * 2 : 64;
             return;
         }
         auto *voxels = static_cast<GLRenderer *>(renderer)->getVoxelPass();

@@ -45,6 +45,11 @@ namespace Prehistoric {
         if (!terrain) {
             AddUniform("shadowMap", FRAGMENT_SHADER, CombinedImageSampler, 0, 7, 0);
             AddUniform("shadowParameters", FRAGMENT_SHADER, UniformBuffer, 0, 8, sizeof(VKShadowPass::Uniforms));
+            AddUniform("voxelGrid", FRAGMENT_SHADER, StorageBuffer, 0, 9, 4);
+            AddUniform("voxelSettings", FRAGMENT_SHADER, UniformBuffer, 0, 10, 48);
+            AddUniform("voxelPositions", FRAGMENT_SHADER, CombinedImageSampler, 0, 11, 0);
+            AddUniform("voxelNormals", FRAGMENT_SHADER, CombinedImageSampler, 0, 12, 0);
+            AddUniform("voxelIndirect", FRAGMENT_SHADER, CombinedImageSampler, 0, 13, 0);
         }
 
         if (terrain) {
@@ -118,6 +123,28 @@ namespace Prehistoric {
         const auto &shadows = static_cast<VKRenderer *>(renderer)->GetShadows();
         if (!terrain) {
             SetSampledImage("shadowMap", shadows.GetDepth());
+            auto *vk = static_cast<VKRenderer *>(renderer);
+            SetSampledImage("voxelPositions", vk->GetVoxelScreenInput(0));
+            SetSampledImage("voxelNormals", vk->GetVoxelScreenInput(1));
+            SetSampledImage("voxelIndirect", vk->GetVoxelScreenInput(2));
+            SetUniformi("voxelSettings", vk->voxelHalfResolution ? 2 : 1, 32);
+            SetUniformi("voxelSettings", int(vk->voxelGI), 36);
+            auto buffer = vk->GetVoxelBuffer();
+            auto *fallback = descriptorPool->getUniform("voxelGrid", 0)->getBuffer();
+            VkDescriptorBufferInfo grid{buffer ? buffer : fallback->getBuffer(), 0, VK_WHOLE_SIZE};
+            auto slot = descriptorPool->getUniformLocation("voxelGrid");
+            auto set = descriptorPool->getSet(slot.first, 0)->getSets()[swapchain->getAquiredImageIndex()];
+            VkWriteDescriptorSet write{
+                VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, set, slot.second, 0, 1,
+                VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, nullptr, &grid
+            };
+            vkUpdateDescriptorSets(device->getDevice(), 1, &write, 0, nullptr);
+            auto min = vk->voxelCenter - Vector3f(vk->voxelExtent * 0.5f);
+            SetUniform("voxelSettings", Vector4f(min, vk->voxelExtent), 0);
+            SetUniform("voxelSettings",
+                       Vector4f(buffer ? float(vk->voxelResolution) : 0.0f, vk->voxelStrength,
+                                float(vk->voxelDirectional), float(vk->voxelSunShadows)),
+                       16);
             SetUniform("shadowParameters", &shadows.GetUniforms(), sizeof(VKShadowPass::Uniforms), 0);
         }
         lights.erase(std::remove_if(lights.begin(), lights.end(), [&](const Light *light) {

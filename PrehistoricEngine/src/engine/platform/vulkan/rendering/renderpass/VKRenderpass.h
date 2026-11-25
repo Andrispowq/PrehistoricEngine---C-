@@ -35,6 +35,17 @@ namespace Prehistoric {
         void RetainWaterTargets(const std::vector<Water *> &active);
 
         Texture *getEditorOutput() const { return editorOutput.get(); }
+
+        void PrepareVoxelScreen();
+
+        void BeginVoxelReceivers(VKCommandBuffer *buffer);
+
+        void TraceVoxelScreen(VKCommandBuffer *buffer, VKRenderer &renderer);
+
+        VkDescriptorImageInfo VoxelScreenInput(int index, bool half) const;
+
+        VKVoxelView &Voxels(uint32_t resolution, bool lighting);
+
         VkRenderPass getPresentPass() const { return presentPass; }
 
         void RenderHDR(VKCommandBuffer *commandBuffer, VKRenderer &renderer, bool bloomEnabled, bool underwater);
@@ -102,6 +113,12 @@ namespace Prehistoric {
         VkPipeline hdrPipeline{};
         VkPipeline bloomPipeline{};
         VkDescriptorSet hdrInputs[2]{};
+        VKFramebuffer *receiverFramebuffer{};
+        VkImageView receiverImages[2]{}, indirectImages[2]{};
+        VkFramebuffer indirectFrames[2]{};
+        VkDescriptorSet receiverInputs{};
+        VkPipelineLayout traceLayout{};
+        VkPipeline tracePipeline{};
         std::unordered_map<const Water *, WaterTargets> waterTargets;
         // Sequential water captures share attachments whose contents are discarded.
         std::unique_ptr<VKImage> captureDepth;

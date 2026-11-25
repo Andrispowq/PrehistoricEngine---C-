@@ -1,5 +1,6 @@
 #include "Includes.hpp"
 #include "VKShadowPass.h"
+#include "VKRenderer.h"
 
 #include "platform/vulkan/rendering/pipeline/VKGraphicsPipeline.h"
 #include "prehistoric/application/Application.h"
@@ -28,12 +29,14 @@ namespace Prehistoric {
                                                VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
         VkSubpassDependency dependencies[] = {
             {
-                VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | tests, tests,
+                VK_SUBPASS_EXTERNAL, 0,
+                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | tests, tests,
                 VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
                 VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT, 0
             },
             {
-                0, VK_SUBPASS_EXTERNAL, tests, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                0, VK_SUBPASS_EXTERNAL, tests,
+                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                 VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, 0
             }
         };
@@ -173,52 +176,87 @@ namespace Prehistoric {
     void VKShadowPass::Record(Renderer &renderer, VKCommandBuffer *buffer) {
         if (!sun && initialized) return;
         auto cmd = buffer->getCommandBuffer();
-        VkRect2D area{{0, 0}, {resolution, resolution}};
-        VkViewport viewport{0, 0, float(resolution), float(resolution), 0, 1};
-        VkClearValue clear{};
-        clear.depthStencil.depth = 1;
-        for (unsigned i = 0; i < ShadowCascades::Count; ++i) {
-            VkRenderPassBeginInfo begin{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
-            begin.renderPass = pass;
-            begin.framebuffer = frames[i]->getFramebuffer();
-            begin.renderArea = area;
-            begin.clearValueCount = 1;
-            begin.pClearValues = &clear;
-            vkCmdBeginRenderPass(cmd, &begin, VK_SUBPASS_CONTENTS_INLINE);
-            if (sun) {
-                vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-                vkCmdSetViewport(cmd, 0, 1, &viewport);
-                vkCmdSetScissor(cmd, 0, 1, &area);
-                VertexBuffer *vertices = nullptr;
-                auto bind = [&](Pipeline *surface) {
-                    auto *graphics = static_cast<VKGraphicsPipeline *>(surface);
-                    vertices = graphics->getTopology() == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
-                                   ? graphics->getVertexBuffer()
-                                   : nullptr;
-                    if (vertices) vertices->Bind(buffer);
-                };
-                auto draw = [&](Pipeline *, RenderableComponent *object) {
-                    if (!vertices) return;
-                    const auto transform = cascades.matrices[i] * object->getParent()->getWorldTransform().
-                                           getTransformationMatrix();
-                    vkCmdPushConstants(cmd, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, 64, transform.m);
-                    if (vertices->getType() == VertexBufferType::MESH)
-                        static_cast<VKMeshVertexBuffer *>(vertices)->DrawAll(buffer);
-                    else
-                        for (unsigned sub = 0; sub < vertices->getSubmeshCount(); ++sub)
-                            vertices->Draw(buffer, sub);
-                };
-                for (const auto *batches: {&renderer.getModels3D(), &renderer.getModelsTransparency()})
-                    Renderer::VisitBatches(*batches, bind, [](Pipeline *, Material *) {
-                                           }, draw, [](Pipeline *) {
-                                           });
-            }
-            vkCmdEndRenderPass(cmd);
-        }
+        for (unsigned i = 0; i < ShadowCascades::Count; ++i)
+            DrawLayer(renderer, cmd, *frames[i], resolution, cascades.matrices[i], sun != nullptr);
         initialized = true;
     }
 
+    void VKShadowPass::DrawLayer(Renderer &renderer, VkCommandBuffer cmd, VKFramebuffer &frame, unsigned width,
+                                 const Matrix4f &light, bool drawMeshes) {
+        VkRect2D area{{0, 0}, {width, width}};
+        VkViewport viewport{0, 0, float(width), float(width), 0, 1};
+        VkClearValue clear{};
+        clear.depthStencil.depth = 1;
+        VkRenderPassBeginInfo begin{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
+        begin.renderPass = pass;
+        begin.framebuffer = frame.getFramebuffer();
+        begin.renderArea = area;
+        begin.clearValueCount = 1;
+        begin.pClearValues = &clear;
+        vkCmdBeginRenderPass(cmd, &begin, VK_SUBPASS_CONTENTS_INLINE);
+        if (drawMeshes) {
+            vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+            vkCmdSetViewport(cmd, 0, 1, &viewport);
+            vkCmdSetScissor(cmd, 0, 1, &area);
+            VertexBuffer *vertices = nullptr;
+            auto bind = [&](Pipeline *surface) {
+                auto *graphics = static_cast<VKGraphicsPipeline *>(surface);
+                vertices = graphics->getTopology() == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
+                               ? graphics->getVertexBuffer()
+                               : nullptr;
+                if (vertices) vertices->Bind(static_cast<VKRenderer &>(renderer).getDrawCommandBuffer());
+            };
+            auto draw = [&](Pipeline *, RenderableComponent *object) {
+                if (!vertices) return;
+                const auto transform = light * object->getParent()->getWorldTransform().getTransformationMatrix();
+                vkCmdPushConstants(cmd, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, 64, transform.m);
+                if (vertices->getType() == VertexBufferType::MESH)
+                    static_cast<VKMeshVertexBuffer *>(vertices)->DrawAll(
+                        static_cast<VKRenderer &>(renderer).getDrawCommandBuffer());
+                else
+                    for (unsigned sub = 0; sub < vertices->getSubmeshCount(); ++sub)
+                        vertices->Draw(static_cast<VKRenderer &>(renderer).getDrawCommandBuffer(), sub);
+            };
+            for (const auto *batches: {&renderer.getModels3D(), &renderer.getModelsTransparency()})
+                Renderer::VisitBatches(*batches, bind, [](Pipeline *, Material *) {
+                                       }, draw, [](Pipeline *) {
+                                       });
+        }
+        vkCmdEndRenderPass(cmd);
+    }
+
+    Matrix4f VKShadowPass::RecordVoxelShadow(Renderer &renderer, VkCommandBuffer cmd, Vector3f center, float extent,
+                                             bool draw) {
+        constexpr unsigned width = 1024;
+        if (!voxelDepth) {
+            voxelDepth = std::make_unique<VKImage>(
+                gpu, width, width, 1, VK_FORMAT_D32_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
+                VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_SAMPLE_COUNT_1_BIT,
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
+            auto view = voxelDepth->getImageView();
+            voxelFrame = std::make_unique<VKFramebuffer>(gpu->getDevice(), pass, width, width, 1, &view);
+        }
+        Matrix4f light(1);
+        if (draw) {
+            Vector3f direction(uniforms.direction[0], uniforms.direction[1], uniforms.direction[2]);
+            Vector3f up = std::abs(direction.y) > 0.9999f ? Vector3f(0, 0, 1) : Vector3f(0, 1, 0);
+            up = direction.cross(up).normalise().cross(direction).normalise();
+            float radius = extent * std::sqrt(3.0f) * 0.5f;
+            light = Matrix4f::OrthographicProjection(-radius, radius, -radius, radius, -(radius + extent), radius) *
+                    Matrix4f::View(direction, up) * Matrix4f::Translation(center * -1.0f);
+        }
+        if (draw || !voxelDepthReady) DrawLayer(renderer, cmd, *voxelFrame, width, light, draw);
+        voxelDepthReady = true;
+        return light;
+    }
+
+    VkDescriptorImageInfo VKShadowPass::VoxelDepth() const {
+        return {sampler, voxelDepth->getImageView(), VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL};
+    }
+
     VKShadowPass::~VKShadowPass() {
+        voxelFrame.reset();
+        voxelDepth.reset();
         ReleaseTargets();
         vkDestroyPipeline(gpu->getDevice(), pipeline, nullptr);
         vkDestroyPipelineLayout(gpu->getDevice(), layout, nullptr);

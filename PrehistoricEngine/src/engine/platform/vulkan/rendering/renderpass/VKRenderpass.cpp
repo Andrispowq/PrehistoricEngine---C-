@@ -293,7 +293,7 @@ namespace Prehistoric {
 
     void VKRenderpass::CreatePostProcessing() {
         constexpr uint32_t levels = 8;
-        constexpr uint32_t maxSets = levels * 2 + (levels - 1) + 3;
+        constexpr uint32_t maxSets = levels * 2 + (levels - 1) + 4;
         VkDevice handle = device->getDevice();
         VkExtent2D extent = swapchain->getSwapchainExtent();
         bloomPass = CreateOutputPass(emission->getImageFormat(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -381,9 +381,11 @@ namespace Prehistoric {
             std::array<float, 4> bounds[MaxVolumeSpheres];
             std::array<float, 4> media[MaxVolumeSpheres];
             float anisotropy[MaxVolumeSpheres];
+            float voxelBounds[4];
+            int voxelOptions[4];
         };
 
-        static_assert(sizeof(VolumeUniforms) == 368);
+        static_assert(sizeof(VolumeUniforms) == 400);
     }
 
     void VKRenderpass::CreateVolumePass() {
@@ -402,7 +404,8 @@ namespace Prehistoric {
             {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
             {2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
             {7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
-            {8, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}
+            {8, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+            {9, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}
         };
         VkDescriptorSetLayoutCreateInfo set{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
         set.bindingCount = std::size(bindings);
@@ -410,7 +413,9 @@ namespace Prehistoric {
         Check(vkCreateDescriptorSetLayout(handle, &set, nullptr, &volumeSetLayout));
         const auto count = static_cast<uint32_t>(swapchain->getSwapchainImages().size());
         const VkDescriptorPoolSize sizes[] = {
-            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3 * count}, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2 * count}
+            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3 * count},
+            {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2 * count},
+            {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, count}
         };
         VkDescriptorPoolCreateInfo pool{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
         pool.maxSets = count;
@@ -425,9 +430,9 @@ namespace Prehistoric {
         volumeSets.resize(count);
         Check(vkAllocateDescriptorSets(handle, &alloc, volumeSets.data()));
         const auto buffer = [&](size_t size) {
-            return std::make_unique<VKBuffer>(device, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                              VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                              VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+            return std::make_unique<VKBuffer>(
+                device, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
         };
         for (auto descriptor: volumeSets) {
             auto &frame = volumeBuffers.emplace_back(VolumeFrame{
@@ -489,6 +494,12 @@ namespace Prehistoric {
             };
             uniforms.anisotropy[i] = sphere.anisotropy;
         }
+        auto min = renderer.voxelCenter - Vector3f(renderer.voxelExtent * 0.5f);
+        uniforms.voxelBounds[0] = min.x;
+        uniforms.voxelBounds[1] = min.y;
+        uniforms.voxelBounds[2] = min.z;
+        uniforms.voxelBounds[3] = renderer.voxelExtent;
+        uniforms.voxelOptions[0] = renderer.voxelSunShadows ? renderer.voxelResolution : 0;
         frame.media->MapMemory();
         frame.media->Store(&uniforms);
         frame.media->UnmapMemory();
@@ -497,9 +508,15 @@ namespace Prehistoric {
         frame.shadows->Store(&shadowUniforms);
         frame.shadows->UnmapMemory();
 
+        auto grid = renderer.GetVoxelBuffer();
+        VkDescriptorBufferInfo voxels{grid ? grid : frame.media->getBuffer(), 0, VK_WHOLE_SIZE};
         auto irradiance = renderer.getEnvironmentLighting()->getIrradiance();
         auto shadowMap = renderer.GetShadows().GetDepth();
         VkWriteDescriptorSet writes[] = {
+            {
+                VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, volumeSets[index], 9, 0, 1,
+                VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, nullptr, &voxels
+            },
             {
                 VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, volumeSets[index], 2, 0, 1,
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, &irradiance
@@ -514,6 +531,8 @@ namespace Prehistoric {
 
     VKRenderpass::~VKRenderpass() {
         VkDevice handle = device->getDevice();
+        vkDestroyPipeline(handle, tracePipeline, nullptr);
+        vkDestroyPipelineLayout(handle, traceLayout, nullptr);
         vkDestroyPipeline(handle, volumePipeline, nullptr);
         vkDestroyPipelineLayout(handle, volumeLayout, nullptr);
         vkDestroyDescriptorPool(handle, volumePool, nullptr);
@@ -608,6 +627,92 @@ namespace Prehistoric {
              });
     }
 
+    void VKRenderpass::PrepareVoxelScreen() {
+        if (receiverFramebuffer) return;
+        const auto extent = swapchain->getSwapchainExtent();
+        const auto samples = swapchain->getSceneSamples();
+        const bool msaa = samples != VK_SAMPLE_COUNT_1_BIT;
+        for (auto &view: receiverImages)
+            view = CreateImage(extent, VK_SAMPLE_COUNT_1_BIT)->getImageView();
+        // The main scene clears these multisample and depth attachments again after the receiver pass.
+        VkImageView views[] = {
+            msaa ? swapchain->getColourImage()->getImageView() : receiverImages[0],
+            msaa ? emissionTarget->getImageView() : receiverImages[1],
+            swapchain->getDepthImage()->getImageView(), receiverImages[0], receiverImages[1]
+        };
+        receiverFramebuffer = CreateFramebuffer(renderpass, extent, msaa ? 5 : 3, views);
+        receiverInputs = CreateInputs(receiverImages[0], receiverImages[1]);
+        for (unsigned i = 0; i < 2; ++i) {
+            VkExtent2D size{(extent.width + i) / (1 + i), (extent.height + i) / (1 + i)};
+            indirectImages[i] = CreateImage(size, VK_SAMPLE_COUNT_1_BIT)->getImageView();
+            indirectFrames[i] = CreateFramebuffer(bloomPass, size, 1, &indirectImages[i])->getFramebuffer();
+        }
+    }
+
+    VkDescriptorImageInfo VKRenderpass::VoxelScreenInput(int index, bool half) const {
+        return {
+            sampler, index == 2 ? indirectImages[half] : receiverImages[index],
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+        };
+    }
+
+    void VKRenderpass::BeginVoxelReceivers(VKCommandBuffer *buffer) {
+        BeginRenderpass(buffer, Vector4f(0.0f), receiverFramebuffer);
+    }
+
+    void VKRenderpass::TraceVoxelScreen(VKCommandBuffer *buffer, VKRenderer &renderer) {
+        if (!tracePipeline) {
+            VkDescriptorSetLayout sets[] = {hdrSetLayout, voxelPass->GridLayout()};
+            VkPushConstantRange push{VK_SHADER_STAGE_FRAGMENT_BIT, 0, 32};
+            VkPipelineLayoutCreateInfo create{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
+            create.setLayoutCount = 2;
+            create.pSetLayouts = sets;
+            create.pushConstantRangeCount = 1;
+            create.pPushConstantRanges = &push;
+            Check(vkCreatePipelineLayout(device->getDevice(), &create, nullptr, &traceLayout));
+            tracePipeline = CreateFullscreenPipeline("vulkan/postProcessing/hdr_VS.spv", "vulkan/voxel/trace.spv",
+                                                     traceLayout, bloomPass);
+        }
+        bool half = renderer.voxelHalfResolution;
+        const auto extent = swapchain->getSwapchainExtent();
+        const int stride = half ? 2 : 1;
+        VkExtent2D size{(extent.width + half) / stride, (extent.height + half) / stride};
+        auto cmd = buffer->getCommandBuffer();
+        voxelPass->Mark(cmd, VKVoxelView::Trace, false);
+        VkRenderPassBeginInfo begin{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
+        begin.renderPass = bloomPass;
+        begin.framebuffer = indirectFrames[half];
+        begin.renderArea.extent = size;
+        vkCmdBeginRenderPass(cmd, &begin, VK_SUBPASS_CONTENTS_INLINE);
+        VkViewport viewport{0, 0, float(size.width), float(size.height), 0, 1};
+        vkCmdSetViewport(cmd, 0, 1, &viewport);
+        vkCmdSetScissor(cmd, 0, 1, &begin.renderArea);
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, tracePipeline);
+        VkDescriptorSet sets[] = {receiverInputs, voxelPass->GridSet()};
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, traceLayout, 0, 2, sets, 0, nullptr);
+        auto min = renderer.voxelCenter - Vector3f(renderer.voxelExtent * 0.5f);
+        struct {
+            float bounds[4];
+            int options[4];
+        } params{
+            {min.x, min.y, min.z, renderer.voxelExtent},
+            {renderer.voxelResolution, int(renderer.voxelDirectional), stride, 0}
+        };
+        vkCmdPushConstants(cmd, traceLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(params), &params);
+        vkCmdDraw(cmd, 3, 1, 0, 0);
+        vkCmdEndRenderPass(cmd);
+        voxelPass->Mark(cmd, VKVoxelView::Trace, true);
+    }
+
+    VKVoxelView &VKRenderpass::Voxels(uint32_t resolution, bool lighting) {
+        if (!voxelPass || voxelPass->resolution != resolution || voxelPass->lighting != lighting) {
+            if (voxelPass) vkDeviceWaitIdle(device->getDevice());
+            voxelPass = std::make_unique<VKVoxelView>(device, *this, editorOutput ? editorPass : presentPass,
+                                                      resolution, lighting);
+        }
+        return *voxelPass;
+    }
+
     void VKRenderpass::RenderHDR(VKCommandBuffer *commandBuffer, VKRenderer &renderer, bool bloomEnabled,
                                  bool underwater) {
         const auto command = commandBuffer->getCommandBuffer();
@@ -615,8 +720,8 @@ namespace Prehistoric {
         const auto framebuffer = presentFramebuffers[swapchain->getAquiredImageIndex()];
         if (renderer.voxelView) {
             const auto pass = editorOutput ? editorPass : presentPass;
-            if (!voxelPass) voxelPass = std::make_unique<VKVoxelView>(device, *this, pass);
-            voxelPass->Render(command, renderer, pass, editorOutput ? editorFramebuffer : framebuffer, extent);
+            Voxels(renderer.voxelResolution, false)
+                    .Render(command, renderer, pass, editorOutput ? editorFramebuffer : framebuffer, extent);
         } else RenderLitHDR(commandBuffer, renderer, bloomEnabled, underwater);
         if (editorOutput) {
             vkCmdEndRenderPass(command);

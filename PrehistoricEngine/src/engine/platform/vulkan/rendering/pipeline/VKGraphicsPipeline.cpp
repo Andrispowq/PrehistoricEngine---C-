@@ -1,5 +1,6 @@
 #include "Includes.hpp"
 #include "VKGraphicsPipeline.h"
+#include "platform/vulkan/rendering/shaders/pbr/VKPBRShader.h"
 
 namespace Prehistoric {
     VKGraphicsPipeline::VKGraphicsPipeline(Window *window, AssetManager *manager, ShaderHandle shader,
@@ -11,18 +12,22 @@ namespace Prehistoric {
     VKGraphicsPipeline::~VKGraphicsPipeline() {
         vkDestroyPipeline(device->getDevice(), graphicsPipeline, nullptr);
         vkDestroyPipeline(device->getDevice(), wireframePipeline, nullptr);
+        vkDestroyPipeline(device->getDevice(), receiverPipeline, nullptr);
+        receiverPipeline = VK_NULL_HANDLE;
     }
 
     void VKGraphicsPipeline::BindPipeline(CommandBuffer *buffer) const {
         BindPipeline(buffer, false);
     }
 
-    void VKGraphicsPipeline::BindPipeline(CommandBuffer *buffer, bool wireframe) const {
+    void VKGraphicsPipeline::BindPipeline(CommandBuffer *buffer, bool wireframe, bool receivers) const {
         VKPipeline::BindPipeline(buffer);
 
         if (buffer) {
             vkCmdBindPipeline(((VKCommandBuffer *) buffer)->getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
-                              wireframe && wireframePipeline ? wireframePipeline : graphicsPipeline);
+                              receivers
+                                  ? receiverPipeline
+                                  : (wireframe && wireframePipeline ? wireframePipeline : graphicsPipeline));
             vbo->Bind(buffer);
         }
     }
@@ -46,6 +51,8 @@ namespace Prehistoric {
 
         vkDestroyPipeline(device->getDevice(), graphicsPipeline, nullptr);
         vkDestroyPipeline(device->getDevice(), wireframePipeline, nullptr);
+        vkDestroyPipeline(device->getDevice(), receiverPipeline, nullptr);
+        receiverPipeline = VK_NULL_HANDLE;
         CreatePipeline();
     }
 
@@ -186,6 +193,26 @@ namespace Prehistoric {
         if (vkCreateGraphicsPipelines(device->getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline)
             != VK_SUCCESS) {
             PR_LOG_RUNTIME_ERROR("Graphics pipeline creation has failed!\n");
+        }
+
+        if (dynamic_cast<VKPBRShader *>(shader) && topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST) {
+            auto code = ResourceLoader::LoadShaderVK("vulkan/voxel/receiver.spv");
+            VkShaderModuleCreateInfo moduleInfo{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
+            moduleInfo.codeSize = code.size();
+            moduleInfo.pCode = reinterpret_cast<const uint32_t *>(code.data());
+            VkShaderModule module{};
+            if (vkCreateShaderModule(device->getDevice(), &moduleInfo, nullptr, &module) != VK_SUCCESS)
+                throw std::runtime_error("Could not create the VXGI receiver shader");
+            auto stages = std::vector<VkPipelineShaderStageCreateInfo>(pipelineInfo.pStages,
+                                                                       pipelineInfo.pStages + pipelineInfo.stageCount);
+            for (auto &stage: stages)
+                if (stage.stage == VK_SHADER_STAGE_FRAGMENT_BIT) stage.module = module;
+            pipelineInfo.pStages = stages.data();
+            auto result = vkCreateGraphicsPipelines(device->getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
+                                                    &receiverPipeline);
+            vkDestroyShaderModule(device->getDevice(), module, nullptr);
+            if (result != VK_SUCCESS) throw std::runtime_error("Could not create the VXGI receiver pipeline");
+            pipelineInfo.pStages = shader->GetShaderStages();
         }
 
         VkPhysicalDeviceFeatures features{};

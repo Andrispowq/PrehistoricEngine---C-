@@ -1,6 +1,7 @@
 #include "EditorApp.h"
 
 #include "platform/opengl/rendering/GLRenderer.h"
+#include "platform/vulkan/rendering/VKRenderer.h"
 #include "prehistoric/application/Application.h"
 
 EditorApp::EditorApp() : Application(true) {
@@ -8,7 +9,7 @@ EditorApp::EditorApp() : Application(true) {
 
     auto *rendering = engineLayer->getRenderingEngine();
     auto scene = std::make_unique<Scene>("res/world/sponza_midnight_gi.json", rendering->getWindow(),
-                                        rendering->getCamera(), engineLayer->getAssetManager());
+                                         rendering->getCamera(), engineLayer->getAssetManager());
     engineLayer->SetScene(scene.get());
 
     if (__FrameworkConfig.api == OpenGL) {
@@ -18,6 +19,12 @@ EditorApp::EditorApp() : Application(true) {
         settings.resolutionIndex = 2; // 256³
         settings.traceDepth = 4;
         settings.directionalMips = true;
+    }
+
+    if (__FrameworkConfig.api == Vulkan) {
+        auto *vk = static_cast<VKRenderer *>(rendering->getRenderer());
+        vk->voxelGI = true;
+        vk->voxelResolution = 128;
     }
 
     editor = new EditorLayer(std::move(scene));

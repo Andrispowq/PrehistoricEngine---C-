@@ -32,9 +32,22 @@ namespace Prehistoric {
             return commandPool->getCommandBuffer(window->getSwapchain()->getAquiredImageIndex());
         }
 
+        VKShadowPass &GetShadows() { return *shadows; }
         const VKShadowPass &GetShadows() const { return *shadows; }
 
         bool voxelView = false;
+        bool voxelHalfResolution = true;
+        bool voxelGI = false, voxelDirectional = true, voxelSunShadows = false;
+        int voxelResolution = 128, voxelBounces = 4;
+        double voxelMilliseconds[6]{-1, -1, -1, -1, -1, -1};
+        float voxelStrength = 1.0f;
+
+        VkBuffer GetVoxelBuffer() const;
+
+        VkDescriptorImageInfo GetVoxelScreenInput(int index) const;
+
+        bool SupportsVoxelResolution(int size) const;
+
         Vector3f voxelCenter{0.0f};
         float voxelExtent = 400.0f;
 
@@ -74,7 +87,7 @@ namespace Prehistoric {
 
         void PrepareDescriptors();
 
-        void ProcessDraws(VKCommandBuffer *buffer, const CaptureConstants *capture = nullptr);
+        void ProcessDraws(VKCommandBuffer *buffer, const CaptureConstants *capture = nullptr, bool receivers = false);
 
         std::vector<Water *> waters;
 

@@ -16,12 +16,23 @@ layout(std140, set = 1, binding = 1) uniform Volumes
     vec4 sphereBounds[MaxSpheres];
     vec4 sphereMedia[MaxSpheres];
     vec4 anisotropies[2];
+    vec4 voxelBounds;
+    ivec4 voxelOptions;
 };
 #define sphereCount int(cameraAndCount.w)
 float volumeAnisotropy(int i) { return anisotropies[i / 4][i % 4]; }
 #define SHADOW_SET 1
 #include "../shadow/cascades.glsl"
-#define directionalVisibility cascadeSunVisibility
+layout(std430, set = 1, binding = 9) readonly buffer Grid { uint cells[]; };
+int voxelGridSize() { return voxelOptions.x; }
+#define voxelOcclusionExtent voxelBounds.w
+#define voxelOcclusionMin voxelBounds.xyz
+#include "../voxel/occlusion.glsl"
+float directionalVisibility(vec3 p, vec3 n, float bias, bool volume)
+{
+    if (voxelOptions.x > 0) return voxelVisibility(p, n, sunDirection.xyz, 2.0 * voxelBounds.w);
+    return cascadeSunVisibility(p, n, bias, volume);
+}
 #include "../../shared/postProcessing/volumetric.glsl"
 layout(push_constant) uniform Settings { vec4 options; };
 

@@ -12,6 +12,12 @@ OpenGL and Vulkan water are enabled in the sample. Vulkan selects its geometry o
 
 ## Remaining work
 
+**Next after Vulkan VXGI:** expose each imported submesh as an editable child of
+its model instance in the editor hierarchy. Preserve OBJ and PMF submesh names
+and support per-instance material overrides without changing other instances.
+Verify by editing one curtain under Sponza, saving the world, and reopening it.
+Preserve sub-object transforms and check PRM support if it is a separate format.
+
 7. Compare the existing Vulkan terrain against the corrected OpenGL terrain at matched camera positions, including LOD
    transitions and wireframe.
 9. Verify editor parity on native Vulkan and OpenGL desktops, including camera input, native file dialogs and moving
@@ -23,6 +29,7 @@ OpenGL and Vulkan water are enabled in the sample. Vulkan selects its geometry o
 12. Reactivate terrain collisions.
 13. Improve physics.
 14. Improve scripting.
+15. Add animation support.
 
 ### Vulkan rendering parity
 
@@ -37,21 +44,17 @@ OpenGL and Vulkan water are enabled in the sample. Vulkan selects its geometry o
    excludes the directly lit solar disk. Vulkan draws each layer separately on devices including Apple Silicon.
    Vulkan composites the editable spheres after bloom and before underwater effects and tone mapping. Both backends
    share the volume integration shader. Vulkan clips rays against sampled scene depth, using the nearest depth sample
-   at MSAA edges. Voxel-based sun visibility depends on the voxel rendering port.
-3. **Voxel rendering.** Vulkan has a cached 128³ occupied-voxel debug view for triangle meshes. Next port the occluder
-   and radiance volumes, emissive and sun
-   injection, diffuse bounce propagation, isotropic and six-direction mip chains, full- and half-resolution cone tracing
-   and surface-aware composite. Include voxel sun and point-light visibility, grid and memory limits, invalidation,
-   editor controls, shortcuts and stage timings. Use Midnight Sponza with bloom disabled.
-   See [the VXGI plan](VXGI_PLAN.md) for the OpenGL baseline.
+   at MSAA edges. Voxel sun visibility is available for meshes and media.
+3. **Voxel rendering.** Vulkan voxelizes opaque mesh triangles, bakes emissive and directional light, builds the
+   occlusion and radiance hierarchies and propagates diffuse bounces. The editor exposes the occupied grid,
+   directional mips, voxel sun shadows, full- and half-resolution tracing, surface filtering and GPU timings.
+   See [Vulkan VXGI](../BUILDING.md#vulkan-voxel-global-illumination) and the [OpenGL baseline](VXGI_PLAN.md).
 4. **Forward+ and surface buffers.** OpenGL shades materials in its main forward pass. Vulkan needs the depth prepass
    and tiled point-light lists, plus the position/metallic, albedo/roughness,
    and normal outputs consumed by screen-space effects. Introduce each attachment with its first consumer. Bloom, tone
    mapping, exposure, gamma, and the editor scene target already exist on Vulkan.
 
 ### Engine maintenance
-
-- Preserve named sub-objects from OBJ and native model imports, then expose their transforms and materials in the editor. Verify the scene round-trip on Sponza curtains. The current native loader uses PMF. Include PRM support if it refers to a separate format.
 
 - Review the world file format and loader/editor round-trip. Compare existing worlds for schema consistency, asset references, defaults, validation and versioning. Propose improvements and a migration path that preserves existing worlds.
 
@@ -61,7 +64,7 @@ OpenGL and Vulkan water are enabled in the sample. Vulkan selects its geometry o
 
 The [editor](../PrehistoricEditor/src/EditorApp.cpp) defaults to OpenGL. Select
 `Vulkan` in the [editor settings](../PrehistoricEditor/res/config/settings.json)
-to use the Vulkan backend. Both paths open Midnight Sponza. The OpenGL editor enables voxel GI on supported hardware.
+to use the Vulkan backend. Both paths open Midnight Sponza. Both editors enable voxel GI on supported hardware.
 
 The [editor panels](../PrehistoricEditor/src/EditorLayer.cpp) share the scene
 hierarchy, inspector, File menu, statistics, texture browser and environment

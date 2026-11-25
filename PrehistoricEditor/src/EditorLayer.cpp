@@ -113,7 +113,29 @@ void EditorLayer::ImGUIRender() {
             auto *gl = dynamic_cast<Prehistoric::GLRenderer *>(renderer);
             if (auto *vk = dynamic_cast<Prehistoric::VKRenderer *>(renderer)) {
                 ImGui::Checkbox("Voxel View (V)", &vk->voxelView);
-                if (vk->voxelView) {
+                ImGui::Checkbox("Voxel GI (G)", &vk->voxelGI);
+                ImGui::Checkbox("Voxel Sun Shadows", &vk->voxelSunShadows);
+                if (vk->voxelGI || vk->voxelView || vk->voxelSunShadows) {
+                    for (int size: {64, 128, 256, 512, 1024}) {
+                        if (!vk->SupportsVoxelResolution(size)) continue;
+                        if (ImGui::RadioButton((std::to_string(size) + " cubed").c_str(), vk->voxelResolution == size))
+                            vk->voxelResolution = size;
+                    }
+                    ImGui::Checkbox("Half-Resolution GI", &vk->voxelHalfResolution);
+                    ImGui::Checkbox("Directional Voxel Mips", &vk->voxelDirectional);
+                    ImGui::SliderFloat("GI Strength", &vk->voxelStrength, 0, 4);
+                    ImGui::SliderInt("GI Trace Depth", &vk->voxelBounces, 1, 5);
+                    if (vk->voxelGI && ImGui::TreeNode("Voxel GPU Timings")) {
+                        const char *labels[] = {
+                            "Geometry bake", "Occlusion and injection",
+                            "Bounce propagation", "Final radiance mips",
+                            "Cone tracing", "Main shading and GI composite"
+                        };
+                        for (unsigned i = 0; i < std::size(labels); ++i)
+                            if (vk->voxelMilliseconds[i] >= 0)
+                                ImGui::Text("%s  %.2f ms", labels[i], vk->voxelMilliseconds[i]);
+                        ImGui::TreePop();
+                    }
                     ImGui::DragFloat3("Volume Center", &vk->voxelCenter.x, 1.0f);
                     ImGui::DragFloat("Volume Width", &vk->voxelExtent, 1.0f, 1.0f, 100000.0f, "%.1f",
                                      ImGuiSliderFlags_AlwaysClamp);

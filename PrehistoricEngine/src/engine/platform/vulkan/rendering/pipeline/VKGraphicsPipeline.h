@@ -22,7 +22,9 @@ namespace Prehistoric {
 
         virtual void BindPipeline(CommandBuffer *buffer) const override;
 
-        void BindPipeline(CommandBuffer *buffer, bool wireframe) const;
+        void BindPipeline(CommandBuffer *buffer, bool wireframe, bool receivers = false) const;
+
+        bool HasVoxelReceiver() const { return receiverPipeline != VK_NULL_HANDLE; }
 
         virtual void RenderPipeline() const override;
 
@@ -44,6 +46,7 @@ namespace Prehistoric {
 
         VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         VkPipeline graphicsPipeline;
+        VkPipeline receiverPipeline{};
         VkPipeline wireframePipeline = VK_NULL_HANDLE;
     };
 };

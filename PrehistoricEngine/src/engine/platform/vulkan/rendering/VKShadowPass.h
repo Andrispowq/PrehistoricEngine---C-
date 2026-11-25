@@ -18,6 +18,10 @@ namespace Prehistoric {
 
         void Record(Renderer &renderer, VKCommandBuffer *buffer);
 
+        Matrix4f RecordVoxelShadow(Renderer &renderer, VkCommandBuffer cmd, Vector3f center, float extent, bool draw);
+
+        VkDescriptorImageInfo VoxelDepth() const;
+
         VkDescriptorImageInfo GetDepth() const;
 
         struct Uniforms {
@@ -33,6 +37,13 @@ namespace Prehistoric {
         const Light *GetSun() const { return sun; }
 
     private:
+        void DrawLayer(Renderer &renderer, VkCommandBuffer cmd, VKFramebuffer &frame, unsigned width,
+                       const Matrix4f &light, bool draw);
+
+        std::unique_ptr<VKImage> voxelDepth;
+        std::unique_ptr<VKFramebuffer> voxelFrame;
+        bool voxelDepthReady = false;
+
         void CreateTargets(unsigned size);
 
         void CreatePipeline();

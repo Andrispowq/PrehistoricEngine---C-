@@ -445,13 +445,24 @@ In the OpenGL editor, loading an HDR file selects it as the lighting source.
 Regenerate returns to the scene source. Both actions request a bake on the next
 rendered frame and bypass the refresh interval.
 
-## Vulkan occupied-voxel view
+## Vulkan voxel global illumination
 
-Open Sponza in the Vulkan editor and press **V** in the viewport, or enable the
-occupied-voxel view in **Render Settings**. Adjust the grid center and width to
-frame the geometry. The view shows mesh albedo in a 128³ grid. Moving the camera
-reuses the grid. Changes to mesh transforms, materials or grid placement trigger
-a new bake. The grid is allocated on first use.
+The Vulkan editor opens Midnight Sponza with voxel GI enabled, four lighting passes
+(direct injection and three diffuse bounces), directional radiance mips and
+half-resolution cone tracing. Press **G** to compare indirect lighting, **V** to
+inspect occupied cells, and **B** to cycle supported grids. **Render Settings**
+also controls grid placement, GI strength, bounce count, directional filtering,
+voxel sun shadows and trace resolution. Disable bloom to isolate the emitters'
+indirect illumination.
+
+The compute pass conservatively budgets a single device-local storage buffer
+against the device's maximum descriptor range, a quarter of the device-local heap
+and a 768 MiB ceiling. A 128³
+lighting grid occupies about 89 MiB. Camera movement reuses the bake. The
+receiver pass records mesh position and normal, and a surface-aware filter
+applies the traced irradiance during material shading. Timings are shown in
+milliseconds on queues that support timestamps. The main shading measurement
+includes the GI composite.
 
 ## OpenGL voxel rendering
 

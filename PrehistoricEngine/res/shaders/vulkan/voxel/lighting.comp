@@ -1,0 +1,111 @@
+#version 450
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(std430, binding = 0) buffer Grid { uint cells[]; };
+layout(push_constant) uniform Lighting
+{
+    vec4 direction;
+    vec4 sunlight;
+    ivec4 stage;
+    mat4 lightFromCell;
+};
+int voxelGridSize() { return stage.x; }
+#define directionalMips ((stage.w & 1) != 0)
+layout(binding = 1) uniform sampler2D voxelShadowMap;
+#define voxelOcclusionExtent float(voxelGridSize())
+#define voxelOcclusionMin vec3(0)
+#include "grid.glsl"
+#include "../../shared/voxel/voxel_surface.glsl"
+#include "../../shared/voxel/shadow.glsl"
+void storeFlux(int word, vec4 v)
+{
+    cells[word] = packHalf2x16(v.rg);
+    cells[word + 1] = packHalf2x16(v.ba);
+}
+// Dispatch order is recorded by VKVoxelView::Prepare.
+const int BuildOccluders = 0, Inject = 1, BuildRadianceMips = 2, Bounce = 3, UseNextBounce = 4;
+void main()
+{
+    int level = stage.z;
+    int size = voxelGridSize() >> level;
+    ivec3 p = ivec3(gl_GlobalInvocationID);
+    if (any(greaterThanEqual(p, ivec3(size)))) return;
+    int cell = linearCell(p, size);
+    if (stage.y == BuildOccluders)
+    {
+        uint occupied = 0u;
+        for (int i = 0; i < 8; ++i)
+        occupied |= cells[cellAt(2 * p + ivec3(i & 1, (i >> 1) & 1, i >> 2), level - 1)];
+        cells[cellAt(p, level)] = occupied;
+    }
+    else if (stage.y == Inject)
+    {
+        vec4 v = vec4(0);
+        if (occupiedBlock(p, 0))
+        {
+            uint surface = cells[surfaceOffset() + cell];
+            vec3 n = unpackBounceNormal(surface);
+            vec3 albedo = unpackUnorm4x8(cells[cell]).rgb;
+            float cosine = max(dot(n, direction.xyz), 0.0);
+            float visibility = 0;
+            if (cosine > 0 && any(greaterThan(sunlight.rgb, vec3(0))))
+            {
+                if ((stage.w & 2) != 0)
+                visibility = voxelVisibility(vec3(p) + 0.5, n, direction.xyz, 2.0 * size);
+                else
+                visibility =
+                voxelShadowVisibility((lightFromCell * vec4(vec3(p) + 0.5, 1)).xyz * 0.5 + 0.5,
+                        1.5 * 1.7320508 / (1024.0 * 2.7320508));
+            }
+            vec3 emission = exp2(8.0 * unpackUnorm4x8(cells[emissionOffset() + cell]).rgb) - 1.0;
+            v = vec4(emission + albedo * sunlight.rgb * (visibility * cosine / 3.141593), 1);
+        }
+        storeFlux(fluxAddress(p, 0, -1), v);
+        storeFlux(accumulatedOffset() + 2 * cell, v);
+    }
+    else if (stage.y == BuildRadianceMips)
+    {
+        vec4 children[8];
+        vec4 sum = vec4(0);
+        for (int i = 0; i < 8; ++i)
+        {
+            ivec3 q = 2 * p + ivec3(i & 1, (i >> 1) & 1, i >> 2);
+            children[i] = readFlux(fluxAddress(q, level - 1, -1));
+            sum += children[i];
+        }
+        storeFlux(fluxAddress(p, level, -1), sum * 0.125);
+        if (directionalMips)
+        for (int face = 0; face < 6; ++face)
+        {
+            int axis = face / 2;
+            vec4 result = vec4(0);
+            for (int i = 0; i < 8; ++i)
+            {
+                if (((i >> axis) & 1) != (face & 1)) continue;
+                int j = i ^ (1 << axis);
+                vec4 a = children[i], b = children[j];
+                if (level > 1)
+                {
+                    a = readFlux(
+                            fluxAddress(2 * p + ivec3(i & 1, (i >> 1) & 1, i >> 2), level - 1, face));
+                    b = readFlux(
+                            fluxAddress(2 * p + ivec3(j & 1, (j >> 1) & 1, j >> 2), level - 1, face));
+                }
+                result += a + (1.0 - a.a) * b;
+            }
+            storeFlux(fluxAddress(p, level, face), result * 0.25);
+        }
+    }
+    else if (stage.y == Bounce)
+    {
+        if (!occupiedBlock(p, 0)) return;
+        uint surface = cells[surfaceOffset() + cell];
+        vec3 bounce = unpackBounceReflectance(surface) *
+        traceHemisphere((vec3(p) + 0.5) / size, unpackBounceNormal(surface), 1.0 / size);
+        int accum = accumulatedOffset() + 2 * cell;
+        storeFlux(accum, vec4(readFlux(accum).rgb + bounce, 1));
+        storeFlux(nextOffset() + 2 * cell, vec4(bounce, 1));
+    }
+    else if (occupiedBlock(p, 0))
+    storeFlux(fluxAddress(p, 0, -1),
+            readFlux((stage.y == UseNextBounce ? nextOffset() : accumulatedOffset()) + 2 * cell));
+}

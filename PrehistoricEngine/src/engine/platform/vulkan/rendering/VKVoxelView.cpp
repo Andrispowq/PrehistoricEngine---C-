@@ -1,35 +1,81 @@
 #include "Includes.hpp"
 #include "VKVoxelView.h"
 #include "VKRenderer.h"
+#include "VKShadowPass.h"
 #include "platform/vulkan/rendering/pipeline/VKGraphicsPipeline.h"
 #include "prehistoric/core/node/component/renderer/RenderableComponent.h"
 #include "prehistoric/core/node/GameObject.h"
 
 namespace Prehistoric {
     namespace {
-        constexpr uint32_t Resolution = 128;
-
         void CheckVoxel(VkResult result) {
-            if (result != VK_SUCCESS) throw std::runtime_error(
-                "Vulkan voxel view failed (" + std::to_string(result) + ")");
+            if (result != VK_SUCCESS)
+                throw std::runtime_error(
+                    "Vulkan voxel view failed (" + std::to_string(result) + ")");
         }
     }
 
-    VKVoxelView::VKVoxelView(VKDevice *gpu, VKRenderpass &passes, VkRenderPass output)
-        : device(gpu->getDevice()) {
+    size_t VKVoxelView::GridBytes(unsigned resolution, bool lighting) {
+        const size_t count = size_t(resolution) * resolution * resolution;
+        const size_t pyramid = (8 * count - 1) / 7;
+        // Occupancy pyramid, surface and emission, isotropic and six directional
+        // half-float radiance chains, plus accumulation and next-bounce grids.
+        return sizeof(uint32_t) * (lighting ? 15 * pyramid - 6 * count : count);
+    }
+
+    void VKVoxelView::Mark(VkCommandBuffer cmd, Timing stage, bool end) {
+        if (!timers) return;
+        vkCmdWriteTimestamp(cmd, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, timers, 2 * stage + int(end));
+        if (end) recorded[stage] = true;
+    }
+
+    void VKVoxelView::StartTimings(VkCommandBuffer cmd, VKRenderer &renderer) {
+        if (!timers) return;
+        for (int i = 0; i < TimingCount; ++i) {
+            if (!recorded[i]) continue;
+            uint64_t timestamps[2]{};
+            if (vkGetQueryPoolResults(device, timers, 2 * i, 2, sizeof(timestamps), timestamps, sizeof(uint64_t),
+                                      VK_QUERY_RESULT_64_BIT) == VK_SUCCESS)
+                renderer.voxelMilliseconds[i] = double((timestamps[1] - timestamps[0]) & timestampMask) * timestampMs;
+            recorded[i] = false;
+        }
+        vkCmdResetQueryPool(cmd, timers, 0, 2 * TimingCount);
+    }
+
+    VKVoxelView::VKVoxelView(VKDevice *gpu, VKRenderpass &passes, VkRenderPass output, uint32_t resolution,
+                             bool lighting)
+        : resolution(resolution), lighting(lighting), device(gpu->getDevice()) {
         static_assert(Vertex::getNumberOfFloats() == 11);
-        static_assert(sizeof(Surface) == 112);
+        static_assert(sizeof(Surface) == 128);
         try {
-            cells = std::make_unique<VKBuffer>(gpu, Resolution * Resolution * Resolution * sizeof(uint32_t),
+            VkPhysicalDeviceProperties properties;
+            vkGetPhysicalDeviceProperties(gpu->getPhysicalDevice(), &properties);
+            uint32_t families = 0;
+            vkGetPhysicalDeviceQueueFamilyProperties(gpu->getPhysicalDevice(), &families, nullptr);
+            std::vector<VkQueueFamilyProperties> queues(families);
+            vkGetPhysicalDeviceQueueFamilyProperties(gpu->getPhysicalDevice(), &families, queues.data());
+            auto bits = queues[gpu->getQueueFamilyIndices().graphicsFamily].timestampValidBits;
+            if (bits && lighting) {
+                timestampMs = properties.limits.timestampPeriod * 1e-6;
+                timestampMask = UINT64_MAX >> (64 - bits);
+                VkQueryPoolCreateInfo create{VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO};
+                create.queryType = VK_QUERY_TYPE_TIMESTAMP;
+                create.queryCount = 2 * TimingCount;
+                CheckVoxel(vkCreateQueryPool(device, &create, nullptr, &timers));
+            }
+            cells = std::make_unique<VKBuffer>(gpu, GridBytes(resolution, lighting),
                                                VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                                                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
             auto layout = [&](VkShaderStageFlags stage, uint32_t count, uint32_t bytes, VkDescriptorSetLayout &set,
                               VkPipelineLayout &pipeline) {
-                VkDescriptorSetLayoutBinding bindings[4]{};
+                VkDescriptorSetLayoutBinding bindings[5]{};
                 for (uint32_t i = 0; i < count; ++i)
                     bindings[i] = {
-                        i, i == 3 ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1,
-                        stage, nullptr
+                        i,
+                        i >= 3 || (count == 2 && i == 1)
+                            ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+                            : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                        1, stage, nullptr
                     };
                 VkDescriptorSetLayoutCreateInfo info{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
                 info.bindingCount = count;
@@ -42,23 +88,34 @@ namespace Prehistoric {
                 create.pPushConstantRanges = &push;
                 CheckVoxel(vkCreatePipelineLayout(device, &create, nullptr, &pipeline));
             };
-            layout(VK_SHADER_STAGE_COMPUTE_BIT, 4, sizeof(Surface), bakeSet, bakeLayout);
+            layout(VK_SHADER_STAGE_COMPUTE_BIT, 5, sizeof(Surface), bakeSet, bakeLayout);
             layout(VK_SHADER_STAGE_FRAGMENT_BIT, 1, 84, viewSet, viewLayout);
-            auto code = ResourceLoader::LoadShaderVK("vulkan/voxel/occupancy.spv");
-            VkShaderModuleCreateInfo moduleInfo{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
-            moduleInfo.codeSize = code.size();
-            moduleInfo.pCode = reinterpret_cast<const uint32_t *>(code.data());
-            VkShaderModule module{};
-            CheckVoxel(vkCreateShaderModule(device, &moduleInfo, nullptr, &module));
-            VkComputePipelineCreateInfo pipeline{VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO};
-            pipeline.stage = {
-                VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO, nullptr, 0, VK_SHADER_STAGE_COMPUTE_BIT, module,
-                "main"
+            auto compute = [&](const char *path, VkPipelineLayout layout, VkPipeline &out) {
+                auto code = ResourceLoader::LoadShaderVK(path);
+                VkShaderModuleCreateInfo moduleInfo{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
+                moduleInfo.codeSize = code.size();
+                moduleInfo.pCode = reinterpret_cast<const uint32_t *>(code.data());
+                VkShaderModule module{};
+                CheckVoxel(vkCreateShaderModule(device, &moduleInfo, nullptr, &module));
+                VkComputePipelineCreateInfo pipeline{VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO};
+                pipeline.stage = {
+                    VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+                    nullptr,
+                    0,
+                    VK_SHADER_STAGE_COMPUTE_BIT,
+                    module,
+                    "main"
+                };
+                pipeline.layout = layout;
+                auto result = vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipeline, nullptr, &out);
+                vkDestroyShaderModule(device, module, nullptr);
+                CheckVoxel(result);
             };
-            pipeline.layout = bakeLayout;
-            auto result = vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipeline, nullptr, &bakePipeline);
-            vkDestroyShaderModule(device, module, nullptr);
-            CheckVoxel(result);
+            compute("vulkan/voxel/occupancy.spv", bakeLayout, bakePipeline);
+            if (lighting) {
+                layout(VK_SHADER_STAGE_COMPUTE_BIT, 2, 112, lightSet, lightLayout);
+                compute("vulkan/voxel/lighting.spv", lightLayout, lightPipeline);
+            }
             viewPipeline = passes.CreateFullscreenPipeline("vulkan/postProcessing/hdr_VS.spv", "vulkan/voxel/view.spv",
                                                            viewLayout, output);
         } catch (...) {
@@ -68,7 +125,11 @@ namespace Prehistoric {
     }
 
     void VKVoxelView::Release() {
+        vkDestroyQueryPool(device, timers, nullptr);
         vkDestroyDescriptorPool(device, pool, nullptr);
+        vkDestroyPipeline(device, lightPipeline, nullptr);
+        vkDestroyPipelineLayout(device, lightLayout, nullptr);
+        vkDestroyDescriptorSetLayout(device, lightSet, nullptr);
         vkDestroyPipeline(device, bakePipeline, nullptr);
         vkDestroyPipeline(device, viewPipeline, nullptr);
         vkDestroyPipelineLayout(device, bakeLayout, nullptr);
@@ -80,10 +141,11 @@ namespace Prehistoric {
     VKVoxelView::~VKVoxelView() { Release(); }
 
     bool VKVoxelView::Draw::operator==(const Draw &other) const {
-        return vertices == other.vertices && indices == other.indices && albedo == other.albedo && sampler == other.
-               sampler
-               && surface.model == other.surface.model && surface.colour == other.surface.colour
-               && surface.grid == other.surface.grid && surface.range == other.surface.range;
+        return vertices == other.vertices && indices == other.indices && albedo == other.albedo &&
+               sampler == other.sampler && surface.model == other.surface.model &&
+               surface.colour == other.surface.colour && metallic == other.metallic &&
+               metallicSampler == other.metallicSampler && surface.material == other.surface.material &&
+               surface.grid == other.surface.grid && surface.range == other.surface.range;
     }
 
     std::vector<VKVoxelView::Draw> VKVoxelView::Collect(VKRenderer &renderer, const Vec4 &grid) const {
@@ -115,9 +177,17 @@ namespace Prehistoric {
                         draw.sampler = tex->getSampler();
                         std::copy_n(transform.m, 16, draw.surface.model.begin());
                         draw.surface.grid = grid;
-                        draw.surface.colour = {colour.x, colour.y, colour.z, 1};
+                        auto *metal = static_cast<VKTexture *>(material->getTexture(MROT_MAP));
+                        draw.metallic = metal->getImage()->getImageView();
+                        draw.metallicSampler = metal->getSampler();
+                        draw.surface.colour = {
+                            colour.x, colour.y, colour.z,
+                            std::max(0.0f, material->getFloat(EMISSION))
+                        };
+                        draw.surface.material = {material->getVector4f(MROT).x, 0, 0, 0};
                         draw.surface.range = {
-                            mesh->FirstIndex(i), mesh->IndexCount(i) / 3, Resolution, uint32_t(mapped)
+                            mesh->FirstIndex(i), mesh->IndexCount(i) / 3, resolution,
+                            uint32_t(mapped) | (lighting ? 2u : 0u)
                         };
                         draws.push_back(draw);
                     }
@@ -132,8 +202,9 @@ namespace Prehistoric {
         const bool reuse = pool && previous.size() == draws.size() &&
                            std::equal(previous.begin(), previous.end(), draws.begin(),
                                       [](const Draw &a, const Draw &b) {
-                                          return a.vertices == b.vertices && a.indices == b.indices && a.albedo == b.
-                                                 albedo && a.sampler == b.sampler;
+                                          return a.vertices == b.vertices && a.indices == b.indices &&
+                                                 a.albedo == b.albedo && a.sampler == b.sampler &&
+                                                 a.metallic == b.metallic && a.metallicSampler == b.metallicSampler;
                                       });
         if (!reuse) {
             if (pool) {
@@ -142,34 +213,39 @@ namespace Prehistoric {
                 pool = VK_NULL_HANDLE;
             }
             VkDescriptorPoolSize sizes[] = {
-                {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 3 * count + 1},
-                {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, std::max(1u, count)}
+                {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 3 * count + 2},
+                {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2 * count + 1}
             };
             VkDescriptorPoolCreateInfo create{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
-            create.maxSets = count + 1;
+            create.maxSets = count + 1 + uint32_t(lighting);
             create.poolSizeCount = 2;
             create.pPoolSizes = sizes;
             CheckVoxel(vkCreateDescriptorPool(device, &create, nullptr, &pool));
             std::vector<VkDescriptorSetLayout> layouts(count + 1, bakeSet);
             layouts.back() = viewSet;
-            sets.resize(count + 1);
+            if (lighting) layouts.push_back(lightSet);
+            sets.resize(layouts.size());
             VkDescriptorSetAllocateInfo alloc{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
             alloc.descriptorPool = pool;
-            alloc.descriptorSetCount = count + 1;
+            alloc.descriptorSetCount = uint32_t(layouts.size());
             alloc.pSetLayouts = layouts.data();
             CheckVoxel(vkAllocateDescriptorSets(device, &alloc, sets.data()));
-            viewInputs = sets.back();
+            viewInputs = sets[count];
             VkWriteDescriptorSet gridWrite{
                 VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, viewInputs, 0, 0, 1,
                 VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, nullptr, &grid
             };
             vkUpdateDescriptorSets(device, 1, &gridWrite, 0, nullptr);
+            if (lighting) {
+                gridWrite.dstSet = lightInputs = sets.back();
+                vkUpdateDescriptorSets(device, 1, &gridWrite, 0, nullptr);
+            }
             for (uint32_t i = 0; i < count; ++i) {
                 const auto &draw = draws[i];
                 VkDescriptorBufferInfo buffers[] = {
                     grid, {draw.vertices, 0, VK_WHOLE_SIZE}, {draw.indices, 0, VK_WHOLE_SIZE}
                 };
-                VkWriteDescriptorSet writes[4]{};
+                VkWriteDescriptorSet writes[5]{};
                 for (uint32_t j = 0; j < 3; ++j)
                     writes[j] = {
                         VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, sets[i], j, 0, 1,
@@ -180,7 +256,14 @@ namespace Prehistoric {
                     VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, sets[i], 3, 0, 1,
                     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, &image
                 };
-                vkUpdateDescriptorSets(device, 4, writes, 0, nullptr);
+                VkDescriptorImageInfo metal{
+                    draw.metallicSampler, draw.metallic,
+                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+                };
+                writes[4] = writes[3];
+                writes[4].dstBinding = 4;
+                writes[4].pImageInfo = &metal;
+                vkUpdateDescriptorSets(device, 5, writes, 0, nullptr);
             }
         }
         // A previous frame may still be tracing this grid when the scene changes.
@@ -212,7 +295,113 @@ namespace Prehistoric {
             VK_ACCESS_SHADER_READ_BIT
         };
         vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-                             VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &ready, 0, nullptr, 0, nullptr);
+                             VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 1, &ready,
+                             0, nullptr, 0, nullptr);
+    }
+
+    void VKVoxelView::Prepare(VkCommandBuffer cmd, VKRenderer &renderer) {
+        const auto width = renderer.voxelExtent;
+        const auto min = renderer.voxelCenter - Vector3f(width * 0.5f);
+        const Vec4 grid{min.x, min.y, min.z, width};
+        StartTimings(cmd, renderer);
+        auto draws = Collect(renderer, grid);
+        const bool geometryChanged = !pool || previous != draws;
+        if (geometryChanged) {
+            Mark(cmd, Geometry, false);
+            Bake(cmd, draws);
+            Mark(cmd, Geometry, true);
+            previous = std::move(draws);
+        }
+        if (!lighting) return;
+        const auto &sun = renderer.GetShadows().GetUniforms();
+        Vec4 direction{}, radiance{};
+        std::copy_n(sun.direction, 4, direction.begin());
+        std::copy_n(sun.radiance, 4, radiance.begin());
+        std::vector<std::pair<VkBuffer, std::array<float, 16> > > casters;
+        const bool sunActive = radiance[0] > 0 || radiance[1] > 0 || radiance[2] > 0;
+        if (!renderer.voxelSunShadows && sunActive) {
+            for (const auto &[pipeline, batches]: renderer.getModelsTransparency()) {
+                auto *graphics = static_cast<VKGraphicsPipeline *>(pipeline);
+                if (graphics->getTopology() != VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST ||
+                    graphics->getVertexBuffer()->getType() != VertexBufferType::MESH)
+                    continue;
+                auto mesh = static_cast<VKMeshVertexBuffer *>(graphics->getVertexBuffer())->GetVertexBuffer();
+                for (const auto &[material, objects]: batches)
+                    for (auto *object: objects) {
+                        auto matrix = object->getParent()->getWorldTransform().getTransformationMatrix();
+                        auto &entry = casters.emplace_back();
+                        entry.first = mesh;
+                        std::copy_n(matrix.m, 16, entry.second.begin());
+                    }
+            }
+        }
+        int depth = renderer.voxelGI ? renderer.voxelBounces : 0;
+        if (!geometryChanged && depth == previousBounces && casters == previousCasters &&
+            renderer.voxelSunShadows == previousVoxelShadows && direction == previousDirection &&
+            radiance == previousSun && renderer.voxelDirectional == previousDirectional)
+            return;
+        previousDirection = direction;
+        previousSun = radiance;
+        previousBounces = depth;
+        previousCasters = std::move(casters);
+        previousVoxelShadows = renderer.voxelSunShadows;
+        Mark(cmd, Injection, false);
+        const auto light = renderer.GetShadows().RecordVoxelShadow(renderer, cmd, renderer.voxelCenter, width,
+                                                                   depth > 0 && sunActive && !renderer.voxelSunShadows);
+        const auto lightFromCell =
+                light * Matrix4f::Translation(min) * Matrix4f::Scaling(Vector3f(width / float(resolution)));
+        auto shadow = renderer.GetShadows().VoxelDepth();
+        VkWriteDescriptorSet shadowWrite{
+            VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, lightInputs, 1, 0, 1,
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, &shadow
+        };
+        vkUpdateDescriptorSets(device, 1, &shadowWrite, 0, nullptr);
+        previousDirectional = renderer.voxelDirectional;
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, lightPipeline);
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, lightLayout, 0, 1, &lightInputs, 0, nullptr);
+        auto dispatch = [&](int stage, int level) {
+            struct {
+                Vec4 direction, radiance;
+                int settings[4];
+                float light[16];
+            } params{
+                direction,
+                radiance,
+                {int(resolution), stage, level, int(previousDirectional) | (int(previousVoxelShadows) << 1)}
+            };
+            std::copy_n(lightFromCell.m, 16, params.light);
+            vkCmdPushConstants(cmd, lightLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(params), &params);
+            uint32_t groups = ((resolution >> level) + 3) / 4;
+            vkCmdDispatch(cmd, groups, groups, groups);
+            VkMemoryBarrier barrier{
+                VK_STRUCTURE_TYPE_MEMORY_BARRIER, nullptr, VK_ACCESS_SHADER_WRITE_BIT,
+                VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT
+            };
+            vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                                 VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1,
+                                 &barrier, 0, nullptr, 0, nullptr);
+        };
+        auto pyramid = [&](int stage) {
+            for (int level = 1; (resolution >> level) > 0; ++level)
+                dispatch(stage, level);
+        };
+        if (geometryChanged) pyramid(0);
+        if (!depth) {
+            Mark(cmd, Injection, true);
+            return;
+        }
+        dispatch(1, 0); // Direct radiance and accumulation base.
+        Mark(cmd, Injection, true);
+        Mark(cmd, Bounces, false);
+        for (int bounce = 1; bounce < previousBounces; ++bounce) {
+            pyramid(2);
+            dispatch(3, 0);
+            dispatch(bounce + 1 == previousBounces ? 5 : 4, 0);
+        }
+        Mark(cmd, Bounces, true);
+        Mark(cmd, Mips, false);
+        pyramid(2);
+        Mark(cmd, Mips, true);
     }
 
     void VKVoxelView::Render(VkCommandBuffer cmd, VKRenderer &renderer, VkRenderPass pass, VkFramebuffer frame,
@@ -220,11 +409,7 @@ namespace Prehistoric {
         const auto width = renderer.voxelExtent;
         const auto min = renderer.voxelCenter - Vector3f(width * 0.5f);
         const Vec4 grid{min.x, min.y, min.z, width};
-        auto draws = Collect(renderer, grid);
-        if (!pool || previous != draws) {
-            Bake(cmd, draws);
-            previous = std::move(draws);
-        }
+        Prepare(cmd, renderer);
         VkRenderPassBeginInfo begin{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
         begin.renderPass = pass;
         begin.framebuffer = frame;
@@ -239,7 +424,7 @@ namespace Prehistoric {
             float inverse[16];
             Vec4 grid;
             uint32_t size;
-        } params{{}, grid, Resolution};
+        } params{{}, grid, resolution};
         const auto inverse = renderer.getCamera()->getViewProjectionMatrix().Invert();
         std::copy_n(inverse.m, 16, params.inverse);
         vkCmdPushConstants(cmd, viewLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(params), &params);
