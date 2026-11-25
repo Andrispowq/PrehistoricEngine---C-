@@ -6,10 +6,11 @@ layout (location = 2) out vec4 outAlbedoRoughness;
 layout (location = 3) out vec4 outNormal;
 layout (location = 4) out vec4 outBloom;
 
+#include "shared/water/wireframe.glsl"
 
 void main()
 {
-	outColour = vec4(.07, .08, .9, 1);
+    outColour = waterWireframeColour;
 	outPositionMetallic = vec4(0.0);
 	outAlbedoRoughness = vec4(0.0);
 	outNormal = vec4(0.0);

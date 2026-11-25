@@ -13,32 +13,37 @@
 
 #include "prehistoric/core/util/math/Math.h"
 
-namespace Prehistoric
-{
-	class VKGraphicsPipeline : public VKPipeline, public GraphicsPipeline
-	{
-	public:
-		VKGraphicsPipeline(Window* window, AssetManager* manager, ShaderHandle shader, VertexBufferHandle vbo);
-		virtual ~VKGraphicsPipeline();
+namespace Prehistoric {
+    class VKGraphicsPipeline : public VKPipeline, public GraphicsPipeline {
+    public:
+        VKGraphicsPipeline(Window *window, AssetManager *manager, ShaderHandle shader, VertexBufferHandle vbo);
 
-		virtual void BindPipeline(CommandBuffer* buffer) const override;
-		void BindPipeline(CommandBuffer* buffer, bool wireframe) const;
-		virtual void RenderPipeline() const override;
-		virtual void UnbindPipeline() const override;
+        virtual ~VKGraphicsPipeline();
 
-		virtual void RecreatePipeline();
+        virtual void BindPipeline(CommandBuffer *buffer) const override;
 
-		virtual uint64_t GetHash() override;
+        void BindPipeline(CommandBuffer *buffer, bool wireframe) const;
 
-		VkPipeline getGraphicsPipeline() const { return graphicsPipeline; }
-	private:
-		void CreatePipeline();
-	private:
-		VKRenderpass* renderpass;
+        virtual void RenderPipeline() const override;
 
-		VkPipeline graphicsPipeline;
-		VkPipeline wireframePipeline = VK_NULL_HANDLE;
-	};
+        virtual void UnbindPipeline() const override;
+
+        virtual void RecreatePipeline();
+
+        virtual uint64_t GetHash() override;
+
+        bool hasWireframePipeline() const { return wireframePipeline != VK_NULL_HANDLE; }
+        VkPipeline getGraphicsPipeline() const { return graphicsPipeline; }
+
+    private:
+        void CreatePipeline();
+
+    private:
+        VKRenderpass *renderpass;
+
+        VkPipeline graphicsPipeline;
+        VkPipeline wireframePipeline = VK_NULL_HANDLE;
+    };
 };
 
 #endif

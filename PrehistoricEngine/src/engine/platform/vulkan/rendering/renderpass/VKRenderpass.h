@@ -19,15 +19,17 @@ namespace Prehistoric {
 
         virtual ~VKRenderpass();
 
-        void BeginRenderpass(VKCommandBuffer *commandBuffer, Vector4f clearColour, VkFramebuffer target = VK_NULL_HANDLE);
+        void BeginRenderpass(VKCommandBuffer *commandBuffer, Vector4f clearColour,
+                             const VKFramebuffer *target = nullptr);
 
-        struct WaterTargets
-        {
+        struct WaterTargets {
             std::unique_ptr<VKTexture> reflection, refraction;
             std::unique_ptr<VKFramebuffer> reflectionFrame, refractionFrame;
         };
-        WaterTargets& GetWaterTargets(const Water* water);
-        void RetainWaterTargets(const std::vector<Water*>& active);
+
+        WaterTargets &GetWaterTargets(const Water *water);
+
+        void RetainWaterTargets(const std::vector<Water *> &active);
 
         Texture *getEditorOutput() const { return editorOutput.get(); }
         VkRenderPass getPresentPass() const { return presentPass; }
@@ -72,8 +74,13 @@ namespace Prehistoric {
         VkPipeline hdrPipeline{};
         VkPipeline bloomPipeline{};
         VkDescriptorSet hdrInputs[2]{};
-        std::unordered_map<const Water*, WaterTargets> waterTargets;
-        VKImage* emissionTarget{};
+        std::unordered_map<const Water *, WaterTargets> waterTargets;
+        // Sequential water captures share attachments whose contents are discarded.
+        std::unique_ptr<VKImage> captureDepth;
+        VKImage *captureEmission{};
+        VKImage *captureMsaaColour{};
+        VKImage *captureMsaaEmission{};
+        VKImage *emissionTarget{};
         VKImage *emission{};
         VKFramebuffer *sceneFramebuffer{};
         std::vector<std::unique_ptr<VKImage> > images;

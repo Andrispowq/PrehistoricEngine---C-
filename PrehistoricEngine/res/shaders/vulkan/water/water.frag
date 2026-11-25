@@ -2,6 +2,7 @@
 #extension GL_GOOGLE_include_directive : require
 #include "../pbr/camera.glsl"
 #include "params.glsl"
+#include "../../shared/water/wireframe.glsl"
 layout(location=0) in vec4 world;
 layout(location=1) in vec2 waveUV;
 layout(location=0) out vec4 sceneColour;
@@ -26,12 +27,21 @@ layout(set=1,binding=0) uniform sampler2D dudvMap;
 #define specularFactor sunlight.w
 #define sunRadiance radiance.rgb
 vec3 sampleReflection(vec2 uv) { return texture(waterReflection, vec2(1.0 - uv.x, uv.y)).rgb; }
-float sampleRefractionDepth(vec2 uv) { return texture(refractionDepth, uv).a; }
+float sampleRefractionDepth(vec2 uv)
+{
+    ivec2 size = textureSize(refractionDepth, 0);
+    return texelFetch(refractionDepth, clamp(ivec2(uv * size), ivec2(0), size - 1), 0).a;
+}
 #include "../../shared/water/surface.glsl"
 void main()
 {
+    bloom = vec4(0);
+    if (tessellation.w != 0.0)
+    {
+        sceneColour = waterWireframeColour;
+        return;
+    }
     vec3 face = cross(dFdx(world.xyz), dFdy(world.xyz));
     vec3 normal;
     sceneColour = vec4(shadeWater(world, waveUV, face.y < 0 ? -face : face, normal), 1);
-    bloom = vec4(0);
 }

@@ -14,11 +14,18 @@ layout(push_constant) uniform Settings
 
 #include "../../shared/postProcessing/hdr.glsl"
 
-#include "../../shared/water/underwater.glsl"
-void main()
+vec3 sampleSceneColour(vec2 uv)
 {
     vec3 colour = texture(scene, uv).rgb;
     if (hdr.bloomEnabled > 0.0) colour += texture(bloom, uv).rgb;
-    if (hdr.underwater > 0) colour = underwaterColour(scene, uv, vec2(textureSize(scene,0)), colour);
+    return colour;
+}
+
+#include "../../shared/water/underwater.glsl"
+
+void main()
+{
+    vec3 colour = sampleSceneColour(uv);
+    if (hdr.underwater > 0) colour = underwaterColour(uv, vec2(textureSize(scene, 0)), colour);
     outColour = vec4(ToneMapHDR(colour, hdr.exposure, hdr.gamma), 1.0);
 }

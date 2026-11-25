@@ -1,5 +1,6 @@
 #include "Includes.hpp"
 #include "VKRenderpass.h"
+#include "prehistoric/core/modules/water/Water.h"
 #include "prehistoric/application/Application.h"
 #include "prehistoric/common/rendering/shaders/Shader.h"
 #include "platform/vulkan/rendering/shaders/VKColourSpace.h"
@@ -202,29 +203,43 @@ namespace Prehistoric {
         sceneFramebuffer = CreateFramebuffer(renderpass, extent, count, views);
     }
 
-    VKRenderpass::WaterTargets& VKRenderpass::GetWaterTargets(const Water* water)
-    {
-        auto& targets = waterTargets[water];
+    VKRenderpass::WaterTargets &VKRenderpass::GetWaterTargets(const Water *water) {
+        auto &targets = waterTargets[water];
         if (targets.reflectionFrame) return targets;
-        const auto extent = swapchain->getSwapchainExtent();
-        bool resolve = swapchain->getSceneSamples() != VK_SAMPLE_COUNT_1_BIT;
-        auto make = [&](std::unique_ptr<VKTexture>& texture, std::unique_ptr<VKFramebuffer>& framebuffer)
-        {
+        constexpr VkExtent2D extent{Water::captureSize, Water::captureSize};
+        const auto samples = swapchain->getSceneSamples();
+        const bool resolve = samples != VK_SAMPLE_COUNT_1_BIT;
+        if (!captureDepth) {
+            captureDepth = std::make_unique<VKImage>(device, extent.width, extent.height, 1,
+                                                     swapchain->getDepthImage()->getImageFormat(),
+                                                     VK_IMAGE_TILING_OPTIMAL,
+                                                     VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, samples,
+                                                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                                                     VK_IMAGE_ASPECT_DEPTH_BIT);
+            captureEmission = CreateImage(extent, VK_SAMPLE_COUNT_1_BIT);
+            if (resolve) {
+                captureMsaaColour = CreateImage(extent, samples);
+                captureMsaaEmission = CreateImage(extent, samples);
+            }
+        }
+        auto make = [&](std::unique_ptr<VKTexture> &texture, std::unique_ptr<VKFramebuffer> &framebuffer) {
             texture = VKTexture::CreateColourTarget(device, extent, emission->getImageFormat());
             VkImageView colour = texture->getImage()->getImageView();
-            VkImageView views[] = {resolve ? swapchain->getColourImage()->getImageView() : colour,
-                emissionTarget->getImageView(), swapchain->getDepthImage()->getImageView(), colour, emission->getImageView()};
-            framebuffer = std::make_unique<VKFramebuffer>(device->getDevice(), renderpass, extent.width, extent.height, resolve ? 5 : 3, views);
+            VkImageView views[] = {
+                resolve ? captureMsaaColour->getImageView() : colour,
+                (resolve ? captureMsaaEmission : captureEmission)->getImageView(), captureDepth->getImageView(),
+                colour, captureEmission->getImageView()
+            };
+            framebuffer = std::make_unique<VKFramebuffer>(device->getDevice(), renderpass, extent.width, extent.height,
+                                                          resolve ? 5 : 3, views);
         };
-        make(targets.reflection,targets.reflectionFrame);
-        make(targets.refraction,targets.refractionFrame);
+        make(targets.reflection, targets.reflectionFrame);
+        make(targets.refraction, targets.refractionFrame);
         return targets;
     }
 
-    void VKRenderpass::RetainWaterTargets(const std::vector<Water*>& active)
-    {
-        for (auto it = waterTargets.begin(); it != waterTargets.end(); )
-        {
+    void VKRenderpass::RetainWaterTargets(const std::vector<Water *> &active) {
+        for (auto it = waterTargets.begin(); it != waterTargets.end();) {
             if (std::find(active.begin(), active.end(), it->first) == active.end()) it = waterTargets.erase(it);
             else ++it;
         }
@@ -363,17 +378,23 @@ namespace Prehistoric {
         vkDestroyRenderPass(handle, renderpass, nullptr);
     }
 
-    void VKRenderpass::BeginRenderpass(VKCommandBuffer *commandBuffer, Vector4f clearColour, VkFramebuffer target) {
+    void VKRenderpass::BeginRenderpass(VKCommandBuffer *commandBuffer, Vector4f clearColour,
+                                       const VKFramebuffer *target) {
         VkClearValue clear[3]{};
         clear[0].color = {clearColour.x, clearColour.y, clearColour.z, clearColour.w};
         clear[2].depthStencil = {1, 0};
         VkRenderPassBeginInfo info{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
         info.renderPass = renderpass;
-        info.framebuffer = target ? target : sceneFramebuffer->getFramebuffer();
-        info.renderArea.extent = swapchain->getSwapchainExtent();
+        const auto *framebuffer = target ? target : sceneFramebuffer;
+        info.framebuffer = framebuffer->getFramebuffer();
+        info.renderArea.extent = framebuffer->getExtent();
         info.clearValueCount = 3;
         info.pClearValues = clear;
         vkCmdBeginRenderPass(commandBuffer->getCommandBuffer(), &info, VK_SUBPASS_CONTENTS_INLINE);
+        const auto extent = info.renderArea.extent;
+        VkViewport viewport{0, 0, float(extent.width), float(extent.height), 0, 1};
+        vkCmdSetViewport(commandBuffer->getCommandBuffer(), 0, 1, &viewport);
+        vkCmdSetScissor(commandBuffer->getCommandBuffer(), 0, 1, &info.renderArea);
     }
 
     void VKRenderpass::RenderHDR(VKCommandBuffer *commandBuffer, bool bloomEnabled, bool underwater) {

@@ -12,8 +12,8 @@ OpenGL and Vulkan water are enabled in the sample. Vulkan selects its geometry o
 
 ## Remaining work
 
-6. Fix terrain rendering issues in the existing OpenGL path.
-7. Port terrain rendering to Vulkan and compare it against the corrected OpenGL terrain.
+7. Compare the existing Vulkan terrain against the corrected OpenGL terrain at matched camera positions, including LOD
+   transitions and wireframe.
 9. Verify editor parity on native Vulkan and OpenGL desktops, including camera input, native file dialogs and moving
    panels between displays with different scale factors.
 
@@ -23,6 +23,30 @@ OpenGL and Vulkan water are enabled in the sample. Vulkan selects its geometry o
 12. Reactivate terrain collisions.
 13. Improve physics.
 14. Improve scripting.
+
+### Vulkan rendering parity
+
+1. **Ocean.** Both backends run the FFT, generate normals, tessellate quadtree patches, capture reflection and
+   refraction, and apply underwater HDR effects. Compare at the waterline with bloom on and off, after resize, and with
+   MSAA on and off. The renderer uses the same 1024² capture size as OpenGL. The shaders use nearest depth lookup,
+   include bloom throughout the underwater blur, and share the blue wireframe color. Vulkan wireframe requires non-solid
+   fill support. Vulkan still stores depth in refraction color alpha and resolves it with color under MSAA. OpenGL
+   samples a depth texture.
+2. **Shadows and volumetrics.** Port the directional sun and its separation from point lights, the stabilized 4096²
+   depth-array cascades (six splits, seven layers), cascade blending, hard and contact-hardening filtering, and
+   solar-disk exclusion from the matching atmosphere lighting bake. Add readable scene depth and composite the existing
+   editable volumetric spheres after bloom and before underwater processing and tone mapping. Match density falloff,
+   anisotropy, overlapping volumes, irradiance lighting, opaque clipping, and shadowed sun shafts. Compare Sponza Sun
+   Shafts with the same camera and zero-density control.
+3. **Voxel rendering.** Port the occupied-voxel debug view, cached occluder and radiance volumes, emissive and sun
+   injection, diffuse bounce propagation, isotropic and six-direction mip chains, full- and half-resolution cone tracing
+   and surface-aware composite. Include voxel sun and point-light visibility, grid and memory limits, invalidation,
+   editor controls, shortcuts and stage timings. Use Midnight Sponza with bloom disabled.
+   See [the VXGI plan](VXGI_PLAN.md) for the OpenGL baseline.
+4. **Forward+ and surface buffers.** OpenGL shades materials in its main forward pass. Vulkan needs the depth prepass
+   and tiled point-light lists, including radius and illumination flags, plus the position/metallic, albedo/roughness,
+   and normal outputs consumed by screen-space effects. Introduce each attachment with its first consumer. Bloom, tone
+   mapping, exposure, gamma, and the editor scene target already exist on Vulkan.
 
 ### Engine maintenance
 
@@ -34,10 +58,9 @@ OpenGL and Vulkan water are enabled in the sample. Vulkan selects its geometry o
 
 ### Vulkan editor
 
-The [editor](../PrehistoricEditor/src/EditorApp.cpp) now defaults to Vulkan. Select
-`OpenGL` in the [editor settings](../PrehistoricEditor/res/config/settings.json)
-to run the same panels on a host with OpenGL 4.5. Both paths load
-`res/world/testLevel.wrld` and add the sun.
+The [editor](../PrehistoricEditor/src/EditorApp.cpp) defaults to OpenGL. Select
+`Vulkan` in the [editor settings](../PrehistoricEditor/res/config/settings.json)
+to use the Vulkan backend. Both paths open Midnight Sponza. The OpenGL editor enables voxel GI on supported hardware.
 
 The [editor panels](../PrehistoricEditor/src/EditorLayer.cpp) share the scene
 hierarchy, inspector, File menu, statistics, texture browser and environment

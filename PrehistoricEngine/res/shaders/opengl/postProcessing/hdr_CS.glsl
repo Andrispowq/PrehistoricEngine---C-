@@ -13,6 +13,11 @@ uniform vec2 resolution;
 
 #include "shared/postProcessing/hdr.glsl"
 
+vec3 sampleSceneColour(vec2 uv)
+{
+    return texture(scene, uv).rgb;
+}
+
 #include "shared/water/underwater.glsl"
 
 void main()
@@ -21,9 +26,9 @@ void main()
     if (any(greaterThanEqual(x, ivec2(resolution)))) return;
     vec2 texCoord = (vec2(x) + 0.5) / resolution;
 
-    vec3 sceneColour = texture(scene, texCoord).rgb;
-       
-    if (underwater != 0) sceneColour = underwaterColour(scene, texCoord, resolution, sceneColour);
+    vec3 sceneColour = sampleSceneColour(texCoord);
+
+    if (underwater != 0) sceneColour = underwaterColour(texCoord, resolution, sceneColour);
     sceneColour = ToneMapHDR(sceneColour, exposure, gamma);
 
     imageStore(outColour, x, vec4(sceneColour, 1.0));

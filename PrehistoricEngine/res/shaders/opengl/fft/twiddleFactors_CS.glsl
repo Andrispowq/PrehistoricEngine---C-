@@ -9,12 +9,6 @@ layout (std430, binding = 1) buffer indices {
 	int j[];
 } bit_reversed;
 
-struct complex
-{	
-	float real;
-	float im;
-};
-
 uniform int N;
 
 int reverseIndex(int i) { return bit_reversed.j[i]; }

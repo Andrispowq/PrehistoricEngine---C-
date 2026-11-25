@@ -1,30 +1,6 @@
-struct complex
-{	
-	float real;
-	float im;
-};
-
-complex mul(complex c0, complex c1)
+vec2 multiplyComplex(vec2 a, vec2 b)
 {
-	complex c;
-	c.real = c0.real * c1.real - c0.im * c1.im;
-	c.im   = c0.real * c1.im + c0.im * c1.real;
-	return c;
-}
-
-complex add(complex c0, complex c1)
-{
-	complex c;
-	c.real = c0.real + c1.real;
-	c.im   = c0.im   + c1.im;
-	return c;
-}
-
-complex conj(complex c)
-{
-	complex c_conj = complex(c.real, -c.im);
-	
-	return c_conj;
+    return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
 }
 
 void main(void)
@@ -37,32 +13,30 @@ void main(void)
 	if (magnitude < 0.00001) magnitude = 0.00001;
 	
 	float w = sqrt(9.81 * magnitude);
-	
-	complex fourier_amp 	 	 = complex(readSpectrum(tilde_h0k, ivec2(gl_GlobalInvocationID.xy)).r, 
-							readSpectrum(tilde_h0k, ivec2(gl_GlobalInvocationID.xy)).g);
-	
-	complex fourier_amp_conj   = conj(complex(readSpectrum(tilde_h0minusk, ivec2(gl_GlobalInvocationID.xy)).r, 
-								readSpectrum(tilde_h0minusk, ivec2(gl_GlobalInvocationID.xy)).g));
-		
+
+    ivec2 texel = ivec2(gl_GlobalInvocationID.xy);
+    vec2 fourier_amp = readSpectrum(tilde_h0k, texel).rg;
+    vec2 fourier_amp_conj = readSpectrum(tilde_h0minusk, texel).rg * vec2(1.0, -1.0);
+
 	float cosinus = cos(w*t);
 	float sinus   = sin(w*t);
 		
 	// euler formula
-	complex exp_iwt = complex(cosinus, sinus);
-	complex exp_iwt_inv = complex(cosinus, -sinus);
+    vec2 exp_iwt = vec2(cosinus, sinus);
+    vec2 exp_iwt_inv = vec2(cosinus, -sinus);
 	
 	// dy
-	complex h_k_t_dy = add(mul(fourier_amp, exp_iwt), (mul(fourier_amp_conj, exp_iwt_inv)));
+    vec2 h_k_t_dy = multiplyComplex(fourier_amp, exp_iwt) + multiplyComplex(fourier_amp_conj, exp_iwt_inv);
 	
 	// dx
-	complex dx = complex(0.0,-k.x/magnitude);
-	complex h_k_t_dx = mul(dx, h_k_t_dy);
+    vec2 dx = vec2(0.0, -k.x / magnitude);
+    vec2 h_k_t_dx = multiplyComplex(dx, h_k_t_dy);
 	
 	// dz
-	complex dy = complex(0.0,-k.y/magnitude);
-	complex h_k_t_dz = mul(dy, h_k_t_dy);
-		
-	imageStore(tilde_hkt_dy, ivec2(gl_GlobalInvocationID.xy), vec4(h_k_t_dy.real, h_k_t_dy.im, 0, 1));
-	imageStore(tilde_hkt_dx, ivec2(gl_GlobalInvocationID.xy), vec4(h_k_t_dx.real, h_k_t_dx.im, 0, 1));
-	imageStore(tilde_hkt_dz, ivec2(gl_GlobalInvocationID.xy), vec4(h_k_t_dz.real, h_k_t_dz.im, 0, 1));
+    vec2 dy = vec2(0.0, -k.y / magnitude);
+    vec2 h_k_t_dz = multiplyComplex(dy, h_k_t_dy);
+
+    imageStore(tilde_hkt_dy, ivec2(gl_GlobalInvocationID.xy), vec4(h_k_t_dy, 0, 1));
+    imageStore(tilde_hkt_dx, ivec2(gl_GlobalInvocationID.xy), vec4(h_k_t_dx, 0, 1));
+    imageStore(tilde_hkt_dz, ivec2(gl_GlobalInvocationID.xy), vec4(h_k_t_dz, 0, 1));
 }

@@ -153,12 +153,7 @@ namespace Prehistoric {
         if (atmosphere) {
             constants.sky = GetAtmosphereParameters(*atmosphere);
         }
-        auto extent = swapchain->getSwapchainExtent();
-        VkViewport viewport{0, 0, (float) extent.width, (float) extent.height, 0, 1};
-        VkRect2D scissor{{0, 0}, extent};
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, selected);
-        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-        vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
         if (!atmosphere) {
             vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,

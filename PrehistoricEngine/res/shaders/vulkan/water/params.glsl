@@ -1,6 +1,6 @@
 layout(set=2, binding=2, std140) uniform WaterParameters
 {
-    vec4 tessellation;
+    vec4 tessellation; // factor, slope, shift, wireframe flag
     vec4 waves; // vertical scale, detail displacement, choppiness, fade range
     vec4 animation; // wind XY, phase, tiling
     vec4 optics; // reflection distortion, refraction distortion, absorption, water height
