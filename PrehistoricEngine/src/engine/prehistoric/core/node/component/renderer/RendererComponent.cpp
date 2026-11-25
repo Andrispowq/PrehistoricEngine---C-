@@ -8,8 +8,6 @@
 #include "prehistoric/core/node/GameObject.h"
 #include "prehistoric/core/model/material/Material.h"
 
-#include "platform/vulkan/rendering/shaders/VKShader.h"
-
 namespace Prehistoric
 {
 	RendererComponent::RendererComponent(Window* window, AssembledAssetManager* manager, PipelineHandle pipeline, MaterialHandle material)
@@ -18,11 +16,6 @@ namespace Prehistoric
 		type = ComponentType::RendererComponent;
 
 		manager->addReference<Material>(material.handle);
-
-		if (__FrameworkConfig.api == Vulkan)
-		{
-			static_cast<VKShader*>(pipeline->getShader())->RegisterInstance();
-		}
 	}
 
 	RendererComponent::RendererComponent(Window* window, AssembledAssetManager* manager)

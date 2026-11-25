@@ -106,7 +106,7 @@ namespace Prehistoric {
 
         void SetSampledImage(const std::string &name, const VkDescriptorImageInfo &image) const;
 
-        void RegisterInstance();
+        void EnsureDescriptorCapacity(uint32_t count);
 
     private:
         VkShaderModule CreateShaderModule(const std::vector<char> &code) const;

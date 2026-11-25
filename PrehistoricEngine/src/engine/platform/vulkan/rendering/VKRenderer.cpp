@@ -171,6 +171,7 @@ namespace Prehistoric {
         }
         const auto extent = static_cast<VKSwapchain *>(window->getSwapchain())->getSwapchainExtent();
         shadows->Prepare(*this, float(extent.width) / extent.height);
+        PrepareDescriptors();
         ProcessDraws(nullptr);
 
         auto *swapchain = static_cast<VKSwapchain *>(window->getSwapchain());
@@ -225,23 +226,53 @@ namespace Prehistoric {
         buffer->UnbindBuffer();
     }
 
+    void VKRenderer::PrepareDescriptors() {
+        frameDescriptors.clear();
+        for (const auto *batches: {&models_3d, &models_transparency}) {
+            for (const auto &[pipeline, groups]: *batches) {
+                auto &frame = frameDescriptors[static_cast<VKShader *>(pipeline->getShader())];
+                auto *vertices = static_cast<VKGraphicsPipeline *>(pipeline)->getVertexBuffer();
+                if (vertices->getType() == VertexBufferType::MESH) {
+                    for (auto *material: static_cast<MeshVertexBuffer *>(vertices)->getModel().getMaterials())
+                        if (material) frame.materials.try_emplace(material, frame.materials.size());
+                }
+                for (const auto &[material, objects]: groups) {
+                    frame.materials.try_emplace(material, frame.materials.size());
+                    frame.objects += static_cast<uint32_t>(objects.size());
+                }
+            }
+        }
+        for (const auto &[pipeline, objects]: models_2d)
+            frameDescriptors[static_cast<VKShader *>(pipeline->getShader())].objects += static_cast<uint32_t>(objects.
+                size());
+        for (const auto &[shader, frame]: frameDescriptors) {
+            shader->EnsureDescriptorCapacity(std::max(frame.objects, static_cast<uint32_t>(frame.materials.size())));
+            for (const auto &[material, slot]: frame.materials)
+                shader->UpdateMaterialUniforms(material, slot);
+        }
+    }
+
     void VKRenderer::ProcessDraws(VKCommandBuffer *buffer, const CaptureConstants *capture) {
         // Each shader owns its descriptor pool. Both traversals assign the same slots.
-        struct Slots {
-            uint32_t material = 0;
-            uint32_t object = 0;
-        };
-        std::unordered_map<VKShader *, Slots> shaderSlots;
-        Slots *slots = nullptr;
+        std::unordered_map<VKShader *, uint32_t> objectSlots;
+        Material *fallback = nullptr;
+        MeshVertexBuffer *mesh = nullptr;
+        std::vector<Material *> imported;
         VKShader *shader = nullptr;
         auto begin = [&](Pipeline *pipeline, bool wireframe) {
             shader = static_cast<VKShader *>(pipeline->getShader());
-            slots = &shaderSlots[shader];
+            mesh = nullptr;
+            imported.clear();
             if (buffer) static_cast<VKGraphicsPipeline *>(pipeline)->BindPipeline(buffer, wireframe);
         };
         auto beginScene = [&](Pipeline *pipeline) {
             begin(pipeline, isWireframeMode());
             if (buffer) {
+                auto *vertices = static_cast<VKGraphicsPipeline *>(pipeline)->getVertexBuffer();
+                if (vertices->getType() == VertexBufferType::MESH) {
+                    mesh = static_cast<MeshVertexBuffer *>(vertices);
+                    imported = mesh->getModel().getMaterials();
+                }
                 constexpr CaptureConstants mainView{};
                 vkCmdPushConstants(buffer->getCommandBuffer(), shader->GetPipelineLayout(),
                                    VK_SHADER_STAGE_ALL_GRAPHICS,
@@ -250,17 +281,33 @@ namespace Prehistoric {
             } else shader->UpdateGlobalUniforms(this);
         };
         auto material = [&](Pipeline *, Material *material) {
-            if (buffer) shader->BindTextureSets(slots->material++);
-            else shader->UpdateMaterialUniforms(material, slots->material++);
+            fallback = material;
+            if (buffer && imported.empty()) shader->BindTextureSets(frameDescriptors.at(shader).materials.at(material));
         };
         auto object = [&](Pipeline *pipeline, RenderableComponent *renderable) {
             if (buffer) {
-                auto slot = slots->object++;
+                auto slot = objectSlots[shader]++;
                 if (capture && !renderable->hasReflection()) return;
                 shader->BindObjectSets(slot);
-                pipeline->RenderPipeline();
+                if (imported.empty()) {
+                    pipeline->RenderPipeline();
+                    return;
+                }
+                const auto &materials = frameDescriptors.at(shader).materials;
+                Material *bound = nullptr;
+                for (uint32_t i = 0; i < mesh->getSubmeshCount(); ++i) {
+                    const int index = mesh->getModel().getMesh(i).getMaterialIndex();
+                    auto *selected = index >= 0 && static_cast<size_t>(index) < imported.size() && imported[index]
+                                         ? imported[index]
+                                         : fallback;
+                    if (selected != bound) {
+                        shader->BindTextureSets(materials.at(selected));
+                        bound = selected;
+                    }
+                    mesh->Draw(buffer, i);
+                }
             } else {
-                shader->UpdateObjectUniforms(renderable->getParent(), slots->object++);
+                shader->UpdateObjectUniforms(renderable->getParent(), objectSlots[shader]++);
             }
         };
         auto end = [&](Pipeline *pipeline) {

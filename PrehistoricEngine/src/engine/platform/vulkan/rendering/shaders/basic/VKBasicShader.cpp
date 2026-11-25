@@ -17,8 +17,8 @@ namespace Prehistoric {
         AddUniform(ALBEDO_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 0, 0);
         AddUniform(MROT_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 1, 0);
 
+        AddUniform("material", FRAGMENT_SHADER, UniformBuffer, 1, 2, 32);
         AddUniform("model", VERTEX_SHADER, UniformBuffer, 2, 0, sizeof(float) * 16);
-        AddUniform("material", FRAGMENT_SHADER, UniformBuffer, 2, 1, Vector3f::size() + 4 * sizeof(float));
 
         descriptorPool->finalise(pipelineLayout);
     }
@@ -76,14 +76,11 @@ namespace Prehistoric {
     void VKBasicShader::UpdateMaterialUniforms(Material *material, uint32_t descriptor_index) const {
         SetTexture(ALBEDO_MAP, material->getTexture(ALBEDO_MAP), descriptor_index);
         SetTexture(MROT_MAP, material->getTexture(MROT_MAP), descriptor_index);
+        SetUniform("material", material->getVector3f(COLOUR), 0, descriptor_index);
+        SetUniform("material", material->getVector4f(MROT), 16, descriptor_index);
     }
 
     void VKBasicShader::UpdateObjectUniforms(GameObject *object, uint32_t instance_index) const {
-        SetUniform("model", object->getWorldTransform().getTransformationMatrix(), instance_index);
-
-        Material *material = ((RendererComponent *) object->GetComponent(RENDERER_COMPONENT))->getMaterial();
-
-        SetUniform("material", material->getVector3f(COLOUR), instance_index);
-        SetUniform("material", material->getVector4f(MROT), Vector4f::size(), instance_index);
+        SetUniform("model", object->getWorldTransform().getTransformationMatrix(), 0, instance_index);
     }
 };

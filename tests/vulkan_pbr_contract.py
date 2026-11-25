@@ -37,7 +37,8 @@ with tempfile.TemporaryDirectory(prefix='vulkan-pbr-contract-') as temporary:
     texture_bindings = {
         int(re.search(r'OpDecorate\s+' + re.escape(identifier) + r'\s+Binding\s+(\d+)', assembly).group(1))
         for identifier in texture_set}
-    assert texture_bindings == {0, 1, 2}, 'No emission texture/fallback should be bound'
+    assert texture_bindings == {0, 1, 2, 3}
+    assert re.search(r'OpDecorate\s+%material\s+Binding\s+3\b', assembly)
     assert 'emissionMap' not in assembly
     # IBL is global, separate from material textures. Reflect actual SPIR-V.
     for name, binding, dimension in (('irradianceMap', 3, 'Cube'), ('prefilterMap', 4, 'Cube'), ('brdfLUT', 5, '2D')):

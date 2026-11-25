@@ -3,19 +3,21 @@
 
 #include "Camera.h"
 
-namespace Prehistoric
-{
-    class FPSCamera : public Camera
-    {
+namespace Prehistoric {
+    class FPSCamera : public Camera {
     public:
-        FPSCamera(const Vector3f& position = Vector3f(), float fov = 70.0f, float moveAmt = 0.1f, float rotAmt = 0.8f, float mouseSensitivity = 0.8f) {}
-        ~FPSCamera() {}
+        using Camera::Camera;
 
-        virtual void UpdateCamera(Window* window, float delta) override;
+        ~FPSCamera() {
+        }
 
-        void Move(const Vector3f& dir, const float& amount);
-        void RotateX(const float& angle);
-        void RotateY(const float& angle);
+        virtual void UpdateCamera(Window *window, float delta) override;
+
+        void Move(const Vector3f &dir, const float &amount);
+
+        void RotateX(const float &angle);
+
+        void RotateY(const float &angle);
 
     private:
         float rotYstride;

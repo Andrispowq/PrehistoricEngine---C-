@@ -245,7 +245,9 @@ namespace Prehistoric {
                                     ? VK_IMAGE_LAYOUT_GENERAL
                                     : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         imageInfo.imageView = tex->getImage()->getImageView();
-        imageInfo.sampler = (type == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER || type == VK_DESCRIPTOR_TYPE_SAMPLER) ? tex->getSampler() : VK_NULL_HANDLE;
+        imageInfo.sampler = (type == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER || type == VK_DESCRIPTOR_TYPE_SAMPLER)
+                                ? tex->getSampler()
+                                : VK_NULL_HANDLE;
 
         for (size_t i = 0; i < sets.size(); i++) {
             sets[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -285,8 +287,8 @@ namespace Prehistoric {
         vkUpdateDescriptorSets(device->getDevice(), uint32_t(writes.size()), writes.data(), 0, nullptr);
     }
 
-    void VKShader::RegisterInstance() {
-        descriptorPool->registerInstance();
+    void VKShader::EnsureDescriptorCapacity(uint32_t count) {
+        descriptorPool->EnsureCapacity(count);
     }
 
     VkShaderModule VKShader::CreateShaderModule(const std::vector<char> &code) const {

@@ -66,12 +66,12 @@ namespace Prehistoric {
             AddUniform(ALBEDO_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 0, 0, nullptr);
             AddUniform(NORMAL_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 1, 0, nullptr);
             AddUniform(MROT_MAP, FRAGMENT_SHADER, CombinedImageSampler, 1, 2, 0, nullptr);
+            AddUniform("material", FRAGMENT_SHADER, UniformBuffer, 1, 3, 52);
         }
         AddUniform("m_transform", VERTEX_SHADER | terrainStages, UniformBuffer, 2, 0, sizeof(float) * 16);
-        AddUniform("material", FRAGMENT_SHADER, UniformBuffer, 2, 1,
-                   Vector4f::size() * 2 + sizeof(int) + sizeof(float) * 4);
 
         if (terrain) {
+            AddUniform("material", FRAGMENT_SHADER, UniformBuffer, 2, 1, 52);
             AddUniform("terrainParams", terrainStages | FRAGMENT_SHADER, UniformBuffer, 2, 2, 112);
             AddUniform("leaves", VERTEX_SHADER, StorageBuffer, 2, 3, TerrainQuadtree::maxNodes * sizeof(QuadPatch));
         }
@@ -179,6 +179,11 @@ namespace Prehistoric {
         SetTexture(ALBEDO_MAP, material->getTexture(ALBEDO_MAP), descriptor_index);
         SetTexture(NORMAL_MAP, material->getTexture(NORMAL_MAP), descriptor_index);
         SetTexture(MROT_MAP, material->getTexture(MROT_MAP), descriptor_index);
+        SetUniform("material", material->getVector4f(MROT), 0, descriptor_index);
+        SetUniform("material", material->getVector3f(COLOUR), 16, descriptor_index);
+        // Emission uses the same scalar material property as OpenGL. Missing = -1.
+        SetUniformf("material", (std::max)(material->getFloat(EMISSION), 0.0f), 32, descriptor_index);
+        SetUniformi("material", material->exists(NORMAL_MAP), 48, descriptor_index);
     }
 
     void VKPBRShader::UpdateObjectUniforms(GameObject *object, uint32_t instance_index) const {
@@ -211,12 +216,6 @@ namespace Prehistoric {
             for (int i = 0; i < 3; ++i)
                 SetUniform("terrainParams", material->getVector4f("mrot" + std::to_string(i)), 32 + 16 * i,
                            instance_index);
-            return;
         }
-        SetUniform("material", material->getVector4f(MROT), 0, instance_index);
-        SetUniform("material", material->getVector3f(COLOUR), 16, instance_index);
-        // Emission uses the same scalar material property as OpenGL. Missing = -1.
-        SetUniformf("material", (std::max)(material->getFloat(EMISSION), 0.0f), 32, instance_index);
-        SetUniformi("material", material->exists(NORMAL_MAP), 48, instance_index);
     }
 };

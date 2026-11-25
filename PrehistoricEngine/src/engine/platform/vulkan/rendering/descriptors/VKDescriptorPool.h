@@ -10,53 +10,62 @@
 
 #include "VKDescriptorSet.h"
 
-namespace Prehistoric
-{
-	class VKDescriptorPool
-	{
-	public:
-		VKDescriptorPool(VKDevice* device, VKSwapchain* swapchain);
-		virtual ~VKDescriptorPool();
+namespace Prehistoric {
+    class VKDescriptorPool {
+    public:
+        VKDescriptorPool(VKDevice *device, VKSwapchain *swapchain);
 
-		void addSet(VKDescriptorSet* set);
-		void addSet();
+        virtual ~VKDescriptorPool();
 
-		/*
+        void addSet(VKDescriptorSet *set);
+
+        void addSet();
+
+        /*
 			This method will create the descriptor pool, allocate the sets, and so on, and the only thing you can change now is the new instances
 		*/
-		void finalise(VkPipelineLayout& layout);
+        void finalise(VkPipelineLayout &layout);
 
-		void registerInstance();
+        void EnsureCapacity(uint32_t count);
 
-		void addUniform(const std::string& name, uint32_t stages, UniformType type, uint32_t set, uint32_t binding, uint32_t size, Texture* texture);
-		VKDescriptorSetBinding* getUniform(const std::string& name, uint32_t instance_index);
+        void addUniform(const std::string &name, uint32_t stages, UniformType type, uint32_t set, uint32_t binding,
+                        uint32_t size, Texture *texture);
 
-		VKDescriptorSet* getSet(uint32_t set_index, uint32_t instance_index) { return sets[size_t(instance_index * numberOfSets + set_index)]; }
-		uint32_t getNumberOfSets() const { return numberOfSets; }
+        VKDescriptorSetBinding *getUniform(const std::string &name, uint32_t instance_index);
 
-		inline VkDescriptorPool& getDescriptorPool() { return pool; }
+        VKDescriptorSet *getSet(uint32_t set_index, uint32_t instance_index) {
+            return sets[size_t(instance_index * numberOfSets + set_index)];
+        }
 
-		inline std::pair<uint32_t, uint32_t> getUniformLocation(const std::string& name) const { return uniformLocations.find(name)->second; }
+        uint32_t getNumberOfSets() const { return numberOfSets; }
 
-		VKDescriptorPool(const VKDescriptorPool&) = default;
+        inline VkDescriptorPool &getDescriptorPool() { return pool; }
 
-	private:
-		VKDevice* device;
-		VKSwapchain* swapchain;
+        inline std::pair<uint32_t, uint32_t> getUniformLocation(const std::string &name) const {
+            return uniformLocations.find(name)->second;
+        }
 
-		std::vector<VkDescriptorPoolSize> poolSizes;
-		VkDescriptorPool pool = VK_NULL_HANDLE;
+        VKDescriptorPool(const VKDescriptorPool &) = default;
+
+    private:
+        VKDevice *device;
+        VKSwapchain *swapchain;
+
+        std::vector<VkDescriptorPoolSize> poolSizes;
+        VkDescriptorPool pool = VK_NULL_HANDLE;
 
 
-		uint32_t instance_count = 0;
+        void Grow();
 
-		uint32_t numberOfSets;
-		std::vector<VKDescriptorSet*> sets; //First, we allocate the amount of sets as the swapchain images, then extend the vector when recieving the number of instances
-		//Getting set s at swapchain index i -> sets[s * numImages + i]
+        uint32_t numberOfSets;
+        std::vector<VKDescriptorSet *> sets;
+        //First, we allocate the amount of sets as the swapchain images, then extend the vector when recieving the number of instances
+        //Getting set s at swapchain index i -> sets[s * numImages + i]
 
-		std::unordered_map<std::string, std::pair<uint32_t, uint32_t>> uniformLocations; //We store here which uniform name corresponds to which set (std::pair::first) and
-		//which binding (std::pair::second)
-	};
+        std::unordered_map<std::string, std::pair<uint32_t, uint32_t> > uniformLocations;
+        //We store here which uniform name corresponds to which set (std::pair::first) and
+        //which binding (std::pair::second)
+    };
 };
 
 #endif

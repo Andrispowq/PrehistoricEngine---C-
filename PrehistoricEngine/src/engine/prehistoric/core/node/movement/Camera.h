@@ -3,19 +3,19 @@
 
 #include "prehistoric/common/framework/CameraInput.h"
 
-namespace Prehistoric
-{
-    class Camera
-    {
+namespace Prehistoric {
+    class Camera {
     public:
-        Camera(const Vector3f& position = Vector3f(), float fov = 70.0f, float moveAmt = 0.1f, float rotAmt = 0.8f, float mouseSensitivity = 0.8f); //There coordinates are just to spawn on a mountain
+        Camera(const Vector3f &position = Vector3f(), float fov = 70.0f, float moveAmt = 10.0f, float rotAmt = 0.8f,
+               float mouseSensitivity = 0.8f); //There coordinates are just to spawn on a mountain
         virtual ~Camera();
 
-        void Update(Window* window, float delta);
+        void Update(Window *window, float delta);
 
-        virtual void UpdateCamera(Window* window, float delta) = 0;
+        virtual void UpdateCamera(Window *window, float delta) = 0;
 
         void LogStage() const;
+
         void SetProjection(float fov, float width, float height);
 
         void AddCameraInput(CameraInput input) { inputs.push_back(input); }
@@ -33,16 +33,16 @@ namespace Prehistoric
 
         inline float getFov() const { return fovY; }
 
-        inline const Matrix4f& getViewMatrix() const { return viewMatrix; }
-        inline const Matrix4f& getProjectionMatrix() const { return projectionMatrix; }
-        inline const Matrix4f& getViewProjectionMatrix() const { return viewProjectionMatrix; }
+        inline const Matrix4f &getViewMatrix() const { return viewMatrix; }
+        inline const Matrix4f &getProjectionMatrix() const { return projectionMatrix; }
+        inline const Matrix4f &getViewProjectionMatrix() const { return viewProjectionMatrix; }
 
-        inline const Matrix4f& getOriginalViewMatrix() const { return originalViewMatrix; }
-        inline const Matrix4f& getOriginalViewProjectionMatrix() const { return originalViewProjectionMatrix; }
+        inline const Matrix4f &getOriginalViewMatrix() const { return originalViewMatrix; }
+        inline const Matrix4f &getOriginalViewProjectionMatrix() const { return originalViewProjectionMatrix; }
 
-        inline void setViewMatrix(const Matrix4f& m) { this->viewMatrix = m; }
-        inline void setProjectionMatrix(const Matrix4f& m) { this->projectionMatrix = m; }
-        inline void setViewProjectionMatrix(const Matrix4f& m) { this->viewProjectionMatrix = m; }
+        inline void setViewMatrix(const Matrix4f &m) { this->viewMatrix = m; }
+        inline void setProjectionMatrix(const Matrix4f &m) { this->projectionMatrix = m; }
+        inline void setViewProjectionMatrix(const Matrix4f &m) { this->viewProjectionMatrix = m; }
 
         bool isChanged() const { return cameraMoved || cameraRotated; }
 
@@ -75,8 +75,8 @@ namespace Prehistoric
         float height = 0.0f;
         float fovY = 0.0f;
 
-        Vector4f* frustumPlanes = nullptr;
-        Vector3f* frustumCorners = nullptr;
+        Vector4f *frustumPlanes = nullptr;
+        Vector3f *frustumCorners = nullptr;
     };
 };
 

@@ -3,7 +3,7 @@
 #include "scene.glsl"
 layout(location=2) in vec3 normal_FS;
 #include "shade.glsl"
-layout(set = 2, binding = 1, std140) uniform Material
+layout(set = 1, binding = 3, std140) uniform Material
 {
 	layout(offset = 00) vec4 mrot;
 	layout(offset = 16) vec3 colour;

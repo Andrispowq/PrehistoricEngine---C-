@@ -3,15 +3,15 @@
 
 #include "Camera.h"
 
-namespace Prehistoric
-{
-    class EditorCamera : public Camera
-    {
+namespace Prehistoric {
+    class EditorCamera : public Camera {
     public:
-        EditorCamera(const Vector3f& position = Vector3f(), float fov = 70.0f, float moveAmt = 0.1f, float rotAmt = 0.8f, float mouseSensitivity = 0.8f) {}
-        ~EditorCamera() {}
+        using Camera::Camera;
 
-        virtual void UpdateCamera(Window* window, float delta) override;
+        ~EditorCamera() {
+        }
+
+        virtual void UpdateCamera(Window *window, float delta) override;
 
     private:
         Vector3f centre = 0;

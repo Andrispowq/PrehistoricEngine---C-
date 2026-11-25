@@ -11,6 +11,7 @@
 #include "platform/vulkan/rendering/renderpass/VKRenderpass.h"
 
 namespace Prehistoric {
+    class VKShader;
     class VKShadowPass;
     class Water;
     class VKEnvironmentBackground;
@@ -59,6 +60,15 @@ namespace Prehistoric {
 
         static_assert(offsetof(CaptureConstants, eyeAndCapture) == 64);
         static_assert(sizeof(CaptureConstants) == 80);
+
+        struct FrameDescriptors {
+            std::unordered_map<Material *, uint32_t> materials;
+            uint32_t objects = 0;
+        };
+
+        std::unordered_map<VKShader *, FrameDescriptors> frameDescriptors;
+
+        void PrepareDescriptors();
 
         void ProcessDraws(VKCommandBuffer *buffer, const CaptureConstants *capture = nullptr);
 
