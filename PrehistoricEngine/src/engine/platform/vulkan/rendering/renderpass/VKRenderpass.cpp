@@ -1,5 +1,6 @@
 #include "Includes.hpp"
 #include "VKRenderpass.h"
+#include "../VKTemporalPass.h"
 #include "../VKVoxelView.h"
 #include "platform/vulkan/rendering/VKRenderer.h"
 #include "platform/vulkan/rendering/VKShadowPass.h"
@@ -146,7 +147,8 @@ namespace Prehistoric {
         {
             {
                 VK_SUBPASS_EXTERNAL, 0, writes | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, writes,
-                VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+                VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+                VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
                 VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
                 VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
                 0
@@ -309,7 +311,7 @@ namespace Prehistoric {
 
     void VKRenderpass::CreatePostProcessing() {
         constexpr uint32_t levels = 8;
-        constexpr uint32_t maxSets = levels * 2 + (levels - 1) + 4;
+        const uint32_t maxSets = levels * 2 + (levels - 1) + 4 + uint32_t(swapchain->getSwapchainImages().size());
         VkDevice handle = device->getDevice();
         VkExtent2D extent = swapchain->getSwapchainExtent();
         bloomPass = CreateOutputPass(emission->getImageFormat(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -392,6 +394,9 @@ namespace Prehistoric {
         auto scene = swapchain->getHDRImage()->getImageView();
         hdrInputs[0] = CreateInputs(scene, scene);
         hdrInputs[1] = CreateInputs(scene, source);
+        bloomResult = source;
+        for (size_t i = 0; i < swapchain->getSwapchainImages().size(); ++i)
+            temporalInputs.push_back(CreateInputs(scene, source));
     }
 
     namespace {
@@ -550,6 +555,7 @@ namespace Prehistoric {
 
     VKRenderpass::~VKRenderpass() {
         VkDevice handle = device->getDevice();
+        temporalPass.reset();
         vkDestroyPipeline(handle, reflectionDepthPipeline, nullptr);
         vkDestroyPipelineLayout(handle, reflectionDepthLayout, nullptr);
         vkDestroyPipeline(handle, tracePipeline, nullptr);
@@ -621,6 +627,15 @@ namespace Prehistoric {
                                draw.settings);
             vkCmdDraw(command, 3, 1, 0, 0);
         };
+        VkImageView temporalSource{};
+        if (renderer.UseTemporalEffects()) {
+            if (!temporalPass) temporalPass = std::make_unique<VKTemporalPass>(*this);
+            temporalSource = temporalPass->Render(renderer);
+        } else if (temporalPass) {
+            Check(vkDeviceWaitIdle(device->getDevice()));
+            temporalPass.reset();
+            renderer.temporalBytes = 0;
+        }
         if (bloomEnabled) {
             for (const auto &stage: bloomDraws) {
                 draw(bloomPass, bloomPipeline, stage);
@@ -630,6 +645,23 @@ namespace Prehistoric {
         auto extent = swapchain->getSwapchainExtent();
         auto framebuffer = presentFramebuffers[swapchain->getAquiredImageIndex()];
         auto inputs = hdrInputs[bloomEnabled];
+        if (temporalSource) {
+            inputs = temporalInputs[swapchain->getAquiredImageIndex()];
+            VkDescriptorImageInfo images[] = {
+                {sampler, temporalSource, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
+                {sampler, bloomEnabled ? bloomResult : temporalSource, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL}
+            };
+            VkWriteDescriptorSet writes[2]{};
+            for (unsigned i = 0; i < 2; ++i) {
+                writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                writes[i].dstSet = inputs;
+                writes[i].dstBinding = i;
+                writes[i].descriptorCount = 1;
+                writes[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                writes[i].pImageInfo = &images[i];
+            }
+            vkUpdateDescriptorSets(device->getDevice(), 2, writes, 0, nullptr);
+        }
         bool addBloom = bloomEnabled;
         if (!renderer.getVolumetricSpheres().empty()) {
             if (!volumePipeline) CreateVolumePass();

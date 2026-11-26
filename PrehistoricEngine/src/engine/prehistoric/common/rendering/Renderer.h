@@ -2,6 +2,7 @@
 #define RENDERER_H
 
 #include "prehistoric/common/rendering/DepthOfField.h"
+#include "prehistoric/common/rendering/Temporal.h"
 #include "prehistoric/common/rendering/AmbientOcclusion.h"
 #include "prehistoric/common/framework/Window.h"
 #include "prehistoric/core/node/movement/Camera.h"
@@ -55,6 +56,27 @@ namespace Prehistoric {
         float bloomIntensity = 0.06f;
         AmbientOcclusionSettings ambientOcclusion;
         DepthOfFieldSettings depthOfField;
+        TemporalSettings temporal;
+        virtual bool UseTemporalEffects() const { return temporal.active() && !wireframeMode; }
+        TemporalHistory temporalHistory;
+        bool temporalRendered = false;
+        double temporalMilliseconds[4]{-1, -1, -1, -1};
+        uint64_t temporalBytes = 0;
+
+        void ResetTemporalHistory() {
+            temporalHistory.Reset();
+            temporalRendered = false;
+        }
+
+        void CommitTemporalFrame();
+
+        struct TemporalParameters {
+            float reprojection[16];
+            Vector4f jitter, settings, options, depthRow;
+        };
+
+        TemporalParameters GetTemporalParameters() const;
+
         bool sunShafts = true;
         float sunShaftStrength = 1.0f;
         bool sunFlare = true;
@@ -109,7 +131,10 @@ namespace Prehistoric {
 
         AssembledAssetManager *getAssetManager() const { return manager; }
 
-        void setCamera(Camera *camera) { this->camera = camera; }
+        void setCamera(Camera *camera) {
+            if (this->camera != camera) ResetTemporalHistory();
+            this->camera = camera;
+        }
 
         inline const std::vector<Light *> &getLights() const { return lights; }
 

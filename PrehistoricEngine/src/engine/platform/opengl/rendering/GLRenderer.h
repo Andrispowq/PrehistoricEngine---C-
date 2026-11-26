@@ -24,6 +24,7 @@
 
 namespace Prehistoric {
     class Water;
+    class GLTemporalPass;
     class EnvironmentMapRenderer;
 
     class GLRenderer : public Renderer {
@@ -45,6 +46,10 @@ namespace Prehistoric {
         virtual Texture *getOutputTexture() const override { return hdrPass->getOutputImage().pointer; }
 
         bool isUnderwater() const;
+
+        bool UseTemporalEffects() const override {
+            return Renderer::UseTemporalEffects() && !(voxelPass->IsReady() && voxelPass->GetSettings().debugView);
+        }
 
         void RegisterWater(Water *water) { waters.push_back(water); }
 
@@ -75,6 +80,7 @@ namespace Prehistoric {
 
         void FinishFrame() override;
 
+        std::unique_ptr<GLTemporalPass> temporalPass;
         std::vector<Water *> waters;
         GLAtmospherePass atmospherePass;
         std::unique_ptr<EnvironmentMapRenderer> environmentLighting;

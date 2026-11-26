@@ -1,0 +1,126 @@
+#!/usr/bin/env python3
+"""Build a scratch app driver against the current Debug engine and run native GPU checks.
+Requires an interactive desktop and the Vulkan SDK for Vulkan validation/captures.
+Leaves project settings/worlds untouched. This is not a substitute for visual review.
+"""
+import argparse
+import json
+import os
+import shlex
+import shutil
+import subprocess
+import tempfile
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--api', choices=['Vulkan', 'OpenGL'], default='Vulkan')
+    parser.add_argument('--app', choices=['PrehistoricEditor', 'Prehistoric'], default='PrehistoricEditor')
+    parser.add_argument('--samples', type=int, default=1)
+    parser.add_argument('--width', type=int, default=640)
+    parser.add_argument('--height', type=int, default=360)
+    parser.add_argument('--output', type=Path)
+    parser.add_argument('--world', type=Path, help='Optional diagnostic world to copy into the scratch app')
+    parser.add_argument('--no-gi', action='store_true')
+    parser.add_argument('--debug', type=int, choices=range(5), default=0)
+    parser.add_argument('--water', action='store_true', help='Add water and exercise crossing the waterline')
+    parser.add_argument('--benchmark', action='store_true', help='Keep the requested size for timing')
+    args = parser.parse_args()
+    output = args.output or Path(tempfile.mkdtemp(prefix='prehistoric-temporal-render-'))
+    output = output.resolve()
+    output.mkdir(parents=True, exist_ok=True)
+    build = ROOT / 'build/debug'
+    original = ROOT / args.app / 'src' / ('EditorApp.cpp' if args.app == 'PrehistoricEditor' else 'PrehistoricApp.cpp')
+    source = output / 'TemporalApp.cpp'
+    text = original.read_text()
+    text = '#include "tests/temporal_render_driver.h"\n' + text
+    if args.app == 'PrehistoricEditor':
+        text = text.replace('    editor = new EditorLayer',
+                            '    auto* temporalScene = scene.get();\n    editor = new EditorLayer')
+        text = text.replace('    PushLayer(editor);',
+                            '    PushLayer(editor);\n    PushOverlay(new TemporalRenderDriver(temporalScene));')
+    else:
+        text = text.replace('        return;',
+                            '        PushOverlay(new TemporalRenderDriver(scene.get()));\n        return;', 1)
+    source.write_text(text)
+    target = f'CMakeFiles/{args.app}.dir/{original.relative_to(ROOT)}.o'
+    command = subprocess.check_output(['ninja', '-C', str(build), '-t', 'commands', target], text=True).splitlines()[-1]
+    compile_args = shlex.split(command)
+    for flag, replacement in (('-o', str(output / 'TemporalApp.o')), ('-MF', str(output / 'TemporalApp.d'))):
+        compile_args[compile_args.index(flag) + 1] = replacement
+    compile_args[compile_args.index(str(original))] = str(source)
+    compile_args += ['-I' + str(original.parent), '-I' + str(ROOT)]
+    with (output / 'build.log').open('w') as log:
+        subprocess.run(compile_args, cwd=build, stdout=log, stderr=subprocess.STDOUT, check=True)
+        command = \
+        subprocess.check_output(['ninja', '-C', str(build), '-t', 'commands', args.app], text=True).splitlines()[-1]
+        command = command.removeprefix(': && ').removesuffix(' && :')
+        link_args = shlex.split(command)
+        link_args[link_args.index(target)] = str(output / 'TemporalApp.o')
+        link_args[link_args.index('-o') + 1] = str(output / 'TemporalSmoke')
+        subprocess.run(link_args, cwd=build, stdout=log, stderr=subprocess.STDOUT, check=True)
+    res = output / 'res'
+    res.mkdir(exist_ok=True)
+    for entry in (ROOT / args.app / 'res').iterdir():
+        target_path = res / entry.name
+        if target_path.exists(): continue
+        if entry.name in ('config', 'world'):
+            shutil.copytree(entry, target_path)
+        elif entry.name == 'profiling':
+            target_path.mkdir()
+        else:
+            target_path.symlink_to(entry)
+    config = res / 'config/settings.json'
+    data = json.loads(config.read_text())
+    data['framework']['api']['active'] = args.api
+    data['framework']['window'].update(width=args.width, height=args.height, numSamples=args.samples, maxFPS=60)
+    data['environmentMap'].update(environmentMapResolution=16, irradianceMapResolution=4, prefilterMapResolution=16,
+                                  prefilterMapLevels=3)
+    config.write_text(json.dumps(data))
+    world = res / 'world/sponza_midnight_gi.json'
+    if args.world:
+        shutil.copyfile(args.world.resolve(), world)
+    elif not world.exists():
+        shutil.copyfile(ROOT / 'PrehistoricEditor/res/world/sponza_midnight_gi.json', world)
+    data = json.loads(world.read_text())
+    data['temporal'] = {'motion_blur': True, 'antialiasing': True, 'shutter_angle': 180, 'max_blur_pixels': 32,
+                        'samples': 16}
+    world.write_text(json.dumps(data))
+    for capture in output.glob('*.ppm'): capture.unlink()
+    env = dict(os.environ, ALSOFT_DRIVERS='null', PREHISTORIC_WORLD=str(world),
+               PREHISTORIC_ENGINE_RESOURCES=str(build / 'bin/engine-resources'),
+               PREHISTORIC_SAMPLE_RESOURCES=str(build / 'bin/sample-resources'))
+    env['PREHISTORIC_TEMPORAL_DEBUG'] = str(args.debug)
+    if args.water: env['PREHISTORIC_TEMPORAL_WATER'] = '1'
+    if args.no_gi: env['PREHISTORIC_TEMPORAL_NO_GI'] = '1'
+    if args.benchmark: env['PREHISTORIC_TEMPORAL_BENCHMARK'] = '1'
+    if args.api == 'Vulkan':
+        molten = Path('/usr/local/share/vulkan/icd.d/MoltenVK_icd.json')
+        if molten.exists(): env.setdefault('VK_DRIVER_FILES', str(molten))
+        env.update(VK_INSTANCE_LAYERS='VK_LAYER_KHRONOS_validation:VK_LAYER_LUNARG_screenshot',
+                   VK_SCREENSHOT_FRAMES='4,12,17,25,31,39', VK_SCREENSHOT_DIR=str(output))
+    print(f'Artifacts: {output}', flush=True)
+    with (output / 'run.log').open('w') as log:
+        process = subprocess.Popen([output / 'TemporalSmoke'], cwd=output, env=env, stdout=log,
+                                   stderr=subprocess.STDOUT)
+        try:
+            code = process.wait(timeout=120)
+        except subprocess.TimeoutExpired:
+            process.terminate()
+            try:
+                process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                process.kill(); process.wait()
+            raise SystemExit('Timed out; see run.log for native context/window-service errors')
+    log = (output / 'run.log').read_text(errors='replace')
+    print('\n'.join(line for line in log.splitlines() if 'TEMPORAL' in line))
+    if code or 'TEMPORAL PASS' not in log or 'Message severity: ERROR' in log:
+        raise SystemExit(f'GPU smoke failed (exit {code}); see {output}/run.log')
+    print('PASS: scripted application run, no reported Vulkan validation errors')
+
+
+if __name__ == '__main__':
+    main()

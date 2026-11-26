@@ -379,6 +379,13 @@ and add the levels together. The presentation pass combines bloom with scene col
 The renderer owns the passes and baked maps for its backend. Outstanding rendering
 repairs are listed in the [rendering backlog](docs/RENDERING_BACKLOG.md).
 
+## Motion blur and temporal antialiasing
+
+Both backends expose opt-in motion blur and native-resolution TAA. The
+[temporal rendering guide](docs/MOTION_TEMPORAL.md) documents frame history,
+resource lifetimes, supported geometry, diagnostics, GPU timings and validation.
+Existing worlds leave both effects disabled.
+
 ## Volumetric lighting test
 
 For a backlit arcade view, open [Sponza Sun Shafts](PrehistoricEditor/res/world/sponza_sun_shafts.json)

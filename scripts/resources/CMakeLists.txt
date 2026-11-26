@@ -56,6 +56,10 @@ function(prehistoric_shader source destination)
     set(shader_outputs ${shader_outputs} "${output}" PARENT_SCOPE)
 endfunction()
 
+foreach (stage fullscreen.vert velocity.vert velocity.frag filter.frag resolve.frag resolve_ms.frag)
+    prehistoric_shader(temporal/${stage} temporal/${stage}.spv)
+endforeach ()
+
 prehistoric_shader(postProcessing/reflection_depth.frag postProcessing/reflection_depth.spv)
 prehistoric_shader(shadow/depth.vert shadow/depth.vert.spv)
 prehistoric_shader(atmosphere/capture.comp atmosphere/capture_CS.spv)

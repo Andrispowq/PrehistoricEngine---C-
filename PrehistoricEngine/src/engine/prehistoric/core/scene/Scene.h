@@ -1,6 +1,8 @@
 #ifndef SCENE_H
 #define SCENE_H
 
+#include "prehistoric/common/rendering/Temporal.h"
+
 #include "prehistoric/core/node/component/renderer/RendererComponent.h"
 #include "world/WorldLoader.h"
 
@@ -47,6 +49,7 @@ namespace Prehistoric {
         float bloomIntensity = 0.35f;
         AmbientOcclusionSettings ambientOcclusion;
         DepthOfFieldSettings depthOfField;
+        TemporalSettings temporal;
         const std::optional<WorldCameraPose> &getInitialCamera() const { return initialCamera; }
 
         const std::string &getEnvironmentMap() const { return environmentMap; }

@@ -9,6 +9,7 @@
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 
 #include "Includes.hpp"
+#include <atomic>
 
 namespace Prehistoric {
     class AssembledAssetManager;
@@ -36,10 +37,14 @@ namespace Prehistoric {
 
         Material *ResolveSubmeshMaterial(const Model &model, uint32_t index, Material *fallback) const;
 
+        uint64_t getTemporalIdentity() const { return temporalIdentity; }
+        void InvalidateMotionHistory() { temporalIdentity = nextTemporalIdentity.fetch_add(1); }
+
         Pipeline *getPipeline() const { return pipeline.pointer; }
         PipelineHandle getPipelineHandle() const { return pipeline; }
 
         void setPipeline(PipelineHandle handle) {
+            InvalidateMotionHistory();
             this->pipeline.handle = handle.handle;
             this->pipeline.pointer = handle.pointer;
         }
@@ -57,6 +62,10 @@ namespace Prehistoric {
         RenderableComponent(const RenderableComponent &&) = delete;
 
         RenderableComponent &operator=(RenderableComponent) = delete;
+
+    private:
+        inline static std::atomic<uint64_t> nextTemporalIdentity{1};
+        uint64_t temporalIdentity = nextTemporalIdentity.fetch_add(1);
 
     protected:
         AssembledAssetManager *manager;

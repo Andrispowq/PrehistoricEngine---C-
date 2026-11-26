@@ -130,7 +130,10 @@ namespace Prehistoric {
 
         Camera *camera = renderer->getCamera();
         const Matrix4f view = camera->getViewMatrix();
-        const Matrix4f projection = camera->getProjectionMatrix();
+        const Matrix4f rasterProjection = camera->getProjectionMatrix();
+        const Matrix4f projection = renderer->UseTemporalEffects()
+                                        ? renderer->temporalHistory.projection
+                                        : rasterProjection;
         const Matrix4f viewProjection = camera->getViewProjectionMatrix();
         const Vector3f eye = camera->getPosition();
         auto capture = [&](Framebuffer &target, bool reflection) {
@@ -158,7 +161,7 @@ namespace Prehistoric {
         capture(*refractionFbo, false);
         camera->setPosition(eye);
         camera->setViewMatrix(view);
-        camera->setProjectionMatrix(projection);
+        camera->setProjectionMatrix(rasterProjection);
         camera->setViewProjectionMatrix(viewProjection);
         window->getSwapchain()->SetWindowSize(width, height);
         __WaterConfig.stage = WaterRenderStage::Default;
@@ -166,6 +169,7 @@ namespace Prehistoric {
 
     void Water::UpdateQuadtree() {
         if (quadtree &&camera
+        
         ->
         getPosition() != lastLodPosition
         )

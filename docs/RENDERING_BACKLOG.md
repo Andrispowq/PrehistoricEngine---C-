@@ -37,11 +37,14 @@ term. Hits fade near screen edges and on rough surfaces. With a shadow-only voxe
 screen directions within its configured radius. With VXGI, diffuse cones already integrate off-screen
 visibility, so SSAO contributes local contact detail.
 
-1. **Motion blur and temporal effects.** Add camera and object motion vectors for motion blur, then investigate
-   temporal accumulation and history rejection.
-2. **Organize Render Settings.** Group and order controls by task. Use tabs or collapsible sections to keep common
+**Motion blur and temporal antialiasing** are opt-in on both backends. Camera and rigid-mesh motion vectors,
+depth-aware blur, jittered HDR accumulation and history rejection share shader math. See the
+[implementation and validation guide](MOTION_TEMPORAL.md) for supported geometry, diagnostics, resource costs,
+and remaining native OpenGL verification.
+
+1. **Organize Render Settings.** Group and order controls by task. Use tabs or collapsible sections to keep common
    controls easy to reach as the list grows.
-3. **Research variable-sized voxels.** Compare sparse voxel octrees, sparse bricks, and per-mesh
+2. **Research variable-sized voxels.** Compare sparse voxel octrees, sparse bricks, and per-mesh
    resolution selected from geometric detail against the current uniform base grid and occupancy mips.
    Measure memory, traversal cost, rebuild cost for moving meshes, and light leakage across resolution
    boundaries at equal budgets in the diagnostic scenes. Evaluate filtering radiance between levels

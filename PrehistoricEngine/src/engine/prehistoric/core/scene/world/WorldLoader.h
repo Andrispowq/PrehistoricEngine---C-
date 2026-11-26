@@ -1,6 +1,8 @@
 #ifndef WORLD_LOADER_H
 #define WORLD_LOADER_H
 
+#include "prehistoric/common/rendering/Temporal.h"
+
 #include "prehistoric/common/rendering/DepthOfField.h"
 #include "prehistoric/common/rendering/AmbientOcclusion.h"
 #include <fstream>
@@ -52,6 +54,7 @@ namespace Prehistoric {
         float bloomIntensity = 0.35f;
         AmbientOcclusionSettings ambientOcclusion;
         DepthOfFieldSettings depthOfField;
+        TemporalSettings temporal;
         std::optional<WorldCameraPose> initialCamera;
         std::string environmentMap;
 

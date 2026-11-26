@@ -100,6 +100,8 @@ namespace Prehistoric {
         renderingEngine->getRenderer()->bloomIntensity = scene->bloomIntensity;
         renderingEngine->getRenderer()->ambientOcclusion = scene->ambientOcclusion;
         renderingEngine->getRenderer()->depthOfField = scene->depthOfField;
+        renderingEngine->getRenderer()->temporal = scene->temporal;
+        renderingEngine->getRenderer()->ResetTemporalHistory();
         renderingEngine->getRenderer()->SetSceneEnvironmentMap(scene->getEnvironmentMap());
 
         if (const auto &pose = scene->getInitialCamera()) {

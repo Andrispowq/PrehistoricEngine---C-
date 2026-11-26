@@ -93,11 +93,65 @@ namespace Prehistoric {
     }
 
     void Renderer::Render() {
-        if (!CanRenderFrame()) return;
+        temporalRendered = false;
+        if (!CanRenderFrame()) {
+            ResetTemporalHistory();
+            return;
+        }
         UpdateEnvironmentLighting();
+        const bool useTemporal = UseTemporalEffects();
+        if (useTemporal) {
+            temporalHistory.Begin(camera->getProjectionMatrix(), camera->getViewMatrix(),
+                                  window->getWidth(), window->getHeight(), temporal.antialiasing);
+            for (const auto *batches: {&models_3d, &models_transparency})
+                VisitBatches(*batches, [](Pipeline *) {
+                             }, [](Pipeline *, Material *) {
+                             },
+                             [&](Pipeline *, RenderableComponent *object) {
+                                 temporalHistory.pendingModels.emplace(object->getTemporalIdentity(),
+                                                                       object->getParent()->getWorldTransform().
+                                                                       getTransformationMatrix());
+                             }, [](Pipeline *) {
+                             });
+            camera->setProjectionMatrix(temporalHistory.JitteredProjection());
+            camera->setViewProjectionMatrix(camera->getProjectionMatrix() * camera->getViewMatrix());
+        } else ResetTemporalHistory();
         RenderScene();
         RenderHDR();
+        if (useTemporal) {
+            camera->setProjectionMatrix(temporalHistory.projection);
+            camera->setViewProjectionMatrix(temporalHistory.current);
+        }
         FinishFrame();
+    }
+
+    Renderer::TemporalParameters Renderer::GetTemporalParameters() const {
+        const auto &h = temporalHistory;
+        auto rotation = h.view;
+        auto previousRotation = h.previousView;
+        rotation.m[12] = rotation.m[13] = rotation.m[14] = 0;
+        previousRotation.m[12] = previousRotation.m[13] = previousRotation.m[14] = 0;
+        TemporalParameters result;
+        const auto reprojection = h.projection * previousRotation * (h.projection * rotation).Invert();
+        std::copy_n(reprojection.m, 16, result.reprojection);
+        static_assert(sizeof(TemporalParameters) == 128);
+        result.jitter = {h.jitter.x, h.jitter.y, h.previousJitter.x, h.previousJitter.y};
+        result.settings = {
+            temporal.motionBlur ? std::clamp(temporal.shutterAngle, 0.0f, 360.0f) / 360.0f : 0.0f,
+            std::clamp(temporal.maxBlurPixels, 0.0f, 64.0f),
+            float(std::clamp(temporal.samples, 4, 32)), float(h.valid)
+        };
+        result.options = {
+            float(window->getWidth()), float(window->getHeight()),
+            float(temporal.antialiasing), float(temporal.debug)
+        };
+        result.depthRow = {-h.view.m[2], -h.view.m[6], -h.view.m[10], -h.view.m[14]};
+        return result;
+    }
+
+    void Renderer::CommitTemporalFrame() {
+        if (temporalRendered) temporalHistory.Commit();
+        else temporalHistory.Reset();
     }
 
     void Renderer::ClearFrameSubmissions() {

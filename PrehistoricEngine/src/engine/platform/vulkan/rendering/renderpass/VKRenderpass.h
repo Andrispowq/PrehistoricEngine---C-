@@ -10,6 +10,7 @@
 
 namespace Prehistoric {
     class Water;
+    class VKTemporalPass;
     class VKBuffer;
     class VKRenderer;
     class VKVoxelView;
@@ -60,6 +61,11 @@ namespace Prehistoric {
         VkRenderPass getRenderPass() const { return renderpass; }
 
     private:
+        friend class VKTemporalPass;
+        std::unique_ptr<VKTemporalPass> temporalPass;
+        std::vector<VkDescriptorSet> temporalInputs;
+        VkImageView bloomResult{};
+
         struct BloomDraw {
             VkFramebuffer framebuffer;
             VkExtent2D extent;

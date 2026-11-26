@@ -166,6 +166,23 @@ void EditorLayer::ImGUIRender() {
                 ImGui::TextDisabled("Both distances are in world units.");
             }
             renderer->depthOfField = lens;
+            if (ImGui::CollapsingHeader("Motion blur and temporal AA")) {
+                auto &temporal = scene->temporal;
+                ImGui::Checkbox("Motion blur", &temporal.motionBlur);
+                ImGui::Checkbox("Temporal antialiasing", &temporal.antialiasing);
+                ImGui::SliderFloat("Shutter angle", &temporal.shutterAngle, 0, 360, "%.0f degrees");
+                ImGui::SliderFloat("Maximum blur", &temporal.maxBlurPixels, 0, 64, "%.0f pixels");
+                ImGui::SliderInt("Blur samples", &temporal.samples, 4, 32);
+                ImGui::Combo("Temporal debug", &temporal.debug,
+                             "Output\0Velocity\0Validity\0Rejection\0History weight\0");
+                if (ImGui::Button("Reset temporal history")) renderer->ResetTemporalHistory();
+                renderer->temporal = temporal;
+                const char *stages[] = {"Motion geometry", "Motion resolve", "Temporal AA", "Blur and diagnostics"};
+                for (int i = 0; i < 4; ++i)
+                    if (renderer->temporalMilliseconds[i] >= 0)
+                        ImGui::Text("%s: %.3f ms", stages[i], renderer->temporalMilliseconds[i]);
+                ImGui::Text("Temporal targets: %.1f MiB", renderer->temporalBytes / (1024.0 * 1024.0));
+            }
 
             ImGui::Checkbox("Sun shafts", &renderer->sunShafts);
             if (renderer->sunShafts)

@@ -20,6 +20,11 @@ namespace Prehistoric {
         nlohmann::json file_json;
         file_json["name"] = sceneName;
         if (!scene->getEnvironmentMap().empty()) file_json["environment_map"] = scene->getEnvironmentMap();
+        file_json["temporal"] = {
+            {"motion_blur", scene->temporal.motionBlur},
+            {"antialiasing", scene->temporal.antialiasing}, {"shutter_angle", scene->temporal.shutterAngle},
+            {"max_blur_pixels", scene->temporal.maxBlurPixels}, {"samples", scene->temporal.samples}
+        };
         file_json["screen_space_reflections"] = scene->screenSpaceReflections;
         file_json["bloom_intensity"] = scene->bloomIntensity;
         const auto &ao = scene->ambientOcclusion;

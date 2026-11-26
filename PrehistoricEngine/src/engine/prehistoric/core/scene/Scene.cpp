@@ -21,6 +21,7 @@ namespace Prehistoric {
         bloomIntensity = loader.bloomIntensity;
         ambientOcclusion = loader.ambientOcclusion;
         depthOfField = loader.depthOfField;
+        temporal = loader.temporal;
         initialCamera = loader.initialCamera;
         environmentMap = loader.environmentMap;
 

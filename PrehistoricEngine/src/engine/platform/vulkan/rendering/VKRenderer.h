@@ -35,6 +35,8 @@ namespace Prehistoric {
         VKShadowPass &GetShadows() { return *shadows; }
         const VKShadowPass &GetShadows() const { return *shadows; }
 
+        bool UseTemporalEffects() const override { return Renderer::UseTemporalEffects() && !voxelView; }
+
         bool voxelView = false;
         bool voxelHalfResolution = true;
         bool voxelGI = false, voxelDirectional = true, voxelSunShadows = false;

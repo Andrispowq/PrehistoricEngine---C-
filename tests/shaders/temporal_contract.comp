@@ -1,0 +1,60 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+layout(local_size_x = 64) in;
+layout(set = 0, binding = 0, std430) buffer Output { uint values[]; };
+
+// Analytic textures isolate the production shared filters from API resource setup.
+// Native application smoke tests exercise the real attachments and descriptors.
+const int sourceImage = 0, motionImage = 1, historyImage = 2, previousMotion = 3, tileImage = 4;
+struct Parameters { mat4 reprojection; vec4 jitter; vec4 settings; vec4 options; vec4 depthRow; } params;
+uint testCase;
+ivec2 textureSize(int image, int lod) { return ivec2(100); }
+vec4 texture(int image, vec2 uv)
+{
+    if (image == sourceImage)
+    return testCase == 7 ? vec4(vec3(uv.x >= 0.4 && uv.x <= 0.6 ? 1 : 0), 2) : vec4(0.3, 0.6, 0.9, 2);
+    if (image == motionImage)
+    return vec4(testCase == 0 ? 0 : 0.1, 0, 10, testCase == 1 ? -1 : 10);
+    if (image == historyImage) return vec4(0.3, 0.6, 0.9, 0);
+    if (image == previousMotion) return vec4(0, 0, testCase == 4 ? 100 : 10, 10);
+    return vec4(testCase == 0 ? 0 : 5, 0, 0, 0);
+}
+vec4 texelFetch(int image, ivec2 pixel, int lod) { return texture(image, (vec2(pixel) + 0.5) / 100); }
+int sampleCount() { return 2; }
+vec4 motionSample(ivec2 pixel, int sampleIndex)
+{
+    return sampleIndex == 0 ? vec4(0.1, 0.2, 10, 11) : vec4(0.3, 0.4, 2, 3);
+}
+float visibleDepth(ivec2 pixel) { return 2; }
+#include "../../PrehistoricEngine/res/shaders/shared/temporal/filter.glsl"
+#include "../../PrehistoricEngine/res/shaders/shared/temporal/resolve.glsl"
+
+void main()
+{
+    uint index = gl_GlobalInvocationID.x;
+    testCase = index % 8;
+    params.reprojection = mat4(1);
+    params.jitter = vec4(0);
+    params.settings = vec4(1, 32, 32, testCase == 3 ? 0 : 1);
+    params.options = vec4(100, 100, 0, 0);
+    bool pass = false;
+    if (testCase <= 2)
+    pass = length(motionBlur(vec2(0.5)) - vec4(0.3, 0.6, 0.9, 2)) < 1e-4;
+    if (testCase == 3)
+    pass = length(temporalAA(vec2(0.5), false) - vec4(0.3, 0.6, 0.9, 2)) < 1e-4;
+    if (testCase == 4 || testCase == 5)
+    {
+        params.options.w = 4;
+        float weight = temporalAA(vec2(0.5), true).r;
+        pass = testCase == 4 ? weight == 0 : weight > 0.5;
+    }
+    if (testCase == 6) pass = length(resolveMotion(vec2(0.5)) - vec4(0.3, 0.4, 2, 3)) < 1e-4;
+    if (testCase == 7)
+    {
+        float x = 0.3 + 0.4 * float(index / 8) / 31;
+        float oracle = max(0, min(x + 0.05, 0.6) - max(x - 0.05, 0.4)) / 0.1;
+        vec4 result = motionBlur(vec2(x, 0.5));
+        pass = abs(result.r - oracle) < 0.06 && result.a == 2;
+    }
+    values[index] = pass ? index * 3 + 7 : 0;
+}

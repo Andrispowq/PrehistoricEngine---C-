@@ -13,6 +13,7 @@ include(Catch)
 function(add_math_tests target)
     add_executable(${target}
             unit/math/MathTests.cpp
+            unit/rendering/TemporalTests.cpp
             "${PROJECT_SOURCE_DIR}/PrehistoricEngine/src/engine/prehistoric/core/util/math/Math.cpp")
     target_include_directories(${target} PRIVATE "${PROJECT_SOURCE_DIR}/PrehistoricEngine/src/engine")
     target_link_libraries(${target} PRIVATE Catch2::Catch2WithMain)

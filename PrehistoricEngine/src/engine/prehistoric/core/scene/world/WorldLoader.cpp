@@ -449,6 +449,13 @@ namespace Prehistoric {
             nlohmann::json file_json = nlohmann::json::parse(contents);
             sceneName = file_json["name"];
             environmentMap = file_json.value("environment_map", std::string{});
+            if (auto value = file_json.find("temporal"); value != file_json.end() && value->is_object()) {
+                temporal.motionBlur = value->value("motion_blur", false);
+                temporal.antialiasing = value->value("antialiasing", false);
+                temporal.shutterAngle = std::clamp(value->value("shutter_angle", 180.0f), 0.0f, 360.0f);
+                temporal.maxBlurPixels = std::clamp(value->value("max_blur_pixels", 32.0f), 0.0f, 64.0f);
+                temporal.samples = std::clamp(value->value("samples", 16), 4, 32);
+            }
             screenSpaceReflections = file_json.value("screen_space_reflections", false);
             bloomIntensity = std::max(0.0f, file_json.value("bloom_intensity", bloomIntensity));
             if (const auto ao = file_json.find("ambient_occlusion"); ao != file_json.end()) {

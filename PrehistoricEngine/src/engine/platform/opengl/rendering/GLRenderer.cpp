@@ -1,5 +1,6 @@
 #include "Includes.hpp"
 #include "GLRenderer.h"
+#include "GLTemporalPass.h"
 #include "prehistoric/core/modules/water/Water.h"
 
 #include "prehistoric/core/node/component/renderer/RenderableComponent.h"
@@ -74,6 +75,7 @@ namespace Prehistoric {
 
     void GLRenderer::EndRendering() {
         window->Render(nullptr);
+        CommitTemporalFrame();
 
         ClearFrameSubmissions();
         waters.clear();
@@ -153,7 +155,15 @@ namespace Prehistoric {
             if (settings.globalIllumination)
                 voxelPass->Composite(mainPass->getColourImage().pointer);
         }
+        if (UseTemporalEffects()) {
+            if (!temporalPass) temporalPass = std::make_unique<GLTemporalPass>();
+            temporalPass->Render(*this, mainPass->getColourImage().pointer);
+        } else {
+            temporalPass.reset();
+            temporalBytes = 0;
+        }
         if (bloomEnabled &&bloomIntensity
+
         
         >
         0.0f

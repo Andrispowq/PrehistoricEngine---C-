@@ -161,6 +161,7 @@ namespace Prehistoric {
         if (frameReady) {
             PR_PROFILE("Submitting");
             window->Render(getDrawCommandBuffer());
+            CommitTemporalFrame();
         }
 
         waters.clear();
@@ -204,7 +205,10 @@ namespace Prehistoric {
         renderpass->RetainWaterTargets(waters);
         for (auto *water: waters) {
             renderpass->GetWaterTargets(water);
-            water->captureDepthScale = MakeWaterCapture(camera->getViewMatrix(), camera->getProjectionMatrix(),
+            water->captureDepthScale = MakeWaterCapture(camera->getViewMatrix(),
+                                                        UseTemporalEffects()
+                                                            ? temporalHistory.projection
+                                                            : camera->getProjectionMatrix(),
                                                         camera->getPosition(), water->height(), false, true).depthScale;
         }
         const auto extent = static_cast<VKSwapchain *>(window->getSwapchain())->getSwapchainExtent();
@@ -234,7 +238,8 @@ namespace Prehistoric {
             for (bool reflected: {true, false}) {
                 const Matrix4f view = camera->getViewMatrix();
                 const Matrix4f projection = camera->getProjectionMatrix();
-                const auto pass = MakeWaterCapture(view, projection, camera->getPosition(), water->height(), reflected,
+                const auto pass = MakeWaterCapture(view, UseTemporalEffects() ? temporalHistory.projection : projection,
+                                                   camera->getPosition(), water->height(), reflected,
                                                    true);
                 const auto target = reflected ? targets.reflectionFrame.get() : targets.refractionFrame.get();
                 renderpass->BeginRenderpass(buffer, Vector4f(0, 0, 0, 1), target);
@@ -259,7 +264,7 @@ namespace Prehistoric {
         if (voxelGI)
             renderpass->Voxels(voxelResolution, true).Mark(buffer->getCommandBuffer(), VKVoxelView::Shading, false);
         renderpass->BeginRenderpass(buffer, swapchain->getClearColour(), nullptr,
-                                    depthOfField.active() || !getVolumetricSpheres().empty());
+                                    UseTemporalEffects() || depthOfField.active() || !getVolumetricSpheres().empty());
         background->Draw(buffer->getCommandBuffer(), camera,
                          __AtmosphereConfig.scatteringEnabled ? atmosphere : nullptr, environmentPreviewLod);
         ProcessDraws(buffer);
