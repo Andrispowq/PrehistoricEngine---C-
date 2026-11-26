@@ -8,6 +8,10 @@
 #include "panels/SceneHierarchyPanel.h"
 #include <cstdint>
 
+namespace Prehistoric {
+    class Renderer;
+}
+
 class EditorLayer : public Prehistoric::Layer {
 public:
     EditorLayer(std::unique_ptr<Prehistoric::Scene> scene);
@@ -34,6 +38,24 @@ protected:
     void QuitButton();
 
 private:
+    void DrawRenderSettings(Prehistoric::Renderer &renderer);
+
+    void DrawAntialiasingSettings(Prehistoric::Renderer &renderer);
+
+    void DrawCameraSettings(Prehistoric::Renderer &renderer);
+
+    void DrawLightingSettings(Prehistoric::Renderer &renderer);
+
+    void DrawVoxelSettings(Prehistoric::Renderer &renderer);
+
+    void DrawEnvironmentSettings(Prehistoric::Renderer &renderer);
+
+    void DrawDiagnostics(Prehistoric::Renderer &renderer);
+
+    void DrawEditorInteraction();
+
+    void DrawEnvironmentSelector(Prehistoric::Renderer &renderer);
+
     std::uint32_t statsDockId = 0;
     std::unique_ptr<SceneHierarchyPanel> scenePanel;
     std::unique_ptr<Prehistoric::Scene> scene;

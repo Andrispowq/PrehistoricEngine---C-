@@ -1,7 +1,8 @@
 # Motion blur and temporal antialiasing
 
 Both backends have independent, opt-in motion blur and native-resolution temporal
-antialiasing controls under **Render Settings → Motion blur and temporal AA**.
+antialiasing controls under **Render Settings → Camera & post-processing** and
+**Render Settings → Antialiasing**, respectively. Debug views, history reset and GPU timings are under **Diagnostics**.
 Existing worlds default to both effects disabled. Temporal processing pauses in wireframe and voxel debug views. The
 optional `temporal` world
 object stores `motion_blur`, `antialiasing`, `shutter_angle`, `max_blur_pixels`, and
@@ -68,7 +69,8 @@ the effect mode that produced them, so benchmark collection can reject duplicate
 
 ### Live MSAA
 
-**Render Settings → MSAA** offers Off (one sample) and supported sample counts. A request applies at the next
+**Render Settings → Antialiasing → MSAA** offers Off (one sample) and supported sample counts. A request applies at the
+next
 frame boundary and resets temporal history. The selection is session-local; `framework.window.numSamples` remains
 the startup preference. Vulkan waits for in-flight work, recreates scene attachments/render passes and their pipelines
 through the existing resize path. OpenGL replaces offscreen attachments, leaving its window/context intact. Switching

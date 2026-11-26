@@ -80,7 +80,7 @@ void EditorLayer::ImGUIRender() {
             ImGuiID properties = ImGui::DockBuilderSplitNode(left, ImGuiDir_Down, 0.55f, nullptr, &left);
             ImGui::DockBuilderDockWindow("Scene Hierarchy", left);
             ImGui::DockBuilderDockWindow("Properties", properties);
-            ImGui::DockBuilderDockWindow("Environment map configurations", right);
+            ImGui::DockBuilderDockWindow("Environment###Environment map configurations", right);
             ImGui::DockBuilderDockWindow("Asset Manager", bottom);
             ImGui::DockBuilderDockWindow("Viewport", center);
             ImGui::DockBuilderFinish(dockspace_id);
@@ -88,7 +88,17 @@ void EditorLayer::ImGUIRender() {
         if (!statsDockId) {
             // Migrate an existing detached/tabbed Stats panel without discarding
             // the user's other dock positions. Reuse an already-correct split.
-            auto *environmentSettings = ImGui::FindWindowSettings(ImHashStr("Environment map configurations"));
+            auto *environmentSettings = ImGui::FindWindowSettings(
+                ImHashStr("Environment###Environment map configurations"));
+            if (!environmentSettings) {
+                environmentSettings = ImGui::FindWindowSettings(ImHashStr("Environment map configurations"));
+                if (environmentSettings && ImGui::DockBuilderGetNode(environmentSettings->DockId)) {
+                    ImGui::DockBuilderDockWindow("Environment###Environment map configurations",
+                                                 environmentSettings->DockId);
+                    environmentSettings = ImGui::FindWindowSettings(
+                        ImHashStr("Environment###Environment map configurations"));
+                }
+            }
             auto *environment = environmentSettings
                                     ? ImGui::DockBuilderGetNode(environmentSettings->DockId)
                                     : nullptr;
@@ -98,7 +108,7 @@ void EditorLayer::ImGUIRender() {
                 auto *leaf = ImGui::DockBuilderGetNode(dockspace_id);
                 while (leaf->IsSplitNode()) leaf = leaf->ChildNodes[1];
                 ImGuiID environmentId = ImGui::DockBuilderSplitNode(leaf->ID, ImGuiDir_Right, 0.5f, nullptr, nullptr);
-                ImGui::DockBuilderDockWindow("Environment map configurations", environmentId);
+                ImGui::DockBuilderDockWindow("Environment###Environment map configurations", environmentId);
                 environment = ImGui::DockBuilderGetNode(environmentId);
             }
             auto *statsSettings = ImGui::FindWindowSettings(ImHashStr("Stats"));
@@ -111,7 +121,7 @@ void EditorLayer::ImGUIRender() {
                 ImGuiID environmentId;
                 statsDockId = ImGui::DockBuilderSplitNode(environment->ID, ImGuiDir_Down, 0.28f,
                                                           nullptr, &environmentId);
-                ImGui::DockBuilderDockWindow("Environment map configurations", environmentId);
+                ImGui::DockBuilderDockWindow("Environment###Environment map configurations", environmentId);
             }
             ImGui::DockBuilderDockWindow("Stats", statsDockId);
             ImGui::DockBuilderFinish(dockspace_id);
@@ -136,128 +146,7 @@ void EditorLayer::ImGUIRender() {
         }
 
         if (ImGui::BeginMenu("Render Settings")) {
-            if (ImGui::InputFloat("Pick distance", &pickDistance, 1.0f, 10.0f, "%.1f"))
-                pickDistance = std::max(0.0f, pickDistance);
-            const unsigned activeSamples = renderer->GetSampleCount();
-            const std::string sampleLabel = activeSamples == 1 ? "Off" : std::to_string(activeSamples) + "x";
-            if (ImGui::BeginCombo("MSAA", sampleLabel.c_str())) {
-                for (unsigned samples: renderer->GetSupportedSampleCounts()) {
-                    const std::string label = samples == 1 ? "Off" : std::to_string(samples) + "x";
-                    if (ImGui::Selectable(label.c_str(), samples == activeSamples)) renderer->RequestSampleCount(
-                        samples);
-                }
-                ImGui::EndCombo();
-            }
-            ImGui::TextDisabled("Applies next frame; higher MSAA uses more GPU memory.");
-            bool wireframe = renderer->isWireframeMode();
-            if (ImGui::Checkbox("Wireframe (E)", &wireframe)) renderer->setWireframeMode(wireframe);
-            bool bloom = renderer->isBloomEnabled();
-            if (ImGui::Checkbox("Bloom (K)", &bloom)) renderer->setBloomEnabled(bloom);
-
-            if (bloom && ImGui::SliderFloat("Bloom intensity", &scene->bloomIntensity, 0.0f, 2.0f, "%.2f"))
-                renderer->bloomIntensity = scene->bloomIntensity;
-            if (ImGui::Checkbox("Screen-space reflections", &scene->screenSpaceReflections))
-                renderer->screenSpaceReflections = scene->screenSpaceReflections;
-            auto &ao = scene->ambientOcclusion;
-            ImGui::Checkbox("Ambient occlusion", &ao.enabled);
-            if (ao.enabled) {
-                ImGui::DragFloat("Occlusion radius", &ao.radius, 0.05f, 0.01f, 100.0f, "%.2f world units",
-                                 ImGuiSliderFlags_AlwaysClamp);
-                ImGui::SliderFloat("Occlusion strength", &ao.strength, 0.0f, 2.0f);
-            }
-            renderer->ambientOcclusion = ao;
-
-            auto &lens = scene->depthOfField;
-            ImGui::Checkbox("Depth of field", &lens.enabled);
-            if (lens.enabled) {
-                ImGui::DragFloat("Focus distance", &lens.focusDistance, 0.25f, 0.01f, __EngineConfig.rendererFarPlane,
-                                 "%.2f", ImGuiSliderFlags_AlwaysClamp);
-                ImGui::DragFloat("Aperture diameter", &lens.aperture, 0.02f, 0.0f, 100.0f, "%.2f",
-                                 ImGuiSliderFlags_AlwaysClamp);
-                ImGui::TextDisabled("Both distances are in world units.");
-            }
-            renderer->depthOfField = lens;
-            if (ImGui::CollapsingHeader("Motion blur and temporal AA")) {
-                auto &temporal = scene->temporal;
-                ImGui::Checkbox("Motion blur", &temporal.motionBlur);
-                ImGui::Checkbox("Temporal antialiasing", &temporal.antialiasing);
-                ImGui::SliderFloat("Shutter angle", &temporal.shutterAngle, 0, 360, "%.0f degrees");
-                ImGui::SliderFloat("Maximum blur", &temporal.maxBlurPixels, 0, 64, "%.0f pixels");
-                ImGui::SliderInt("Blur samples", &temporal.samples, 4, 32);
-                ImGui::Combo("Temporal debug", &temporal.debug,
-                             "Output\0Velocity\0Validity\0Rejection\0History weight\0");
-                if (ImGui::Button("Reset temporal history")) renderer->ResetTemporalHistory();
-                renderer->temporal = temporal;
-                const char *stages[] = {"Motion geometry", "Motion resolve", "Temporal AA", "Blur and diagnostics"};
-                for (int i = 0; i < 4; ++i)
-                    if (renderer->temporalTimings.milliseconds[i] >= 0)
-                        ImGui::Text("%s: %.3f ms", stages[i], renderer->temporalTimings.milliseconds[i]);
-                ImGui::Text("Temporal targets: %.1f MiB", renderer->temporalBytes / (1024.0 * 1024.0));
-            }
-
-            ImGui::Checkbox("Sun shafts", &renderer->sunShafts);
-            if (renderer->sunShafts)
-                ImGui::SliderFloat("Shaft strength", &renderer->sunShaftStrength, 0.0f, 4.0f);
-            ImGui::Checkbox("Sun lens flare", &renderer->sunFlare);
-            if (renderer->sunFlare) {
-                ImGui::SliderFloat("Flare intensity", &renderer->sunFlareStrength, 0.0f, 3.0f);
-                ImGui::SliderFloat("Flare size", &renderer->sunFlareSize, 0.25f, 2.0f);
-            }
-
-            auto *gl = dynamic_cast<Prehistoric::GLRenderer *>(renderer);
-            auto *vk = dynamic_cast<Prehistoric::VKRenderer *>(renderer);
-            auto *pass = gl ? gl->getVoxelPass() : nullptr;
-            if (vk || (pass && pass->IsSupported())) {
-                using VoxelPass = Prehistoric::GLVoxelRendererPass;
-                auto *settings = pass ? &pass->GetSettings() : nullptr;
-                auto &gi = vk ? vk->voxelGI : settings->globalIllumination;
-                auto &width = vk ? vk->voxelExtent : settings->extent;
-                auto &center = vk ? vk->voxelCenter : settings->center;
-                ImGui::Separator();
-                ImGui::Checkbox("Voxel View (V)", vk ? &vk->voxelView : &settings->debugView);
-                ImGui::Checkbox("Voxel GI (G)", &gi);
-                ImGui::Checkbox("Half-Resolution GI", vk ? &vk->voxelHalfResolution : &settings->halfResolution);
-                ImGui::Checkbox("Directional Voxel Mips", vk ? &vk->voxelDirectional : &settings->directionalMips);
-                ImGui::Checkbox("Voxel Sun Shadows", vk ? &vk->voxelSunShadows : &settings->voxelSunShadows);
-                int resolution = vk ? vk->voxelResolution : VoxelPass::Resolutions[settings->resolutionIndex];
-                const auto label = [](int size) { return std::to_string(size) + " cubed"; };
-                if (ImGui::BeginCombo("Voxel Resolution (B)", label(resolution).c_str())) {
-                    for (int i = 0; i < static_cast<int>(std::size(VoxelPass::Resolutions)); ++i) {
-                        const int size = VoxelPass::Resolutions[i];
-                        const bool available = vk ? vk->SupportsVoxelResolution(size) : pass->CanUseResolution(i);
-                        if (ImGui::Selectable(label(size).c_str(), size == resolution,
-                                              available ? ImGuiSelectableFlags_None : ImGuiSelectableFlags_Disabled)) {
-                            resolution = size;
-                            if (vk) vk->voxelResolution = size;
-                            else settings->resolutionIndex = i;
-                        }
-                        if (!available && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-                            ImGui::SetTooltip("Grid exceeds the GPU budget for the current voxel settings.");
-                    }
-                    ImGui::EndCombo();
-                }
-                ImGui::DragFloat3("Volume Center", &center.x, 1.0f);
-                ImGui::DragFloat("Volume Width", &width, 1.0f, 1.0f, 100000.0f, "%.1f", ImGuiSliderFlags_AlwaysClamp);
-                ImGui::SliderFloat("GI Strength", vk ? &vk->voxelStrength : &settings->giStrength, 0.0f, 4.0f);
-                ImGui::SliderInt("GI Trace Depth", vk ? &vk->voxelBounces : &settings->traceDepth, 1,
-                                 VoxelPass::MaxTraceDepth, "%d", ImGuiSliderFlags_AlwaysClamp);
-                ImGui::Text("Voxel size %.2f", width / resolution);
-                if (gi && ImGui::TreeNode("Voxel GPU Timings")) {
-                    const char *labels[] = {
-                        vk ? "Geometry bake" : "Occluder bake",
-                        vk ? "Occlusion and injection" : "Radiance injection", "Bounce propagation",
-                        "Final radiance mips", "Cone tracing",
-                        vk ? "Main shading and GI composite" : "Filter and composite"
-                    };
-                    for (unsigned i = 0; i < std::size(labels); ++i) {
-                        const double ms = vk
-                                              ? vk->voxelMilliseconds[i]
-                                              : pass->GetGpuMilliseconds(static_cast<VoxelPass::GpuStage>(i));
-                        if (ms >= 0) ImGui::Text("%s  %.2f ms", labels[i], ms);
-                    }
-                    ImGui::TreePop();
-                }
-            }
+            DrawRenderSettings(*renderer);
             ImGui::EndMenu();
         }
 
@@ -284,41 +173,8 @@ void EditorLayer::ImGUIRender() {
 
     ImGui::End();
 
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0, 0});
-    ImGui::Begin("Environment map configurations");
-
+    DrawEnvironmentSelector(*renderer);
     auto *ui = Prehistoric::Application::Get().getImGuiLayer();
-    if (ImGui::Button("Load environment map")) {
-        std::optional<std::string> path = Prehistoric::FileDialogues::Get()->OpenFile(
-            "Environment Map (*.hdr)\0*.hdr\0");
-        if (path) {
-            __EnvironmentMapConfig.environmentMapLocation = *path;
-            renderer->RequestEnvironmentBake(true);
-        }
-    }
-
-    if (ImGui::Button("Regenerate environment map")) {
-        renderer->RequestEnvironmentBake(false);
-    }
-
-    float max = (float) __EnvironmentMapConfig.prefilterLevels;
-    ImGui::SliderFloat("Environment map LOD", &renderer->environmentPreviewLod, 0.0f, max - 1.0f, "%.1f");
-
-    auto editSize = [](const char *label, uint32_t &value) {
-        int size = static_cast<int>(value);
-        if (ImGui::InputInt(label, &size)) value = static_cast<uint32_t>(std::max(1, size));
-    };
-    editSize("Environment map resolution", __EnvironmentMapConfig.environmentMapResolution);
-    editSize("Irradiance map resolution", __EnvironmentMapConfig.irradianceMapResolution);
-    editSize("Prefilter map resolution", __EnvironmentMapConfig.prefilterMapResolution);
-    editSize("Prefilter map mip levels", __EnvironmentMapConfig.prefilterLevels);
-
-    ImGui::SliderFloat("Exposure", &__EngineConfig.rendererExposure, 0.5f, 4.0f, "%.2f");
-    ImGui::SliderFloat("Sun Shadow Radius", &__EngineConfig.shadowSunAngularRadius, 0.0f, 0.1f, "%.3f rad");
-    ImGui::SliderFloat("Gamma", &__EngineConfig.rendererGamma, 1.0f, 5.0f, "%.2f");
-
-    ImGui::End();
-    ImGui::PopStyleVar();
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0, 0});
     ImGui::Begin("Viewport");
@@ -403,6 +259,241 @@ void EditorLayer::ImGUIRender() {
     ImGui::End();
     ImGui::PopStyleVar();
 
+    ImGui::End();
+}
+
+void EditorLayer::DrawRenderSettings(Prehistoric::Renderer &renderer) {
+    if (ImGui::BeginMenu("Antialiasing")) {
+        DrawAntialiasingSettings(renderer);
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Camera & post-processing")) {
+        DrawCameraSettings(renderer);
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Lighting & shadows")) {
+        DrawLightingSettings(renderer);
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Voxel GI")) {
+        DrawVoxelSettings(renderer);
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Environment baking")) {
+        DrawEnvironmentSettings(renderer);
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Diagnostics")) {
+        DrawDiagnostics(renderer);
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Editor interaction")) {
+        DrawEditorInteraction();
+        ImGui::EndMenu();
+    }
+}
+
+void EditorLayer::DrawAntialiasingSettings(Prehistoric::Renderer &renderer) {
+    const unsigned activeSamples = renderer.GetSampleCount();
+    const std::string sampleLabel = activeSamples == 1 ? "Off" : std::to_string(activeSamples) + "x";
+    if (ImGui::BeginCombo("MSAA", sampleLabel.c_str())) {
+        for (unsigned samples: renderer.GetSupportedSampleCounts()) {
+            const std::string label = samples == 1 ? "Off" : std::to_string(samples) + "x";
+            if (ImGui::Selectable(label.c_str(), samples == activeSamples)) {
+                renderer.RequestSampleCount(samples);
+            }
+        }
+        ImGui::EndCombo();
+    }
+    ImGui::TextDisabled("Applies next frame; higher MSAA uses more GPU memory.");
+    ImGui::Separator();
+    if (ImGui::Checkbox("Temporal antialiasing (TAA)", &scene->temporal.antialiasing)) {
+        renderer.temporal = scene->temporal;
+    }
+}
+
+void EditorLayer::DrawCameraSettings(Prehistoric::Renderer &renderer) {
+    ImGui::SliderFloat("Exposure", &__EngineConfig.rendererExposure, 0.5f, 4.0f, "%.2f");
+    ImGui::SliderFloat("Gamma", &__EngineConfig.rendererGamma, 1.0f, 5.0f, "%.2f");
+    ImGui::Separator();
+    auto &temporal = scene->temporal;
+    ImGui::Checkbox("Motion blur", &temporal.motionBlur);
+    if (temporal.motionBlur) {
+        ImGui::SliderFloat("Shutter angle", &temporal.shutterAngle, 0, 360, "%.0f degrees");
+        ImGui::SliderFloat("Maximum blur", &temporal.maxBlurPixels, 0, 64, "%.0f pixels");
+        ImGui::SliderInt("Blur samples", &temporal.samples, 4, 32);
+    }
+    renderer.temporal = temporal;
+    ImGui::Separator();
+    auto &lens = scene->depthOfField;
+    ImGui::Checkbox("Depth of field", &lens.enabled);
+    if (lens.enabled) {
+        ImGui::DragFloat("Focus distance", &lens.focusDistance, 0.25f, 0.01f, __EngineConfig.rendererFarPlane,
+                         "%.2f", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::DragFloat("Aperture diameter", &lens.aperture, 0.02f, 0.0f, 100.0f, "%.2f",
+                         ImGuiSliderFlags_AlwaysClamp);
+        ImGui::TextDisabled("Both distances are in world units.");
+    }
+    renderer.depthOfField = lens;
+    ImGui::Separator();
+    bool bloom = renderer.isBloomEnabled();
+    if (ImGui::Checkbox("Bloom (K)", &bloom)) renderer.setBloomEnabled(bloom);
+
+    if (bloom && ImGui::SliderFloat("Bloom intensity", &scene->bloomIntensity, 0.0f, 2.0f, "%.2f")) {
+        renderer.bloomIntensity = scene->bloomIntensity;
+    }
+    ImGui::Checkbox("Sun lens flare", &renderer.sunFlare);
+    if (renderer.sunFlare) {
+        ImGui::SliderFloat("Flare intensity", &renderer.sunFlareStrength, 0.0f, 3.0f);
+        ImGui::SliderFloat("Flare size", &renderer.sunFlareSize, 0.25f, 2.0f);
+    }
+}
+
+void EditorLayer::DrawLightingSettings(Prehistoric::Renderer &renderer) {
+    if (ImGui::Checkbox("Screen-space reflections", &scene->screenSpaceReflections)) {
+        renderer.screenSpaceReflections = scene->screenSpaceReflections;
+    }
+    auto &ao = scene->ambientOcclusion;
+    ImGui::Checkbox("Ambient occlusion", &ao.enabled);
+    if (ao.enabled) {
+        ImGui::DragFloat("Occlusion radius", &ao.radius, 0.05f, 0.01f, 100.0f, "%.2f world units",
+                         ImGuiSliderFlags_AlwaysClamp);
+        ImGui::SliderFloat("Occlusion strength", &ao.strength, 0.0f, 2.0f);
+    }
+    renderer.ambientOcclusion = ao;
+    ImGui::Separator();
+    ImGui::SliderFloat("Sun Shadow Radius", &__EngineConfig.shadowSunAngularRadius, 0.0f, 0.1f, "%.3f rad");
+    ImGui::Checkbox("Sun shafts", &renderer.sunShafts);
+    if (renderer.sunShafts) {
+        ImGui::SliderFloat("Shaft strength", &renderer.sunShaftStrength, 0.0f, 4.0f);
+    }
+}
+
+void EditorLayer::DrawVoxelSettings(Prehistoric::Renderer &renderer) {
+    auto *gl = dynamic_cast<Prehistoric::GLRenderer *>(&renderer);
+    auto *vk = dynamic_cast<Prehistoric::VKRenderer *>(&renderer);
+    auto *pass = gl ? gl->getVoxelPass() : nullptr;
+    if (vk || (pass && pass->IsSupported())) {
+        using VoxelPass = Prehistoric::GLVoxelRendererPass;
+        auto *settings = pass ? &pass->GetSettings() : nullptr;
+        auto &gi = vk ? vk->voxelGI : settings->globalIllumination;
+        auto &width = vk ? vk->voxelExtent : settings->extent;
+        auto &center = vk ? vk->voxelCenter : settings->center;
+        ImGui::Checkbox("Voxel GI (G)", &gi);
+        ImGui::Checkbox("Half-Resolution GI", vk ? &vk->voxelHalfResolution : &settings->halfResolution);
+        ImGui::Checkbox("Directional Voxel Mips", vk ? &vk->voxelDirectional : &settings->directionalMips);
+        ImGui::Checkbox("Voxel Sun Shadows", vk ? &vk->voxelSunShadows : &settings->voxelSunShadows);
+        int resolution = vk ? vk->voxelResolution : VoxelPass::Resolutions[settings->resolutionIndex];
+        const auto label = [](int size) { return std::to_string(size) + " cubed"; };
+        if (ImGui::BeginCombo("Voxel Resolution (B)", label(resolution).c_str())) {
+            for (int i = 0; i < static_cast<int>(std::size(VoxelPass::Resolutions)); ++i) {
+                const int size = VoxelPass::Resolutions[i];
+                const bool available = vk ? vk->SupportsVoxelResolution(size) : pass->CanUseResolution(i);
+                if (ImGui::Selectable(label(size).c_str(), size == resolution,
+                                      available ? ImGuiSelectableFlags_None : ImGuiSelectableFlags_Disabled)) {
+                    resolution = size;
+                    if (vk) vk->voxelResolution = size;
+                    else settings->resolutionIndex = i;
+                }
+                if (!available && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+                    ImGui::SetTooltip("Grid exceeds the GPU budget for the current voxel settings.");
+                }
+            }
+            ImGui::EndCombo();
+        }
+        ImGui::DragFloat3("Volume Center", &center.x, 1.0f);
+        ImGui::DragFloat("Volume Width", &width, 1.0f, 1.0f, 100000.0f, "%.1f", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::SliderFloat("GI Strength", vk ? &vk->voxelStrength : &settings->giStrength, 0.0f, 4.0f);
+        ImGui::SliderInt("GI Trace Depth", vk ? &vk->voxelBounces : &settings->traceDepth, 1,
+                         VoxelPass::MaxTraceDepth, "%d", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::Text("Voxel size %.2f", width / resolution);
+    } else {
+        ImGui::TextDisabled("Voxel GI is unavailable on this device.");
+    }
+}
+
+void EditorLayer::DrawEnvironmentSettings(Prehistoric::Renderer &renderer) {
+    auto editSize = [](const char *label, uint32_t &value) {
+        int size = static_cast<int>(value);
+        if (ImGui::InputInt(label, &size)) value = static_cast<uint32_t>(std::max(1, size));
+    };
+    editSize("Environment map resolution", __EnvironmentMapConfig.environmentMapResolution);
+    editSize("Irradiance map resolution", __EnvironmentMapConfig.irradianceMapResolution);
+    editSize("Prefilter map resolution", __EnvironmentMapConfig.prefilterMapResolution);
+    editSize("Prefilter map mip levels", __EnvironmentMapConfig.prefilterLevels);
+    const float maxLod = float(std::max(1u, __EnvironmentMapConfig.prefilterLevels) - 1);
+    ImGui::SliderFloat("Environment map LOD", &renderer.environmentPreviewLod, 0.0f, maxLod, "%.1f");
+    ImGui::Separator();
+    if (ImGui::Button("Regenerate from scene")) renderer.RequestEnvironmentBake(false);
+    ImGui::TextDisabled("Uses scene lighting; replaces a loaded HDR override.");
+}
+
+void EditorLayer::DrawDiagnostics(Prehistoric::Renderer &renderer) {
+    bool wireframe = renderer.isWireframeMode();
+    if (ImGui::Checkbox("Wireframe (E)", &wireframe)) renderer.setWireframeMode(wireframe);
+    auto &temporal = scene->temporal;
+    if (ImGui::Combo("Temporal debug", &temporal.debug, "Output\0Velocity\0Validity\0Rejection\0History weight\0")) {
+        renderer.temporal = temporal;
+    }
+    if (ImGui::Button("Reset temporal history")) renderer.ResetTemporalHistory();
+    if (ImGui::TreeNode("Temporal GPU timings")) {
+        const char *stages[] = {"Motion geometry", "Motion resolve", "Temporal AA", "Blur and diagnostics"};
+        for (int i = 0; i < 4; ++i) {
+            if (renderer.temporalTimings.milliseconds[i] >= 0) {
+                ImGui::Text("%s: %.3f ms", stages[i], renderer.temporalTimings.milliseconds[i]);
+            }
+        }
+        ImGui::Text("Temporal targets: %.1f MiB", renderer.temporalBytes / (1024.0 * 1024.0));
+        ImGui::TreePop();
+    }
+    auto *gl = dynamic_cast<Prehistoric::GLRenderer *>(&renderer);
+    auto *vk = dynamic_cast<Prehistoric::VKRenderer *>(&renderer);
+    auto *pass = gl ? gl->getVoxelPass() : nullptr;
+    if (vk || (pass && pass->IsSupported())) {
+        using VoxelPass = Prehistoric::GLVoxelRendererPass;
+        auto *settings = pass ? &pass->GetSettings() : nullptr;
+        const bool gi = vk ? vk->voxelGI : settings->globalIllumination;
+        ImGui::Separator();
+        ImGui::Checkbox("Voxel View (V)", vk ? &vk->voxelView : &settings->debugView);
+        if (gi && ImGui::TreeNode("Voxel GPU Timings")) {
+            const char *labels[] = {
+                vk ? "Geometry bake" : "Occluder bake",
+                vk ? "Occlusion and injection" : "Radiance injection", "Bounce propagation",
+                "Final radiance mips", "Cone tracing",
+                vk ? "Main shading and GI composite" : "Filter and composite"
+            };
+            for (unsigned i = 0; i < std::size(labels); ++i) {
+                const double ms = vk
+                                      ? vk->voxelMilliseconds[i]
+                                      : pass->GetGpuMilliseconds(static_cast<VoxelPass::GpuStage>(i));
+                if (ms >= 0) ImGui::Text("%s  %.2f ms", labels[i], ms);
+            }
+            ImGui::TreePop();
+        }
+    }
+}
+
+void EditorLayer::DrawEditorInteraction() {
+    if (ImGui::InputFloat("Pick distance", &pickDistance, 1.0f, 10.0f, "%.1f")) {
+        pickDistance = std::max(0.0f, pickDistance);
+    }
+}
+
+void EditorLayer::DrawEnvironmentSelector(Prehistoric::Renderer &renderer) {
+    ImGui::Begin("Environment###Environment map configurations");
+    const auto &path = __EnvironmentMapConfig.environmentMapLocation;
+    const auto filename = path.substr(path.find_last_of("/\\") + 1);
+    ImGui::TextUnformatted("HDR file");
+    ImGui::TextWrapped("%s", filename.empty() ? "No file selected" : filename.c_str());
+    if (!path.empty() && ImGui::IsItemHovered()) ImGui::SetTooltip("%s", path.c_str());
+    if (ImGui::Button("Load environment map")) {
+        std::optional<std::string> path = Prehistoric::FileDialogues::Get()->OpenFile(
+            "Environment Map (*.hdr)\0*.hdr\0");
+        if (path) {
+            __EnvironmentMapConfig.environmentMapLocation = *path;
+            renderer.RequestEnvironmentBake(true);
+        }
+    }
     ImGui::End();
 }
 

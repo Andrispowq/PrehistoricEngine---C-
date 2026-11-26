@@ -379,6 +379,33 @@ and add the levels together. The presentation pass combines bloom with scene col
 The renderer owns the passes and baked maps for its backend. Outstanding rendering
 repairs are listed in the [rendering backlog](docs/RENDERING_BACKLOG.md).
 
+## Editor render settings
+
+The editor's **Render Settings** menu groups controls by purpose:
+
+| Section                  | Controls                                                                                                             |
+|--------------------------|----------------------------------------------------------------------------------------------------------------------|
+| Antialiasing             | Live MSAA selection and TAA                                                                                          |
+| Camera & post-processing | Exposure, gamma, motion blur, depth of field, bloom and lens flare                                                   |
+| Lighting & shadows       | Ambient occlusion, screen-space reflections, sun shadow radius and shafts                                            |
+| Voxel GI                 | Grid resolution and bounds, GI strength and trace depth, directional mips, half-resolution tracing and voxel shadows |
+| Environment baking       | Environment, irradiance and prefilter resolutions, prefilter mip levels, preview LOD and regeneration                |
+| Diagnostics              | Wireframe, temporal debug views, history reset, voxel view and GPU timings                                           |
+| Editor interaction       | Viewport pick distance                                                                                               |
+
+The top-right **Environment** panel contains only the HDR filename and file selector.
+Existing dock positions are migrated to its new display name. Baking parameters apply when baking is requested;
+**Regenerate from scene** uses the scene's atmosphere or environment map, replacing any loaded HDR override.
+Selecting an HDR file requests a bake from that file. This reorganisation preserves the existing settings and
+serialization behavior; environment objects and exclusive atmosphere/environment ownership remain future work.
+
+Validated on Apple M1/MoltenVK with a full Debug build and the native editor lifecycle smoke
+(`python3 tests/temporal_render_smoke.py --api Vulkan --app PrehistoricEditor --samples 1 --width 960 --height 540`).
+Rendered captures show the selector-only Environment panel and Stats below it. Rebaking, resizing, temporal history
+resets and live MSAA transitions passed without reported Vulkan validation errors. Native menu click-through and
+saved-layout migration were not visually verified because UI automation could not attach to the standalone binary.
+OpenGL runtime verification remains unavailable on this host (OpenGL 4.1 versus the engine's requested 4.5).
+
 ## Motion blur and temporal antialiasing
 
 Both backends expose opt-in motion blur and native-resolution TAA. The
