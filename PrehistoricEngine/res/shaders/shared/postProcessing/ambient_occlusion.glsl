@@ -19,10 +19,10 @@ float screenSpaceVisibility(vec3 worldPosition, vec3 worldNormal, vec2 settings,
             if (any(lessThan(pixel, vec2(0))) || any(greaterThanEqual(pixel, vec2(size)))) continue;
             vec3 samplePosition;
             if (!occluderPosition(ivec2(pixel), size, samplePosition)) continue;
-            covered += 0.5;
             vec3 delta = samplePosition - center;
             float distanceToSample = length(delta);
             if (distanceToSample < radius * 0.005 || distanceToSample >= radius) continue;
+            covered += 0.5;
             float elevation = max(dot(normal, delta / distanceToSample) - 0.075, 0.0);
             horizon = max(horizon, elevation * (1.0 - smoothstep(0.0, radius, distanceToSample)));
         }
@@ -34,7 +34,7 @@ float screenSpaceVisibility(vec3 worldPosition, vec3 worldNormal, vec2 settings,
             if (dot(tangent, tangent) > 0.0001)
             {
                 vec3 ray = normalize(normalize(tangent) + worldNormal);
-                float visibility = voxelVisibility(worldPosition, worldNormal, ray, radius);
+                float visibility = voxelAmbientVisibility(worldPosition, ray, radius);
                 horizon = max(horizon, (1.0 - covered) * (1.0 - visibility));
             }
         }

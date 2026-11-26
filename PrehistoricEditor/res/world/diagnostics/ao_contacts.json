@@ -1,0 +1,260 @@
+{
+  "name": "AO | Contact bench",
+  "initial_camera": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "forward": [
+      0,
+      0,
+      1
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "exposure": 0.65,
+    "bloom": false
+  },
+  "screen_space_reflections": false,
+  "ambient_occlusion": {
+    "enabled": true,
+    "radius": 2,
+    "strength": 1
+  },
+  "directories": {
+    "models": "",
+    "textures": ""
+  },
+  "models": [
+    {
+      "name": "cube",
+      "directory": "engine://models/cube.obj",
+      "front-face": 0
+    }
+  ],
+  "textures": [],
+  "materials": [
+    {
+      "name": "Chalk",
+      "contents": [
+        {
+          "name": "colour",
+          "type": "vec3",
+          "value": [
+            0.65,
+            0.65,
+            0.65
+          ]
+        },
+        {
+          "name": "mrot",
+          "type": "vec4",
+          "value": [
+            0,
+            0.8,
+            1,
+            0
+          ]
+        },
+        {
+          "name": "emission",
+          "type": "float",
+          "value": 0
+        }
+      ]
+    }
+  ],
+  "world_objects": [],
+  "root": {
+    "children": [
+      {
+        "name": "Bench top",
+        "transform": {
+          "position": [
+            0,
+            -1.55,
+            -9
+          ],
+          "scaling": [
+            6,
+            0.2,
+            4
+          ]
+        },
+        "components": [
+          {
+            "type": "Renderer",
+            "model": "cube",
+            "shader": "pbr",
+            "material": "Chalk"
+          }
+        ]
+      },
+      {
+        "name": "Touching cube",
+        "transform": {
+          "position": [
+            -2,
+            -0.55,
+            -9
+          ],
+          "scaling": [
+            0.8,
+            0.8,
+            0.8
+          ]
+        },
+        "components": [
+          {
+            "type": "Renderer",
+            "model": "cube",
+            "shader": "pbr",
+            "material": "Chalk"
+          }
+        ]
+      },
+      {
+        "name": "Floating cube",
+        "transform": {
+          "position": [
+            1.5,
+            -0.08,
+            -9
+          ],
+          "scaling": [
+            0.8,
+            0.8,
+            0.8
+          ]
+        },
+        "components": [
+          {
+            "type": "Renderer",
+            "model": "cube",
+            "shader": "pbr",
+            "material": "Chalk"
+          }
+        ]
+      },
+      {
+        "name": "Railing 1",
+        "transform": {
+          "position": [
+            -0.6,
+            -0.65,
+            -7
+          ],
+          "scaling": [
+            0.035,
+            0.7,
+            0.035
+          ]
+        },
+        "components": [
+          {
+            "type": "Renderer",
+            "model": "cube",
+            "shader": "pbr",
+            "material": "Chalk"
+          }
+        ]
+      },
+      {
+        "name": "Railing 2",
+        "transform": {
+          "position": [
+            -0.36,
+            -0.65,
+            -7
+          ],
+          "scaling": [
+            0.035,
+            0.7,
+            0.035
+          ]
+        },
+        "components": [
+          {
+            "type": "Renderer",
+            "model": "cube",
+            "shader": "pbr",
+            "material": "Chalk"
+          }
+        ]
+      },
+      {
+        "name": "Railing 3",
+        "transform": {
+          "position": [
+            -0.12,
+            -0.65,
+            -7
+          ],
+          "scaling": [
+            0.035,
+            0.7,
+            0.035
+          ]
+        },
+        "components": [
+          {
+            "type": "Renderer",
+            "model": "cube",
+            "shader": "pbr",
+            "material": "Chalk"
+          }
+        ]
+      },
+      {
+        "name": "Railing 4",
+        "transform": {
+          "position": [
+            0.12,
+            -0.65,
+            -7
+          ],
+          "scaling": [
+            0.035,
+            0.7,
+            0.035
+          ]
+        },
+        "components": [
+          {
+            "type": "Renderer",
+            "model": "cube",
+            "shader": "pbr",
+            "material": "Chalk"
+          }
+        ]
+      },
+      {
+        "name": "Behind-camera blocker",
+        "transform": {
+          "position": [
+            0,
+            0,
+            1.5
+          ],
+          "scaling": [
+            20,
+            18,
+            0.25
+          ]
+        },
+        "components": [
+          {
+            "type": "Renderer",
+            "model": "cube",
+            "shader": "pbr",
+            "material": "Chalk"
+          }
+        ]
+      }
+    ]
+  }
+}

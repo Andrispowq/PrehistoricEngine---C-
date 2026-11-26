@@ -44,3 +44,22 @@ float voxelVisibility(vec3 position, vec3 normal, vec3 direction, float maxDista
     ivec3 hitCell;
     return voxelFirstHit(start, direction, limit, hitDistance, hitCell) ? 0.0 : 1.0;
 }
+
+// AO integrates only the requested world-space segment. Occupancy says nothing about
+// the surface's position inside its own cell, so begin at that cell's first exit.
+float voxelAmbientVisibility(vec3 position, vec3 direction, float radius)
+{
+    float cellWidth = voxelOcclusionExtent / float(voxelGridSize());
+    vec3 origin = (position - voxelOcclusionMin) / cellWidth;
+    if (any(lessThan(origin, vec3(0))) || any(greaterThanEqual(origin, vec3(voxelGridSize())))) return 1.0;
+    vec3 edge = mix(fract(origin), 1.0 - fract(origin), greaterThan(direction, vec3(0)));
+    vec3 times = mix(vec3(1e10), edge / max(abs(direction), vec3(1e-8)), greaterThan(abs(direction), vec3(1e-8)));
+    float start = min(times.x, min(times.y, times.z)) + 0.002;
+    float limit = radius / cellWidth;
+    if (start >= limit) return 1.0;
+
+    ivec3 hitCell;
+    float distance;
+    if (!voxelFirstHit(origin + direction * start, direction, limit - start, distance, hitCell)) return 1.0;
+    return smoothstep(0.0, limit, start + distance);
+}

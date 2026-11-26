@@ -1,0 +1,827 @@
+{
+  "name": "SSR | Glossy material sweep",
+  "initial_camera": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "forward": [
+      0,
+      0,
+      1
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "exposure": 0.65,
+    "bloom": false
+  },
+  "screen_space_reflections": true,
+  "ambient_occlusion": {
+    "enabled": false,
+    "radius": 2,
+    "strength": 1
+  },
+  "directories": {
+    "models": "",
+    "textures": ""
+  },
+  "models": [
+    {
+      "name": "cube",
+      "directory": "engine://models/cube.obj",
+      "front-face": 0
+    }
+  ],
+  "textures": [],
+  "materials": [
+    {
+      "name": "Red emitter",
+      "contents": [
+        {
+          "name": "colour",
+          "type": "vec3",
+          "value": [
+            1,
+            0.02,
+            0.02
+          ]
+        },
+        {
+          "name": "mrot",
+          "type": "vec4",
+          "value": [
+            0,
+            0.8,
+            1,
+            0
+          ]
+        },
+        {
+          "name": "emission",
+          "type": "float",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "name": "Dielectric 0.04",
+      "contents": [
+        {
+          "name": "colour",
+          "type": "vec3",
+          "value": [
+            0.85,
+            0.85,
+            0.85
+          ]
+        },
+        {
+          "name": "mrot",
+          "type": "vec4",
+          "value": [
+            0,
+            0.04,
+            1,
+            0
+          ]
+        },
+        {
+          "name": "emission",
+          "type": "float",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "Metal 0.04",
+      "contents": [
+        {
+          "name": "colour",
+          "type": "vec3",
+          "value": [
+            0.85,
+            0.85,
+            0.85
+          ]
+        },
+        {
+          "name": "mrot",
+          "type": "vec4",
+          "value": [
+            1,
+            0.04,
+            1,
+            0
+          ]
+        },
+        {
+          "name": "emission",
+          "type": "float",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "Dielectric 0.17",
+      "contents": [
+        {
+          "name": "colour",
+          "type": "vec3",
+          "value": [
+            0.85,
+            0.85,
+            0.85
+          ]
+        },
+        {
+          "name": "mrot",
+          "type": "vec4",
+          "value": [
+            0,
+            0.17,
+            1,
+            0
+          ]
+        },
+        {
+          "name": "emission",
+          "type": "float",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "Metal 0.17",
+      "contents": [
+        {
+          "name": "colour",
+          "type": "vec3",
+          "value": [
+            0.85,
+            0.85,
+            0.85
+          ]
+        },
+        {
+          "name": "mrot",
+          "type": "vec4",
+          "value": [
+            1,
+            0.17,
+            1,
+            0
+          ]
+        },
+        {
+          "name": "emission",
+          "type": "float",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "Dielectric 0.19",
+      "contents": [
+        {
+          "name": "colour",
+          "type": "vec3",
+          "value": [
+            0.85,
+            0.85,
+            0.85
+          ]
+        },
+        {
+          "name": "mrot",
+          "type": "vec4",
+          "value": [
+            0,
+            0.19,
+            1,
+            0
+          ]
+        },
+        {
+          "name": "emission",
+          "type": "float",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "Metal 0.19",
+      "contents": [
+        {
+          "name": "colour",
+          "type": "vec3",
+          "value": [
+            0.85,
+            0.85,
+            0.85
+          ]
+        },
+        {
+          "name": "mrot",
+          "type": "vec4",
+          "value": [
+            1,
+            0.19,
+            1,
+            0
+          ]
+        },
+        {
+          "name": "emission",
+          "type": "float",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "Dielectric 0.32",
+      "contents": [
+        {
+          "name": "colour",
+          "type": "vec3",
+          "value": [
+            0.85,
+            0.85,
+            0.85
+          ]
+        },
+        {
+          "name": "mrot",
+          "type": "vec4",
+          "value": [
+            0,
+            0.32,
+            1,
+            0
+          ]
+        },
+        {
+          "name": "emission",
+          "type": "float",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "Metal 0.32",
+      "contents": [
+        {
+          "name": "colour",
+          "type": "vec3",
+          "value": [
+            0.85,
+            0.85,
+            0.85
+          ]
+        },
+        {
+          "name": "mrot",
+          "type": "vec4",
+          "value": [
+            1,
+            0.32,
+            1,
+            0
+          ]
+        },
+        {
+          "name": "emission",
+          "type": "float",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "Dielectric 0.48",
+      "contents": [
+        {
+          "name": "colour",
+          "type": "vec3",
+          "value": [
+            0.85,
+            0.85,
+            0.85
+          ]
+        },
+        {
+          "name": "mrot",
+          "type": "vec4",
+          "value": [
+            0,
+            0.48,
+            1,
+            0
+          ]
+        },
+        {
+          "name": "emission",
+          "type": "float",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "Metal 0.48",
+      "contents": [
+        {
+          "name": "colour",
+          "type": "vec3",
+          "value": [
+            0.85,
+            0.85,
+            0.85
+          ]
+        },
+        {
+          "name": "mrot",
+          "type": "vec4",
+          "value": [
+            1,
+            0.48,
+            1,
+            0
+          ]
+        },
+        {
+          "name": "emission",
+          "type": "float",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "Dielectric 0.54",
+      "contents": [
+        {
+          "name": "colour",
+          "type": "vec3",
+          "value": [
+            0.85,
+            0.85,
+            0.85
+          ]
+        },
+        {
+          "name": "mrot",
+          "type": "vec4",
+          "value": [
+            0,
+            0.54,
+            1,
+            0
+          ]
+        },
+        {
+          "name": "emission",
+          "type": "float",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "Metal 0.54",
+      "contents": [
+        {
+          "name": "colour",
+          "type": "vec3",
+          "value": [
+            0.85,
+            0.85,
+            0.85
+          ]
+        },
+        {
+          "name": "mrot",
+          "type": "vec4",
+          "value": [
+            1,
+            0.54,
+            1,
+            0
+          ]
+        },
+        {
+          "name": "emission",
+          "type": "float",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "Dielectric 0.56",
+      "contents": [
+        {
+          "name": "colour",
+          "type": "vec3",
+          "value": [
+            0.85,
+            0.85,
+            0.85
+          ]
+        },
+        {
+          "name": "mrot",
+          "type": "vec4",
+          "value": [
+            0,
+            0.56,
+            1,
+            0
+          ]
+        },
+        {
+          "name": "emission",
+          "type": "float",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "Metal 0.56",
+      "contents": [
+        {
+          "name": "colour",
+          "type": "vec3",
+          "value": [
+            0.85,
+            0.85,
+            0.85
+          ]
+        },
+        {
+          "name": "mrot",
+          "type": "vec4",
+          "value": [
+            1,
+            0.56,
+            1,
+            0
+          ]
+        },
+        {
+          "name": "emission",
+          "type": "float",
+          "value": 0
+        }
+      ]
+    }
+  ],
+  "world_objects": [],
+  "root": {
+    "children": [
+      {
+        "name": "Dielectric 0.04",
+        "transform": {
+          "position": [
+            -4.7,
+            -1.55,
+            -12
+          ],
+          "scaling": [
+            0.345,
+            0.2,
+            10
+          ]
+        },
+        "components": [
+          {
+            "type": "Renderer",
+            "model": "cube",
+            "shader": "pbr",
+            "material": "Dielectric 0.04"
+          }
+        ]
+      },
+      {
+        "name": "Metal 0.04",
+        "transform": {
+          "position": [
+            -4.0,
+            -1.55,
+            -12
+          ],
+          "scaling": [
+            0.345,
+            0.2,
+            10
+          ]
+        },
+        "components": [
+          {
+            "type": "Renderer",
+            "model": "cube",
+            "shader": "pbr",
+            "material": "Metal 0.04"
+          }
+        ]
+      },
+      {
+        "name": "Dielectric 0.17",
+        "transform": {
+          "position": [
+            -3.25,
+            -1.55,
+            -12
+          ],
+          "scaling": [
+            0.345,
+            0.2,
+            10
+          ]
+        },
+        "components": [
+          {
+            "type": "Renderer",
+            "model": "cube",
+            "shader": "pbr",
+            "material": "Dielectric 0.17"
+          }
+        ]
+      },
+      {
+        "name": "Metal 0.17",
+        "transform": {
+          "position": [
+            -2.55,
+            -1.55,
+            -12
+          ],
+          "scaling": [
+            0.345,
+            0.2,
+            10
+          ]
+        },
+        "components": [
+          {
+            "type": "Renderer",
+            "model": "cube",
+            "shader": "pbr",
+            "material": "Metal 0.17"
+          }
+        ]
+      },
+      {
+        "name": "Dielectric 0.19",
+        "transform": {
+          "position": [
+            -1.8,
+            -1.55,
+            -12
+          ],
+          "scaling": [
+            0.345,
+            0.2,
+            10
+          ]
+        },
+        "components": [
+          {
+            "type": "Renderer",
+            "model": "cube",
+            "shader": "pbr",
+            "material": "Dielectric 0.19"
+          }
+        ]
+      },
+      {
+        "name": "Metal 0.19",
+        "transform": {
+          "position": [
+            -1.1,
+            -1.55,
+            -12
+          ],
+          "scaling": [
+            0.345,
+            0.2,
+            10
+          ]
+        },
+        "components": [
+          {
+            "type": "Renderer",
+            "model": "cube",
+            "shader": "pbr",
+            "material": "Metal 0.19"
+          }
+        ]
+      },
+      {
+        "name": "Dielectric 0.32",
+        "transform": {
+          "position": [
+            -0.35,
+            -1.55,
+            -12
+          ],
+          "scaling": [
+            0.345,
+            0.2,
+            10
+          ]
+        },
+        "components": [
+          {
+            "type": "Renderer",
+            "model": "cube",
+            "shader": "pbr",
+            "material": "Dielectric 0.32"
+          }
+        ]
+      },
+      {
+        "name": "Metal 0.32",
+        "transform": {
+          "position": [
+            0.35,
+            -1.55,
+            -12
+          ],
+          "scaling": [
+            0.345,
+            0.2,
+            10
+          ]
+        },
+        "components": [
+          {
+            "type": "Renderer",
+            "model": "cube",
+            "shader": "pbr",
+            "material": "Metal 0.32"
+          }
+        ]
+      },
+      {
+        "name": "Dielectric 0.48",
+        "transform": {
+          "position": [
+            1.1,
+            -1.55,
+            -12
+          ],
+          "scaling": [
+            0.345,
+            0.2,
+            10
+          ]
+        },
+        "components": [
+          {
+            "type": "Renderer",
+            "model": "cube",
+            "shader": "pbr",
+            "material": "Dielectric 0.48"
+          }
+        ]
+      },
+      {
+        "name": "Metal 0.48",
+        "transform": {
+          "position": [
+            1.8,
+            -1.55,
+            -12
+          ],
+          "scaling": [
+            0.345,
+            0.2,
+            10
+          ]
+        },
+        "components": [
+          {
+            "type": "Renderer",
+            "model": "cube",
+            "shader": "pbr",
+            "material": "Metal 0.48"
+          }
+        ]
+      },
+      {
+        "name": "Dielectric 0.54",
+        "transform": {
+          "position": [
+            2.55,
+            -1.55,
+            -12
+          ],
+          "scaling": [
+            0.345,
+            0.2,
+            10
+          ]
+        },
+        "components": [
+          {
+            "type": "Renderer",
+            "model": "cube",
+            "shader": "pbr",
+            "material": "Dielectric 0.54"
+          }
+        ]
+      },
+      {
+        "name": "Metal 0.54",
+        "transform": {
+          "position": [
+            3.25,
+            -1.55,
+            -12
+          ],
+          "scaling": [
+            0.345,
+            0.2,
+            10
+          ]
+        },
+        "components": [
+          {
+            "type": "Renderer",
+            "model": "cube",
+            "shader": "pbr",
+            "material": "Metal 0.54"
+          }
+        ]
+      },
+      {
+        "name": "Dielectric 0.56",
+        "transform": {
+          "position": [
+            4.0,
+            -1.55,
+            -12
+          ],
+          "scaling": [
+            0.345,
+            0.2,
+            10
+          ]
+        },
+        "components": [
+          {
+            "type": "Renderer",
+            "model": "cube",
+            "shader": "pbr",
+            "material": "Dielectric 0.56"
+          }
+        ]
+      },
+      {
+        "name": "Metal 0.56",
+        "transform": {
+          "position": [
+            4.7,
+            -1.55,
+            -12
+          ],
+          "scaling": [
+            0.345,
+            0.2,
+            10
+          ]
+        },
+        "components": [
+          {
+            "type": "Renderer",
+            "model": "cube",
+            "shader": "pbr",
+            "material": "Metal 0.56"
+          }
+        ]
+      },
+      {
+        "name": "Narrow emissive strip",
+        "transform": {
+          "position": [
+            0,
+            0.1,
+            -13
+          ],
+          "scaling": [
+            10,
+            0.15,
+            0.1
+          ]
+        },
+        "components": [
+          {
+            "type": "Renderer",
+            "model": "cube",
+            "shader": "pbr",
+            "material": "Red emitter"
+          }
+        ]
+      }
+    ]
+  }
+}

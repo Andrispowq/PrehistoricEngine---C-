@@ -10,6 +10,9 @@ spheres are editable scene components, and the
 
 OpenGL and Vulkan water are enabled in the sample. Vulkan selects its geometry or tessellation-only pipeline from device capabilities. Native OpenGL GPU captures exercised the surface, reflection and refraction above and below the waterline. Set `water.reflectionParameters.underwaterPostProcessing` to `false` to disable the underwater tint and blur.
 
+The [render quality review](RENDER_QUALITY_REVIEW.md) contains five editor scenes, measured edge cases, and comparison
+frames.
+
 ## Remaining work
 
 Engine mesh raycasting and editor viewport picking are implemented. Set **Pick distance** in the editor's Render
@@ -38,6 +41,15 @@ visibility, so SSAO contributes local contact detail.
    temporal accumulation and history rejection.
 2. **Organize Render Settings.** Group and order controls by task. Use tabs or collapsible sections to keep common
    controls easy to reach as the list grows.
+3. **Research variable-sized voxels.** Compare sparse voxel octrees, sparse bricks, and per-mesh
+   resolution selected from geometric detail against the current uniform base grid and occupancy mips.
+   Measure memory, traversal cost, rebuild cost for moving meshes, and light leakage across resolution
+   boundaries at equal budgets in the diagnostic scenes. Evaluate filtering radiance between levels
+   separately from skipping empty space during traversal. Compare the cascaded sparse distance fields in
+   [AMD’s Brixelizer GI sample](https://gpuopen.com/manuals/fidelityfx_sdk/samples/brixelizer-gi/) with
+   [Laine and Karras](https://research.nvidia.com/sites/default/files/pubs/2010-02_Efficient-Sparse-Voxel/laine2010tr1_paper.pdf)
+   and the filtered hierarchy
+   of [Crassin et al.](https://research.nvidia.com/labs/rtr/publication/crassin2011givoxels/).
 
 Imported OBJ and PMF submeshes appear under each model instance in the editor
 hierarchy. Selecting a part opens its material controls. Edits and resets apply

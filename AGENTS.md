@@ -56,6 +56,13 @@
 
 ## Workflow
 
+- Before implementing any change, review the latest relevant research papers and
+  sample projects. Cite the sources and compare several implementations against
+  the engine's requirements, including the tradeoffs that affect the choice.
+- Present a recommended action plan with implementation steps and a way to verify
+  the result. Wait for the user's explicit approval of that plan before starting
+  implementation. If findings require a materially different approach, submit
+  the revised plan for approval.
 - `master` is the integration branch. Use short-lived `codex/` branches for new
   branches created by Codex; reuse an appropriate existing checkout.
 - Do not commit, merge, or publish unless requested. Summarize changes, validation,
