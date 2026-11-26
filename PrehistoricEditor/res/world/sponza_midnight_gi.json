@@ -1,4 +1,10 @@
 {
+  "screen_space_reflections": true,
+  "ambient_occlusion": {
+    "enabled": true,
+    "radius": 2.0,
+    "strength": 1.0
+  },
     "name": "Sponza Midnight Atmosphere Voxel GI",
     "initial_camera": {
         "position": [-21, -42, -3],

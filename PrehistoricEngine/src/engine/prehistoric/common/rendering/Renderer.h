@@ -51,6 +51,7 @@ namespace Prehistoric {
 
         virtual void RequestEnvironmentBake(bool usePanorama) = 0;
 
+        bool screenSpaceReflections = false;
         float bloomIntensity = 0.06f;
         AmbientOcclusionSettings ambientOcclusion;
         DepthOfFieldSettings depthOfField;

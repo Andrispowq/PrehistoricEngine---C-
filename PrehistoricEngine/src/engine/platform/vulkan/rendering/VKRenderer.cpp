@@ -182,7 +182,9 @@ namespace Prehistoric {
     }
 
     VkDescriptorImageInfo VKRenderer::GetVoxelScreenInput(int index) const {
-        return (voxelGI || (index < 2 && ambientOcclusion.active()))
+        return (index == 3
+                    ? screenSpaceReflections
+                    : voxelGI || (index < 2 && (ambientOcclusion.active() || screenSpaceReflections)))
                    ? renderpass->VoxelScreenInput(index, voxelHalfResolution)
                    : environmentLighting->getBRDF();
     }
@@ -207,8 +209,8 @@ namespace Prehistoric {
         }
         const auto extent = static_cast<VKSwapchain *>(window->getSwapchain())->getSwapchainExtent();
         shadows->Prepare(*this, float(extent.width) / extent.height);
-        const bool needReceivers = voxelGI || ambientOcclusion.active();
-        if (needReceivers) renderpass->PrepareVoxelScreen(voxelGI);
+        const bool needReceivers = voxelGI || ambientOcclusion.active() || screenSpaceReflections;
+        if (needReceivers) renderpass->PrepareVoxelScreen(voxelGI, screenSpaceReflections);
         PrepareDescriptors();
         ProcessDraws(nullptr);
 
@@ -220,7 +222,7 @@ namespace Prehistoric {
             renderpass->Voxels(voxelResolution, true).Prepare(buffer->getCommandBuffer(), *this);
         shadows->Record(*this, buffer);
         if (needReceivers) {
-            renderpass->BeginVoxelReceivers(buffer);
+            renderpass->BeginVoxelReceivers(buffer, screenSpaceReflections);
             ProcessDraws(buffer, nullptr, true);
             vkCmdEndRenderPass(buffer->getCommandBuffer());
             if (voxelGI) renderpass->TraceVoxelScreen(buffer, *this);
@@ -323,7 +325,7 @@ namespace Prehistoric {
                 shader = nullptr;
                 return;
             }
-            if (buffer) graphics->BindPipeline(buffer, wireframe, receivers);
+            if (buffer) graphics->BindPipeline(buffer, wireframe, receivers, screenSpaceReflections);
         };
         uint32_t lastSelected = 0;
         auto beginScene = [&](Pipeline *pipeline) {

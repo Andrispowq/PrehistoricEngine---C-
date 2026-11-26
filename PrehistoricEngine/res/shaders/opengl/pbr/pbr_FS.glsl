@@ -80,6 +80,8 @@ bool occluderPosition(ivec2 pixel, ivec2 size, out vec3 position)
 	position = vec3(-z * ndc / vec2(m_projection[0][0], m_projection[1][1]), z);
 	return true;
 }
+uniform bool useVoxelAO;
+#define HAS_AO_VOXELS useVoxelAO
 #include "shared/postProcessing/ambient_occlusion.glsl"
 
 uniform bool selected;

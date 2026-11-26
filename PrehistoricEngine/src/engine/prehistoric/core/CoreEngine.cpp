@@ -96,6 +96,7 @@ namespace Prehistoric {
     void CoreEngine::SetScene(Scene *scene) {
         this->sceneRoot = scene->getSceneRoot();
         this->scene = scene;
+        renderingEngine->getRenderer()->screenSpaceReflections = scene->screenSpaceReflections;
         renderingEngine->getRenderer()->bloomIntensity = scene->bloomIntensity;
         renderingEngine->getRenderer()->ambientOcclusion = scene->ambientOcclusion;
         renderingEngine->getRenderer()->depthOfField = scene->depthOfField;

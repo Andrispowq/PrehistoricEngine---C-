@@ -36,9 +36,9 @@ namespace Prehistoric {
 
         Texture *getEditorOutput() const { return editorOutput.get(); }
 
-        void PrepareVoxelScreen(bool traceIndirect);
+        void PrepareVoxelScreen(bool traceIndirect, bool withRadiance);
 
-        void BeginVoxelReceivers(VKCommandBuffer *buffer);
+        void BeginVoxelReceivers(VKCommandBuffer *buffer, bool withRadiance);
 
         void TraceVoxelScreen(VKCommandBuffer *buffer, VKRenderer &renderer);
 
@@ -52,6 +52,8 @@ namespace Prehistoric {
 
         VkPipeline CreateFullscreenPipeline(const char *vertexPath, const char *fragmentPath, VkPipelineLayout layout,
                                             VkRenderPass postPass = VK_NULL_HANDLE);
+
+        VkRenderPass getReceiverPass() const { return receiverPass; }
 
         VkRenderPass getRenderPass() const { return renderpass; }
 
@@ -102,6 +104,8 @@ namespace Prehistoric {
         std::unique_ptr<VKTexture> editorOutput;
         VkFramebuffer editorFramebuffer{};
         VkRenderPass editorPass{};
+        VkRenderPass receiverPass{};
+        VkImageView receiverRadiance{};
         VkRenderPass renderpass{};
         VkRenderPass sceneWithReadableDepth{};
         VkRenderPass bloomPass{};
@@ -114,6 +118,7 @@ namespace Prehistoric {
         VkPipeline hdrPipeline{}, dofPipeline{};
         VkPipeline bloomPipeline{};
         VkDescriptorSet hdrInputs[2]{};
+        VKFramebuffer *litReceiverFramebuffer{};
         VKFramebuffer *receiverFramebuffer{};
         VkImageView receiverImages[2]{}, indirectImages[2]{};
         VkFramebuffer indirectFrames[2]{};

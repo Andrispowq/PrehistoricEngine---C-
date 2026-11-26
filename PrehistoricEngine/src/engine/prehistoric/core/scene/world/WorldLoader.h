@@ -48,6 +48,7 @@ namespace Prehistoric {
 
     public:
         std::string sceneName;
+        bool screenSpaceReflections = false;
         float bloomIntensity = 0.35f;
         AmbientOcclusionSettings ambientOcclusion;
         DepthOfFieldSettings depthOfField;

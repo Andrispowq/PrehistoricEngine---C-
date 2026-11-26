@@ -28,6 +28,12 @@ The editor saves them with the scene. Existing scenes start with the effect disa
 Render Settings includes bloom intensity and optional screen-space ambient occlusion for PBR meshes.
 The scene stores the bloom multiplier, AO radius in world units, and AO strength.
 
+The **Screen-space reflections** control enables current-frame glossy reflections. The Sponza midnight
+mirror scene enables it by default. Reliable screen hits replace the environment or voxel specular
+term. Hits fade near screen edges and on rough surfaces. With a shadow-only voxel grid, AO samples missing
+screen directions within its configured radius. With VXGI, diffuse cones already integrate off-screen
+visibility, so SSAO contributes local contact detail.
+
 1. **Motion blur and temporal effects.** Add camera and object motion vectors for motion blur, then investigate
    temporal accumulation and history rejection.
 2. **Organize Render Settings.** Group and order controls by task. Use tabs or collapsible sections to keep common

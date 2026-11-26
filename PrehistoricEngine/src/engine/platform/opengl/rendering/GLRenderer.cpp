@@ -142,6 +142,8 @@ namespace Prehistoric {
     }
 
     void GLRenderer::RenderHDR() {
+        if (screenSpaceReflections && !(voxelPass->IsReady() && voxelPass->GetSettings().debugView))
+            voxelPass->RenderScreenReflections(mainPass->getColourImage().pointer);
         if (voxelPass->IsReady()) {
             const auto &settings = voxelPass->GetSettings();
             if (settings.debugView) {
@@ -151,7 +153,8 @@ namespace Prehistoric {
             if (settings.globalIllumination)
                 voxelPass->Composite(mainPass->getColourImage().pointer);
         }
-        if (bloomEnabled &&bloomIntensity 
+        if (bloomEnabled &&bloomIntensity
+        
         >
         0.0f
         )

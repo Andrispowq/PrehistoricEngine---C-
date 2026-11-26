@@ -49,6 +49,7 @@ namespace Prehistoric {
             AddUniform("voxelSettings", FRAGMENT_SHADER, UniformBuffer, 0, 10, 64);
             AddUniform("voxelPositions", FRAGMENT_SHADER, CombinedImageSampler, 0, 11, 0);
             AddUniform("voxelNormals", FRAGMENT_SHADER, CombinedImageSampler, 0, 12, 0);
+            AddUniform("screenRadiance", FRAGMENT_SHADER, CombinedImageSampler, 0, 14, 0);
             AddUniform("voxelIndirect", FRAGMENT_SHADER, CombinedImageSampler, 0, 13, 0);
         }
 
@@ -126,11 +127,13 @@ namespace Prehistoric {
             auto *vk = static_cast<VKRenderer *>(renderer);
             SetSampledImage("voxelPositions", vk->GetVoxelScreenInput(0));
             SetSampledImage("voxelNormals", vk->GetVoxelScreenInput(1));
+            SetSampledImage("screenRadiance", vk->GetVoxelScreenInput(3));
             SetSampledImage("voxelIndirect", vk->GetVoxelScreenInput(2));
             SetUniformi("voxelSettings", vk->voxelHalfResolution ? 2 : 1, 32);
             SetUniformi("voxelSettings", int(vk->voxelGI), 36);
             const auto &ao = vk->ambientOcclusion;
-            SetUniform("voxelSettings", Vector4f(ao.radius, ao.active() ? ao.strength : 0.0f, 0, 0), 48);
+            SetUniform("voxelSettings",
+                       Vector4f(ao.radius, ao.active() ? ao.strength : 0.0f, float(vk->screenSpaceReflections), 0), 48);
             auto buffer = vk->GetVoxelBuffer();
             auto *fallback = descriptorPool->getUniform("voxelGrid", 0)->getBuffer();
             VkDescriptorBufferInfo grid{buffer ? buffer : fallback->getBuffer(), 0, VK_WHOLE_SIZE};

@@ -43,6 +43,7 @@ namespace Prehistoric {
 
         std::string getName() const { return name; }
         GameObject *getSceneRoot() const { return sceneRoot; }
+        bool screenSpaceReflections = false;
         float bloomIntensity = 0.35f;
         AmbientOcclusionSettings ambientOcclusion;
         DepthOfFieldSettings depthOfField;

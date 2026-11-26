@@ -449,6 +449,7 @@ namespace Prehistoric {
             nlohmann::json file_json = nlohmann::json::parse(contents);
             sceneName = file_json["name"];
             environmentMap = file_json.value("environment_map", std::string{});
+            screenSpaceReflections = file_json.value("screen_space_reflections", false);
             bloomIntensity = std::max(0.0f, file_json.value("bloom_intensity", bloomIntensity));
             if (const auto ao = file_json.find("ambient_occlusion"); ao != file_json.end()) {
                 ambientOcclusion.enabled = ao->value("enabled", false);

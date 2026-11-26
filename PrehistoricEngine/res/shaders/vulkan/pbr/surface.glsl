@@ -1,8 +1,11 @@
 #include "../water/capture.glsl"
 #include "scene.glsl"
 layout(location = 2) in vec3 normal_FS;
-#ifndef VOXEL_RECEIVER
+#if !defined(VOXEL_RECEIVER) || defined(LIT_RECEIVER)
 #include "shade.glsl"
+#endif
+#ifdef LIT_RECEIVER
+layout(location = 2) out vec4 outRadiance;
 #endif
 layout(set = 1, binding = 3, std140) uniform Material
 {
@@ -67,6 +70,10 @@ void main()
 
     vec3 N = normalize(normal);
     #ifdef VOXEL_RECEIVER
+    #ifdef LIT_RECEIVER
+    shadeSurface(albedoColour, metallic, roughness, occlusion, N, emission);
+    outRadiance = outColour;
+    #endif
     outColour = vec4(position_FS, metallic);
     outBloom = vec4(N, 1);
     #else

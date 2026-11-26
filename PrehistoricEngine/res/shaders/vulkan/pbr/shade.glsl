@@ -10,6 +10,8 @@ int voxelGridSize() { return int(voxelOptions.x); }
 #include "../voxel/grid.glsl"
 #include "../../shared/voxel/reflection.glsl"
 
+#ifndef VOXEL_RECEIVER
+layout(binding = 14) uniform sampler2D screenRadiance;
 layout(binding = 11) uniform sampler2D positionMetallic;
 layout(binding = 12) uniform sampler2D normals;
 layout(binding = 13) uniform sampler2D indirectImage;
@@ -21,7 +23,12 @@ bool occluderPosition(ivec2 pixel, ivec2 size, out vec3 position)
     position = (m_view * vec4(texelFetch(positionMetallic, pixel, 0).xyz, 1.0)).xyz;
     return true;
 }
+// VXGI cone irradiance already integrates off-screen visibility when active.
+#define HAS_AO_VOXELS (voxelOptions.x > 0.0 && traceOptions.y == 0)
 #include "../../shared/postProcessing/ambient_occlusion.glsl"
+
+#include "../../shared/postProcessing/screen_reflection.glsl"
+#endif
 
 void shadeSurface(vec3 albedoColour, float metallic, float roughness, float occlusion, vec3 N, float emission)
 {
@@ -62,8 +69,10 @@ void shadeSurface(vec3 albedoColour, float metallic, float roughness, float occl
 	vec3 kD = 1.0 - kS;
 	kD *= 1.0 - metallic;
 
+    #ifndef VOXEL_RECEIVER
     if (aoSettings.y > 0.0 && waterView.eyeAndCapture.w == 0.0)
     occlusion = min(occlusion, screenSpaceVisibility(position_FS, normalize(normal_FS), aoSettings.xy, textureSize(normals, 0)));
+    #endif
 	vec3 irradiance = texture(irradianceMap, N).rgb;
 	vec3 diffuse = irradiance * albedoColour * occlusion;
 
@@ -72,15 +81,20 @@ void shadeSurface(vec3 albedoColour, float metallic, float roughness, float occl
 	vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
 
 	vec3 ambient = kD * diffuse + specular;
+    #ifndef VOXEL_RECEIVER
+    vec4 screen = vec4(0);
+    if (aoSettings.z > 0.0 && waterView.eyeAndCapture.w == 0.0 && roughness < 0.55)
+    screen = traceScreenReflection(position_FS, N, R, roughness);
+    ambient += screen.a * (screen.rgb - prefilteredColor) * (F * envBRDF.x + envBRDF.y);
     vec3 origin = (position_FS - voxelBounds.xyz) / voxelBounds.w;
     if (traceOptions.y != 0 && waterView.eyeAndCapture.w == 0.0 &&
         all(greaterThanEqual(origin, vec3(0))) && all(lessThan(origin, vec3(1))))
     {
         float weight = voxelReflectionWeight(metallic, roughness, voxelOptions.y);
-        if (weight > 0.0 && voxelOptions.x > 0.0)
+        if (screen.a < 1.0 && weight > 0.0 && voxelOptions.x > 0.0)
         {
             vec4 reflected = traceReflection(origin, N, R, roughness);
-            ambient += reflectionCorrection(reflected, prefilteredColor, F * envBRDF.x + envBRDF.y, weight);
+            ambient += reflectionCorrection(reflected, prefilteredColor, F * envBRDF.x + envBRDF.y, weight * (1.0 - screen.a));
         }
         ivec2 pixel = ivec2(gl_FragCoord.xy);
         vec4 receiver = texelFetch(normals, pixel, 0);
@@ -94,6 +108,7 @@ void shadeSurface(vec3 albedoColour, float metallic, float roughness, float occl
         }
     }
 
+    #endif
 	// Match OpenGL: scalar emission strength tinted by the material albedo.
 	vec3 emissive = clamp(albedoColour, vec3(0.05), vec3(1.0)) * emission * emissionFactor;
 

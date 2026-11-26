@@ -177,6 +177,8 @@ namespace Prehistoric {
     }
 
     GLVoxelRendererPass::~GLVoxelRendererPass() {
+        glDeleteTextures(1, &screenColour);
+        glDeleteTextures(1, &screenConfidence);
         if (voxelisationShader.pointer)
             manager->getAssetManager()->removeReference<Shader>(voxelisationShader.handle);
         if (framebuffer) glDeleteFramebuffers(1, &framebuffer);
@@ -220,6 +222,7 @@ namespace Prehistoric {
         cache->directionalMipShader->AddUniform("directionIndex");
         compositeShader->AddUniform("directionalMips");
         bounceShader->AddUniform("directionalMips");
+        filterShader->AddUniform("useScreenReflections");
         filterShader->AddUniform("giStrength");
         filterShader->AddUniform("voxelSize");
         filterShader->AddUniform("traceStride");
@@ -652,6 +655,55 @@ namespace Prehistoric {
         glTextureParameteri(indirectImage, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     }
 
+    void GLVoxelRendererPass::RenderScreenReflections(Texture *output) {
+        if (!IsSupported()) return;
+        if (!screenShader) {
+            auto shader = std::make_unique<GLShader>();
+            if (!shader->AddShader(ResourceLoader::LoadShaderGL("opengl/postProcessing/screen_reflection_CS.glsl"),
+                                   COMPUTE_SHADER)
+                || !shader->CompileShader())
+                return;
+            for (auto name: {"m_view", "m_projection", "cameraPosition", "maxReflectionLOD"}) shader->AddUniform(name);
+            screenShader = std::move(shader);
+        }
+        const auto width = output->getWidth(), height = output->getHeight();
+        if (width != screenWidth || height != screenHeight) {
+            glDeleteTextures(1, &screenColour);
+            glDeleteTextures(1, &screenConfidence);
+            glCreateTextures(GL_TEXTURE_2D, 1, &screenColour);
+            glTextureStorage2D(screenColour, 1, GL_RGBA32F, width, height);
+            glCreateTextures(GL_TEXTURE_2D, 1, &screenConfidence);
+            glTextureStorage2D(screenConfidence, 1, GL_R16F, width, height);
+            screenWidth = width;
+            screenHeight = height;
+        }
+        const GLuint target = static_cast<GLTexture *>(output)->getTextureID();
+        glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
+        glCopyImageSubData(target, GL_TEXTURE_2D, 0, 0, 0, 0, screenColour, GL_TEXTURE_2D, 0, 0, 0, 0, width, height,
+                           1);
+        auto *gl = static_cast<GLRenderer *>(renderer);
+        auto *main = gl->getMainPass();
+        screenShader->Bind(nullptr);
+        screenShader->SetUniform("m_view", renderer->getCamera()->getViewMatrix());
+        screenShader->SetUniform("m_projection", renderer->getCamera()->getProjectionMatrix());
+        screenShader->SetUniform("cameraPosition", renderer->getCamera()->getPosition());
+        screenShader->SetUniformf("maxReflectionLOD", __EnvironmentMapConfig.prefilterLevels - 1.0f);
+        glBindTextureUnit(0, screenColour);
+        main->getPositionMetallicImage()->Bind(1);
+        main->getAlbedoRoughnessImage()->Bind(2);
+        main->getNormalImage()->Bind(3);
+        main->getBloomImage()->Bind(4);
+        gl->getEnvironmentLighting().getPrefilterMap()->Bind(5);
+        gl->getEnvironmentLighting().getBRDFMap()->Bind(6);
+        glBindImageTexture(0, target, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+        glBindImageTexture(1, screenConfidence, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R16F);
+        glDispatchCompute((width + 7) / 8, (height + 7) / 8, 1);
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT | GL_FRAMEBUFFER_BARRIER_BIT);
+        glBindImageTexture(0, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
+        glBindImageTexture(1, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R16F);
+        screenShader->Unbind();
+    }
+
     void GLVoxelRendererPass::Composite(Texture *output) {
         PR_PROFILE("Voxel composite");
         const uint32_t width = output->getWidth();
@@ -694,6 +746,8 @@ namespace Prehistoric {
             glBindImageTexture(1, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F);
 
             filterShader->Bind(nullptr);
+            filterShader->SetUniformi("useScreenReflections", renderer->screenSpaceReflections && screenConfidence);
+            glBindImageTexture(1, screenConfidence, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R16F);
             filterShader->SetUniform("cameraPosition", renderer->getCamera()->getPosition());
             main->getBloomImage()->Bind(4);
             environment.getIrradianceMap()->Bind(5);
@@ -713,6 +767,7 @@ namespace Prehistoric {
                 ScopedGpuTimer timer(cache->Timer(GpuStage::Composite));
                 glDispatchCompute(groupsX, groupsY, 1);
             }
+            glBindImageTexture(1, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R16F);
             glBindTextureUnit(0, 0);
             glBindTextureUnit(8, 0);
             if (settings.directionalMips) glBindTextures(9, 6, nullptr);

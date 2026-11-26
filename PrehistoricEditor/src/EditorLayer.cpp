@@ -114,6 +114,8 @@ void EditorLayer::ImGUIRender() {
 
             if (bloom && ImGui::SliderFloat("Bloom intensity", &scene->bloomIntensity, 0.0f, 2.0f, "%.2f"))
                 renderer->bloomIntensity = scene->bloomIntensity;
+            if (ImGui::Checkbox("Screen-space reflections", &scene->screenSpaceReflections))
+                renderer->screenSpaceReflections = scene->screenSpaceReflections;
             auto &ao = scene->ambientOcclusion;
             ImGui::Checkbox("Ambient occlusion", &ao.enabled);
             if (ao.enabled) {

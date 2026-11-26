@@ -210,6 +210,19 @@ namespace Prehistoric {
         attachments[2].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         attachments[2].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         renderpass = CreatePass(device->getDevice(), scene, count, attachments);
+        // Match the first three main attachments so the receiver pass can share transient storage.
+        VkAttachmentDescription receiverAttachments[] = {colour, colour, depth, colour, resolved, resolved, resolved};
+        VkAttachmentReference receiverColours[] = {
+            colours[0], colours[1], {3, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL}
+        };
+        VkAttachmentReference receiverResolves[] = {
+            {4, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL}, {5, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
+            {6, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL}
+        };
+        scene.colorAttachmentCount = 3;
+        scene.pColorAttachments = receiverColours;
+        scene.pResolveAttachments = resolve ? receiverResolves : nullptr;
+        receiverPass = CreatePass(device->getDevice(), scene, resolve ? 7 : 4, receiverAttachments);
         sceneFramebuffer = CreateFramebuffer(renderpass, extent, count, views);
     }
 
@@ -557,21 +570,23 @@ namespace Prehistoric {
         vkDestroyRenderPass(handle, presentPass, nullptr);
         vkDestroyRenderPass(handle, bloomPass, nullptr);
         vkDestroyRenderPass(handle, sceneWithReadableDepth, nullptr);
+        vkDestroyRenderPass(handle, receiverPass, nullptr);
         vkDestroyRenderPass(handle, renderpass, nullptr);
     }
 
     void VKRenderpass::BeginRenderpass(VKCommandBuffer *commandBuffer, Vector4f clearColour,
                                        const VKFramebuffer *target, bool sampleDepth) {
-        VkClearValue clear[3]{};
+        VkClearValue clear[4]{};
         clear[0].color = {clearColour.x, clearColour.y, clearColour.z, clearColour.w};
         clear[1].color.float32[3] = target ? 0.0f : 1.0f; // Emission alpha stores unobstructed sky coverage.
         clear[2].depthStencil = {1, 0};
         VkRenderPassBeginInfo info{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
-        info.renderPass = sampleDepth ? sceneWithReadableDepth : renderpass;
+        const bool receivers = target && target == litReceiverFramebuffer;
+        info.renderPass = receivers ? receiverPass : (sampleDepth ? sceneWithReadableDepth : renderpass);
         const auto *framebuffer = target ? target : sceneFramebuffer;
         info.framebuffer = framebuffer->getFramebuffer();
         info.renderArea.extent = framebuffer->getExtent();
-        info.clearValueCount = 3;
+        info.clearValueCount = receivers ? 4 : 3;
         info.pClearValues = clear;
         vkCmdBeginRenderPass(commandBuffer->getCommandBuffer(), &info, VK_SUBPASS_CONTENTS_INLINE);
         const auto extent = info.renderArea.extent;
@@ -652,14 +667,13 @@ namespace Prehistoric {
              });
     }
 
-    void VKRenderpass::PrepareVoxelScreen(bool traceIndirect) {
+    void VKRenderpass::PrepareVoxelScreen(bool traceIndirect, bool withRadiance) {
         const auto extent = swapchain->getSwapchainExtent();
+        const auto samples = swapchain->getSceneSamples();
+        const bool msaa = samples != VK_SAMPLE_COUNT_1_BIT;
         if (!receiverFramebuffer) {
-            const auto samples = swapchain->getSceneSamples();
-            const bool msaa = samples != VK_SAMPLE_COUNT_1_BIT;
             for (auto &view: receiverImages)
                 view = CreateImage(extent, VK_SAMPLE_COUNT_1_BIT)->getImageView();
-            // The main scene clears these multisample and depth attachments again after the receiver pass.
             VkImageView views[] = {
                 msaa ? swapchain->getColourImage()->getImageView() : receiverImages[0],
                 msaa ? emissionTarget->getImageView() : receiverImages[1],
@@ -667,6 +681,18 @@ namespace Prehistoric {
             };
             receiverFramebuffer = CreateFramebuffer(renderpass, extent, msaa ? 5 : 3, views);
             receiverInputs = CreateInputs(receiverImages[0], receiverImages[1]);
+        }
+        if (withRadiance && !litReceiverFramebuffer) {
+            receiverRadiance = CreateImage(extent, VK_SAMPLE_COUNT_1_BIT)->getImageView();
+            // The main scene clears these multisample and depth attachments again after the receiver pass.
+            VkImageView views[] = {
+                msaa ? swapchain->getColourImage()->getImageView() : receiverImages[0],
+                msaa ? emissionTarget->getImageView() : receiverImages[1],
+                swapchain->getDepthImage()->getImageView(),
+                msaa ? CreateImage(extent, samples)->getImageView() : receiverRadiance,
+                receiverImages[0], receiverImages[1], receiverRadiance
+            };
+            litReceiverFramebuffer = CreateFramebuffer(receiverPass, extent, msaa ? 7 : 4, views);
         }
         if (!traceIndirect || indirectFrames[0]) return;
         for (unsigned i = 0; i < 2; ++i) {
@@ -678,13 +704,13 @@ namespace Prehistoric {
 
     VkDescriptorImageInfo VKRenderpass::VoxelScreenInput(int index, bool half) const {
         return {
-            sampler, index == 2 ? indirectImages[half] : receiverImages[index],
+            sampler, index == 3 ? receiverRadiance : (index == 2 ? indirectImages[half] : receiverImages[index]),
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
         };
     }
 
-    void VKRenderpass::BeginVoxelReceivers(VKCommandBuffer *buffer) {
-        BeginRenderpass(buffer, Vector4f(0.0f), receiverFramebuffer);
+    void VKRenderpass::BeginVoxelReceivers(VKCommandBuffer *buffer, bool withRadiance) {
+        BeginRenderpass(buffer, Vector4f(0.0f), withRadiance ? litReceiverFramebuffer : receiverFramebuffer);
     }
 
     void VKRenderpass::TraceVoxelScreen(VKCommandBuffer *buffer, VKRenderer &renderer) {

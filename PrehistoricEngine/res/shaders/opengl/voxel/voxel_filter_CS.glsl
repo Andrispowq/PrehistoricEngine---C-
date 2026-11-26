@@ -12,6 +12,8 @@ layout(binding = 5) uniform samplerCube skyIrradiance;
 layout(binding = 6) uniform sampler3D radianceVolume;
 layout(binding = 7) uniform samplerCube prefilterMap;
 layout(binding = 15) uniform sampler2D brdfLUT;
+layout(r16f, binding = 1) uniform readonly image2D screenConfidence;
+uniform bool useScreenReflections;
 uniform float maxReflectionLOD;
 #include "opengl/voxel/voxel_cones.glsl"
 #include "shared/voxel/reflection.glsl"
@@ -51,6 +53,7 @@ void main()
         float ao = encodedAO - (terrain ? 3.0 : 1.0);
         vec3 origin = (position.xyz - volumeMin) / volumeExtent;
         float weight = voxelReflectionWeight(metallic, surface.a, giStrength);
+        if (useScreenReflections) weight *= 1.0 - imageLoad(screenConfidence, pixel).r;
         if (weight > 0.0 && inside(origin))
         {
             vec3 R = reflect(-V, normal);

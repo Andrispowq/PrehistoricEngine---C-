@@ -32,6 +32,7 @@ namespace Prehistoric {
         AddUniform("brdfLUT");
 
         AddUniform("captureLightCount");
+        AddUniform("useVoxelAO");
         AddUniform("aoSettings");
         AddUniform("numberOfTilesX");
         AddUniform("max_reflection_lod");
@@ -63,6 +64,8 @@ namespace Prehistoric {
 
         BindShadowUniforms(renderer, 3);
         auto *voxels = static_cast<GLRenderer *>(renderer)->getVoxelPass();
+        // VXGI already integrates off-screen visibility in the diffuse cone trace.
+        SetUniformi("useVoxelAO", voxels->HasOccluders() && !voxels->GetSettings().globalIllumination);
         SetUniformi("useVoxelPointShadows", voxels->HasOccluders()
                                             && voxels->GetSettings().globalIllumination);
         SetUniformf("time", (float) Time::getTimeFromStart());
