@@ -10,6 +10,7 @@ uniform bool writeNext;
 layout(binding = 5) uniform samplerCube coneEnvironment;
 uniform bool useEnvironment;
 #include "opengl/voxel/voxel_cones.glsl"
+#include "shared/voxel/voxel_cones.glsl"
 #include "opengl/voxel/voxel_surface.glsl"
 
 void main()

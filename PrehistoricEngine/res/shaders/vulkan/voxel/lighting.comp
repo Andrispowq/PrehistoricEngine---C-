@@ -16,6 +16,7 @@ layout(binding = 1) uniform sampler2D voxelShadowMap;
 layout(binding = 2) uniform samplerCube coneEnvironment;
 #define useEnvironment ((stage.w & 4) != 0)
 #include "grid.glsl"
+#include "../../shared/voxel/voxel_cones.glsl"
 #include "../../shared/voxel/voxel_surface.glsl"
 #include "../../shared/voxel/shadow.glsl"
 void storeFlux(int word, vec4 v)

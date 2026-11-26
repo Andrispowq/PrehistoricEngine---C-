@@ -6,7 +6,9 @@ layout(std140, set = 0, binding = 10) uniform VoxelSettings { vec4 voxelBounds; 
 int voxelGridSize() { return int(voxelOptions.x); }
 #define voxelOcclusionMin voxelBounds.xyz
 #define voxelOcclusionExtent voxelBounds.w
-#include "../voxel/occlusion.glsl"
+#define directionalMips (voxelOptions.z != 0.0)
+#include "../voxel/grid.glsl"
+#include "../../shared/voxel/reflection.glsl"
 
 layout(binding = 11) uniform sampler2D positionMetallic;
 layout(binding = 12) uniform sampler2D normals;
@@ -64,6 +66,12 @@ void shadeSurface(vec3 albedoColour, float metallic, float roughness, float occl
     if (traceOptions.y != 0 && waterView.eyeAndCapture.w == 0.0 &&
         all(greaterThanEqual(origin, vec3(0))) && all(lessThan(origin, vec3(1))))
     {
+        float weight = voxelReflectionWeight(metallic, roughness, voxelOptions.y);
+        if (weight > 0.0 && voxelOptions.x > 0.0)
+        {
+            vec4 reflected = traceReflection(origin, N, R, roughness);
+            ambient += reflectionCorrection(reflected, prefilteredColor, F * envBRDF.x + envBRDF.y, weight);
+        }
         ivec2 pixel = ivec2(gl_FragCoord.xy);
         vec4 receiver = texelFetch(normals, pixel, 0);
         float cellSize = voxelBounds.w / voxelOptions.x;

@@ -23,4 +23,4 @@ vec4 sampleConeRadiance(vec3 p, vec3 direction, float lod)
 
 vec3 baseRadiance(ivec3 p) { return texelFetch(radianceVolume, p, 0).rgb; }
 vec4 baseSample(ivec3 p) { return texelFetch(radianceVolume, p, 0); }
-#include "shared/voxel/voxel_cones.glsl"
+#include "shared/voxel/cone_hit.glsl"

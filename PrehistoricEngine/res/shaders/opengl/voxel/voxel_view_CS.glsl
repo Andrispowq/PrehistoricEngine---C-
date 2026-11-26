@@ -17,6 +17,7 @@ uniform int traceStride;
 layout(binding = 5) uniform samplerCube coneEnvironment;
 const bool useEnvironment = true;
 #include "opengl/voxel/voxel_cones.glsl"
+#include "shared/voxel/voxel_cones.glsl"
 
 const float voxelNearClip = -1.0;
 int voxelResolution() { return textureSize(packedVoxels, 0).x; }

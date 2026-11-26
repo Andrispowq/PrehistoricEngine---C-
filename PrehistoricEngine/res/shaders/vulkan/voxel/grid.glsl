@@ -48,4 +48,4 @@ vec4 sampleConeRadiance(vec3 p, vec3 ray, float lod)
     if (fract(lod) == 0.0) return low;
     return mix(low, coneLevel(p, ray, level + 1), fract(lod));
 }
-#include "../../shared/voxel/voxel_cones.glsl"
+#include "../../shared/voxel/cone_hit.glsl"

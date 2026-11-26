@@ -9,6 +9,12 @@ layout(binding = 3) uniform sampler2D normals;
 
 layout(binding = 4) uniform sampler2D emissionOcclusion;
 layout(binding = 5) uniform samplerCube skyIrradiance;
+layout(binding = 6) uniform sampler3D radianceVolume;
+layout(binding = 7) uniform samplerCube prefilterMap;
+layout(binding = 15) uniform sampler2D brdfLUT;
+uniform float maxReflectionLOD;
+#include "opengl/voxel/voxel_cones.glsl"
+#include "shared/voxel/reflection.glsl"
 uniform vec3 cameraPosition;
 const float PI = 3.14159265359;
 #include "shared/pbr/lighting.glsl"
@@ -30,18 +36,30 @@ void main()
     if (receiver.a < 0.99 || dot(receiver.xyz, receiver.xyz) < 0.01) return;
     vec4 position = texelFetch(positionMetallic, pixel, 0);
     vec4 irradiance = filteredIndirect(pixel, size, position.xyz, normalize(receiver.xyz), traceStride, voxelSize, volumeMin, volumeExtent);
-    if (irradiance.a == 0.0) return;
+
     vec4 surface = texelFetch(albedoRoughness, pixel, 0);
     vec3 normal = normalize(receiver.xyz);
     vec3 V = normalize(cameraPosition - position.xyz);
     float metallic = clamp(position.w, 0.0, 1.0);
     vec3 F = FresnelSchlickRoughness(max(dot(normal, V), 0.0), mix(vec3(0.04), surface.rgb, metallic), surface.a);
-    // PBR receivers record 1 + material AO. Water uses its own planar lighting.
+    // Meshes store 1 + AO, terrain stores 3 + AO and applies AO to both ambient lobes.
     float encodedAO = texelFetch(emissionOcclusion, pixel, 0).a;
     vec4 scene = imageLoad(outputImage, pixel);
     if (encodedAO >= 1.0)
     {
-        vec3 response = (1.0 - F) * (1.0 - metallic) * surface.rgb * (encodedAO - 1.0);
+        bool terrain = encodedAO >= 3.0;
+        float ao = encodedAO - (terrain ? 3.0 : 1.0);
+        vec3 origin = (position.xyz - volumeMin) / volumeExtent;
+        float weight = voxelReflectionWeight(metallic, surface.a, giStrength);
+        if (weight > 0.0 && inside(origin))
+        {
+            vec3 R = reflect(-V, normal);
+            vec4 reflected = traceReflection(origin, normal, R, surface.a);
+            vec3 sky = textureLod(prefilterMap, R, surface.a * maxReflectionLOD).rgb;
+            vec2 brdf = textureLod(brdfLUT, vec2(max(dot(normal, V), 0.01), surface.a), 0.0).rg;
+            scene.rgb += reflectionCorrection(reflected, sky, F * brdf.x + brdf.y, weight * (terrain ? ao : 1.0));
+        }
+        vec3 response = (1.0 - F) * (1.0 - metallic) * surface.rgb * ao;
         scene.rgb += response * diffuseTraceCorrection(irradiance, textureLod(skyIrradiance, normal, 0.0).rgb, giStrength);
     }
     else

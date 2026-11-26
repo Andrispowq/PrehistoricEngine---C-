@@ -229,6 +229,8 @@ namespace Prehistoric {
         bounceShader->AddUniform("writeNext");
         bounceShader->AddUniform("useEnvironment");
         filterShader->AddUniform("cameraPosition");
+        filterShader->AddUniform("maxReflectionLOD");
+        filterShader->AddUniform("directionalMips");
 
         shadowShader = std::make_unique<VoxelShadowShader>();
         if (!shadowShader->AddShader(ResourceLoader::LoadShaderGL("opengl/voxel/voxel_shadow_VS.glsl"), VERTEX_SHADER)
@@ -695,6 +697,11 @@ namespace Prehistoric {
             filterShader->SetUniform("cameraPosition", renderer->getCamera()->getPosition());
             main->getBloomImage()->Bind(4);
             environment.getIrradianceMap()->Bind(5);
+            glBindTextureUnit(6, radianceVolume);
+            environment.getPrefilterMap()->Bind(7);
+            environment.getBRDFMap()->Bind(15);
+            filterShader->SetUniformi("directionalMips", settings.directionalMips);
+            filterShader->SetUniformf("maxReflectionLOD", __EnvironmentMapConfig.prefilterLevels - 1.0f);
             filterShader->SetUniformf("giStrength", settings.giStrength);
             filterShader->SetUniformf("voxelSize", settings.extent / resolution);
             filterShader->SetUniformi("traceStride", stride);
