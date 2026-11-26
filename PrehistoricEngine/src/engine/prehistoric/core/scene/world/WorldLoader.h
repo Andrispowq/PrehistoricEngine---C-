@@ -2,6 +2,7 @@
 #define WORLD_LOADER_H
 
 #include "prehistoric/common/rendering/DepthOfField.h"
+#include "prehistoric/common/rendering/AmbientOcclusion.h"
 #include <fstream>
 
 #include "prehistoric/core/node/GameObject.h"
@@ -47,6 +48,8 @@ namespace Prehistoric {
 
     public:
         std::string sceneName;
+        float bloomIntensity = 0.35f;
+        AmbientOcclusionSettings ambientOcclusion;
         DepthOfFieldSettings depthOfField;
         std::optional<WorldCameraPose> initialCamera;
         std::string environmentMap;

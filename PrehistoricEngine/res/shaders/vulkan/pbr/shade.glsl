@@ -2,7 +2,7 @@
 #include "../shadow/cascades.glsl"
 
 layout(std430, set = 0, binding = 9) readonly buffer VoxelGrid { uint cells[]; };
-layout(std140, set = 0, binding = 10) uniform VoxelSettings { vec4 voxelBounds; vec4 voxelOptions; ivec4 traceOptions; };
+layout(std140, set = 0, binding = 10) uniform VoxelSettings { vec4 voxelBounds; vec4 voxelOptions; ivec4 traceOptions; vec4 aoSettings; };
 int voxelGridSize() { return int(voxelOptions.x); }
 #define voxelOcclusionMin voxelBounds.xyz
 #define voxelOcclusionExtent voxelBounds.w
@@ -14,6 +14,14 @@ layout(binding = 11) uniform sampler2D positionMetallic;
 layout(binding = 12) uniform sampler2D normals;
 layout(binding = 13) uniform sampler2D indirectImage;
 #include "../../shared/voxel/filter.glsl"
+
+bool occluderPosition(ivec2 pixel, ivec2 size, out vec3 position)
+{
+    if (texelFetch(normals, pixel, 0).a < 0.99) return false;
+    position = (m_view * vec4(texelFetch(positionMetallic, pixel, 0).xyz, 1.0)).xyz;
+    return true;
+}
+#include "../../shared/postProcessing/ambient_occlusion.glsl"
 
 void shadeSurface(vec3 albedoColour, float metallic, float roughness, float occlusion, vec3 N, float emission)
 {
@@ -54,6 +62,8 @@ void shadeSurface(vec3 albedoColour, float metallic, float roughness, float occl
 	vec3 kD = 1.0 - kS;
 	kD *= 1.0 - metallic;
 
+    if (aoSettings.y > 0.0 && waterView.eyeAndCapture.w == 0.0)
+    occlusion = min(occlusion, screenSpaceVisibility(position_FS, normalize(normal_FS), aoSettings.xy, textureSize(normals, 0)));
 	vec3 irradiance = texture(irradianceMap, N).rgb;
 	vec3 diffuse = irradiance * albedoColour * occlusion;
 

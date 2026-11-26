@@ -182,7 +182,9 @@ namespace Prehistoric {
     }
 
     VkDescriptorImageInfo VKRenderer::GetVoxelScreenInput(int index) const {
-        return voxelGI ? renderpass->VoxelScreenInput(index, voxelHalfResolution) : environmentLighting->getBRDF();
+        return (voxelGI || (index < 2 && ambientOcclusion.active()))
+                   ? renderpass->VoxelScreenInput(index, voxelHalfResolution)
+                   : environmentLighting->getBRDF();
     }
 
     VkBuffer VKRenderer::GetVoxelBuffer() const {
@@ -205,7 +207,8 @@ namespace Prehistoric {
         }
         const auto extent = static_cast<VKSwapchain *>(window->getSwapchain())->getSwapchainExtent();
         shadows->Prepare(*this, float(extent.width) / extent.height);
-        if (voxelGI) renderpass->PrepareVoxelScreen();
+        const bool needReceivers = voxelGI || ambientOcclusion.active();
+        if (needReceivers) renderpass->PrepareVoxelScreen(voxelGI);
         PrepareDescriptors();
         ProcessDraws(nullptr);
 
@@ -216,11 +219,11 @@ namespace Prehistoric {
         if (voxelGI || voxelSunShadows)
             renderpass->Voxels(voxelResolution, true).Prepare(buffer->getCommandBuffer(), *this);
         shadows->Record(*this, buffer);
-        if (voxelGI) {
+        if (needReceivers) {
             renderpass->BeginVoxelReceivers(buffer);
             ProcessDraws(buffer, nullptr, true);
             vkCmdEndRenderPass(buffer->getCommandBuffer());
-            renderpass->TraceVoxelScreen(buffer, *this);
+            if (voxelGI) renderpass->TraceVoxelScreen(buffer, *this);
         }
         for (auto *water: waters) {
             water->simulation().Record(buffer->getCommandBuffer(), float(Time::getTimeFromStartNanoseconds() * 1.0e-9));
@@ -264,7 +267,7 @@ namespace Prehistoric {
     void VKRenderer::RenderHDR() {
         const bool underwater = __WaterConfig.underwaterPostProcessing && std::any_of(waters.begin(), waters.end(),
                                     [](const Water *water) { return water->isCameraUnderwater(); });
-        renderpass->RenderHDR(getDrawCommandBuffer(), *this, bloomEnabled, underwater);
+        renderpass->RenderHDR(getDrawCommandBuffer(), *this, bloomEnabled && bloomIntensity > 0.0f, underwater);
     }
 
     void VKRenderer::FinishFrame() {

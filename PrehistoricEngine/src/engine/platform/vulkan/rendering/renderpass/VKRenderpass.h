@@ -36,7 +36,7 @@ namespace Prehistoric {
 
         Texture *getEditorOutput() const { return editorOutput.get(); }
 
-        void PrepareVoxelScreen();
+        void PrepareVoxelScreen(bool traceIndirect);
 
         void BeginVoxelReceivers(VKCommandBuffer *buffer);
 

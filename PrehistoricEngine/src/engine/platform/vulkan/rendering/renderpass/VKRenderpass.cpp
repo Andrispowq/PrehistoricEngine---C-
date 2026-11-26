@@ -619,7 +619,7 @@ namespace Prehistoric {
             draw(bloomPass, volumePipeline, {
                      volumeFramebuffer, extent, inputs,
                      {
-                         float(bloomEnabled), float(swapchain->getSceneSamples()),
+                         bloomEnabled ? renderer.bloomIntensity : 0.0f, float(swapchain->getSceneSamples()),
                          renderer.sunShafts ? renderer.sunShaftStrength : 0.0f
                      }
                  }, volumeSets[swapchain->getAquiredImageIndex()]);
@@ -644,7 +644,7 @@ namespace Prehistoric {
                  inputs, {
                      __EngineConfig.rendererExposure,
                      VKPBRShaderGamma(swapchain->getSwapchainImageFormat(), __EngineConfig.rendererGamma),
-                     float(addBloom), float(underwater), float(renderer.hasSelection()),
+                     addBloom ? renderer.bloomIntensity : 0.0f, float(underwater), float(renderer.hasSelection()),
                      flare.x, flare.y, flare.z, flare.w, footprint.x, footprint.y,
                      lens.focusDistance, 0.25f * extent.height * std::abs(projection.m[5]) * lens.aperture,
                      projection.m[10], projection.m[14]
@@ -652,21 +652,23 @@ namespace Prehistoric {
              });
     }
 
-    void VKRenderpass::PrepareVoxelScreen() {
-        if (receiverFramebuffer) return;
+    void VKRenderpass::PrepareVoxelScreen(bool traceIndirect) {
         const auto extent = swapchain->getSwapchainExtent();
-        const auto samples = swapchain->getSceneSamples();
-        const bool msaa = samples != VK_SAMPLE_COUNT_1_BIT;
-        for (auto &view: receiverImages)
-            view = CreateImage(extent, VK_SAMPLE_COUNT_1_BIT)->getImageView();
-        // The main scene clears these multisample and depth attachments again after the receiver pass.
-        VkImageView views[] = {
-            msaa ? swapchain->getColourImage()->getImageView() : receiverImages[0],
-            msaa ? emissionTarget->getImageView() : receiverImages[1],
-            swapchain->getDepthImage()->getImageView(), receiverImages[0], receiverImages[1]
-        };
-        receiverFramebuffer = CreateFramebuffer(renderpass, extent, msaa ? 5 : 3, views);
-        receiverInputs = CreateInputs(receiverImages[0], receiverImages[1]);
+        if (!receiverFramebuffer) {
+            const auto samples = swapchain->getSceneSamples();
+            const bool msaa = samples != VK_SAMPLE_COUNT_1_BIT;
+            for (auto &view: receiverImages)
+                view = CreateImage(extent, VK_SAMPLE_COUNT_1_BIT)->getImageView();
+            // The main scene clears these multisample and depth attachments again after the receiver pass.
+            VkImageView views[] = {
+                msaa ? swapchain->getColourImage()->getImageView() : receiverImages[0],
+                msaa ? emissionTarget->getImageView() : receiverImages[1],
+                swapchain->getDepthImage()->getImageView(), receiverImages[0], receiverImages[1]
+            };
+            receiverFramebuffer = CreateFramebuffer(renderpass, extent, msaa ? 5 : 3, views);
+            receiverInputs = CreateInputs(receiverImages[0], receiverImages[1]);
+        }
+        if (!traceIndirect || indirectFrames[0]) return;
         for (unsigned i = 0; i < 2; ++i) {
             VkExtent2D size{(extent.width + i) / (1 + i), (extent.height + i) / (1 + i)};
             indirectImages[i] = CreateImage(size, VK_SAMPLE_COUNT_1_BIT)->getImageView();

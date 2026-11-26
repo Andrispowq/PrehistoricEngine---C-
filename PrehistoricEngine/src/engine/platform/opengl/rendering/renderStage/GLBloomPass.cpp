@@ -225,7 +225,8 @@ namespace Prehistoric
 			static_cast<GLComputePipeline*>(bloomCombinePipeline.pointer)->addTextureBinding(0, combinedImage.pointer, (AccessMask)ComputeAccessFlags::WRITE_ONLY);
 
 			bloomCombinePipeline->BindPipeline(nullptr);
-			static_cast<GLBloomCombineShader*>(bloomCombinePipeline->getShader())->UpdateUniforms(mainPass->getColourImage().pointer, bloomImages[0].pointer, size);
+			static_cast<GLBloomCombineShader *>(bloomCombinePipeline->getShader())->UpdateUniforms(
+				mainPass->getColourImage().pointer, bloomImages[0].pointer, size, rend->bloomIntensity);
 			bloomCombinePipeline->RenderPipeline();
 		}
 

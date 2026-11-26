@@ -449,6 +449,12 @@ namespace Prehistoric {
             nlohmann::json file_json = nlohmann::json::parse(contents);
             sceneName = file_json["name"];
             environmentMap = file_json.value("environment_map", std::string{});
+            bloomIntensity = std::max(0.0f, file_json.value("bloom_intensity", bloomIntensity));
+            if (const auto ao = file_json.find("ambient_occlusion"); ao != file_json.end()) {
+                ambientOcclusion.enabled = ao->value("enabled", false);
+                ambientOcclusion.radius = std::max(0.01f, ao->value("radius", ambientOcclusion.radius));
+                ambientOcclusion.strength = std::max(0.0f, ao->value("strength", ambientOcclusion.strength));
+            }
             if (const auto lens = file_json.find("depth_of_field"); lens != file_json.end()) {
                 depthOfField.enabled = lens->value("enabled", false);
                 depthOfField.focusDistance = std::max(0.01f, lens->value("focus_distance", depthOfField.focusDistance));

@@ -25,10 +25,13 @@ shaft strength and the intensity and size of the seven-sprite sun lens flare. Bo
 **Depth of field** is available in Render Settings. Focus distance and aperture diameter use world units.
 The editor saves them with the scene. Existing scenes start with the effect disabled.
 
-1. **Ambient occlusion.** Add a configurable ambient occlusion pass and check its interaction with material occlusion
-   and VXGI in sheltered areas.
-2. **Motion blur and temporal effects.** Add camera and object motion vectors for motion blur, then investigate
+Render Settings includes bloom intensity and optional screen-space ambient occlusion for PBR meshes.
+The scene stores the bloom multiplier, AO radius in world units, and AO strength.
+
+1. **Motion blur and temporal effects.** Add camera and object motion vectors for motion blur, then investigate
    temporal accumulation and history rejection.
+2. **Organize Render Settings.** Group and order controls by task. Use tabs or collapsible sections to keep common
+   controls easy to reach as the list grows.
 
 Imported OBJ and PMF submeshes appear under each model instance in the editor
 hierarchy. Selecting a part opens its material controls. Edits and resets apply

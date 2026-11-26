@@ -68,6 +68,20 @@ uniform vec3 sunRadiance;
 #include "shared/pbr/lighting.glsl"
 #include "opengl/shadow/cascades.glsl"
 
+uniform mat4 m_projection;
+uniform vec2 aoSettings;
+layout(binding = 7) uniform sampler2D aoDepth;
+bool occluderPosition(ivec2 pixel, ivec2 size, out vec3 position)
+{
+	float depth = texelFetch(aoDepth, pixel, 0).r;
+	if (depth >= 1.0) return false;
+	vec2 ndc = 2.0 * (vec2(pixel) + 0.5) / vec2(size) - 1.0;
+	float z = -m_projection[3][2] / (2.0 * depth - 1.0 + m_projection[2][2]);
+	position = vec3(-z * ndc / vec2(m_projection[0][0], m_projection[1][1]), z);
+	return true;
+}
+#include "shared/postProcessing/ambient_occlusion.glsl"
+
 uniform bool selected;
 
 void main()
@@ -128,6 +142,8 @@ void main()
 	float ior = reflectance + 1;
 	
 	vec3 N = normalize(normal);
+	if (aoSettings.y > 0.0)
+	occlusion = min(occlusion, screenSpaceVisibility(position_FS, normalize(normal_FS), aoSettings, textureSize(aoDepth, 0)));
     vec3 V = normalize(cameraPosition - position_FS);
     vec3 R = normalize(reflect(-V, N));
     vec3 Refr = normalize(refract(-V, N, 1.0 / ior));

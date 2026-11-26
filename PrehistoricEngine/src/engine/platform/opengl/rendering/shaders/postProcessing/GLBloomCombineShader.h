@@ -5,16 +5,16 @@
 
 #include <glad/glad.h>
 
-namespace Prehistoric
-{
-	class GLBloomCombineShader : public GLShader
-	{
-	public:
-		GLBloomCombineShader();
-		virtual ~GLBloomCombineShader() {}
+namespace Prehistoric {
+    class GLBloomCombineShader : public GLShader {
+    public:
+        GLBloomCombineShader();
 
-		void UpdateUniforms(Texture* tex0, Texture* tex1, Vector2f targetSize) const;
-	};
+        virtual ~GLBloomCombineShader() {
+        }
+
+        void UpdateUniforms(Texture *tex0, Texture *tex1, Vector2f targetSize, float intensity = 1.0f) const;
+    };
 };
 
 #endif

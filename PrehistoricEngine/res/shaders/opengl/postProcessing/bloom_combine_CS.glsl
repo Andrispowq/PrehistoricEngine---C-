@@ -7,6 +7,7 @@ layout (binding = 0, rgba32f) uniform writeonly image2D outColour;
 uniform sampler2D image0;
 uniform sampler2D image1;
 uniform vec2 targetSize;
+uniform float intensity;
 
 void main()
 {
@@ -17,5 +18,5 @@ void main()
     vec4 colour0 = texture(image0, texCoord);
     vec3 colour1 = texture(image1, texCoord).rgb;
 
-    imageStore(outColour, x, vec4(colour0.rgb + colour1, colour0.a));
+    imageStore(outColour, x, vec4(colour0.rgb + intensity * colour1, colour0.a));
 }

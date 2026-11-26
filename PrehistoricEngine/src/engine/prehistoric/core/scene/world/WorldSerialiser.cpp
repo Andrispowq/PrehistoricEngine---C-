@@ -20,6 +20,9 @@ namespace Prehistoric {
         nlohmann::json file_json;
         file_json["name"] = sceneName;
         if (!scene->getEnvironmentMap().empty()) file_json["environment_map"] = scene->getEnvironmentMap();
+        file_json["bloom_intensity"] = scene->bloomIntensity;
+        const auto &ao = scene->ambientOcclusion;
+        file_json["ambient_occlusion"] = {{"enabled", ao.enabled}, {"radius", ao.radius}, {"strength", ao.strength}};
         const auto &lens = scene->depthOfField;
         file_json["depth_of_field"] = {
             {"enabled", lens.enabled}, {"focus_distance", lens.focusDistance},

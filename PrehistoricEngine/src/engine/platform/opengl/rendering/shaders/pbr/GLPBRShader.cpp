@@ -32,6 +32,7 @@ namespace Prehistoric {
         AddUniform("brdfLUT");
 
         AddUniform("captureLightCount");
+        AddUniform("aoSettings");
         AddUniform("numberOfTilesX");
         AddUniform("max_reflection_lod");
 
@@ -49,6 +50,10 @@ namespace Prehistoric {
         SetUniform("cameraPosition", camera->getPosition());
         SetUniformi("highDetailRange", __EngineConfig.rendererHighDetailRange);
 
+        const auto &ao = renderer->ambientOcclusion;
+        const bool useAO = ao.active() && __WaterConfig.stage == WaterRenderStage::Default;
+        if (useAO) static_cast<GLRenderer *>(renderer)->getDepthPass()->getDepthTexture()->Bind(7);
+        SetUniform("aoSettings", Vector2f(ao.radius, useAO ? ao.strength : 0.0f));
         BindEnvironmentLighting(renderer, 4);
 
         SetUniformi("captureLightCount",

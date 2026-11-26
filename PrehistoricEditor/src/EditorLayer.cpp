@@ -112,6 +112,17 @@ void EditorLayer::ImGUIRender() {
             bool bloom = renderer->isBloomEnabled();
             if (ImGui::Checkbox("Bloom (K)", &bloom)) renderer->setBloomEnabled(bloom);
 
+            if (bloom && ImGui::SliderFloat("Bloom intensity", &scene->bloomIntensity, 0.0f, 2.0f, "%.2f"))
+                renderer->bloomIntensity = scene->bloomIntensity;
+            auto &ao = scene->ambientOcclusion;
+            ImGui::Checkbox("Ambient occlusion", &ao.enabled);
+            if (ao.enabled) {
+                ImGui::DragFloat("Occlusion radius", &ao.radius, 0.05f, 0.01f, 100.0f, "%.2f world units",
+                                 ImGuiSliderFlags_AlwaysClamp);
+                ImGui::SliderFloat("Occlusion strength", &ao.strength, 0.0f, 2.0f);
+            }
+            renderer->ambientOcclusion = ao;
+
             auto &lens = scene->depthOfField;
             ImGui::Checkbox("Depth of field", &lens.enabled);
             if (lens.enabled) {

@@ -6,7 +6,7 @@ layout(push_constant) uniform Settings
 {
     float exposure;
     float gamma;
-    float bloomEnabled;
+    float bloomIntensity;
     float underwater;
     float outline;
     float sunX, sunY, flareStrength, flareSize, footprintX, footprintY;
@@ -22,7 +22,7 @@ float skyCoverage(vec2 uv) { return clamp(textureLod(emission, uv, 0.0).a, 0.0, 
 vec3 sampleSceneColour(vec2 uv)
 {
     vec3 colour = texture(scene, uv).rgb;
-    if (hdr.bloomEnabled > 0.0) colour += texture(bloom, uv).rgb;
+    if (hdr.bloomIntensity > 0.0) colour += hdr.bloomIntensity * texture(bloom, uv).rgb;
     return colour;
 }
 

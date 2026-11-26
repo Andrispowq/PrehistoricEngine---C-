@@ -17,6 +17,8 @@ namespace Prehistoric {
         }
 
         name = loader.sceneName;
+        bloomIntensity = loader.bloomIntensity;
+        ambientOcclusion = loader.ambientOcclusion;
         depthOfField = loader.depthOfField;
         initialCamera = loader.initialCamera;
         environmentMap = loader.environmentMap;

@@ -151,7 +151,11 @@ namespace Prehistoric {
             if (settings.globalIllumination)
                 voxelPass->Composite(mainPass->getColourImage().pointer);
         }
-        if (bloomEnabled) {
+        if (bloomEnabled &&bloomIntensity 
+        >
+        0.0f
+        )
+        {
             bloomPass->Render();
         }
 
