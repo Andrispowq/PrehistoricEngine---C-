@@ -3,6 +3,7 @@
 
 Runs in an isolated temporary checkout; never modifies application assets.
 """
+import json
 import os
 import shutil
 import subprocess
@@ -10,6 +11,18 @@ import tempfile
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
+
+# Only the original migrated defaults reserve legacy project paths. New engine
+# assets must not silently redirect an application's same-named private file.
+LEGACY_ENGINE_ASSETS = {
+    'models/cube.obj', 'models/quad.obj', 'models/sphere.obj',
+    'models/prehistoric/cube.pmf', 'models/prehistoric/quad.pmf',
+    'models/prehistoric/sphere.pmf', 'textures/default.png', 'textures/logo.png',
+    'textures/water/dudv1.jpg', 'textures/prehistoric/default.prt',
+    'textures/prehistoric/dudv1.prt', 'textures/prehistoric/logo.prt',
+    *(f'textures/noise/noise{size}_{index}.jpg' for size in (256, 512) for index in range(4)),
+    *(f'textures/prehistoric/noise256_{index}.prt' for index in range(4)),
+}
 
 
 def run(*args, cwd=None, env=None, success=True):
@@ -23,6 +36,36 @@ def run(*args, cwd=None, env=None, success=True):
 def timestamps(root):
     return {str(p.relative_to(root)): p.stat().st_mtime_ns
             for p in root.rglob('*') if p.is_file() and p.suffix != '.d'}
+
+
+def configure_shaders(source, build, experimental=False):
+    # Let CMake evaluate loops and conditionals instead of parsing its language or
+    # maintaining a second shader list. Trace calls declare the expected outputs;
+    # the subsequent build/install checks verify that those files really exist.
+    trace = build.parent / (build.name + '-manifest.jsonl')
+    run('cmake', '-S', source / 'scripts/resources', '-B', build, '-G', 'Ninja',
+        '--trace-expand', '--trace-format=json-v1', '--trace-redirect=' + str(trace),
+        '--trace-source=' + str(source / 'scripts/resources/CMakeLists.txt'),
+        '-DPREHISTORIC_EXPERIMENTAL_SHADERS=' + ('ON' if experimental else 'OFF'))
+    expected = set()
+    for line in trace.read_text().splitlines():
+        entry = json.loads(line)
+        if entry.get('cmd') != 'prehistoric_shader':
+            continue
+        shader, output = entry['args']
+        assert (source / 'PrehistoricEngine/res/shaders/vulkan' / shader).is_file(), shader
+        relative = 'shaders/vulkan/' + output
+        assert relative not in expected, 'Duplicate shader output: ' + relative
+        expected.add(relative)
+    assert expected, 'No shader declarations found in CMake trace'
+    return expected
+
+
+def check_shaders(resources, expected):
+    actual = {p.relative_to(resources).as_posix() for p in resources.rglob('*.spv')}
+    assert actual == expected, (f'Shader manifest mismatch in {resources}: '
+                                f'missing={sorted(expected - actual)}, '
+                                f'unexpected={sorted(actual - expected)}')
 
 
 with tempfile.TemporaryDirectory(prefix='prehistoric resources ') as temporary:
@@ -42,10 +85,10 @@ with tempfile.TemporaryDirectory(prefix='prehistoric resources ') as temporary:
                      '-DCMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH=FALSE',
                      env=isolated_env, success=False)
     assert 'glslc is required' in diagnostic, diagnostic
-    run('cmake', '-S', source / 'scripts/resources', '-B', build, '-G', 'Ninja')
+    expected_shaders = configure_shaders(source, build)
     run('cmake', '--build', build, '--target', 'EngineResources')
     resources = build / 'bin/engine-resources'
-    assert len(list(resources.rglob('*.spv'))) == 7
+    check_shaders(resources, expected_shaders)
     assert (resources / 'shaders/vulkan/ibl/ibl_CS.spv').is_file()
     assert (resources / 'shaders/vulkan/background/background_VS.spv').is_file()
     assert (resources / 'shaders/vulkan/background/background_FS.spv').is_file()
@@ -53,6 +96,13 @@ with tempfile.TemporaryDirectory(prefix='prehistoric resources ') as temporary:
     baseline = timestamps(resources)
     run('cmake', '--build', build, '--target', 'EngineResources')
     assert timestamps(resources) == baseline, 'No-op build changed resources'
+
+    # A separate build keeps optional outputs out of the default package.
+    experimental_build = root / 'experimental-build'
+    experimental_shaders = configure_shaders(source, experimental_build, experimental=True)
+    assert experimental_shaders > expected_shaders, 'Experimental option added no shaders'
+    run('cmake', '--build', experimental_build, '--target', 'Shaders')
+    check_shaders(experimental_build / 'bin/engine-resources', experimental_shaders)
 
     # Entrypoint edits rebuild only that shader; include edits rebuild the shader set.
     fragment = source / 'PrehistoricEngine/res/shaders/vulkan/pbr/pbr.frag'
@@ -105,12 +155,16 @@ with tempfile.TemporaryDirectory(prefix='prehistoric resources ') as temporary:
     shutil.copy2(production / 'EngineResources.h', harness)
     shutil.copy2(production / 'SharedSampleAssets.h', harness)
     (harness / 'main.cpp').write_text('''#include "EngineResources.h"
+#include "SharedSampleAssets.h"
 #include <iostream>
 #include <exception>
 int main(int argc, char** argv) {
     try {
         const std::string mode = argc > 2 ? argv[2] : "engine";
-        if (mode == "resolve") std::cout << Prehistoric::ResolveAssetPath(argv[1]);
+        if (mode == "sample-aliases") {
+            for (const auto* asset : Prehistoric::SharedSampleAssets) std::cout << asset << '\\n';
+        }
+        else if (mode == "resolve") std::cout << Prehistoric::ResolveAssetPath(argv[1]);
         else if (mode == "canonical") std::cout << Prehistoric::CanonicalAssetReference(argv[1]);
         else if (mode == "join") std::cout << Prehistoric::JoinAssetReference(argv[3], argv[1]);
         else std::cout << Prehistoric::EngineResourcePath(argv[1]);
@@ -131,6 +185,7 @@ add_executable(ResourceLookup main.cpp EngineResources.cpp)
     install = root / 'installed'
     run('cmake', '--install', build, '--prefix', install)
     installed_resources = install / 'engine-resources'
+    check_shaders(installed_resources, expected_shaders)
     assert not list(installed_resources.rglob('*.d'))
     installed_executable = install / executable.name
     shutil.copy2(executable, installed_executable)
@@ -145,6 +200,8 @@ add_executable(ResourceLookup main.cpp EngineResources.cpp)
     shutil.copy2(executable, nested / executable.name)
     assert Path(run(nested / executable.name, 'fonts/opensans/OpenSans-Bold.ttf', cwd=root, env=env)).is_file()
     # Both app layouts resolve the shared defaults without project-side copies.
+    for relative_asset in LEGACY_ENGINE_ASSETS:
+        assert (REPO / 'PrehistoricEngine/res' / relative_asset).is_file(), relative_asset
     for source_asset in (REPO / 'PrehistoricEngine/res').rglob('*'):
         if not source_asset.is_file():
             continue
@@ -156,25 +213,39 @@ add_executable(ResourceLookup main.cpp EngineResources.cpp)
         for binary in (installed_executable, nested / executable.name):
             resolved = Path(run(binary, resource_id, 'resolve', cwd=root, env=env))
             assert resolved.read_bytes() == source_asset.read_bytes()
-            assert run(binary, legacy_id, 'canonical', cwd=root, env=env) == resource_id
-            assert Path(run(binary, legacy_id, 'resolve', cwd=root, env=env)) == resolved
+            expected_legacy = resource_id if relative_asset.as_posix() in LEGACY_ENGINE_ASSETS else legacy_id
+            assert run(binary, legacy_id, 'canonical', cwd=root, env=env) == expected_legacy, legacy_id
+            expected_path = resolved if expected_legacy == resource_id else Path(legacy_id)
+            assert Path(run(binary, legacy_id, 'resolve', cwd=root, env=env)) == expected_path, legacy_id
         assert run(installed_executable, resource_id, 'join', 'res/models/', env=env) == resource_id
-    assert run(installed_executable, 'res/textures/noise/Noise256_0.jpg', 'canonical',
-               env=env) == 'engine://textures/noise/noise256_0.jpg'
+    for size in (256, 512):
+        for index in range(4):
+            assert run(installed_executable, f'res/textures/noise/Noise{size}_{index}.jpg', 'canonical',
+                       env=env) == f'engine://textures/noise/noise{size}_{index}.jpg'
     assert run(installed_executable, 'cube.obj', 'join', 'res/models/', env=env) == 'engine://models/cube.obj'
     assert run(installed_executable, 'res/models/quad.obj', 'join', 'res/models/',
                env=env) == 'engine://models/quad.obj'
     sample_root = REPO / 'samples/res'
+    sample_aliases = set(run(installed_executable, '', 'sample-aliases', env=env).splitlines())
+    assert sample_aliases, 'No shared sample aliases'
+    for relative_sample in sample_aliases:
+        assert (sample_root / relative_sample).is_file(), relative_sample
     for asset in sample_root.rglob('*'):
         if not asset.is_file():
             continue
-        relative_sample = asset.relative_to(sample_root).as_posix()
+        relative_sample_path = asset.relative_to(sample_root)
+        if relative_sample_path.parts[0] not in ('models', 'textures', 'sounds'):
+            continue
+        relative_sample = relative_sample_path.as_posix()
         resource_id = 'sample://' + relative_sample
         for binary in (installed_executable, nested / executable.name):
             resolved = Path(run(binary, resource_id, 'resolve', cwd=root, env=env))
             assert resolved.read_bytes() == asset.read_bytes()
-            assert run(binary, 'res/' + relative_sample, 'canonical', env=env) == resource_id
-            assert Path(run(binary, 'res/' + relative_sample, 'resolve', env=env)) == resolved
+            legacy_id = 'res/' + relative_sample
+            expected_legacy = resource_id if relative_sample in sample_aliases else legacy_id
+            assert run(binary, legacy_id, 'canonical', env=env) == expected_legacy, legacy_id
+            expected_path = resolved if expected_legacy == resource_id else Path(legacy_id)
+            assert Path(run(binary, legacy_id, 'resolve', env=env)) == expected_path, legacy_id
         assert run(installed_executable, resource_id, 'join', 'res/models/', env=env) == resource_id
     sample_override = dict(env, PREHISTORIC_SAMPLE_RESOURCES=str(install / 'sample-resources'))
     assert Path(run(executable, 'sample://sounds/_Closer.wav', 'resolve', env=sample_override)).is_file()
@@ -194,5 +265,7 @@ add_executable(ResourceLookup main.cpp EngineResources.cpp)
     run(installed_executable, 'shaders/vulkan/missing.spv', cwd=root, env=env, success=False)
     # No source-tree fallback may silently hide a missing generated package.
     run(executable, relative, cwd=REPO / 'Prehistoric', env=env, success=False)
-    print('PASS: incremental compilation, include tracking, compiler failures, install staging, '
+    print(f'PASS: shader manifests ({len(expected_shaders)} default, '
+          f'{len(experimental_shaders)} experimental), incremental compilation, include tracking, '
+          'compiler failures, install staging, '
           'executable-relative lookup, Premake layout, override and missing-resource errors')

@@ -234,9 +234,13 @@ shared tree. `-DPREHISTORIC_EXPERIMENTAL_SHADERS=ON` additionally compiles
 Other unfinished environment shader variants remain source-only.
 
 Run `python3 tests/resource_pipeline.py` for isolated build/lookup checks. It needs
-CMake, Ninja, `glslc`, and a C++17 compiler, but no GPU. It checks no-op builds,
-shader/include edits, compiler errors, staged installation, both executable layouts,
-explicit overrides and missing resources. Full rendering still needs runtime checks.
+CMake, Ninja, `glslc`, and a C++17 compiler, but no GPU. It uses CMake's expanded
+JSON trace to compare the exact declared shader outputs with the default and
+experimental builds and the default installed package, without a fixed shader count.
+It also checks no-op builds, shader/include edits, compiler errors, both executable
+layouts, explicit legacy aliases, overrides and missing resources. New assets are
+checked through portable IDs without assuming they reserve legacy project paths.
+Full rendering still needs runtime checks.
 
 ## Shared engine default models and textures
 

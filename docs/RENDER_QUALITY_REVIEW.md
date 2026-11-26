@@ -356,5 +356,29 @@ source hashes, capture hashes, AO/chamber measurements and analytic mirror resul
    The rejected experiment's synthetic improvements are not present in this checkout.
 4. **Quality/performance acceptance:** native per-pass timings, continuous camera-motion stability,
    OpenGL runtime comparison and broader glossy-scene/energy checks remain unverified.
-5. **Validation maintenance:** update the resource-pipeline test for the current manifest, then rerun its
-   remaining staging, incremental-build, install and lookup checks. The Cocoa startup messages also remain.
+5. **Platform startup:** the Cocoa startup messages remain. The resource-pipeline test failure recorded
+   above was resolved in the follow-up below.
+
+### Resource-pipeline follow-up
+
+The full `python3 tests/resource_pipeline.py` run now passes. It reads evaluated shader declarations
+from CMake's expanded JSON trace and compares exact output paths: 43 shaders in the default build
+and installed package, and 44 in a separate experimental build. Missing and unexpected outputs
+produce explicit diagnostics; no fixed shader count is asserted.
+
+The remaining suite exposed two other stale assumptions, both corrected in the test: newly added
+engine assets such as `sun_flare.png` do not automatically reserve legacy `res/...` aliases, and
+sample-package checks must cover only the staged `models/`, `textures/` and `sounds/` trees, not
+root-level machine metadata. Engine migration aliases remain explicit test expectations; sample
+aliases follow `SharedSampleAssets.h`. Portable-ID lookup and byte comparisons still cover every
+packaged model, texture and sample asset.
+
+Incremental compilation, include additions/edits/removal, deliberate compiler failures, no-op
+builds, sample-only updates, install staging, both executable layouts, overrides and missing-resource
+errors all passed. Runtime resolver and renderer code were unchanged.
+
+The full debug generation/configure/build also passed. Fresh null-GLFW/SwiftShader editor and sample
+boots captured rendered frames without reported Vulkan validation errors. The windowed MoltenVK
+editor retry logged the Cocoa icon message and remained at zero FPS until the 90-second capture
+timeout; no frame was captured in that retry. This does not supersede the successful native captures
+from the earlier checkout verification, and no new native-window success is claimed for this follow-up.
