@@ -350,12 +350,18 @@ namespace Prehistoric {
     }
 
     VkPresentModeKHR VKSwapchain::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes) {
+        if (__FrameworkConfig.windowVSync) return VK_PRESENT_MODE_FIFO_KHR;
         for (const auto &availablePresentMode: availablePresentModes) {
             if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
                 return availablePresentMode;
             }
         }
 
+        // MoltenVK on Apple Silicon exposes FIFO and IMMEDIATE, but not MAILBOX.
+        // Respect VSync-off instead of silently imposing a refresh-rate limit.
+        if (std::find(availablePresentModes.begin(), availablePresentModes.end(), VK_PRESENT_MODE_IMMEDIATE_KHR) !=
+            availablePresentModes.end())
+            return VK_PRESENT_MODE_IMMEDIATE_KHR;
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 

@@ -182,7 +182,7 @@ namespace Prehistoric {
     }
 
     VkDescriptorImageInfo VKRenderer::GetVoxelScreenInput(int index) const {
-        return (index == 3
+        return (index >= 3
                     ? screenSpaceReflections
                     : voxelGI || (index < 2 && (ambientOcclusion.active() || screenSpaceReflections)))
                    ? renderpass->VoxelScreenInput(index, voxelHalfResolution)
@@ -225,6 +225,7 @@ namespace Prehistoric {
             renderpass->BeginVoxelReceivers(buffer, screenSpaceReflections);
             ProcessDraws(buffer, nullptr, true);
             vkCmdEndRenderPass(buffer->getCommandBuffer());
+            if (screenSpaceReflections) renderpass->BoundReflectionDepth(buffer, *this);
             if (voxelGI) renderpass->TraceVoxelScreen(buffer, *this);
         }
         for (auto *water: waters) {

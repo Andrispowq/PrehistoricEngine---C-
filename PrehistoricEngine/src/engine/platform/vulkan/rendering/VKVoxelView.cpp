@@ -3,6 +3,7 @@
 #include "VKRenderer.h"
 #include "VKEnvironmentLighting.h"
 #include "VKShadowPass.h"
+#include "platform/vulkan/util/VKUtil.h"
 #include "platform/vulkan/rendering/pipeline/VKGraphicsPipeline.h"
 #include "prehistoric/core/node/component/renderer/RenderableComponent.h"
 #include "prehistoric/core/node/GameObject.h"
@@ -21,7 +22,7 @@ namespace Prehistoric {
         const size_t pyramid = (8 * count - 1) / 7;
         // Occupancy pyramid, surface and emission, isotropic and six directional
         // half-float radiance chains, plus accumulation and next-bounce grids.
-        return sizeof(uint32_t) * (lighting ? 15 * pyramid - 6 * count : count);
+        return sizeof(uint32_t) * (lighting ? 15 * pyramid - 6 * count + 1 : count);
     }
 
     void VKVoxelView::Mark(VkCommandBuffer cmd, Timing stage, bool end) {
@@ -65,13 +66,14 @@ namespace Prehistoric {
                 CheckVoxel(vkCreateQueryPool(device, &create, nullptr, &timers));
             }
             cells = std::make_unique<VKBuffer>(gpu, GridBytes(resolution, lighting),
-                                               VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                                               VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                                               VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
             auto layout = [&](VkShaderStageFlags stage, uint32_t buffers, uint32_t images, uint32_t bytes,
                               VkDescriptorSetLayout &set,
                               VkPipelineLayout &pipeline) {
                 const uint32_t count = buffers + images;
-                VkDescriptorSetLayoutBinding bindings[5]{};
+                VkDescriptorSetLayoutBinding bindings[9]{};
                 for (uint32_t i = 0; i < count; ++i)
                     bindings[i] = {
                         i,
@@ -92,7 +94,7 @@ namespace Prehistoric {
                 CheckVoxel(vkCreatePipelineLayout(device, &create, nullptr, &pipeline));
             };
             layout(VK_SHADER_STAGE_COMPUTE_BIT, 3, 2, sizeof(Surface), bakeSet, bakeLayout);
-            layout(VK_SHADER_STAGE_FRAGMENT_BIT, 1, lighting ? 1 : 0, 84, viewSet, viewLayout);
+            layout(VK_SHADER_STAGE_FRAGMENT_BIT, 1, lighting ? 8 : 0, 84, viewSet, viewLayout);
             auto compute = [&](const char *path, VkPipelineLayout layout, VkPipeline &out) {
                 auto code = ResourceLoader::LoadShaderVK(path);
                 VkShaderModuleCreateInfo moduleInfo{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
@@ -116,6 +118,7 @@ namespace Prehistoric {
             };
             compute("vulkan/voxel/occupancy.spv", bakeLayout, bakePipeline);
             if (lighting) {
+                CreateRadianceTextures(gpu);
                 layout(VK_SHADER_STAGE_COMPUTE_BIT, 1, 2, 112, lightSet, lightLayout);
                 compute("vulkan/voxel/lighting.spv", lightLayout, lightPipeline);
             }
@@ -127,7 +130,112 @@ namespace Prehistoric {
         }
     }
 
+    void VKVoxelView::CreateRadianceTextures(VKDevice *gpu) {
+        VkFormatProperties format{};
+        vkGetPhysicalDeviceFormatProperties(gpu->getPhysicalDevice(), VK_FORMAT_R16G16B16A16_SFLOAT, &format);
+        VkImageFormatProperties image{};
+        const auto result = vkGetPhysicalDeviceImageFormatProperties(gpu->getPhysicalDevice(),
+                                                                     VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TYPE_3D,
+                                                                     VK_IMAGE_TILING_OPTIMAL,
+                                                                     VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+                                                                     VK_IMAGE_USAGE_SAMPLED_BIT, 0, &image);
+        if (result != VK_SUCCESS || !(format.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)
+            ||
+            resolution > std::min({image.maxExtent.width, image.maxExtent.height, image.maxExtent.depth}))
+            return;
+
+        // Keep the exact half-float radiance and directional mip chains. Hardware
+        // trilinear filtering replaces eight buffer loads per cone sample.
+        for (uint32_t face = 0; face < radianceTextures.size(); ++face) {
+            auto &texture = radianceTextures[face];
+            const uint32_t size = face == 0 ? resolution : resolution / 2;
+            for (uint32_t n = size; n; n >>= 1) ++texture.levels;
+            VkImageCreateInfo image{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
+            image.imageType = VK_IMAGE_TYPE_3D;
+            image.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+            image.extent = {size, size, size};
+            image.mipLevels = texture.levels;
+            image.arrayLayers = 1;
+            image.samples = VK_SAMPLE_COUNT_1_BIT;
+            image.tiling = VK_IMAGE_TILING_OPTIMAL;
+            image.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+            CheckVoxel(vkCreateImage(device, &image, nullptr, &texture.image));
+            VkMemoryRequirements requirements;
+            vkGetImageMemoryRequirements(device, texture.image, &requirements);
+            VkMemoryAllocateInfo allocation{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
+            allocation.allocationSize = requirements.size;
+            allocation.memoryTypeIndex = VKUtil::FindMemoryType(gpu->getPhysicalDevice(), requirements.memoryTypeBits,
+                                                                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+            CheckVoxel(vkAllocateMemory(device, &allocation, nullptr, &texture.memory));
+            CheckVoxel(vkBindImageMemory(device, texture.image, texture.memory, 0));
+            VkImageViewCreateInfo view{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
+            view.image = texture.image;
+            view.viewType = VK_IMAGE_VIEW_TYPE_3D;
+            view.format = image.format;
+            view.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, texture.levels, 0, 1};
+            CheckVoxel(vkCreateImageView(device, &view, nullptr, &texture.view));
+        }
+        VkSamplerCreateInfo sampler{VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
+        sampler.magFilter = sampler.minFilter = VK_FILTER_LINEAR;
+        sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+        sampler.addressModeU = sampler.addressModeV = sampler.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        sampler.maxLod = float(radianceTextures[0].levels - 1);
+        CheckVoxel(vkCreateSampler(device, &sampler, nullptr, &radianceSampler));
+    }
+
+    void VKVoxelView::UploadRadiance(VkCommandBuffer cmd) {
+        if (!radianceSampler) return;
+        const size_t volume = size_t(resolution) * resolution * resolution;
+        const size_t pyramid = (8 * volume - 1) / 7;
+        const size_t radiance = (pyramid + 2 * volume + 1) & ~size_t(1);
+        VkMemoryBarrier ready{
+            VK_STRUCTURE_TYPE_MEMORY_BARRIER, nullptr, VK_ACCESS_SHADER_WRITE_BIT,
+            VK_ACCESS_TRANSFER_READ_BIT
+        };
+        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+                             0, 1, &ready, 0, nullptr, 0, nullptr);
+        for (uint32_t face = 0; face < radianceTextures.size(); ++face) {
+            const auto &texture = radianceTextures[face];
+            VkImageMemoryBarrier barrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
+            barrier.srcAccessMask = radianceUploaded ? VK_ACCESS_SHADER_READ_BIT : 0;
+            barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            barrier.oldLayout = radianceUploaded ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_UNDEFINED;
+            barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+            barrier.srcQueueFamilyIndex = barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.image = texture.image;
+            barrier.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, texture.levels, 0, 1};
+            vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+                                 0, 0, nullptr, 0, nullptr, 1, &barrier);
+            std::vector<VkBufferImageCopy> copies;
+            size_t offset = face == 0 ? radiance : radiance + 2 * (pyramid + (face - 1) * (pyramid - volume));
+            uint32_t size = face == 0 ? resolution : resolution / 2;
+            for (uint32_t level = 0; level < texture.levels; ++level, size >>= 1) {
+                VkBufferImageCopy copy{};
+                copy.bufferOffset = offset * sizeof(uint32_t);
+                copy.imageSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, level, 0, 1};
+                copy.imageExtent = {size, size, size};
+                copies.push_back(copy);
+                offset += 2 * size_t(size) * size * size;
+            }
+            vkCmdCopyBufferToImage(cmd, cells->getBuffer(), texture.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                   uint32_t(copies.size()), copies.data());
+            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                                 0, 0, nullptr, 0, nullptr, 1, &barrier);
+        }
+        radianceUploaded = true;
+    }
+
     void VKVoxelView::Release() {
+        for (const auto &texture: radianceTextures) {
+            vkDestroyImageView(device, texture.view, nullptr);
+            vkDestroyImage(device, texture.image, nullptr);
+            vkFreeMemory(device, texture.memory, nullptr);
+        }
+        vkDestroySampler(device, radianceSampler, nullptr);
         vkDestroyQueryPool(device, timers, nullptr);
         vkDestroyDescriptorPool(device, pool, nullptr);
         vkDestroyPipeline(device, lightPipeline, nullptr);
@@ -213,7 +321,7 @@ namespace Prehistoric {
             }
             VkDescriptorPoolSize sizes[] = {
                 {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 3 * count + 2},
-                {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2 * count + 3}
+                {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2 * count + 3 + (lighting ? 7u : 0u)}
             };
             VkDescriptorPoolCreateInfo create{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
             create.maxSets = count + 1 + uint32_t(lighting);
@@ -236,6 +344,17 @@ namespace Prehistoric {
             };
             vkUpdateDescriptorSets(device, 1, &gridWrite, 0, nullptr);
             if (lighting) {
+                std::array<VkDescriptorImageInfo, 7> images{};
+                std::array<VkWriteDescriptorSet, 7> writes{};
+                for (uint32_t i = 0; i < images.size(); ++i) {
+                    images[i] = {radianceSampler, radianceTextures[i].view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+                    writes[i] = {
+                        VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, viewInputs, 2 + i, 0, 1,
+                        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, &images[i]
+                    };
+                }
+                if (radianceSampler)
+                    vkUpdateDescriptorSets(device, uint32_t(writes.size()), writes.data(), 0, nullptr);
                 gridWrite.dstSet = lightInputs = sets.back();
                 vkUpdateDescriptorSets(device, 1, &gridWrite, 0, nullptr);
             }
@@ -411,6 +530,7 @@ namespace Prehistoric {
         Mark(cmd, Bounces, true);
         Mark(cmd, Mips, false);
         pyramid(2);
+        UploadRadiance(cmd);
         Mark(cmd, Mips, true);
     }
 

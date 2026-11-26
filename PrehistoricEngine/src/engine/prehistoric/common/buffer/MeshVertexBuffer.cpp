@@ -1,5 +1,6 @@
 #include "Includes.hpp"
 #include "MeshVertexBuffer.h"
+#include "prehistoric/core/util/math/MathT.h"
 
 namespace Prehistoric {
     MeshVertexBuffer::MeshVertexBuffer(Window *window, const Model &model)

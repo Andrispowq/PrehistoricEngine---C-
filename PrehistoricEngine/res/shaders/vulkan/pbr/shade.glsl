@@ -11,6 +11,8 @@ int voxelGridSize() { return int(voxelOptions.x); }
 #include "../../shared/voxel/reflection.glsl"
 
 #ifndef VOXEL_RECEIVER
+#define SSR_DEPTH_BOUNDS
+layout(binding = 15) uniform sampler2D reflectionDepth;
 layout(binding = 14) uniform sampler2D screenRadiance;
 layout(binding = 11) uniform sampler2D positionMetallic;
 layout(binding = 12) uniform sampler2D normals;

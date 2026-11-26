@@ -40,6 +40,8 @@ namespace Prehistoric {
 
         void BeginVoxelReceivers(VKCommandBuffer *buffer, bool withRadiance);
 
+        void BoundReflectionDepth(VKCommandBuffer *buffer, VKRenderer &renderer);
+
         void TraceVoxelScreen(VKCommandBuffer *buffer, VKRenderer &renderer);
 
         VkDescriptorImageInfo VoxelScreenInput(int index, bool half) const;
@@ -105,7 +107,11 @@ namespace Prehistoric {
         VkFramebuffer editorFramebuffer{};
         VkRenderPass editorPass{};
         VkRenderPass receiverPass{};
-        VkImageView receiverRadiance{};
+        VkImageView receiverRadiance{}, reflectionDepth{};
+        VkRenderPass reflectionDepthPass{};
+        VkFramebuffer reflectionDepthFrame{};
+        VkPipelineLayout reflectionDepthLayout{};
+        VkPipeline reflectionDepthPipeline{};
         VkRenderPass renderpass{};
         VkRenderPass sceneWithReadableDepth{};
         VkRenderPass bloomPass{};

@@ -52,7 +52,7 @@ def configure_shaders(source, build, experimental=False):
         entry = json.loads(line)
         if entry.get('cmd') != 'prehistoric_shader':
             continue
-        shader, output = entry['args']
+        shader, output = entry['args'][:2]
         assert (source / 'PrehistoricEngine/res/shaders/vulkan' / shader).is_file(), shader
         relative = 'shaders/vulkan/' + output
         assert relative not in expected, 'Duplicate shader output: ' + relative

@@ -131,10 +131,13 @@ namespace Prehistoric {
 
         VkPipelineMultisampleStateCreateInfo multisampling = {};
         multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-        multisampling.sampleShadingEnable = VK_TRUE;
-        //This means that if the sampleCount is 1, 0 or -1, we disable multisampling, in all other cases, we use the max available sample count for MSAA
         multisampling.rasterizationSamples = static_cast<VKSwapchain *>(window->getSwapchain())->getSceneSamples();
-        multisampling.minSampleShading = 0.2f; // Optional
+        multisampling.minSampleShading = 0.2f;
+        // Preserve the requested minimum invocation count. At 1x/2x/4x MSAA
+        // this is one invocation; forcing sample shading on MoltenVK instead
+        // runs the complete material shader at every sample. Coverage stays MSAA.
+        multisampling.sampleShadingEnable =
+                float(multisampling.rasterizationSamples) * multisampling.minSampleShading > 1.0f ? VK_TRUE : VK_FALSE;
         multisampling.pSampleMask = nullptr; // Optional
         multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
         multisampling.alphaToOneEnable = VK_FALSE; // Optional

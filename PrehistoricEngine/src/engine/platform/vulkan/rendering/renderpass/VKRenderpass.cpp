@@ -550,6 +550,8 @@ namespace Prehistoric {
 
     VKRenderpass::~VKRenderpass() {
         VkDevice handle = device->getDevice();
+        vkDestroyPipeline(handle, reflectionDepthPipeline, nullptr);
+        vkDestroyPipelineLayout(handle, reflectionDepthLayout, nullptr);
         vkDestroyPipeline(handle, tracePipeline, nullptr);
         vkDestroyPipelineLayout(handle, traceLayout, nullptr);
         vkDestroyPipeline(handle, volumePipeline, nullptr);
@@ -559,6 +561,7 @@ namespace Prehistoric {
         vkDestroySampler(handle, depthSampler, nullptr);
         waterTargets.clear();
         framebuffers.clear();
+        vkDestroyRenderPass(handle, reflectionDepthPass, nullptr);
         vkDestroyRenderPass(handle, editorPass, nullptr);
         vkDestroyPipeline(handle, dofPipeline, nullptr);
         vkDestroyPipeline(handle, hdrPipeline, nullptr);
@@ -693,6 +696,24 @@ namespace Prehistoric {
                 receiverImages[0], receiverImages[1], receiverRadiance
             };
             litReceiverFramebuffer = CreateFramebuffer(receiverPass, extent, msaa ? 7 : 4, views);
+            const VkExtent2D size{(extent.width + 7) / 8, (extent.height + 7) / 8};
+            images.push_back(std::make_unique<VKImage>(device, size.width, size.height, 1, VK_FORMAT_R32_SFLOAT,
+                                                       VK_IMAGE_TILING_OPTIMAL,
+                                                       VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                                                       VK_SAMPLE_COUNT_1_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                                                       VK_IMAGE_ASPECT_COLOR_BIT));
+            reflectionDepth = images.back()->getImageView();
+            reflectionDepthPass = CreateOutputPass(VK_FORMAT_R32_SFLOAT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            reflectionDepthFrame = CreateFramebuffer(reflectionDepthPass, size, 1, &reflectionDepth)->getFramebuffer();
+            VkPushConstantRange push{VK_SHADER_STAGE_FRAGMENT_BIT, 0, 64};
+            VkPipelineLayoutCreateInfo create{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
+            create.setLayoutCount = create.pushConstantRangeCount = 1;
+            create.pSetLayouts = &hdrSetLayout;
+            create.pPushConstantRanges = &push;
+            Check(vkCreatePipelineLayout(device->getDevice(), &create, nullptr, &reflectionDepthLayout));
+            reflectionDepthPipeline = CreateFullscreenPipeline("vulkan/postProcessing/hdr_VS.spv",
+                                                               "vulkan/postProcessing/reflection_depth.spv",
+                                                               reflectionDepthLayout, reflectionDepthPass);
         }
         if (!traceIndirect || indirectFrames[0]) return;
         for (unsigned i = 0; i < 2; ++i) {
@@ -704,13 +725,37 @@ namespace Prehistoric {
 
     VkDescriptorImageInfo VKRenderpass::VoxelScreenInput(int index, bool half) const {
         return {
-            sampler, index == 3 ? receiverRadiance : (index == 2 ? indirectImages[half] : receiverImages[index]),
+            index == 4 ? depthSampler : sampler,
+            index == 4
+                ? reflectionDepth
+                : (index == 3 ? receiverRadiance : (index == 2 ? indirectImages[half] : receiverImages[index])),
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
         };
     }
 
     void VKRenderpass::BeginVoxelReceivers(VKCommandBuffer *buffer, bool withRadiance) {
         BeginRenderpass(buffer, Vector4f(0.0f), withRadiance ? litReceiverFramebuffer : receiverFramebuffer);
+    }
+
+    void VKRenderpass::BoundReflectionDepth(VKCommandBuffer *buffer, VKRenderer &renderer) {
+        const auto extent = swapchain->getSwapchainExtent();
+        const VkExtent2D size{(extent.width + 7) / 8, (extent.height + 7) / 8};
+        const auto cmd = buffer->getCommandBuffer();
+        VkRenderPassBeginInfo begin{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
+        begin.renderPass = reflectionDepthPass;
+        begin.framebuffer = reflectionDepthFrame;
+        begin.renderArea.extent = size;
+        vkCmdBeginRenderPass(cmd, &begin, VK_SUBPASS_CONTENTS_INLINE);
+        VkViewport viewport{0, 0, float(size.width), float(size.height), 0, 1};
+        vkCmdSetViewport(cmd, 0, 1, &viewport);
+        vkCmdSetScissor(cmd, 0, 1, &begin.renderArea);
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, reflectionDepthPipeline);
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, reflectionDepthLayout, 0, 1, &receiverInputs, 0,
+                                nullptr);
+        const auto view = renderer.getCamera()->getViewMatrix();
+        vkCmdPushConstants(cmd, reflectionDepthLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 64, view.m);
+        vkCmdDraw(cmd, 3, 1, 0, 0);
+        vkCmdEndRenderPass(cmd);
     }
 
     void VKRenderpass::TraceVoxelScreen(VKCommandBuffer *buffer, VKRenderer &renderer) {
@@ -723,8 +768,11 @@ namespace Prehistoric {
             create.pushConstantRangeCount = 1;
             create.pPushConstantRanges = &push;
             Check(vkCreatePipelineLayout(device->getDevice(), &create, nullptr, &traceLayout));
-            tracePipeline = CreateFullscreenPipeline("vulkan/postProcessing/hdr_VS.spv", "vulkan/voxel/trace.spv",
-                                                     traceLayout, bloomPass);
+            const char *shader = voxelPass->UsesFilteredRadiance()
+                                     ? "vulkan/voxel/trace_filtered.spv"
+                                     : "vulkan/voxel/trace.spv";
+            tracePipeline =
+                    CreateFullscreenPipeline("vulkan/postProcessing/hdr_VS.spv", shader, traceLayout, bloomPass);
         }
         bool half = renderer.voxelHalfResolution;
         const auto extent = swapchain->getSwapchainExtent();
@@ -760,6 +808,10 @@ namespace Prehistoric {
     VKVoxelView &VKRenderpass::Voxels(uint32_t resolution, bool lighting) {
         if (!voxelPass || voxelPass->resolution != resolution || voxelPass->lighting != lighting) {
             if (voxelPass) vkDeviceWaitIdle(device->getDevice());
+            vkDestroyPipeline(device->getDevice(), tracePipeline, nullptr);
+            vkDestroyPipelineLayout(device->getDevice(), traceLayout, nullptr);
+            tracePipeline = VK_NULL_HANDLE;
+            traceLayout = VK_NULL_HANDLE;
             voxelPass = std::make_unique<VKVoxelView>(device, *this, editorOutput ? editorPass : presentPass,
                                                       resolution, lighting);
         }

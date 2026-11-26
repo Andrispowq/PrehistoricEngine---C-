@@ -18,6 +18,8 @@ namespace Prehistoric {
 
         void Prepare(VkCommandBuffer cmd, VKRenderer &renderer);
 
+        bool UsesFilteredRadiance() const { return radianceSampler != VK_NULL_HANDLE; }
+
         VkDescriptorSet GridSet() const { return viewInputs; }
         VkDescriptorSetLayout GridLayout() const { return viewSet; }
 
@@ -63,6 +65,21 @@ namespace Prehistoric {
         void Bake(VkCommandBuffer cmd, const std::vector<Draw> &draws);
 
         void Release();
+
+        struct RadianceTexture {
+            VkImage image{};
+            VkDeviceMemory memory{};
+            VkImageView view{};
+            uint32_t levels = 0;
+        };
+
+        std::array<RadianceTexture, 7> radianceTextures{};
+        VkSampler radianceSampler{};
+        bool radianceUploaded = false;
+
+        void CreateRadianceTextures(VKDevice *gpu);
+
+        void UploadRadiance(VkCommandBuffer cmd);
 
         VkDevice device;
         VkQueryPool timers{};

@@ -1,3 +1,26 @@
+// Repeated ray steps often land in the same texel. Cache its view depth,
+// retaining every original ray step and every binary refinement.
+struct ReflectionSurface
+{
+    ivec2 pixel;
+    vec4 normal;
+    vec3 position;
+    float depth;
+};
+void loadReflectionSurface(ivec2 pixel, inout ReflectionSurface surface)
+{
+    if (all(equal(pixel, surface.pixel))) return;
+    surface.pixel = pixel;
+    surface.normal = texelFetch(normals, pixel, 0);
+    surface.position = vec3(0);
+    surface.depth = 0.0;
+    if (surface.normal.a >= 0.99)
+    {
+        surface.position = texelFetch(positionMetallic, pixel, 0).xyz;
+        surface.depth = (m_view * vec4(surface.position, 1.0)).z;
+    }
+}
+
 // Hit colours are linear HDR from this frame, before reflections and post-processing.
 vec4 traceScreenRay(vec3 worldPosition, vec3 normal, vec3 reflection, out float hitDistance, out ivec2 hitPixel)
 {
@@ -12,6 +35,12 @@ vec4 traceScreenRay(vec3 worldPosition, vec3 normal, vec3 reflection, out float 
     float stride = distance;
     float previous = 0.0;
     bool inFront = true;
+    #ifdef SSR_DEPTH_BOUNDS
+    ivec2 cachedTile = ivec2(-1);
+    float nearestDepth = 0.0;
+    #endif
+    ReflectionSurface cached;
+    cached.pixel = ivec2(-1);
     for (int i = 0; i < 56; ++i)
     {
         vec3 point = start + ray * distance;
@@ -20,11 +49,28 @@ vec4 traceScreenRay(vec3 worldPosition, vec3 normal, vec3 reflection, out float 
         vec2 uv = clip.xy / clip.w * 0.5 + 0.5;
         if (any(lessThanEqual(uv, vec2(0))) || any(greaterThanEqual(uv, vec2(1)))) break;
         ivec2 pixel = ivec2(uv * size);
-        vec4 surface = texelFetch(normals, pixel, 0);
+        #ifdef SSR_DEPTH_BOUNDS
+        ivec2 tile = pixel / 8;
+        if (any(notEqual(tile, cachedTile)))
+        {
+            cachedTile = tile;
+            nearestDepth = texelFetch(reflectionDepth, tile, 0).r;
+        }
+        if (point.z > nearestDepth)
+        {
+            inFront = true;
+            previous = distance;
+            distance += stride;
+            stride *= 1.13;
+            continue;
+        }
+        #endif
+        loadReflectionSurface(pixel, cached);
+        vec4 surface = cached.normal;
         if (surface.a >= 0.99)
         {
-            vec3 hit = texelFetch(positionMetallic, pixel, 0).xyz;
-            float gap = (m_view * vec4(hit, 1.0)).z - point.z;
+            vec3 hit = cached.position;
+            float gap = cached.depth - point.z;
             if (inFront && gap >= 0.0)
             {
                 float lo = previous, hi = distance;
@@ -35,9 +81,10 @@ vec4 traceScreenRay(vec3 worldPosition, vec3 normal, vec3 reflection, out float 
                     vec4 projected = m_projection * vec4(probe, 1.0);
                     vec2 tapUV = projected.xy / projected.w * 0.5 + 0.5;
                     ivec2 tap = clamp(ivec2(tapUV * size), ivec2(0), size - 1);
-                    vec3 p = texelFetch(positionMetallic, tap, 0).xyz;
-                    float dz = (m_view * vec4(p, 1.0)).z - probe.z;
-                    if (texelFetch(normals, tap, 0).a >= 0.99 && dz >= 0.0)
+                    loadReflectionSurface(tap, cached);
+                    vec3 p = cached.position;
+                    float dz = cached.depth - probe.z;
+                    if (cached.normal.a >= 0.99 && dz >= 0.0)
                     {
                         hi = mid;
                         pixel = tap;

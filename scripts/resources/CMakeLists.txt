@@ -33,7 +33,7 @@ endforeach ()
 file(GLOB_RECURSE shader_includes CONFIGURE_DEPENDS "${resource_source}/shaders/vulkan/*"
         "${resource_source}/shaders/shared/*.glsl")
 set(water_stages water/water.tesc water/normal.comp water/butterfly.comp water/h0k.comp water/hkt.comp water/inversion.comp water/twiddleFactors.comp water/water.vert water/geometry.tese water/water.tese water/water.geom water/water.frag)
-foreach (entry voxel/receiver_radiance.frag voxel/receiver.frag voxel/trace.frag voxel/lighting.comp voxel/occupancy.comp voxel/view.frag shadow/depth.vert ${water_stages} terrain/maps.comp terrain/geometry.tese terrain/terrain.geom terrain/terrain.vert terrain/terrain.tesc terrain/terrain.tese terrain/terrain.frag atmosphere/capture.comp atmosphere/scattering.frag postProcessing/bloom.frag postProcessing/volumetric.frag postProcessing/volumetric_ms.frag postProcessing/hdr.vert postProcessing/hdr.frag postProcessing/hdr_dof.frag postProcessing/hdr_dof_ms.frag basic/basic.vert basic/basic.frag pbr/pbr.vert pbr/pbr.frag background/background.vert background/background.frag ibl/ibl.comp ibl/convert.comp environmentMap/environmentMap.comp)
+foreach (entry postProcessing/reflection_depth.frag voxel/receiver_radiance.frag voxel/receiver.frag voxel/trace.frag voxel/lighting.comp voxel/occupancy.comp voxel/view.frag shadow/depth.vert ${water_stages} terrain/maps.comp terrain/geometry.tese terrain/terrain.geom terrain/terrain.vert terrain/terrain.tesc terrain/terrain.tese terrain/terrain.frag atmosphere/capture.comp atmosphere/scattering.frag postProcessing/bloom.frag postProcessing/volumetric.frag postProcessing/volumetric_ms.frag postProcessing/hdr.vert postProcessing/hdr.frag postProcessing/hdr_dof.frag postProcessing/hdr_dof_ms.frag basic/basic.vert basic/basic.frag pbr/pbr.vert pbr/pbr.frag background/background.vert background/background.frag ibl/ibl.comp ibl/convert.comp environmentMap/environmentMap.comp)
     list(REMOVE_ITEM shader_includes "${resource_source}/shaders/vulkan/${entry}")
 endforeach ()
 # A removed include must invalidate outputs too, rather than disappearing silently
@@ -46,7 +46,7 @@ function(prehistoric_shader source destination)
     get_filename_component(directory "${output}" DIRECTORY)
     add_custom_command(OUTPUT "${output}"
             COMMAND "${CMAKE_COMMAND}" -E make_directory "${directory}"
-            COMMAND "${PREHISTORIC_GLSLC}" --target-env=vulkan1.1
+            COMMAND "${PREHISTORIC_GLSLC}" --target-env=vulkan1.1 ${ARGN}
             -I "${resource_source}/shaders/vulkan"
             "${input}" -o "${output}"
             DEPENDS "${input}" "${PREHISTORIC_GLSLC}" ${shader_includes}
@@ -56,6 +56,7 @@ function(prehistoric_shader source destination)
     set(shader_outputs ${shader_outputs} "${output}" PARENT_SCOPE)
 endfunction()
 
+prehistoric_shader(postProcessing/reflection_depth.frag postProcessing/reflection_depth.spv)
 prehistoric_shader(shadow/depth.vert shadow/depth.vert.spv)
 prehistoric_shader(atmosphere/capture.comp atmosphere/capture_CS.spv)
 prehistoric_shader(atmosphere/scattering.frag atmosphere/scattering_FS.spv)
@@ -65,6 +66,7 @@ prehistoric_shader(voxel/occupancy.comp voxel/occupancy.spv)
 prehistoric_shader(voxel/receiver_radiance.frag voxel/receiver_radiance.spv)
 prehistoric_shader(voxel/receiver.frag voxel/receiver.spv)
 prehistoric_shader(voxel/trace.frag voxel/trace.spv)
+prehistoric_shader(voxel/trace.frag voxel/trace_filtered.spv -DVOXEL_TEXTURE_SAMPLING)
 prehistoric_shader(voxel/lighting.comp voxel/lighting.spv)
 prehistoric_shader(voxel/view.frag voxel/view.spv)
 prehistoric_shader(postProcessing/bloom.frag postProcessing/bloom_FS.spv)

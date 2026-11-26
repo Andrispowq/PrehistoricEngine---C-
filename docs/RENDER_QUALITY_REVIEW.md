@@ -434,3 +434,8 @@ and left-docked layout fixtures all passed migration and save/reload checks. The
 capture counts above describe the initial left-side placement.
 The corrected right-side layout then passed a native arm64 M1 run through frame 20 with zero Vulkan
 validation errors, including rendering after focus moved to Finder. The image above shows this final placement.
+
+The subsequent [M1 performance follow-up](M1_EDITOR_PERFORMANCE.md) records the approved
+sample-rate optimization, SSR/VXGI improvements, Debug/Release measurements, and full
+build, native rendering, and quality regression checks. All-effects Release performance
+improved from 3.12 to 11.33 FPS; further GPU optimization remains open.

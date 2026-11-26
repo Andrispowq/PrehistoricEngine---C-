@@ -49,6 +49,7 @@ namespace Prehistoric {
             AddUniform("voxelSettings", FRAGMENT_SHADER, UniformBuffer, 0, 10, 64);
             AddUniform("voxelPositions", FRAGMENT_SHADER, CombinedImageSampler, 0, 11, 0);
             AddUniform("voxelNormals", FRAGMENT_SHADER, CombinedImageSampler, 0, 12, 0);
+            AddUniform("reflectionDepth", FRAGMENT_SHADER, CombinedImageSampler, 0, 15, 0);
             AddUniform("screenRadiance", FRAGMENT_SHADER, CombinedImageSampler, 0, 14, 0);
             AddUniform("voxelIndirect", FRAGMENT_SHADER, CombinedImageSampler, 0, 13, 0);
         }
@@ -127,6 +128,7 @@ namespace Prehistoric {
             auto *vk = static_cast<VKRenderer *>(renderer);
             SetSampledImage("voxelPositions", vk->GetVoxelScreenInput(0));
             SetSampledImage("voxelNormals", vk->GetVoxelScreenInput(1));
+            SetSampledImage("reflectionDepth", vk->GetVoxelScreenInput(4));
             SetSampledImage("screenRadiance", vk->GetVoxelScreenInput(3));
             SetSampledImage("voxelIndirect", vk->GetVoxelScreenInput(2));
             SetUniformi("voxelSettings", vk->voxelHalfResolution ? 2 : 1, 32);
