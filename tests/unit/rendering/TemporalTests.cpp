@@ -15,6 +15,7 @@ namespace {
 } // namespace
 
 TEST_CASE (
+
 "Temporal reprojection includes camera and object transforms"
 ,
 "[temporal]"
@@ -37,6 +38,7 @@ TEST_CASE (
 }
 
 TEST_CASE (
+
 "Jitter shifts raster coordinates but never physical velocity"
 ,
 "[temporal]"
@@ -65,6 +67,7 @@ TEST_CASE (
 }
 
 TEST_CASE (
+
 "Only committed frames advance temporal state"
 ,
 "[temporal]"
@@ -98,6 +101,7 @@ TEST_CASE (
 }
 
 TEST_CASE (
+
 "Previous surface depth follows the previous object pose"
 ,
 "[temporal]"
@@ -114,6 +118,7 @@ TEST_CASE (
 }
 
 TEST_CASE (
+
 "New identities and teleports reject object history"
 ,
 "[temporal]"
@@ -132,6 +137,7 @@ TEST_CASE (
 }
 
 TEST_CASE (
+
 "Reset after recording cannot publish stale history"
 ,
 "[temporal]"
@@ -150,6 +156,7 @@ TEST_CASE (
 }
 
 TEST_CASE (
+
 "Long pauses invalidate temporal history on resume"
 ,
 "[temporal]"
@@ -162,4 +169,51 @@ TEST_CASE (
     history.Begin(Matrix4f::Identity(), Matrix4f::Identity(), 100, 100, true);
     CHECK_FALSE(history.valid);
     CHECK(history.frame == 0);
+}
+TEST_CASE (
+"Temporal jitter keeps its pixel footprint across render scales"
+,
+"[temporal]"
+)
+{
+    const auto projection = Matrix4f::PerspectiveProjection(70, 16.0f / 9, 0.1f, 1000);
+    TemporalHistory standard, retina;
+    for (unsigned frame = 0; frame < 16; ++frame)
+    {
+        standard.Begin(projection, Matrix4f::Identity(), 960, 540, true);
+        retina.Begin(projection, Matrix4f::Identity(), 1920, 1080, true);
+        const Vector4f vertex(1, 2, -10, 1);
+        const auto reference = uv(projection, vertex);
+        const auto a = uv(standard.JitteredProjection(), vertex) - reference;
+        const auto b = uv(retina.JitteredProjection(), vertex) - reference;
+        CHECK_THAT(a.x * 960, WithinAbs(b.x * 1920, 1e-4));
+        CHECK_THAT(a.y * 540, WithinAbs(b.y * 1080, 1e-4));
+        CHECK(std::abs(b.x * 1920) <= 0.5f);
+        CHECK(std::abs(b.y * 1080) <= 0.5f);
+        standard.Commit();
+        retina.Commit();
+    }
+    // Display scale changes while the logical window size and aspect remain unchanged.
+    retina.Begin(projection, Matrix4f::Identity(), 960, 540, true);
+    CHECK_FALSE(retina.valid);
+    CHECK(retina.frame == 0);
+    CHECK(retina.models.empty());
+}
+
+TEST_CASE (
+"Temporal timings identify fresh submissions across history resets"
+,
+"[temporal]"
+)
+{
+    TemporalTimings timings;
+    CHECK(timings.Publish(12, 3, {1, 2, 3, 4}));
+    CHECK_FALSE(timings.Publish(12, 1, {9, 9, 9, 9}));
+    CHECK_FALSE(timings.Publish(10, 1, {9, 9, 9, 9}));
+    CHECK(timings.mode == 3);
+    CHECK(timings.milliseconds[2] == 3);
+    // A new pass/query pool must keep using the renderer's monotonic submission identity.
+    CHECK(timings.Publish(20, 2, {4, 3, 0, 1}));
+    CHECK(timings.frame == 20);
+    CHECK(timings.mode == 2);
 }

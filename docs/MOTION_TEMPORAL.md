@@ -61,6 +61,29 @@ exclude driver alignment, descriptors and small constant buffers. The initial
 RGBA32F motion representation and multisampled geometry target have a substantial
 memory cost; compare MSAA-off TAA against combined MSAA/TAA before enabling both.
 
+Jitter is normalized to the actual scene render extent, not the logical window size. Vulkan uses the swapchain
+framebuffer extent; OpenGL uses its offscreen scene texture extent. A render-extent change invalidates history even
+if the logical window size does not change. Completed timing results carry a monotonic submitted-frame identity and
+the effect mode that produced them, so benchmark collection can reject duplicate or out-of-order results.
+
+### Live MSAA
+
+**Render Settings → MSAA** offers Off (one sample) and supported sample counts. A request applies at the next
+frame boundary and resets temporal history. The selection is session-local; `framework.window.numSamples` remains
+the startup preference. Vulkan waits for in-flight work, recreates scene attachments/render passes and their pipelines
+through the existing resize path. OpenGL replaces offscreen attachments, leaving its window/context intact. Switching
+can cause a one-frame stall. Higher counts increase memory consumption, including temporal geometry targets.
+
+Capability checks include the scene colour/depth and temporal geometry attachment formats. Unsupported requests
+are rejected; the UI reports the active count rather than the startup request. Off uses single-sample OpenGL
+renderbuffer storage rather than asking the driver to round a multisample request of one upward.
+
+The [Khronos MSAA sample](https://docs.vulkan.org/samples/latest/samples/performance/msaa/README.html) matches
+attachment
+and pipeline sample counts and resolves colour inside the render pass; this engine retains that Vulkan path.
+[GLFW sample hints](https://www.glfw.org/docs/latest/window) apply to window creation, so changing that hint is not a
+live-switching implementation. Rebuilding the engine's offscreen OpenGL attachments preserves the current context.
+
 ## Limits
 
 This is a screen-space approximation. It cannot reconstruct hidden surfaces,
@@ -87,6 +110,8 @@ python3 tests/temporal_render_smoke.py --api Vulkan --app PrehistoricEditor --sa
 python3 tests/temporal_render_smoke.py --api Vulkan --app PrehistoricEditor --samples 8
 python3 tests/temporal_render_smoke.py --api Vulkan --app Prehistoric --samples 1
 python3 tests/temporal_render_smoke.py --api OpenGL --app Prehistoric --samples 1
+python3 tests/temporal_render_smoke.py --benchmark --width 960 --height 540
+python3 tests/temporal_render_smoke.py --benchmark --width 960 --height 540 --moving-camera
 ```
 
 The shader check compiles all OpenGL/Vulkan temporal entry points, validates SPIR-V,
@@ -102,16 +127,64 @@ application smoke tests exercise real sampled images and pipeline interfaces.
 
 The native smoke builds a scratch executable against `build/debug` using Ninja's
 actual compile/link commands. It copies configuration and worlds into a temporary
-working tree, reduces environment bake sizes, and exercises 41 rendered frames.
+working tree, reduces environment bake sizes, and exercises a 70-frame lifecycle sequence after bounded history warm-up.
 Use `--no-gi` to isolate temporal processing, `--world` to choose a diagnostic world,
-or `--water` to add a waterline/bloom/DoF stress test. `--benchmark` keeps the requested
-window size and skips docking; the log records the actual framebuffer size and MSAA count. It checks world-settings
+or `--water` to add a waterline/bloom/DoF stress test. It checks world-settings
 round-trip, moves the
 camera and a mesh, resizes, toggles effects and wireframe, rebakes lighting, resets
 history and exercises editor docking. On macOS it also minimizes and restores the
-window. Vulkan requires the SDK validation and screenshot
+window. It verifies pixel-space jitter and switches supported MSAA counts repeatedly, checking application at the next
+frame and history invalidation. History warm-up is bounded to 120 attempts rather than assuming shader compilation
+and initial bakes finish within eight frames. Test-only drivers allow rendering without focus, so the sample can run
+from a background terminal; production focus handling is unchanged. Vulkan requires the SDK validation and screenshot
 layers; captures and logs are retained in the printed artifact directory. Native
 window/GPU access is required. Inspect the captures in addition to reading logs.
+
+`--benchmark` selects a separate steady driver: effects off, TAA only, blur only, and both. Each mode uses
+`--warmup 60` warm-up frames and `--frames 120` measured frame intervals by default. `--moving-camera` repeats the
+same camera path per mode. Resize, docking, minimize, rebake, wireframe, live MSAA changes and waterline mutations
+are excluded. VSync is disabled and the screenshot layer is omitted. The application retains its 60 Hz update/frame
+cap because this setting also controls fixed-step simulation; frame intervals below that cap cannot measure effect
+cost, so use the GPU observations as well. Validation stays
+enabled. The log reports the actual render extent, MSAA count, target bytes, median/p95 frame interval and fresh GPU
+query observations. Late queries outside the measured submission range are omitted. A missing timing stage is
+reported as unavailable, not zero. Compare multiple trials; Debug editor frame intervals include CPU and validation
+overhead and are not release-performance budgets. Benchmark mode rejects diagnostic and lifecycle-water options.
+
+## HiDPI, live MSAA and benchmark follow-up — 2026-11-26
+
+The follow-up adds render-extent jitter, submission-tagged timings, separate steady/lifecycle drivers and live MSAA.
+CPU coverage now includes pixel-footprint equivalence at 1×/2× render scale, framebuffer-only extent changes, and
+rejection of duplicate/out-of-order timing publications. The lifecycle driver checks actual jitter against the
+render extent on GPU runs, rejects unsupported sample requests and checks repeated MSAA transitions.
+
+The first follow-up validation passed all 36 CPU contracts, the temporal shader/GPU contracts, resource staging and
+Vulkan PBR/background contracts. Native Vulkan editor runs passed at MSAA off and requested 8× (actual 4×), including
+water, bloom/DoF, resize, history resets and live MSAA transitions. The sample also passed after the test-only focus
+handling was added. Both fixed and moving benchmark modes completed with 120 frame intervals per effect mode and
+fresh GPU observations. Captures after switching were inspected. OpenGL live switching still requires native
+verification on a host supporting OpenGL 4.5; this macOS host provides only 4.1.
+
+The final full Debug rebuild and native Vulkan checks also cover releasing borrowed swapchain-image wrappers during
+MSAA rebuilds. Reusing a smoke output directory now refreshes configuration/world inputs so previous diagnostic
+scenes cannot silently contaminate a baseline.
+
+One final Apple M1/MoltenVK trial at 1920×1080, MSAA off, Midnight Sponza with GI, 60 warm-up frames and 120 measured
+frame intervals per mode produced these median whole-frame intervals (Debug editor, validation enabled, no captures):
+
+| Mode        | Fixed camera | Moving camera |
+|-------------|-------------:|--------------:|
+| Effects off |     67.99 ms |      66.66 ms |
+| TAA only    |     73.46 ms |      71.01 ms |
+| Blur only   |     73.00 ms |      82.14 ms |
+| Both        |     76.41 ms |      83.01 ms |
+
+Enabled modes each supplied 117 fresh GPU query observations; disabled stages were reported as unavailable. Temporal
+targets occupied 150.4 MiB. These single-trial frame intervals include simulation/UI/validation overhead and variable
+host load; they do not establish a performance improvement or a release GPU budget.
+
+The older observations below predate the jitter correction and benchmark separation and should not be treated as
+measurements of the follow-up implementation.
 
 ## Verification record — 2026-11-26
 

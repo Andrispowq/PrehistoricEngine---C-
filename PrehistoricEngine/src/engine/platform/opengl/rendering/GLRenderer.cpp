@@ -18,8 +18,45 @@
 #include "platform/opengl/rendering/shaders/gui/GLGUIShader.h"
 
 namespace Prehistoric {
+    RenderExtent GLRenderer::GetRenderExtent() const {
+        const auto image = mainPass->getColourImage();
+        return {image->getWidth(), image->getHeight()};
+    }
+
+    unsigned GLRenderer::GetSampleCount() const {
+        return std::max(1u, __FrameworkConfig.windowNumSamples);
+    }
+
+    std::vector<unsigned> GLRenderer::GetSupportedSampleCounts() const {
+        auto counts = [](GLenum target, GLenum format) {
+            GLint count = 0;
+            glGetInternalformativ(target, format, GL_NUM_SAMPLE_COUNTS, 1, &count);
+            std::vector<GLint> values(std::max(0, count));
+            if (count) glGetInternalformativ(target, format, GL_SAMPLES, count, values.data());
+            unsigned mask = 0;
+            for (GLint value: values) {
+                if (value > 0 && (value & (value - 1)) == 0) mask |= unsigned(value);
+            }
+            return mask;
+        };
+        const unsigned supported = counts(GL_RENDERBUFFER, GL_RGBA16F) & counts(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24) &
+                                   counts(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32F) &
+                                   (counts(GL_TEXTURE_2D_MULTISAMPLE, GL_RGBA32F) | counts(
+                                        GL_TEXTURE_2D_MULTISAMPLE, GL_RGBA16F));
+        std::vector<unsigned> result{1};
+        for (unsigned count = 2; count <= 64; count <<= 1) {
+            if (supported & count) result.push_back(count);
+        }
+        return result;
+    }
+
     GLRenderer::GLRenderer(Window *window, Camera *camera, AssembledAssetManager *manager)
         : Renderer(window, camera, manager), atmospherePass(*manager) {
+        const unsigned requested = __FrameworkConfig.windowNumSamples;
+        __FrameworkConfig.windowNumSamples = 1;
+        for (unsigned count: GetSupportedSampleCounts()) {
+            if (count <= requested) __FrameworkConfig.windowNumSamples = count;
+        }
         depthPass = std::make_unique<GLDepthPass>(this);
         shadowDepthPass = std::make_unique<GLShadowDepthPass>(this);
         lightCullingPass = std::make_unique<GLLightCullingPass>(this);
@@ -51,8 +88,11 @@ namespace Prehistoric {
     }
 
     void GLRenderer::PrepareRendering() {
+        if (ApplyPendingSampleCount()) window->setResized(true);
         if (window->isResized()) {
             PR_PROFILE("Window resize pass");
+            ResetTemporalHistory();
+            temporalPass.reset();
             uint32_t width = window->getWidth();
             uint32_t height = window->getHeight();
 
@@ -163,6 +203,7 @@ namespace Prehistoric {
             temporalBytes = 0;
         }
         if (bloomEnabled &&bloomIntensity
+
 
         
         >

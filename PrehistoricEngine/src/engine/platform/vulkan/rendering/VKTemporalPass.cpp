@@ -258,13 +258,18 @@ namespace Prehistoric {
             if (queried[slotIndex]) {
                 uint64_t times[8]{};
                 if (vkGetQueryPoolResults(device, timers, queryBase, 8, sizeof(times), times, sizeof(uint64_t),
-                                          VK_QUERY_RESULT_64_BIT) == VK_SUCCESS)
-                    for (unsigned i = 0; i < 4; ++i)
-                        renderer.temporalMilliseconds[i] =
-                                double((times[2 * i + 1] - times[2 * i]) & timestampMask) * timestampMs;
+                                          VK_QUERY_RESULT_64_BIT) == VK_SUCCESS) {
+                    std::array < double, 4 > values{};
+                    for (unsigned i = 0; i < 4; ++i) {
+                        values[i] = double((times[2 * i + 1] - times[2 * i]) & timestampMask) * timestampMs;
+                    }
+                    renderer.temporalTimings.Publish(slot.timingFrame, slot.timingMode, values);
+                }
             }
             vkCmdResetQueryPool(command, timers, queryBase, 8);
             queried[slotIndex] = true;
+            slot.timingFrame = renderer.submittedFrames + 1;
+            slot.timingMode = unsigned(renderer.temporal.antialiasing) | (unsigned(renderer.temporal.motionBlur) << 1);
         }
         auto stamp = [&](unsigned i) {
             if (timers)
@@ -278,8 +283,6 @@ namespace Prehistoric {
         if (!initialized)
             history.valid = false;
         auto params = renderer.GetTemporalParameters();
-        params.options.x = float(extent.width);
-        params.options.y = float(extent.height);
         params.depthRow = {history.projection.m[10], history.projection.m[14], 0, 0};
         slot.uniforms->MapMemory();
         slot.uniforms->Store(&params);

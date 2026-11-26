@@ -47,6 +47,12 @@ namespace Prehistoric {
 
         bool isUnderwater() const;
 
+        RenderExtent GetRenderExtent() const override;
+
+        std::vector<unsigned> GetSupportedSampleCounts() const override;
+
+        unsigned GetSampleCount() const override;
+
         bool UseTemporalEffects() const override {
             return Renderer::UseTemporalEffects() && !(voxelPass->IsReady() && voxelPass->GetSettings().debugView);
         }

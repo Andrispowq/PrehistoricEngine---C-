@@ -19,6 +19,8 @@ namespace Prehistoric {
         GLenum motionFormat = GL_RGBA32F;
         GLuint queries[3][8]{};
         bool queried[3]{};
+        uint64_t timingFrames[3]{};
+        unsigned timingModes[3]{};
         GLuint textures[8]{}, frames[8]{}, depth{}, vao{}, uniformBuffer{}, copyFrame{};
         std::unique_ptr<GLShader> velocity, resolve, filter;
     };

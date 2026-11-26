@@ -15,6 +15,23 @@
 #include "prehistoric/application/Application.h"
 
 namespace Prehistoric {
+    bool Renderer::RequestSampleCount(unsigned samples) {
+        const auto supported = GetSupportedSampleCounts();
+        if (std::find(supported.begin(), supported.end(), samples) == supported.end()) return false;
+        pendingSampleCount = samples;
+        return true;
+    }
+
+    bool Renderer::ApplyPendingSampleCount() {
+        if (!pendingSampleCount) return false;
+        const unsigned samples = *pendingSampleCount;
+        pendingSampleCount.reset();
+        if (samples == GetSampleCount()) return false;
+        __FrameworkConfig.windowNumSamples = samples;
+        ResetTemporalHistory();
+        return true;
+    }
+
     Renderer::Renderer(Window *window, Camera *camera, AssembledAssetManager *manager)
         : window(window), camera(camera), manager(manager), wireframeMode(false) {
         flareAtlas.reset(TextureLoader::LoadTexture(window, "engine://textures/sun_flare.png", Bilinear, ClampToEdge));
@@ -101,8 +118,9 @@ namespace Prehistoric {
         UpdateEnvironmentLighting();
         const bool useTemporal = UseTemporalEffects();
         if (useTemporal) {
+            const auto extent = GetRenderExtent();
             temporalHistory.Begin(camera->getProjectionMatrix(), camera->getViewMatrix(),
-                                  window->getWidth(), window->getHeight(), temporal.antialiasing);
+                                  extent.width, extent.height, temporal.antialiasing);
             for (const auto *batches: {&models_3d, &models_transparency})
                 VisitBatches(*batches, [](Pipeline *) {
                              }, [](Pipeline *, Material *) {
@@ -141,8 +159,9 @@ namespace Prehistoric {
             std::clamp(temporal.maxBlurPixels, 0.0f, 64.0f),
             float(std::clamp(temporal.samples, 4, 32)), float(h.valid)
         };
+        const auto extent = GetRenderExtent();
         result.options = {
-            float(window->getWidth()), float(window->getHeight()),
+            float(extent.width), float(extent.height),
             float(temporal.antialiasing), float(temporal.debug)
         };
         result.depthRow = {-h.view.m[2], -h.view.m[6], -h.view.m[10], -h.view.m[14]};
@@ -150,6 +169,7 @@ namespace Prehistoric {
     }
 
     void Renderer::CommitTemporalFrame() {
+        ++submittedFrames;
         if (temporalRendered) temporalHistory.Commit();
         else temporalHistory.Reset();
     }

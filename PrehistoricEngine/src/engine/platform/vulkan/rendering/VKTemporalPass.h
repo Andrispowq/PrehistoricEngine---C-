@@ -31,6 +31,8 @@ namespace Prehistoric {
         struct Frame {
             std::unique_ptr<VKBuffer> uniforms;
             VkDescriptorSet sets[5]{};
+            uint64_t timingFrame = 0;
+            unsigned timingMode = 0;
         };
 
         std::vector<Frame> slots;

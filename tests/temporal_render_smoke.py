@@ -27,8 +27,18 @@ def main():
     parser.add_argument('--no-gi', action='store_true')
     parser.add_argument('--debug', type=int, choices=range(5), default=0)
     parser.add_argument('--water', action='store_true', help='Add water and exercise crossing the waterline')
-    parser.add_argument('--benchmark', action='store_true', help='Keep the requested size for timing')
+    parser.add_argument('--benchmark', action='store_true',
+                        help='Run four steady effect modes instead of lifecycle tests')
+    parser.add_argument('--warmup', type=int, default=60, help='Warm-up frames per benchmark mode')
+    parser.add_argument('--frames', type=int, default=120, help='Measured frames per benchmark mode')
+    parser.add_argument('--moving-camera', action='store_true', help='Repeat a camera path in each benchmark mode')
     args = parser.parse_args()
+    if args.warmup < 2 or args.frames < 2:
+        parser.error('--warmup and --frames must be at least 2')
+    if args.benchmark and (args.water or args.debug):
+        parser.error('Benchmark mode excludes lifecycle water mutations and diagnostic views')
+    if args.moving_camera and not args.benchmark:
+        parser.error('--moving-camera requires --benchmark')
     output = args.output or Path(tempfile.mkdtemp(prefix='prehistoric-temporal-render-'))
     output = output.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -36,7 +46,10 @@ def main():
     original = ROOT / args.app / 'src' / ('EditorApp.cpp' if args.app == 'PrehistoricEditor' else 'PrehistoricApp.cpp')
     source = output / 'TemporalApp.cpp'
     text = original.read_text()
-    text = '#include "tests/temporal_render_driver.h"\n' + text
+    driver = 'temporal_benchmark_driver.h' if args.benchmark else 'temporal_render_driver.h'
+    text = (f'#include "tests/{driver}"\n'
+            'namespace { const bool temporalUnbufferedOutput = [] { '
+            'std::setvbuf(stdout, nullptr, _IONBF, 0); return true; }(); }\n' + text)
     if args.app == 'PrehistoricEditor':
         text = text.replace('    editor = new EditorLayer',
                             '    auto* temporalScene = scene.get();\n    editor = new EditorLayer')
@@ -66,25 +79,30 @@ def main():
     res.mkdir(exist_ok=True)
     for entry in (ROOT / args.app / 'res').iterdir():
         target_path = res / entry.name
-        if target_path.exists(): continue
         if entry.name in ('config', 'world'):
-            shutil.copytree(entry, target_path)
+            shutil.copytree(entry, target_path, dirs_exist_ok=True)
+        elif target_path.exists():
+            continue
         elif entry.name == 'profiling':
             target_path.mkdir()
         else:
             target_path.symlink_to(entry)
     config = res / 'config/settings.json'
-    data = json.loads(config.read_text())
-    data['framework']['api']['active'] = args.api
-    data['framework']['window'].update(width=args.width, height=args.height, numSamples=args.samples, maxFPS=60)
-    data['environmentMap'].update(environmentMapResolution=16, irradianceMapResolution=4, prefilterMapResolution=16,
+    settings_data = json.loads(config.read_text())
+    settings_data['framework']['api']['active'] = args.api
+    settings_data['framework']['window'].update(width=args.width, height=args.height, numSamples=args.samples,
+                                                maxFPS=60)
+    settings_data['environmentMap'].update(environmentMapResolution=16, irradianceMapResolution=4,
+                                           prefilterMapResolution=16,
                                   prefilterMapLevels=3)
-    config.write_text(json.dumps(data))
+    config.write_text(json.dumps(settings_data))
     world = res / 'world/sponza_midnight_gi.json'
-    if args.world:
-        shutil.copyfile(args.world.resolve(), world)
-    elif not world.exists():
-        shutil.copyfile(ROOT / 'PrehistoricEditor/res/world/sponza_midnight_gi.json', world)
+    source_world = args.world or ROOT / args.app / 'res/world/sponza_midnight_gi.json'
+    if not args.world and not source_world.exists():
+        source_world = ROOT / 'PrehistoricEditor/res/world/sponza_midnight_gi.json'
+    # Reusing --output must not silently reuse a diagnostic world from an earlier run.
+    if source_world.resolve() != world.resolve():
+        shutil.copyfile(source_world, world)
     data = json.loads(world.read_text())
     data['temporal'] = {'motion_blur': True, 'antialiasing': True, 'shutter_angle': 180, 'max_blur_pixels': 32,
                         'samples': 16}
@@ -96,18 +114,25 @@ def main():
     env['PREHISTORIC_TEMPORAL_DEBUG'] = str(args.debug)
     if args.water: env['PREHISTORIC_TEMPORAL_WATER'] = '1'
     if args.no_gi: env['PREHISTORIC_TEMPORAL_NO_GI'] = '1'
-    if args.benchmark: env['PREHISTORIC_TEMPORAL_BENCHMARK'] = '1'
+    if args.benchmark:
+        env['PREHISTORIC_BENCHMARK_WARMUP'] = str(args.warmup)
+        env['PREHISTORIC_BENCHMARK_FRAMES'] = str(args.frames)
+        if args.moving_camera: env['PREHISTORIC_BENCHMARK_MOVING'] = '1'
+        settings_data['framework']['window']['vSync'] = False
+        config.write_text(json.dumps(settings_data))
     if args.api == 'Vulkan':
         molten = Path('/usr/local/share/vulkan/icd.d/MoltenVK_icd.json')
         if molten.exists(): env.setdefault('VK_DRIVER_FILES', str(molten))
-        env.update(VK_INSTANCE_LAYERS='VK_LAYER_KHRONOS_validation:VK_LAYER_LUNARG_screenshot',
-                   VK_SCREENSHOT_FRAMES='4,12,17,25,31,39', VK_SCREENSHOT_DIR=str(output))
+        env['VK_INSTANCE_LAYERS'] = 'VK_LAYER_KHRONOS_validation'
+        if not args.benchmark:
+            env.update(VK_INSTANCE_LAYERS='VK_LAYER_KHRONOS_validation:VK_LAYER_LUNARG_screenshot',
+                       VK_SCREENSHOT_FRAMES='4,12,17,25,31,39,48,54,62', VK_SCREENSHOT_DIR=str(output))
     print(f'Artifacts: {output}', flush=True)
     with (output / 'run.log').open('w') as log:
         process = subprocess.Popen([output / 'TemporalSmoke'], cwd=output, env=env, stdout=log,
                                    stderr=subprocess.STDOUT)
         try:
-            code = process.wait(timeout=120)
+            code = process.wait(timeout=300 if args.benchmark else 180)
         except subprocess.TimeoutExpired:
             process.terminate()
             try:

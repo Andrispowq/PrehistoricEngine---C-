@@ -41,7 +41,8 @@ namespace Prehistoric {
 
         VkImageView imageView;
         VkImage image;
-        VkDeviceMemory imageMemory;
+        VkDeviceMemory imageMemory = VK_NULL_HANDLE;
+        bool ownsImage = true;
     };
 };
 

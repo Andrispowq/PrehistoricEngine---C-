@@ -2,11 +2,30 @@
 
 #include "prehistoric/core/util/math/Math.h"
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <cstdint>
 #include <unordered_map>
 
 namespace Prehistoric {
+    struct RenderExtent {
+        unsigned width, height;
+    };
+
+    struct TemporalTimings {
+        uint64_t frame = 0;
+        unsigned mode = 0;
+        std::array<double, 4> milliseconds{-1, -1, -1, -1};
+
+        bool Publish(uint64_t submittedFrame, unsigned effects, const std::array<double, 4> &values) {
+            if (submittedFrame <= frame) return false;
+            frame = submittedFrame;
+            mode = effects;
+            milliseconds = values;
+            return true;
+        }
+    };
+
     struct TemporalSettings {
         bool motionBlur = false;
         bool antialiasing = false;

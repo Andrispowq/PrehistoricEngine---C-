@@ -15,6 +15,14 @@ frames.
 
 ## Remaining work
 
+**Live rendering-backend switching (planned).** Allow switching between OpenGL and Vulkan only when both are
+supported on the host. This requires more than changing the API setting: preserve the scene, unsaved edits, camera,
+selection and editor layout; drain GPU work; recreate the window/context or surface, renderer, backend-owned assets,
+pipelines and ImGui resources; restore portable asset references; and invalidate temporal history and baked caches.
+Probe capabilities before teardown and define rollback if target-backend initialization fails. Test repeated switches,
+detached editor windows, resource lifetime and recovery on a machine supporting both APIs. Keep this as backlog work;
+the current API setting still takes effect at application startup.
+
 Engine mesh raycasting and editor viewport picking are implemented. Set **Pick distance** in the editor's Render
 Settings. Click once to select an instance and click it again to select a submesh. Clicking empty space clears the
 selection.

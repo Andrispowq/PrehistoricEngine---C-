@@ -71,7 +71,7 @@ namespace Prehistoric {
     }
 
     VKImage::VKImage(VKDevice *device, VkImage image, uint32_t mipLevels, VkFormat format, VkImageAspectFlagBits aspect)
-        : device(device), image(image), mipLevels(mipLevels), format(format) {
+        : device(device), image(image), mipLevels(mipLevels), format(format), ownsImage(false) {
         //Create the image view
         VkImageViewCreateInfo imageViewCI = {};
         imageViewCI.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -98,8 +98,10 @@ namespace Prehistoric {
     VKImage::~VKImage() {
         vkDestroyImageView(device->getDevice(), imageView, nullptr);
 
-        vkDestroyImage(device->getDevice(), image, nullptr);
-        vkFreeMemory(device->getDevice(), imageMemory, nullptr);
+        if (ownsImage) {
+            vkDestroyImage(device->getDevice(), image, nullptr);
+            vkFreeMemory(device->getDevice(), imageMemory, nullptr);
+        }
     }
 
     void VKImage::UploadImageData(ImageData data) {

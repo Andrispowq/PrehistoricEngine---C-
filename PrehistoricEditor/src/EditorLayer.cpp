@@ -138,6 +138,17 @@ void EditorLayer::ImGUIRender() {
         if (ImGui::BeginMenu("Render Settings")) {
             if (ImGui::InputFloat("Pick distance", &pickDistance, 1.0f, 10.0f, "%.1f"))
                 pickDistance = std::max(0.0f, pickDistance);
+            const unsigned activeSamples = renderer->GetSampleCount();
+            const std::string sampleLabel = activeSamples == 1 ? "Off" : std::to_string(activeSamples) + "x";
+            if (ImGui::BeginCombo("MSAA", sampleLabel.c_str())) {
+                for (unsigned samples: renderer->GetSupportedSampleCounts()) {
+                    const std::string label = samples == 1 ? "Off" : std::to_string(samples) + "x";
+                    if (ImGui::Selectable(label.c_str(), samples == activeSamples)) renderer->RequestSampleCount(
+                        samples);
+                }
+                ImGui::EndCombo();
+            }
+            ImGui::TextDisabled("Applies next frame; higher MSAA uses more GPU memory.");
             bool wireframe = renderer->isWireframeMode();
             if (ImGui::Checkbox("Wireframe (E)", &wireframe)) renderer->setWireframeMode(wireframe);
             bool bloom = renderer->isBloomEnabled();
@@ -179,8 +190,8 @@ void EditorLayer::ImGUIRender() {
                 renderer->temporal = temporal;
                 const char *stages[] = {"Motion geometry", "Motion resolve", "Temporal AA", "Blur and diagnostics"};
                 for (int i = 0; i < 4; ++i)
-                    if (renderer->temporalMilliseconds[i] >= 0)
-                        ImGui::Text("%s: %.3f ms", stages[i], renderer->temporalMilliseconds[i]);
+                    if (renderer->temporalTimings.milliseconds[i] >= 0)
+                        ImGui::Text("%s: %.3f ms", stages[i], renderer->temporalTimings.milliseconds[i]);
                 ImGui::Text("Temporal targets: %.1f MiB", renderer->temporalBytes / (1024.0 * 1024.0));
             }
 

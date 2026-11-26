@@ -17,13 +17,33 @@ public:
     explicit TemporalRenderDriver(Prehistoric::Scene *scene) : scene(scene) {
     }
 
+    // The scratch runner must make progress when launched behind the editor/Codex window.
+    // This affects only the test executable; production focus behavior is unchanged.
+    void Update(float) override {
+        Prehistoric::Input::getInstance().setPauseRendering(false);
+    }
+
     void Render() override {
         using namespace Prehistoric;
         auto &app = Application::Get();
         auto *renderer = app.getEngineLayer()->getRenderingEngine()->getRenderer();
         auto *window = static_cast<GLFWwindow *>(renderer->getWindow()->getWindowHandle());
         auto *camera = renderer->getCamera();
+        if (!renderer->CanRenderFrame()) return;
         ++frame;
+        const auto extent = renderer->GetRenderExtent();
+        const auto &history = renderer->temporalHistory;
+        if (history.valid && history.frame && (history.jitter.x != 0 || history.jitter.y != 0)) {
+            const unsigned index = unsigned((history.frame - 1) % 8) + 1;
+            if (std::abs(history.jitter.x * extent.width - (TemporalHistory::Halton(index, 2) - 0.5f)) > 1e-4f ||
+                std::abs(history.jitter.y * extent.height - (TemporalHistory::Halton(index, 3) - 0.5f)) > 1e-4f)
+                throw std::runtime_error("Temporal jitter is not normalized to the render extent");
+        }
+        if (frame == 2 && (!history.valid || history.frame < 2)) {
+            if (++warmupFrames > 120) throw std::runtime_error("Temporal history did not accumulate after warm-up");
+            --frame;
+            return;
+        }
         if (frame == 1) {
             originalView = camera->getViewMatrix();
             originalPosition = camera->getPosition();
@@ -64,7 +84,7 @@ public:
             if (auto *object = moving)
                 object->Move({0.4f, 0, 0});
         }
-        if (frame == 16 && !std::getenv("PREHISTORIC_TEMPORAL_BENCHMARK"))
+        if (frame == 16)
             glfwSetWindowSize(window, 720, 420);
         if (std::getenv("PREHISTORIC_TEMPORAL_WATER")) {
             if (frame == 18) {
@@ -88,7 +108,7 @@ public:
         if (frame == 24)
             renderer->temporal.antialiasing = true;
 #ifdef __APPLE__
-        if (frame == 26 && !std::getenv("PREHISTORIC_TEMPORAL_BENCHMARK")) {
+        if (frame == 26) {
             dispatch_after_f(dispatch_time(DISPATCH_TIME_NOW, 300 * NSEC_PER_MSEC), dispatch_get_main_queue(), window,
                              [](void *target) {
                                  glfwRestoreWindow(static_cast<GLFWwindow *>(target));
@@ -108,9 +128,6 @@ public:
             renderer->setWireframeMode(false);
             renderer->ResetTemporalHistory();
         }
-        if (frame >= 33 && frame <= 40)
-            for (int i = 0; i < 4; ++i)
-                if (renderer->temporalMilliseconds[i] >= 0) timings[i].push_back(renderer->temporalMilliseconds[i]);
         if (frame == 40) {
             if (auto *vk = dynamic_cast<VKRenderer *>(renderer)) {
                 auto *swapchain = static_cast<VKSwapchain *>(vk->getWindow()->getSwapchain());
@@ -118,26 +135,39 @@ public:
                 std::fprintf(stderr, "TEMPORAL render extent: %u x %u; MSAA: %u\n", extent.width, extent.height,
                              unsigned(swapchain->getSceneSamples()));
             }
-            for (int i = 0; i < 4; ++i) {
-                auto sorted = timings[i];
-                std::sort(sorted.begin(), sorted.end());
-                if (!sorted.empty())
-                    std::fprintf(stderr, "TEMPORAL stage %d: median %.4f ms; range %.4f-%.4f; observations %zu\n",
-                                 i, sorted[sorted.size() / 2], sorted.front(), sorted.back(), sorted.size());
-            }
             std::fprintf(stderr, "TEMPORAL target bytes: %llu; history frames: %llu\n",
                          static_cast<unsigned long long>(renderer->temporalBytes),
                          static_cast<unsigned long long>(renderer->temporalHistory.frame));
         }
-        if (frame == 42) {
-            std::fprintf(stderr, "TEMPORAL PASS: 41 frames; camera/object motion, resize, toggles, rebake and reset\n");
+        if (frame == 43 || frame == 49 || frame == 55) {
+            const auto supported = renderer->GetSupportedSampleCounts();
+            unsigned multisample = 1;
+            for (unsigned samples: supported) if (samples <= 4) multisample = samples;
+            expectedSamples = frame == 49 ? 1 : multisample;
+            sampleChangeExpected = expectedSamples != renderer->GetSampleCount();
+            if (renderer->RequestSampleCount(3)) throw std::runtime_error("Unsupported sample count accepted");
+            if (!renderer->RequestSampleCount(expectedSamples)) throw std::runtime_error(
+                "Supported sample count rejected");
+        }
+        if (frame == 44 || frame == 50 || frame == 56) {
+            if (renderer->GetSampleCount() != expectedSamples) throw std::runtime_error(
+                "Live MSAA change was not applied");
+            if (sampleChangeExpected && renderer->temporalHistory.valid) throw std::runtime_error(
+                "Live MSAA change retained temporal history");
+            std::fprintf(stderr, "TEMPORAL live MSAA: %u samples; %s\n", expectedSamples,
+                         sampleChangeExpected ? "history invalidated" : "unchanged request");
+        }
+        scene->temporal = renderer->temporal;
+        if (frame == 70) {
+            std::fprintf(
+                stderr,
+                "TEMPORAL PASS: lifecycle; camera/object motion, resize, toggles, rebake, reset and live MSAA\n");
             app.Stop();
         }
     }
 
     void ImGUIRender() override {
         // Exercise the editor's scene image in a detached platform window, then dock it again.
-        if (std::getenv("PREHISTORIC_TEMPORAL_BENCHMARK")) return;
         auto *panel = ImGui::FindWindowByName("Viewport");
         if (!panel)
             return;
@@ -157,5 +187,6 @@ private:
     Prehistoric::Vector3f originalPosition;
     int frame = 0;
     ImGuiID viewportDock = 0;
-    std::vector<double> timings[4];
+    unsigned warmupFrames = 0, expectedSamples = 1;
+    bool sampleChangeExpected = false;
 };

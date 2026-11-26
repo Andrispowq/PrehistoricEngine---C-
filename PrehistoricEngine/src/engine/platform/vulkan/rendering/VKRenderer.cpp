@@ -109,6 +109,19 @@ namespace Prehistoric {
         vkDeviceWaitIdle(((VKDevice *) window->getContext()->getDevices())->getDevice());
     }
 
+    RenderExtent VKRenderer::GetRenderExtent() const {
+        const auto extent = static_cast<VKSwapchain *>(window->getSwapchain())->getSwapchainExtent();
+        return {extent.width, extent.height};
+    }
+
+    std::vector<unsigned> VKRenderer::GetSupportedSampleCounts() const {
+        return static_cast<VKSwapchain *>(window->getSwapchain())->GetSupportedSampleCounts();
+    }
+
+    unsigned VKRenderer::GetSampleCount() const {
+        return unsigned(static_cast<VKSwapchain *>(window->getSwapchain())->getSceneSamples());
+    }
+
     void VKRenderer::PrepareRendering() {
         VKSwapchain *swapchain = (VKSwapchain *) window->getSwapchain();
         frameReady = false;
@@ -117,12 +130,16 @@ namespace Prehistoric {
         if (framebufferWidth == 0 || framebufferHeight == 0)
             return;
 
+        if (ApplyPendingSampleCount()) window->setResized(true);
+
         if (window->isResized()) {
             PR_PROFILE("Resizing window");
 
             VKContext *context = (VKContext *) window->getContext();
             VKDevice *device = (VKDevice *) context->getDevices();
             vkDeviceWaitIdle(device->getDevice());
+
+            ResetTemporalHistory();
 
             renderpass.reset();
 

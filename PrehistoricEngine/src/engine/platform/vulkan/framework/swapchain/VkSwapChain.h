@@ -16,76 +16,89 @@
 #include "platform/vulkan/rendering/renderpass/VKRenderpass.h"
 #include "platform/vulkan/texture/VKImage.h"
 
-namespace Prehistoric
-{
-	const static uint32_t MAX_FRAMES_IN_FLIGHT = 3;
+namespace Prehistoric {
+    const static uint32_t MAX_FRAMES_IN_FLIGHT = 3;
 
-	class VKSwapchain : public Swapchain
-	{
-	public:
-		VKSwapchain(Window* window);
-		virtual ~VKSwapchain();
+    class VKSwapchain : public Swapchain {
+    public:
+        VKSwapchain(Window *window);
 
-		virtual void SwapBuffers(CommandBuffer* buffer) override;
-		virtual void ClearScreen() override;
+        virtual ~VKSwapchain();
 
-		virtual void SetVSync(bool vSync) const override {}
-		virtual void SetWindowSize(uint32_t width, uint32_t height) override;
+        virtual void SwapBuffers(CommandBuffer *buffer) override;
 
-		virtual uint32_t getAquiredImageIndex() const override { return aquiredImageIndex; }
+        virtual void ClearScreen() override;
 
-		bool GetNextImageIndex(); //If return false, we should recreate the command buffers, and the renderpass along with the framebuffers
+        virtual void SetVSync(bool vSync) const override {
+        }
 
-		VkSwapchainKHR getSwapchain() const { return swapchain; }
-		std::vector<VKImage*> getSwapchainImages() const { return swapchainImages; }
+        virtual void SetWindowSize(uint32_t width, uint32_t height) override;
 
-		VKImage* getColourImage() { return multisampleColourImage ? multisampleColourImage : hdrImage; }
-		VKImage* getHDRImage() const { return hdrImage; }
-		VkSampleCountFlagBits getSceneSamples() const { return sceneSamples; }
-		VKImage* getDepthImage() { return depthImage; }
-		VkFormat getSwapchainImageFormat() const { return swapchainImageFormat; }
-		VkExtent2D getSwapchainExtent() const { return swapchainExtent; }
-		VKRenderpass* getRenderpass() { return renderpass; }
+        virtual uint32_t getAquiredImageIndex() const override { return aquiredImageIndex; }
 
-		void setSurface(VKSurface& surface) { this->surface = &surface; }
-		void setRenderpass(VKRenderpass* renderpass) { this->renderpass = renderpass; }
+        bool GetNextImageIndex();
 
-	public:
-		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
-		VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+        //If return false, we should recreate the command buffers, and the renderpass along with the framebuffers
 
-	private:
-		//External
-		VKDevice* device;
-		VKSurface* surface;
+        VkSwapchainKHR getSwapchain() const { return swapchain; }
+        std::vector<VKImage *> getSwapchainImages() const { return swapchainImages; }
 
-		VKRenderpass* renderpass;
+        VKImage *getColourImage() { return multisampleColourImage ? multisampleColourImage : hdrImage; }
+        VKImage *getHDRImage() const { return hdrImage; }
+        VkSampleCountFlagBits getSceneSamples() const { return sceneSamples; }
 
-		//Swapchain imageviews and images
-		VkSwapchainKHR swapchain;
+        std::vector<unsigned> GetSupportedSampleCounts() const;
 
-		VkFormat swapchainImageFormat;
-		VkExtent2D swapchainExtent;
+        VKImage *getDepthImage() { return depthImage; }
+        VkFormat getSwapchainImageFormat() const { return swapchainImageFormat; }
+        VkExtent2D getSwapchainExtent() const { return swapchainExtent; }
+        VKRenderpass *getRenderpass() { return renderpass; }
 
-		std::vector<VKImage*> swapchainImages;
-		void CreateSceneAttachments();
-		VKImage* hdrImage = nullptr;
-		VKImage* multisampleColourImage = nullptr;
-		VkSampleCountFlagBits sceneSamples = VK_SAMPLE_COUNT_1_BIT;
-		VKImage* depthImage;
+        void setSurface(VKSurface &surface) { this->surface = &surface; }
+        void setRenderpass(VKRenderpass *renderpass) { this->renderpass = renderpass; }
 
-		//Synchronization
-		std::vector<VKSemaphore*> imageAvailableSemaphores;
-		std::vector<VKSemaphore*> renderFinishedSemaphores;
-		std::vector<VKFence*> inFlightFences;
-		std::vector<VkFence> imagesInFlight;
-		size_t currentFrame = 0;
+    public:
+        VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
 
-		uint32_t aquiredImageIndex;
-		uint32_t NumImages;
-	};
+        VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
+
+        VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
+
+        VkFormat FindSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling,
+                                     VkFormatFeatureFlags features);
+
+    private:
+        //External
+        VKDevice *device;
+        VKSurface *surface;
+
+        VKRenderpass *renderpass;
+
+        //Swapchain imageviews and images
+        VkSwapchainKHR swapchain;
+
+        VkFormat swapchainImageFormat;
+        VkExtent2D swapchainExtent;
+
+        std::vector<VKImage *> swapchainImages;
+
+        void CreateSceneAttachments();
+
+        VKImage *hdrImage = nullptr;
+        VKImage *multisampleColourImage = nullptr;
+        VkSampleCountFlagBits sceneSamples = VK_SAMPLE_COUNT_1_BIT;
+        VKImage *depthImage;
+
+        //Synchronization
+        std::vector<VKSemaphore *> imageAvailableSemaphores;
+        std::vector<VKSemaphore *> renderFinishedSemaphores;
+        std::vector<VKFence *> inFlightFences;
+        std::vector<VkFence> imagesInFlight;
+        size_t currentFrame = 0;
+
+        uint32_t aquiredImageIndex;
+        uint32_t NumImages;
+    };
 };
 
 #endif

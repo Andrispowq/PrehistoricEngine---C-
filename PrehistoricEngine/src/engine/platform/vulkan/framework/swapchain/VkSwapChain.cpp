@@ -90,6 +90,30 @@ namespace Prehistoric {
         }
     }
 
+    std::vector<unsigned> VKSwapchain::GetSupportedSampleCounts() const {
+        auto counts = [&](VkFormat format, VkImageUsageFlags usage) {
+            VkImageFormatProperties properties{};
+            return vkGetPhysicalDeviceImageFormatProperties(device->getPhysicalDevice(), format, VK_IMAGE_TYPE_2D,
+                                                            VK_IMAGE_TILING_OPTIMAL, usage, 0,
+                                                            &properties) == VK_SUCCESS
+                       ? properties.sampleCounts
+                       : 0u;
+        };
+        const auto colour = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        const auto depth = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        // Scene/emission MSAA targets are transient; temporal geometry must also be sampleable.
+        const unsigned supported =
+                counts(VK_FORMAT_R16G16B16A16_SFLOAT,
+                       VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT) &
+                counts(VK_FORMAT_D32_SFLOAT, depth) &
+                (counts(VK_FORMAT_R32G32B32A32_SFLOAT, colour) | counts(VK_FORMAT_R16G16B16A16_SFLOAT, colour));
+        std::vector<unsigned> result{1};
+        for (unsigned count = 2; count <= unsigned(device->getSampleCount()); count <<= 1) {
+            if (supported & count) result.push_back(count);
+        }
+        return result;
+    }
+
     void VKSwapchain::CreateSceneAttachments() {
         VkFormat format = FindSupportedFormat({VK_FORMAT_R16G16B16A16_SFLOAT}, VK_IMAGE_TILING_OPTIMAL,
                                               VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT |
@@ -121,15 +145,8 @@ namespace Prehistoric {
         }
         sceneSamples = VK_SAMPLE_COUNT_1_BIT;
         usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-        if (vkGetPhysicalDeviceImageFormatProperties(device->getPhysicalDevice(), format, VK_IMAGE_TYPE_2D,
-                                                     VK_IMAGE_TILING_OPTIMAL, usage, 0, &properties) == VK_SUCCESS) {
-            VkSampleCountFlags supported = properties.sampleCounts & depthProperties.sampleCounts;
-            for (uint32_t count = device->getSampleCount(); count > 1; count >>= 1) {
-                if (count <= __FrameworkConfig.windowNumSamples && (supported & count)) {
-                    sceneSamples = static_cast<VkSampleCountFlagBits>(count);
-                    break;
-                }
-            }
+        for (unsigned count: GetSupportedSampleCounts()) {
+            if (count <= __FrameworkConfig.windowNumSamples) sceneSamples = static_cast<VkSampleCountFlagBits>(count);
         }
         if (sceneSamples != VK_SAMPLE_COUNT_1_BIT) {
             multisampleColourImage = new VKImage(device, swapchainExtent.width, swapchainExtent.height, 1, format,
@@ -162,7 +179,7 @@ namespace Prehistoric {
         delete hdrImage;
 
         for (auto image: swapchainImages) {
-            vkDestroyImageView(dev, image->getImageView(), nullptr);
+            delete image;
         }
 
         vkDestroySwapchainKHR(dev, swapchain, nullptr);
@@ -265,7 +282,7 @@ namespace Prehistoric {
         delete hdrImage;
 
         for (auto image: swapchainImages) {
-            vkDestroyImageView(dev, image->getImageView(), nullptr);
+            delete image;
         }
         swapchainImages.clear();
 

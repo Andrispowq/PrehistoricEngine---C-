@@ -47,8 +47,9 @@ namespace Prehistoric {
     void GLTemporalPass::Render(GLRenderer &renderer, Texture *scene) {
         renderer.temporalRendered = true;
         auto &history = renderer.temporalHistory;
-        const unsigned w = renderer.getWindow()->getWidth(), h = renderer.getWindow()->getHeight();
-        const unsigned count = std::max(1u, __FrameworkConfig.windowNumSamples);
+        const auto extent = renderer.GetRenderExtent();
+        const unsigned w = extent.width, h = extent.height;
+        const unsigned count = renderer.GetSampleCount();
         GLint oldFrame, oldReadFrame, oldProgram, oldVAO, oldFront, oldCull, oldActive, oldUniform, viewport[4];
         glGetIntegerv(GL_ACTIVE_TEXTURE, &oldActive);
         glGetIntegeri_v(GL_UNIFORM_BUFFER_BINDING, 6, &oldUniform);
@@ -126,19 +127,25 @@ namespace Prehistoric {
         }
         renderer.temporalBytes = uint64_t(w) * h * ((motionFormat == GL_RGBA32F ? 20 : 12) * count + 56) +
                                  uint64_t((w + 15) / 16) * ((h + 15) / 16) * 16;
-        const unsigned timerSlot = unsigned(history.frame % 3);
+        const unsigned timerSlot = unsigned(renderer.submittedFrames % 3);
         if (queried[timerSlot]) {
             GLint ready = 0;
             glGetQueryObjectiv(queries[timerSlot][7], GL_QUERY_RESULT_AVAILABLE, &ready);
-            if (ready)
+            if (ready) {
+                std::array < double, 4 > values{};
                 for (int i = 0; i < 4; ++i) {
                     GLuint64 start = 0, end = 0;
                     glGetQueryObjectui64v(queries[timerSlot][2 * i], GL_QUERY_RESULT, &start);
                     glGetQueryObjectui64v(queries[timerSlot][2 * i + 1], GL_QUERY_RESULT, &end);
-                    renderer.temporalMilliseconds[i] = double(end - start) * 1e-6;
+                    values[i] = double(end - start) * 1e-6;
                 }
+                renderer.temporalTimings.Publish(timingFrames[timerSlot], timingModes[timerSlot], values);
+            }
         }
         queried[timerSlot] = true;
+        timingFrames[timerSlot] = renderer.submittedFrames + 1;
+        timingModes[timerSlot] = unsigned(renderer.temporal.antialiasing) | (
+                                     unsigned(renderer.temporal.motionBlur) << 1);
         auto stamp = [&](int i) { glQueryCounter(queries[timerSlot][i], GL_TIMESTAMP); };
         stamp(0);
         auto params = renderer.GetTemporalParameters();

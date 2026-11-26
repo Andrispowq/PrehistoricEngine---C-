@@ -50,6 +50,14 @@ namespace Prehistoric {
 
         virtual bool CanRenderFrame() const { return true; }
 
+        virtual RenderExtent GetRenderExtent() const = 0;
+
+        virtual std::vector<unsigned> GetSupportedSampleCounts() const = 0;
+
+        virtual unsigned GetSampleCount() const = 0;
+
+        bool RequestSampleCount(unsigned samples);
+
         virtual void RequestEnvironmentBake(bool usePanorama) = 0;
 
         bool screenSpaceReflections = false;
@@ -60,7 +68,8 @@ namespace Prehistoric {
         virtual bool UseTemporalEffects() const { return temporal.active() && !wireframeMode; }
         TemporalHistory temporalHistory;
         bool temporalRendered = false;
-        double temporalMilliseconds[4]{-1, -1, -1, -1};
+        TemporalTimings temporalTimings;
+        uint64_t submittedFrames = 0;
         uint64_t temporalBytes = 0;
 
         void ResetTemporalHistory() {
@@ -169,6 +178,9 @@ namespace Prehistoric {
         void SetSceneEnvironmentMap(const std::string &location) { sceneEnvironmentMap = location; }
 
     protected:
+        bool ApplyPendingSampleCount();
+
+        std::optional<unsigned> pendingSampleCount;
         std::string sceneEnvironmentMap;
 
         virtual void UpdateEnvironmentLighting() = 0;

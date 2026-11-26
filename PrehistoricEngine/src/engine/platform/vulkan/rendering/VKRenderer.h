@@ -27,6 +27,12 @@ namespace Prehistoric {
 
         virtual void EndRendering();
 
+        RenderExtent GetRenderExtent() const override;
+
+        std::vector<unsigned> GetSupportedSampleCounts() const override;
+
+        unsigned GetSampleCount() const override;
+
 
         VKCommandBuffer *getDrawCommandBuffer() const {
             return commandPool->getCommandBuffer(window->getSwapchain()->getAquiredImageIndex());
