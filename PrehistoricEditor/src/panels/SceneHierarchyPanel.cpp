@@ -18,12 +18,20 @@ void SceneHierarchyPanel::SetContext(Prehistoric::GameObject *root) {
     InvalidateSelectionContext();
 }
 
+void SceneHierarchyPanel::SelectViewportHit(Prehistoric::GameObject *object, std::optional<uint32_t> submesh) {
+    revealSelection = object != nullptr;
+    selectedSubmesh = selectionContext == object ? submesh : std::nullopt;
+    selectionContext = object;
+}
+
 void SceneHierarchyPanel::ImGuiRender() {
     ImGui::Begin("Scene Hierarchy");
 
     for (const auto &child: root->getChildrenByID()) {
         if (auto *object = dynamic_cast<Prehistoric::GameObject *>(child.second)) DrawGameObjectNode(object);
     }
+
+    revealSelection = false;
 
     // Right-click on blank space
     if (ImGui::BeginPopupContextWindow(0, 1, false)) {
@@ -62,7 +70,21 @@ void SceneHierarchyPanel::DrawGameObjectNode(Prehistoric::GameObject *object) {
     ImGuiTreeNodeFlags flags = ((selectionContext == object && !selectedSubmesh) ? ImGuiTreeNodeFlags_Selected : 0) |
                                ImGuiTreeNodeFlags_OpenOnArrow;
     flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
+    if (revealSelection && selectionContext) {
+        Prehistoric::Node *ancestor = selectedSubmesh ? selectionContext : selectionContext->getParent();
+        for (; ancestor; ancestor = ancestor->getParent()) {
+            if (ancestor == object) {
+                ImGui::SetNextItemOpen(true);
+                break;
+            }
+        }
+    }
     bool opened = ImGui::TreeNodeEx((void *) object, flags, "%s", tag.c_str());
+    if (revealSelection &&selectionContext 
+    ==
+    object && !selectedSubmesh
+    )
+    ImGui::SetScrollHereY();
     if (ImGui::IsItemClicked()) {
         selectionContext = object;
         selectedSubmesh.reset();
@@ -93,6 +115,7 @@ void SceneHierarchyPanel::DrawGameObjectNode(Prehistoric::GameObject *object) {
                                           ImGuiTreeNodeFlags_SpanAvailWidth | (selected
                                                                                    ? ImGuiTreeNodeFlags_Selected
                                                                                    : 0), "%s", label.c_str());
+                if (revealSelection && selected) ImGui::SetScrollHereY();
                 if (ImGui::IsItemClicked()) {
                     selectionContext = object;
                     selectedSubmesh = i;
@@ -393,16 +416,20 @@ void SceneHierarchyPanel::DrawComponents(Prehistoric::GameObject *object) {
                                                               float colour[] = {tint.x, tint.y, tint.z};
                                                               if (ImGui::DragFloat(
                                                                   "Radius", &radius, 0.1f, 0.0f, 0.0f,
-                                                                  "%.2f")) sphere->setRadius(radius);
+                                                                  "%.2f"))
+                                                                  sphere->setRadius(radius);
                                                               if (ImGui::DragFloat(
                                                                   "Density", &density, 0.001f, 0.0f, 0.0f,
-                                                                  "%.4f")) sphere->setDensity(density);
-                                                              if (ImGui::ColorEdit3("Tint", colour)) sphere->setTint({
-                                                                  colour[0], colour[1], colour[2]
-                                                              });
+                                                                  "%.4f"))
+                                                                  sphere->setDensity(density);
+                                                              if (ImGui::ColorEdit3("Tint", colour))
+                                                                  sphere->setTint({
+                                                                      colour[0], colour[1], colour[2]
+                                                                  });
                                                               if (ImGui::SliderFloat(
                                                                   "Anisotropy", &anisotropy, -0.95f,
-                                                                  0.95f)) sphere->setAnisotropy(anisotropy);
+                                                                  0.95f))
+                                                                  sphere->setAnisotropy(anisotropy);
                                                           });
 
     ImGui::PopItemWidth();

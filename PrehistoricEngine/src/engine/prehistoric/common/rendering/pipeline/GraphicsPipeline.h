@@ -16,6 +16,7 @@ namespace Prehistoric {
 
         virtual ~GraphicsPipeline();
 
+        virtual bool drawsTriangleMesh() const { return vbo.pointer && vbo->getType() == VertexBufferType::MESH; }
         VertexBuffer *getVertexBuffer() const { return vbo.pointer; }
         VertexBufferHandle getVertexBufferHandle() const { return vbo; }
 

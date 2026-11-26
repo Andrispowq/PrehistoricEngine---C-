@@ -35,6 +35,10 @@ namespace Prehistoric {
 
         virtual uint64_t GetHash() override;
 
+        bool drawsTriangleMesh() const override {
+            return topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST && GraphicsPipeline::drawsTriangleMesh();
+        }
+
         VkPrimitiveTopology getTopology() const { return topology; }
         bool hasWireframePipeline() const { return wireframePipeline != VK_NULL_HANDLE; }
         VkPipeline getGraphicsPipeline() const { return graphicsPipeline; }

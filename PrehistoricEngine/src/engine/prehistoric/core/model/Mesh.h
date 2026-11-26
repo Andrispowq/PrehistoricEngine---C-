@@ -24,8 +24,8 @@ namespace Prehistoric {
         void AddVertex(const Vertex &vertex) { vertices.push_back(vertex); }
         void AddIndex(const uint32_t &index) { indices.push_back(index); }
 
-        inline std::vector<Vertex> getVertices() const { return vertices; }
-        inline std::vector<uint32_t> getIndices() const { return indices; }
+        inline const std::vector<Vertex> &getVertices() const { return vertices; }
+        inline const std::vector<uint32_t> &getIndices() const { return indices; }
         const std::string &getName() const { return name; }
         void setName(const std::string &value) { name = value; }
         inline int getMaterialIndex() const { return materialIndex; }

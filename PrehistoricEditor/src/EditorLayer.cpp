@@ -105,6 +105,8 @@ void EditorLayer::ImGUIRender() {
         }
 
         if (ImGui::BeginMenu("Render Settings")) {
+            if (ImGui::InputFloat("Pick distance", &pickDistance, 1.0f, 10.0f, "%.1f"))
+                pickDistance = std::max(0.0f, pickDistance);
             bool wireframe = renderer->isWireframeMode();
             if (ImGui::Checkbox("Wireframe (E)", &wireframe)) renderer->setWireframeMode(wireframe);
             bool bloom = renderer->isBloomEnabled();
@@ -231,8 +233,28 @@ void EditorLayer::ImGUIRender() {
     viewportSize = {size.x, size.y};
     if (size.x > 0 && size.y > 0) {
         auto *camera = renderer->getCamera();
+        auto *output = renderer->getOutputTexture();
+        if (output) {
+            ui->DrawImage(output, size.x, size.y);
+            if (ImGui::IsItemClicked(ImGuiMouseButton_Left) && !ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
+                !ImGui::IsMouseDown(ImGuiMouseButton_Middle)) {
+                const auto mouse = ImGui::GetMousePos();
+                const float x = 2.0f * (mouse.x - pos.x) / size.x - 1.0f;
+                float y = 1.0f - 2.0f * (mouse.y - pos.y) / size.y;
+                if (__FrameworkConfig.api == Prehistoric::Vulkan) y = -y;
+                const auto viewPoint = camera->getProjectionMatrix().Invert() * Prehistoric::Vector4f(x, y, 0.5f, 1.0f);
+                const auto direction = camera->getViewMatrix().Invert() * Prehistoric::Vector4f(viewPoint.xyz(), 0.0f);
+                const auto origin = camera->getPosition();
+                const auto hit = scene->Raycast(origin, direction.xyz(), pickDistance);
+                auto *object = hit ? hit->object : nullptr;
+                std::optional<uint32_t> part;
+                if (object && object->GetComponent<Prehistoric::RendererComponent>()->getMeshBuffer()->getSubmeshCount()
+                    > 1)
+                    part = hit->submesh;
+                scenePanel->SelectViewportHit(object, part);
+            }
+        }
         camera->SetProjection(camera->getFov(), size.x, size.y);
-        ui->DrawImage(renderer->getOutputTexture(), size.x, size.y);
     }
 
     ImGui::End();

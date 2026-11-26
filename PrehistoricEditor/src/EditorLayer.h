@@ -7,34 +7,40 @@
 
 #include "panels/SceneHierarchyPanel.h"
 
-class EditorLayer : public Prehistoric::Layer
-{
+class EditorLayer : public Prehistoric::Layer {
 public:
-	EditorLayer(std::unique_ptr<Prehistoric::Scene> scene);
-	virtual ~EditorLayer() = default;
+    EditorLayer(std::unique_ptr<Prehistoric::Scene> scene);
 
-	virtual void OnAttach() override;
-	virtual void OnDetach() override;
+    virtual ~EditorLayer() = default;
 
-	virtual void Update(float delta) override;
-	virtual void ImGUIRender() override;
+    virtual void OnAttach() override;
 
-	virtual void OnEvent(Prehistoric::Event& e) override;
+    virtual void OnDetach() override;
+
+    virtual void Update(float delta) override;
+
+    virtual void ImGUIRender() override;
+
+    virtual void OnEvent(Prehistoric::Event &e) override;
 
 protected:
-	void NewButton();
-	void OpenButton();
-	void SaveButton();
-	void QuitButton();
+    void NewButton();
+
+    void OpenButton();
+
+    void SaveButton();
+
+    void QuitButton();
 
 private:
-	std::unique_ptr<SceneHierarchyPanel> scenePanel;
-	std::unique_ptr<Prehistoric::Scene> scene;
+    std::unique_ptr<SceneHierarchyPanel> scenePanel;
+    std::unique_ptr<Prehistoric::Scene> scene;
 
-	Prehistoric::Vector2f viewportStart;
-	Prehistoric::Vector2f viewportSize;
+    float pickDistance = 1000.0f;
+    Prehistoric::Vector2f viewportStart;
+    Prehistoric::Vector2f viewportSize;
 
-	Prehistoric::GameObject* root;
+    Prehistoric::GameObject *root;
 };
 
 #endif

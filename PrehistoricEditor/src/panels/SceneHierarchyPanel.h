@@ -16,9 +16,12 @@ public:
     void SetContext(Prehistoric::GameObject *root);
 
     void InvalidateSelectionContext() {
+        revealSelection = false;
         selectionContext = nullptr;
         selectedSubmesh.reset();
     }
+
+    void SelectViewportHit(Prehistoric::GameObject *object, std::optional<uint32_t> submesh);
 
     void ImGuiRender();
 
@@ -30,6 +33,7 @@ private:
     void DrawComponents(Prehistoric::GameObject *object);
 
 private:
+    bool revealSelection = false;
     std::optional<uint32_t> selectedSubmesh;
     Prehistoric::GameObject *root;
     Prehistoric::GameObject *selectionContext = nullptr;

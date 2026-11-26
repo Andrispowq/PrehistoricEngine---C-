@@ -12,16 +12,21 @@ OpenGL and Vulkan water are enabled in the sample. Vulkan selects its geometry o
 
 ## Remaining work
 
-1. **Engine raycasting and editor viewport picking.** Add a world-space raycast with a configurable maximum pick
-   distance. Return the nearest hit object within that distance and the hit submesh when available. In the editor, cast
-   from the active viewport camera through the clicked pixel. A first click on an object selects the whole instance.
-   Clicking that same selected object selects the submesh under the cursor, or keeps the object selected if it has no
-   submeshes. Clicking a different object starts with that whole object. Keep the viewport, hierarchy and material
-   inspector in sync on OpenGL and Vulkan.
-2. **Selection outline post-processing.** Outline the current selection in the editor viewport on both backends. Outline
+Engine mesh raycasting and editor viewport picking are implemented. Set **Pick distance** in the editor's Render
+Settings. Click once to select an instance and click it again to select a submesh. Clicking empty space clears the
+selection.
+
+1. **Selection outline post-processing.** Outline the current selection in the editor viewport on both backends. Outline
    the whole instance for an object selection, including all its submeshes. For a submesh selection, outline only that
    part of that instance. Update the outline when selection changes from either the viewport or the hierarchy, and clear
    it when selection is cleared.
+2. **Sun shafts.** Extend the existing shadowed volumetric lighting in Sponza Sun Shafts with a dedicated sun-shaft
+   effect. Verify occlusion and camera motion on both backends and avoid counting the existing volumetric contribution
+   twice.
+3. **Depth of field and related lens effects.** Add configurable focus distance and aperture, with foreground and
+   background blur and bokeh highlights.
+4. **Ambient occlusion.** Add a configurable ambient occlusion pass and check its interaction with material occlusion
+   and VXGI in sheltered areas.
 
 Imported OBJ and PMF submeshes appear under each model instance in the editor
 hierarchy. Selecting a part opens its material controls. Edits and resets apply

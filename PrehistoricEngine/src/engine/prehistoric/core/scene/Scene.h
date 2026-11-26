@@ -21,40 +21,49 @@
 
 #include "prehistoric/core/node/component/audio/AudioComponent.h"
 
-namespace Prehistoric
-{
-	class Scene
-	{
-	public:
-		Scene(const std::string& worldFile, Window* window, Camera* camera, AssembledAssetManager* manager);
-		virtual ~Scene();
+namespace Prehistoric {
+    struct RaycastHit {
+        GameObject *object;
+        uint32_t submesh;
+        float distance;
+        Vector3f position;
+    };
 
-		void AddGameObject(const std::string& name, GameObject* object);
-		void RemoveGameObject(GameObject* object);
+    class Scene {
+    public:
+        Scene(const std::string &worldFile, Window *window, Camera *camera, AssembledAssetManager *manager);
 
-		std::string getName() const { return name; }
-		GameObject* getSceneRoot() const { return sceneRoot; }
-		const std::optional<WorldCameraPose>& getInitialCamera() const { return initialCamera; }
+        virtual ~Scene();
 
-	const std::string& getEnvironmentMap() const { return environmentMap; }
+        std::optional<RaycastHit> Raycast(const Vector3f &origin, const Vector3f &direction, float maxDistance) const;
 
-	protected:
-		std::string environmentMap;
-		std::string name = "UnnamedScene";
-		std::optional<WorldCameraPose> initialCamera;
-		
-		GameObject* sceneRoot;
-		Window* window;
-		Camera* camera;
-		AssembledAssetManager* manager;
+        void AddGameObject(const std::string &name, GameObject *object);
 
-		std::vector<TextureHandle> textures;
-		std::vector<MaterialHandle> materials;
+        void RemoveGameObject(GameObject *object);
 
-		std::vector<VertexBufferHandle> models;
-		std::vector<ShaderHandle> shaders;
-		std::vector<PipelineHandle> pipelines;
-	};
+        std::string getName() const { return name; }
+        GameObject *getSceneRoot() const { return sceneRoot; }
+        const std::optional<WorldCameraPose> &getInitialCamera() const { return initialCamera; }
+
+        const std::string &getEnvironmentMap() const { return environmentMap; }
+
+    protected:
+        std::string environmentMap;
+        std::string name = "UnnamedScene";
+        std::optional<WorldCameraPose> initialCamera;
+
+        GameObject *sceneRoot;
+        Window *window;
+        Camera *camera;
+        AssembledAssetManager *manager;
+
+        std::vector<TextureHandle> textures;
+        std::vector<MaterialHandle> materials;
+
+        std::vector<VertexBufferHandle> models;
+        std::vector<ShaderHandle> shaders;
+        std::vector<PipelineHandle> pipelines;
+    };
 };
 
 #endif
