@@ -182,6 +182,7 @@ namespace Prehistoric {
         lights.clear();
         volumetricSpheres.clear();
         atmosphere = nullptr;
+        environmentObject = nullptr;
     }
 
     void Renderer::ResizePipelines(uint32_t width, uint32_t height) {

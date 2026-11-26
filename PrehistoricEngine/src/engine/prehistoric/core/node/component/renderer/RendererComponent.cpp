@@ -9,6 +9,19 @@
 #include "prehistoric/core/model/material/Material.h"
 
 namespace Prehistoric {
+    static std::unique_ptr<Material> CloneMaterial(Material &source, AssembledAssetManager &manager) {
+        auto copy = std::make_unique<Material>(manager.getAssetManager(), source.getName());
+        for (const auto &[key, texture]: source.getTextures()) {
+            if (key != "DEFAULT_TEX") copy->addTexture(key, texture);
+        }
+        copy->getVector4fs() = source.getVector4fs();
+        copy->getVector3fs() = source.getVector3fs();
+        copy->getVector2fs() = source.getVector2fs();
+        copy->getFloats() = source.getFloats();
+        copy->getInts() = source.getInts();
+        return copy;
+    }
+
     RendererComponent::RendererComponent(Window *window, AssembledAssetManager *manager, PipelineHandle pipeline,
                                          MaterialHandle material)
         : RenderableComponent(window, manager, pipeline), material(material) {
@@ -44,16 +57,21 @@ namespace Prehistoric {
         if (!mesh || index >= mesh->getSubmeshCount()) return nullptr;
         auto *source = ResolveSubmeshMaterial(mesh->getModel(), index, getMaterial());
         if (!source) return nullptr;
-        auto copy = std::make_unique<Material>(manager->getAssetManager(), source->getName());
-        for (const auto &[key, texture]: source->getTextures()) {
-            if (key != "DEFAULT_TEX") copy->addTexture(key, texture);
+        return overrides.emplace(index, CloneMaterial(*source, *manager)).first->second.get();
+    }
+
+    std::unique_ptr<Component> RendererComponent::Clone() const {
+        auto copy = std::make_unique < RendererComponent > (window, manager);
+        copy->pipeline = pipeline;
+        copy->material = material;
+        if (pipeline.pointer) manager->addReference<Pipeline>(pipeline.handle);
+        if (material.handle != -1) manager->addReference<Material>(material.handle);
+        copy->setPriority(priority);
+        copy->setReflection(reflect_water);
+        for (const auto &[index, source]: overrides) {
+            copy->overrides.emplace(index, CloneMaterial(*source, *manager));
         }
-        copy->getVector4fs() = source->getVector4fs();
-        copy->getVector3fs() = source->getVector3fs();
-        copy->getVector2fs() = source->getVector2fs();
-        copy->getFloats() = source->getFloats();
-        copy->getInts() = source->getInts();
-        return overrides.emplace(index, std::move(copy)).first->second.get();
+        return copy;
     }
 
     void RendererComponent::PreRender(Renderer *renderer) {

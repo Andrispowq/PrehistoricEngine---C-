@@ -16,83 +16,92 @@
 
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 
-namespace Prehistoric
-{
-	constexpr static double NANOSECOND = 1000000000;
+namespace Prehistoric {
+    constexpr static double NANOSECOND = 1000000000;
 
-	class CoreEngine : public Layer
-	{
-	public:
-		CoreEngine(const std::string& configPath = "res/config/settings.json", const std::string& worldFile = "res/world/testLevel.wrld");
-		~CoreEngine();
+    class CoreEngine : public Layer {
+    public:
+        CoreEngine(const std::string &configPath = "res/config/settings.json",
+                   const std::string &worldFile = "res/world/testLevel.wrld");
 
-		virtual void OnEnable() override {}
-		virtual void OnDisable() override {}
+        ~CoreEngine();
 
-		virtual void OnEvent(Event& event) override;
+        virtual void OnEnable() override {
+        }
 
-		virtual void Update(float delta);
-		virtual void Render();
+        virtual void OnDisable() override {
+        }
 
-		void BeginRendering();
-		void EndRendering();
+        virtual void OnEvent(Event &event) override;
 
-		void LoadConfigurationFiles(const std::string& path);
-		void LoadEngines();
+        virtual void Update(float delta);
 
-		void AddGameObject(const std::string& name, GameObject* gameobject);
+        virtual void Render();
 
-		/*
+        void BeginRendering();
+
+        void EndRendering();
+
+        void LoadConfigurationFiles(const std::string &path);
+
+        void LoadEngines();
+
+        void AddGameObject(const std::string &name, GameObject *gameobject);
+
+        /*
 			Replaces the current scene with the loaded one. Does not delete the old one, and does no management whatsoever -> this is the client's job
 		*/
-		void SetScene(Scene* scene);
+        void SetScene(Scene *scene);
 
-		inline RenderingEngine* getRenderingEngine() { return renderingEngine.get(); }
-		inline AudioEngine* getAudioEngine() { return audioEngine.get(); }
-		inline PhysicsEngine* getPhysicsEngine() { return physicsEngine.get(); }
+        inline RenderingEngine *getRenderingEngine() { return renderingEngine.get(); }
+        inline AudioEngine *getAudioEngine() { return audioEngine.get(); }
+        inline PhysicsEngine *getPhysicsEngine() { return physicsEngine.get(); }
 #ifdef PR_WINDOWS_64
-		inline ScriptEngine* getScriptEngine() { return scriptEngine.get(); }
+        inline ScriptEngine *getScriptEngine() { return scriptEngine.get(); }
 #endif
 
-		inline GameObject* getRootObject() const { return root.get(); }
-		inline GameObject* getSceneRoot() const { return sceneRoot; }
-		inline AssembledAssetManager* getAssetManager() const { return manager.get(); }
+        inline GameObject *getRootObject() const { return root.get(); }
+        inline GameObject *getSceneRoot() const { return sceneRoot; }
+        inline AssembledAssetManager *getAssetManager() const { return manager.get(); }
 
-		inline EngineSettings* getEngineSettings() { return &engineSettings; }
+        inline EngineSettings *getEngineSettings() { return &engineSettings; }
 
-		inline float getFrameTime() const { return (float)frameTime; }
+        inline float getFrameTime() const { return (float) frameTime; }
 
-		CoreEngine(const CoreEngine& engine) = delete;
-		CoreEngine operator=(const CoreEngine& engine) = delete;
-		CoreEngine(const CoreEngine&& engine) = delete;
-		CoreEngine operator=(const CoreEngine&& engine) = delete;
+        CoreEngine(const CoreEngine &engine) = delete;
 
-	private:
-		//Root object
-		std::unique_ptr<GameObject> root;
+        CoreEngine operator=(const CoreEngine &engine) = delete;
 
-		//The asset manager
-		std::unique_ptr<AssembledAssetManager> manager;
+        CoreEngine(const CoreEngine &&engine) = delete;
 
-		//Engines
-		std::unique_ptr<RenderingEngine> renderingEngine;
-		std::unique_ptr<AudioEngine> audioEngine;
-		std::unique_ptr<PhysicsEngine> physicsEngine;
+        CoreEngine operator=(const CoreEngine &&engine) = delete;
+
+    private:
+        //Root object
+        std::unique_ptr<GameObject> root;
+
+        //The asset manager
+        std::unique_ptr<AssembledAssetManager> manager;
+
+        //Engines
+        std::unique_ptr<RenderingEngine> renderingEngine;
+        std::unique_ptr<AudioEngine> audioEngine;
+        std::unique_ptr<PhysicsEngine> physicsEngine;
 #ifdef PR_WINDOWS_64
-		std::unique_ptr<ScriptEngine> scriptEngine;
+        std::unique_ptr<ScriptEngine> scriptEngine;
 #endif
 
-		//Settings
-		EngineSettings engineSettings;
+        //Settings
+        EngineSettings engineSettings;
 
-		//Our currently loaded scene, can be changed at any time
-		GameObject* sceneRoot;
-		Scene* scene;
+        //Our currently loaded scene, can be changed at any time
+        GameObject *sceneRoot = nullptr;
+        Scene *scene = nullptr;
 
-		//Frametime, set once per update
-		bool running;
-		double frameTime;
-	};
+        //Frametime, set once per update
+        bool running;
+        double frameTime;
+    };
 };
 
 #endif

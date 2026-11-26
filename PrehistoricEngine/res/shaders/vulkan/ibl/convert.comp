@@ -5,6 +5,8 @@ layout(binding = 0) uniform sampler2D panorama;
 layout(binding = 1, rgba32f) uniform writeonly image2DArray outputMap;
 #include "../../shared/environmentMap/cubeDirection.glsl"
 
+layout(push_constant) uniform Orientation { mat4 worldToEnvironment; };
+
 void main()
 {
     ivec3 pixel = ivec3(gl_GlobalInvocationID);
@@ -12,7 +14,7 @@ void main()
     if (any(greaterThanEqual(pixel, size))) return;
     vec3 direction = CubeDirection(pixel, size.x);
     ivec2 extent = textureSize(panorama, 0);
-    ivec2 texel = PanoramaTexel(direction, extent);
+    ivec2 texel = PanoramaTexel(mat3(worldToEnvironment) * direction, extent);
     // Vulkan uploads north-to-south rows. OpenGL flips them before upload.
     texel.y = extent.y - 1 - texel.y;
     imageStore(outputMap, pixel, texelFetch(panorama, texel, 0));

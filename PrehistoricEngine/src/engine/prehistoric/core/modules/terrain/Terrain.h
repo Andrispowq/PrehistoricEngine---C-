@@ -5,32 +5,37 @@
 
 #include "TerrainQuadtree.h"
 
-namespace Prehistoric
-{
-	class Renderer;
+namespace Prehistoric {
+    class Renderer;
 
-	class Terrain : public GameObject
-	{
-	public:
-		Terrain(Window* window, Camera* camera, AssembledAssetManager* manager, const std::string& terrainConfigFile);
-		virtual ~Terrain() {}
+    class Terrain : public GameObject {
+    public:
+        Terrain(Window *window, Camera *camera, AssembledAssetManager *manager, const std::string &terrainConfigFile);
 
-		void PreRender(Renderer* renderer) override;
-		void UpdateQuadtree();
+        virtual ~Terrain() {
+        }
 
-		TerrainQuadtree* getQuadtree() const { return quadtree; }
-		TerrainMaps* getMaps() const { return maps.get(); }
+        void PreRender(Renderer *renderer) override;
 
-		Terrain(const Terrain&) = default;
-	private:
-		Window* window;
-		Camera* camera;
-		Vector3f lastLodCameraPosition;
+        void UpdateQuadtree();
 
-		TerrainQuadtree* quadtree = nullptr;
+        TerrainQuadtree *getQuadtree() const { return quadtree; }
+        TerrainMaps *getMaps() const { return maps.get(); }
 
-		std::unique_ptr<TerrainMaps> maps;
-	};
+        Terrain(const Terrain &) = delete;
+
+        const std::string &GetConfigFile() const { return configFile; }
+
+    private:
+        std::string configFile;
+        Window *window;
+        Camera *camera;
+        Vector3f lastLodCameraPosition;
+
+        TerrainQuadtree *quadtree = nullptr;
+
+        std::unique_ptr<TerrainMaps> maps;
+    };
 };
 
 #endif

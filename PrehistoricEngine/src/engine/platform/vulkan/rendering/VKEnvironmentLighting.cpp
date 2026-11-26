@@ -47,7 +47,7 @@ namespace Prehistoric {
                                                  uint32_t cubeSize, const std::vector<char> &conversion,
                                                  const std::vector<char> &shader, uint32_t lutSize, uint32_t samples,
                                                  const AtmosphereParameters *sky, VKEnvironmentLighting *reuseLutFrom,
-                                                 bool includeSunDisk)
+                                                 bool includeSunDisk, const float *rotation)
         : physicalDevice(physicalDevice), device(device), lutSamples(samples) {
         if (!cubeSize || !irradianceSize || !prefilterSize || !levels || !lutSize || !samples)
             throw std::invalid_argument("Vulkan IBL dimensions and sample count must be positive");
@@ -80,7 +80,7 @@ namespace Prehistoric {
                                        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
             samplerInfo.maxLod = float((std::max)(levels, environment.levels) - 1);
             Check(vkCreateSampler(device, &samplerInfo, nullptr, &sampler));
-            Bake(queue, queueFamily, source, conversion, shader, samples, sky, includeSunDisk);
+            Bake(queue, queueFamily, source, conversion, shader, samples, sky, includeSunDisk, rotation);
             if (reuseLut) std::swap(brdf, reuseLutFrom->brdf);
         } catch (...) {
             vkDestroySampler(device, sampler, nullptr);
@@ -184,7 +184,7 @@ namespace Prehistoric {
     void VKEnvironmentLighting::Bake(VkQueue queue, uint32_t queueFamily, VkDescriptorImageInfo source,
                                      const std::vector<char> &conversion, const std::vector<char> &shader,
                                      uint32_t samples,
-                                     const AtmosphereParameters *sky, bool includeSunDisk) {
+                                     const AtmosphereParameters *sky, bool includeSunDisk, const float *rotation) {
         BakeResources resources{device};
         VkDescriptorSetLayoutBinding bindings[2]{};
         bindings[0] = {0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr};
@@ -204,7 +204,7 @@ namespace Prehistoric {
 
         VkPushConstantRange push{
             VK_SHADER_STAGE_COMPUTE_BIT, 0,
-            sky ? uint32_t(AtmospherePushOffset + sizeof(*sky)) : uint32_t(sizeof(Parameters))
+            sky ? uint32_t(AtmospherePushOffset + sizeof(*sky)) : uint32_t(16 * sizeof(float))
         };
         VkPipelineLayoutCreateInfo layoutInfo{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
         layoutInfo.setLayoutCount = 1;
@@ -322,6 +322,10 @@ namespace Prehistoric {
                                        0, sizeof(includeDisk), &includeDisk);
                     vkCmdPushConstants(command, resources.pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT,
                                        AtmospherePushOffset, sizeof(*sky), sky);
+                } else if (converting) {
+                    const float identity[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
+                    vkCmdPushConstants(command, resources.pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT,
+                                       0, sizeof(identity), rotation ? rotation : identity);
                 } else {
                     vkCmdPushConstants(command, resources.pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0,
                                        sizeof(parameters), &parameters);

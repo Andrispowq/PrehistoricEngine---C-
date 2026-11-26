@@ -18,6 +18,7 @@
 #include "prehistoric/core/modules/gui/slider/GUISlider.h"
 
 #include "prehistoric/core/modules/atmosphere/Atmosphere.h"
+#include "prehistoric/core/modules/atmosphere/EnvironmentMap.h"
 
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 
@@ -52,10 +53,26 @@ namespace Prehistoric {
         TemporalSettings temporal;
         const std::optional<WorldCameraPose> &getInitialCamera() const { return initialCamera; }
 
-        const std::string &getEnvironmentMap() const { return environmentMap; }
+        GameObject *GetSky() const;
+
+        void ValidateSky() const;
+
+        void CheckAttach(const Node *node) const;
+
+        void CheckRemoval(const Node *node) const;
+
+        void CheckComponentRemoval(const Component *component) const;
+
+        void ReplaceSky(std::unique_ptr<GameObject> replacement);
+
+        void ClearObjects();
+
+        GameObject *Duplicate(GameObject &object);
+
+        static bool IsSky(const Node *node);
 
     protected:
-        std::string environmentMap;
+        bool replacingSky = false;
         std::string name = "UnnamedScene";
         std::optional<WorldCameraPose> initialCamera;
 

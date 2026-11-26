@@ -122,7 +122,7 @@ public:
         if (frame == 30)
             renderer->temporal.motionBlur = renderer->temporal.antialiasing = true;
         if (frame == 34)
-            renderer->RequestEnvironmentBake(true);
+            renderer->RequestEnvironmentBake();
         if (frame == 35) renderer->setWireframeMode(true);
         if (frame == 36) {
             renderer->setWireframeMode(false);
@@ -146,14 +146,17 @@ public:
             expectedSamples = frame == 49 ? 1 : multisample;
             sampleChangeExpected = expectedSamples != renderer->GetSampleCount();
             if (renderer->RequestSampleCount(3)) throw std::runtime_error("Unsupported sample count accepted");
-            if (!renderer->RequestSampleCount(expectedSamples)) throw std::runtime_error(
-                "Supported sample count rejected");
+            if (!renderer->RequestSampleCount(expectedSamples))
+                throw std::runtime_error(
+                    "Supported sample count rejected");
         }
         if (frame == 44 || frame == 50 || frame == 56) {
-            if (renderer->GetSampleCount() != expectedSamples) throw std::runtime_error(
-                "Live MSAA change was not applied");
-            if (sampleChangeExpected && renderer->temporalHistory.valid) throw std::runtime_error(
-                "Live MSAA change retained temporal history");
+            if (renderer->GetSampleCount() != expectedSamples)
+                throw std::runtime_error(
+                    "Live MSAA change was not applied");
+            if (sampleChangeExpected && renderer->temporalHistory.valid)
+                throw std::runtime_error(
+                    "Live MSAA change retained temporal history");
             std::fprintf(stderr, "TEMPORAL live MSAA: %u samples; %s\n", expectedSamples,
                          sampleChangeExpected ? "history invalidated" : "unchanged request");
         }

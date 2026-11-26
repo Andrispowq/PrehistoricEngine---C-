@@ -1,4 +1,5 @@
 {
+  "sky_schema": 1,
     "name": "Sponza Emissive Voxel GI",
     "initial_camera": {
         "position": [-21, -42, -3],

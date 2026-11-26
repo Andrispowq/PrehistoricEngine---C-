@@ -94,6 +94,8 @@ namespace Prehistoric {
     }
 
     void CoreEngine::SetScene(Scene *scene) {
+        scene->ValidateSky();
+        if (this->sceneRoot && this->sceneRoot != scene->getSceneRoot()) this->sceneRoot->setEnabled(false);
         this->sceneRoot = scene->getSceneRoot();
         this->scene = scene;
         renderingEngine->getRenderer()->screenSpaceReflections = scene->screenSpaceReflections;
@@ -102,7 +104,7 @@ namespace Prehistoric {
         renderingEngine->getRenderer()->depthOfField = scene->depthOfField;
         renderingEngine->getRenderer()->temporal = scene->temporal;
         renderingEngine->getRenderer()->ResetTemporalHistory();
-        renderingEngine->getRenderer()->SetSceneEnvironmentMap(scene->getEnvironmentMap());
+        renderingEngine->getRenderer()->RequestEnvironmentBake();
 
         if (const auto &pose = scene->getInitialCamera()) {
             auto *camera = renderingEngine->getCamera();
@@ -115,7 +117,7 @@ namespace Prehistoric {
         }
 
         bool found = false;
-        for (auto child: root->getChildren()) {
+        for (auto child: root->getChildrenByID()) {
             if (child.second == (Node *) sceneRoot) {
                 child.second->setEnabled(true);
                 found = true;

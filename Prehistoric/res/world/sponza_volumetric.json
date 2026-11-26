@@ -1,4 +1,5 @@
 {
+  "sky_schema": 1,
     "name": "Sponza Volumetric Lighting",
     "initial_camera": {
         "position": [-90, -35, 0],

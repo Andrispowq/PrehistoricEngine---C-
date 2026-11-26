@@ -94,20 +94,21 @@ namespace Prehistoric {
         manager->removeReference<Pipeline>(backgroundPipeline.handle);
     }
 
-    void EnvironmentMapRenderer::RequestBake(bool usePanorama) {
-        panoramaOverride = usePanorama;
+    void EnvironmentMapRenderer::RequestBake() {
         requested = true;
     }
 
-    void EnvironmentMapRenderer::UpdateEnvironment(const Atmosphere *atmosphere, bool includeSunDisk, const std::string& scenePanorama) {
-        auto source = EnvironmentCaptureSource::FromScene(panoramaOverride ? nullptr : atmosphere,
+    bool EnvironmentMapRenderer::UpdateEnvironment(const Atmosphere *atmosphere, bool includeSunDisk,
+                                                   const EnvironmentMap *environment) {
+        auto source = EnvironmentCaptureSource::FromScene(atmosphere,
                                                           __EngineConfig.rendererExposure,
-                                                          panoramaOverride ? std::string{} : scenePanorama);
+                                                          environment);
         source.includeSunDisk = !source.scattering || includeSunDisk;
-        if (!requested && !capture.NeedsBake(source, __EnvironmentMapConfig.atmosphereRefreshSeconds)) return;
+        if (!requested && !capture.NeedsBake(source, __EnvironmentMapConfig.atmosphereRefreshSeconds)) return false;
         GenerateEnvironmentMap(source);
         capture.Complete(source);
         requested = false;
+        return true;
     }
 
     void EnvironmentMapRenderer::GenerateEnvironmentMap(const EnvironmentCaptureSource &source) {
@@ -192,7 +193,8 @@ namespace Prehistoric {
             } else {
                 environmentMapPipeline->BindPipeline(nullptr);
                 static_cast<GLEnvironmentMapShader *>(environmentMapShader.pointer)->UpdateUniforms(
-                    Vector2f((float) equirectangularMap->getWidth(), (float) equirectangularMap->getHeight()));
+                    Vector2f((float) equirectangularMap->getWidth(), (float) equirectangularMap->getHeight()),
+                    source.worldToEnvironment);
                 environmentMapPipeline->RenderPipeline();
                 environmentMapPipeline->UnbindPipeline();
             }

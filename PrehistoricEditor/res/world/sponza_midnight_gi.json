@@ -1,4 +1,5 @@
 {
+  "sky_schema": 1,
   "screen_space_reflections": true,
   "ambient_occlusion": {
     "enabled": true,

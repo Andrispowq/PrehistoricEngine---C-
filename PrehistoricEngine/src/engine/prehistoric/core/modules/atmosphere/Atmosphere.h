@@ -5,22 +5,21 @@
 
 #include "prehistoric/core/node/component/light/Light.h"
 
-namespace Prehistoric
-{
-	class Atmosphere : public GameObject
-	{
-	public:
-		void PreRender(Renderer* renderer) override;
+namespace Prehistoric {
+    class Atmosphere : public GameObject {
+    public:
+        void PreRender(Renderer *renderer) override;
 
-		Vector3f getSunPosition() const { return sun->getParent()->getWorldTransform().getPosition(); }
-		inline Light* getSun() const { return sun; }
-		inline void setSun(Light* sun) { this->sun = sun; sun->setIlluminate(false); }
+        Vector3f getSunPosition() const { return sun->getParent()->getWorldTransform().getPosition(); }
+        inline Light *getSun() const { return sun; }
 
-		static std::unique_ptr<GameObject> CreateSun();
+        void setSun(Light *sun);
 
-	private:
-		Light* sun = nullptr;
-	};
+        static std::unique_ptr<GameObject> CreateSun();
+
+    private:
+        Light *sun = nullptr;
+    };
 };
 
 #endif

@@ -5,15 +5,16 @@
 
 namespace Prehistoric {
     class RendererComponent;
+    class Scene;
 }
 
 class SceneHierarchyPanel {
 public:
     SceneHierarchyPanel() = default;
 
-    SceneHierarchyPanel(Prehistoric::GameObject *root);
+    SceneHierarchyPanel(Prehistoric::Scene *scene);
 
-    void SetContext(Prehistoric::GameObject *root);
+    void SetContext(Prehistoric::Scene *scene);
 
     void InvalidateSelectionContext() {
         revealSelection = false;
@@ -38,6 +39,8 @@ private:
 private:
     bool revealSelection = false;
     std::optional<uint32_t> selectedSubmesh;
+    Prehistoric::Scene *scene;
+    std::string actionError;
     Prehistoric::GameObject *root;
     Prehistoric::GameObject *selectionContext = nullptr;
 };

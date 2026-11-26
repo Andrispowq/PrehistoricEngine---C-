@@ -15,11 +15,9 @@ frames.
 
 ## Remaining work
 
-**Environment as a world object (next phase).** After
-the [settings reorganisation](../BUILDING.md#editor-render-settings),
-make an environment map a placeable GameObject. Enforce one world lighting source: atmosphere or environment map,
-never both. Define transform semantics, migrate existing worlds and HDR overrides, and validate editor operations
-and save/load round-trips before removing the top-right environment selector. This is not part of the menu change.
+Environment Map GameObjects and exclusive atmosphere/environment ownership are implemented. See
+[editor settings and world migration](../BUILDING.md#editor-render-settings). Local probes and spatially varying
+lighting remain separate future work; environment position and scale do not affect distant lighting.
 
 **Live rendering-backend switching (planned).** Allow switching between OpenGL and Vulkan only when both are
 supported on the host. This requires more than changing the API setting: preserve the scene, unsaved edits, camera,
@@ -57,7 +55,7 @@ depth-aware blur, jittered HDR accumulation and history rejection share shader m
 and remaining native OpenGL verification.
 
 1. **Render Settings organisation completed.** Seven focused submenus now contain rendering, environment baking,
-   diagnostics and interaction controls. The top-right Environment panel contains only the HDR selector.
+   diagnostics and interaction controls. HDR selection lives in Environment Map object Properties.
 2. **Research variable-sized voxels.** Compare sparse voxel octrees, sparse bricks, and per-mesh
    resolution selected from geometric detail against the current uniform base grid and occupancy mips.
    Measure memory, traversal cost, rebuild cost for moving meshes, and light leakage across resolution
@@ -123,9 +121,9 @@ to use the Vulkan backend. Both paths open Midnight Sponza. Both editors enable 
 
 The [editor panels](../PrehistoricEditor/src/EditorLayer.cpp) share the scene
 hierarchy, inspector, File menu, statistics, texture browser and environment
-controls. A first-run layout docks Scene Hierarchy above Properties, with a visible
-Stats panel below Environment on the right of the main window. Saved layouts retain their other
-panel positions; Stats is migrated into its own dock below Environment. Stats remains docked and
+controls. A first-run layout docks Scene Hierarchy on the left, with a visible
+Stats panel below Properties on the right of the main window. The object list occupies the left side.
+Saved Environment docks migrate to Properties. Stats remains docked and
 cannot be covered by another panel's tab.
 The editor keeps rendering when focus moves to another window; minimization still pauses it.
 

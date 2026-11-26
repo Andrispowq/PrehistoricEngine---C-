@@ -48,8 +48,7 @@ namespace Prehistoric {
         background = std::make_unique<VKEnvironmentBackground>(window);
     }
 
-    void VKRenderer::RequestEnvironmentBake(bool usePanorama) {
-        panoramaOverride = usePanorama;
+    void VKRenderer::RequestEnvironmentBake() {
         bakeRequested = true;
     }
 
@@ -59,11 +58,11 @@ namespace Prehistoric {
 
     void VKRenderer::UpdateEnvironmentLighting() {
         auto capture = EnvironmentCaptureSource::FromScene(
-            !panoramaOverride && __AtmosphereConfig.scatteringEnabled ? atmosphere : nullptr, 0,
-            panoramaOverride ? std::string{} : sceneEnvironmentMap);
+            atmosphere, 0, environmentObject);
         capture.includeSunDisk = !capture.scattering || ShadowCascades::FindSun(*this) != atmosphere->getSun();
         if (!bakeRequested && !environmentCapture.NeedsBake(capture, __EnvironmentMapConfig.atmosphereRefreshSeconds))
             return;
+        ResetTemporalHistory();
         bool captureSky = capture.scattering;
         auto *device = static_cast<VKDevice *>(window->getContext()->getDevices());
         VkDescriptorImageInfo source{};
@@ -99,7 +98,7 @@ namespace Prehistoric {
             ResourceLoader::LoadShaderVK(captureShader),
             ResourceLoader::LoadShaderVK("vulkan/ibl/ibl_CS.spv"), VKEnvironmentLighting::DefaultLutSize,
             VKEnvironmentLighting::DefaultSamples, captureSky ? &capture.sky : nullptr, environmentLighting.get(),
-            capture.includeSunDisk);
+            capture.includeSunDisk, capture.worldToEnvironment.m);
         environmentCapture.Complete(capture);
         bakeRequested = false;
         if (!captureSky && !fallback) background->SetPrefilter(environmentLighting->getPrefilter());
@@ -264,7 +263,7 @@ namespace Prehistoric {
                     camera->setViewMatrix(pass.view);
                     camera->setProjectionMatrix(pass.projection);
                     background->Draw(buffer->getCommandBuffer(), camera,
-                                     __AtmosphereConfig.scatteringEnabled ? atmosphere : nullptr,
+                                     atmosphere,
                                      environmentPreviewLod);
                     camera->setViewMatrix(view);
                     camera->setProjectionMatrix(projection);
@@ -283,7 +282,7 @@ namespace Prehistoric {
         renderpass->BeginRenderpass(buffer, swapchain->getClearColour(), nullptr,
                                     UseTemporalEffects() || depthOfField.active() || !getVolumetricSpheres().empty());
         background->Draw(buffer->getCommandBuffer(), camera,
-                         __AtmosphereConfig.scatteringEnabled ? atmosphere : nullptr, environmentPreviewLod);
+                         atmosphere, environmentPreviewLod);
         ProcessDraws(buffer);
         if (voxelGI)
             renderpass->Voxels(voxelResolution, true).Mark(buffer->getCommandBuffer(), VKVoxelView::Shading, true);

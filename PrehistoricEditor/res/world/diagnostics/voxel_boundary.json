@@ -1,4 +1,5 @@
 {
+  "sky_schema": 1,
   "name": "Voxels | Shadows and grid boundary",
   "initial_camera": {
     "position": [

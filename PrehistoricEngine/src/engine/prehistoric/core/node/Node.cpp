@@ -3,103 +3,95 @@
 
 #include "prehistoric/core/CoreEngine.h"
 #include "GameObject.h"
+#include "prehistoric/core/scene/Scene.h"
 
-namespace Prehistoric
-{
-    void Node::PreUpdate(CoreEngine* engine)
-    {
+namespace Prehistoric {
+    Scene *Node::GetScene() const {
+        for (auto *node = this; node; node = node->parent)
+            if (node->sceneOwner) return node->sceneOwner;
+        return nullptr;
+    }
+
+    void Node::setEnabled(bool value) {
+        if (!value && !sceneOwner) {
+            if (auto *scene = GetScene()) scene->CheckRemoval(this);
+        }
+        enabled = value;
+    }
+
+    void Node::PreUpdate(CoreEngine *engine) {
         if (!enabled)
             return;
 
-        for (auto& child : children)
-        {
+        for (auto &child: children) {
             child.second->PreUpdate(engine);
         }
     }
 
-    void Node::PreRender(Renderer* renderer)
-    {
+    void Node::PreRender(Renderer *renderer) {
         if (!enabled)
             return;
 
-        for (auto& child : children)
-        {
+        for (auto &child: children) {
             child.second->PreRender(renderer);
         }
     }
 
-    Node* Node::AddChild(const std::string& key, Node* child)
-    {
+    Node *Node::AddChild(const std::string &key, Node *child) {
+        if (Scene::IsSky(this)) throw std::runtime_error("Sky objects cannot own child objects");
+        if (!child || child->parent) throw std::runtime_error("Child is already attached or null");
+        if (auto *scene = GetScene()) scene->CheckAttach(child);
         child->parent = this;
         child->setName(key);
 
         GUID guid = GenerateGUID(key);
 
         // The time/name GUID can collide when sibling patches are built in the same update.
-        while (!children.try_emplace(guid, child).second)
-        {
+        while (!children.try_emplace(guid, child).second) {
             ++guid;
         }
         return child;
     }
 
-    Node* Node::getChild(const std::string& key) const
-    {
-        for (auto& entry : children)
-        {
-            if (entry.second->name == key)
-            {
+    Node *Node::getChild(const std::string &key) const {
+        for (auto &entry: children) {
+            if (entry.second->name == key) {
                 return entry.second.get();
             }
         }
         return nullptr;
     }
 
-    void Node::RemoveChild(Node* node)
-    {
-        for (auto& entry : children)
-        {
-            if (entry.second.get() == node)
-            {
+    void Node::RemoveChild(Node *node) {
+        if (auto *scene = GetScene()) scene->CheckRemoval(node);
+        for (auto &entry: children) {
+            if (entry.second.get() == node) {
                 children.erase(entry.first);
                 return;
             }
         }
     }
 
-    void Node::RemoveChild(const std::string& name)
-    {
-        for (auto& entry : children)
-        {
-            if (entry.second->name == name)
-            {
-                children.erase(entry.first);
-                return;
-            }
-        }
+    void Node::RemoveChild(const std::string &name) {
+        if (auto *child = getChild(name)) RemoveChild(child);
     }
 
-    std::unordered_map<GUID, Node*> Node::getChildrenByID() const
-    {
-        std::unordered_map<GUID, Node*> map;
+    std::unordered_map<GUID, Node *> Node::getChildrenByID() const {
+        std::unordered_map<GUID, Node *> map;
         map.reserve(children.size());
 
-        for (const auto& elem : children)
-        {
+        for (const auto &elem: children) {
             map.insert(std::make_pair(elem.first, elem.second.get()));
         }
 
         return map;
-
     }
 
-    std::unordered_map<std::string, Node*> Node::getChildren() const
-    {
-        std::unordered_map<std::string, Node*> map;
+    std::unordered_map<std::string, Node *> Node::getChildren() const {
+        std::unordered_map<std::string, Node *> map;
         map.reserve(children.size());
 
-        for (const auto& elem : children)
-        {
+        for (const auto &elem: children) {
             map.insert(std::make_pair(elem.second->name, elem.second.get()));
         }
 

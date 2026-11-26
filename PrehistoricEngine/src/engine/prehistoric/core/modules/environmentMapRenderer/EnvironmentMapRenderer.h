@@ -25,9 +25,9 @@ namespace Prehistoric {
 
         virtual ~EnvironmentMapRenderer();
 
-        void UpdateEnvironment(const Atmosphere *atmosphere, bool includeSunDisk, const std::string& scenePanorama);
+        bool UpdateEnvironment(const Atmosphere *atmosphere, bool includeSunDisk, const EnvironmentMap *environment);
 
-        void RequestBake(bool usePanorama);
+        void RequestBake();
 
         void RenderCube(Camera *camera, float lod);
 
@@ -43,7 +43,6 @@ namespace Prehistoric {
         void GenerateEnvironmentMap(const EnvironmentCaptureSource &source);
 
         AtmosphereCapture capture;
-        bool panoramaOverride = false;
         bool requested = false;
         uint32_t captureDepthSize = 0;
         GLAtmospherePass &atmospherePass;

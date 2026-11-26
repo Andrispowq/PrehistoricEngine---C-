@@ -3,21 +3,20 @@
 
 #include "prehistoric/application/Application.h"
 
-namespace Prehistoric
-{
-	GLEnvironmentMapShader::GLEnvironmentMapShader()
-	{
-		AddShader(ResourceLoader::LoadShaderGL("opengl/environmentMap/environmentMap_CS.glsl"), COMPUTE_SHADER);
+namespace Prehistoric {
+    GLEnvironmentMapShader::GLEnvironmentMapShader() {
+        AddShader(ResourceLoader::LoadShaderGL("opengl/environmentMap/environmentMap_CS.glsl"), COMPUTE_SHADER);
 
-		CompileShader();
+        CompileShader();
 
-		AddUniform("equirectangularMapResolution");
-		AddUniform("resolution");
-	}
+        AddUniform("equirectangularMapResolution");
+        AddUniform("resolution");
+        AddUniform("worldToEnvironment");
+    }
 
-	void GLEnvironmentMapShader::UpdateUniforms(Vector2f equirectMapRes) const
-	{
-		SetUniform("equirectangularMapResolution", equirectMapRes);
-		SetUniformf("resolution", (float)__EnvironmentMapConfig.environmentMapResolution);
-	}
+    void GLEnvironmentMapShader::UpdateUniforms(Vector2f equirectMapRes, const Matrix4f &rotation) const {
+        SetUniform("equirectangularMapResolution", equirectMapRes);
+        SetUniform("worldToEnvironment", rotation);
+        SetUniformf("resolution", (float) __EnvironmentMapConfig.environmentMapResolution);
+    }
 };

@@ -14,6 +14,7 @@ namespace Prehistoric {
     class AssembledAssetManager;
     class Light;
     class Atmosphere;
+    class EnvironmentMap;
 
     //The light structure used in the internal Forward+ renderer calculations
     struct InternalLight {
@@ -58,7 +59,7 @@ namespace Prehistoric {
 
         bool RequestSampleCount(unsigned samples);
 
-        virtual void RequestEnvironmentBake(bool usePanorama) = 0;
+        virtual void RequestEnvironmentBake() = 0;
 
         bool screenSpaceReflections = false;
         float bloomIntensity = 0.06f;
@@ -125,7 +126,16 @@ namespace Prehistoric {
 
         void RegisterLight(Light *light);
 
-        void RegisterAtmosphere(const Atmosphere &sky) { atmosphere = &sky; }
+        void RegisterAtmosphere(const Atmosphere &sky) {
+            if (atmosphere || environmentObject) throw std::runtime_error("Multiple world sky sources submitted");
+            atmosphere = &sky;
+        }
+
+        void RegisterEnvironmentMap(const EnvironmentMap &sky) {
+            if (atmosphere || environmentObject) throw std::runtime_error("Multiple world sky sources submitted");
+            environmentObject = &sky;
+        }
+
         const Atmosphere *getAtmosphere() const { return atmosphere; }
 
         void RegisterVolumetricSphere(const VolumetricSphere &sphere) { volumetricSpheres.push_back(sphere); }
@@ -175,13 +185,11 @@ namespace Prehistoric {
             }
         }
 
-        void SetSceneEnvironmentMap(const std::string &location) { sceneEnvironmentMap = location; }
-
     protected:
         bool ApplyPendingSampleCount();
 
         std::optional<unsigned> pendingSampleCount;
-        std::string sceneEnvironmentMap;
+        const EnvironmentMap *environmentObject = nullptr;
 
         virtual void UpdateEnvironmentLighting() = 0;
 

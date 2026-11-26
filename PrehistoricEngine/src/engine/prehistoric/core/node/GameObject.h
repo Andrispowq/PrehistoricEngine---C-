@@ -6,88 +6,88 @@
 #include "prehistoric/core/node/component/Component.h"
 #include "prehistoric/core/node/Node.h"
 
-namespace Prehistoric
-{
-	typedef void(*UpdateFunction)(GameObject*, float); //The object, and the delta time
+namespace Prehistoric {
+    typedef void (*UpdateFunction)(GameObject *, float); //The object, and the delta time
 
-	class GameObject : public Node
-	{
-	public:
-		GameObject() : updateFunction(nullptr) {}
-		virtual ~GameObject() {}
+    class GameObject : public Node {
+    public:
+        GameObject() : updateFunction(nullptr) {
+        }
 
-		void PreUpdate(CoreEngine* engine) override;
-		void PreRender(Renderer* renderer) override;
+        virtual ~GameObject() {
+        }
 
-		void setUpdateFunction(UpdateFunction func) { this->updateFunction = func; }
+        void PreUpdate(CoreEngine *engine) override;
 
-		GameObject* AddComponent(const std::string& name, Component* component);
-		Component* GetComponent(const std::string& name) const;
+        void PreRender(Renderer *renderer) override;
 
-		std::vector<GameObject*> getAllChildren() const;
-		std::unordered_map<std::string, Component*> getComponents() const;
+        void setUpdateFunction(UpdateFunction func) { this->updateFunction = func; }
 
-		template<typename T> 
-		T* GetComponent() const;
+        GameObject *AddComponent(const std::string &name, Component *component);
 
-		template<typename T>
-		bool HasComponent() const;
+        Component *GetComponent(const std::string &name) const;
 
-		template<typename T>
-		void RemoveComponent();
+        std::vector<GameObject *> getAllChildren() const;
 
-		GameObject(const GameObject&) = default;
-	protected:
-		std::unordered_map<std::string, std::unique_ptr<Component>> components;
-		UpdateFunction updateFunction;
-	};
+        std::unordered_map<std::string, Component *> getComponents() const;
 
-	template<typename T>
-	inline T* GameObject::GetComponent() const
-	{
-		for (auto& component : components)
-		{
-			if (component.second->getComponentType() == T::getStaticComponentType())
-			{
-				return (T*)component.second.get();
-			}
-		}
-		
-		return nullptr;
-	}
+        template<typename T>
+        T *GetComponent() const;
 
-	template<typename T>
-	inline bool GameObject::HasComponent() const
-	{
-		for (auto& component : components)
-		{
-			if (component.second->getComponentType() == T::getStaticComponentType())
-			{
-				return true;
-			}
-		}
+        template<typename T>
+        bool HasComponent() const;
 
-		return false;
-	}
+        template<typename T>
+        void RemoveComponent();
 
-	template<typename T>
-	inline void GameObject::RemoveComponent()
-	{
-		std::vector<std::string> keys;
+        GameObject(const GameObject &) = delete;
 
-		for (auto& component : components)
-		{
-			if (component.second->getComponentType() == T::getStaticComponentType())
-			{
-				keys.push_back(component.first);
-			}
-		}
+        std::unique_ptr<GameObject> Clone() const;
 
-		for (auto& elem : keys)
-		{
-			components.erase(elem);
-		}
-	}
+        void CheckComponentRemoval(const Component *component) const;
+
+    protected:
+        std::unordered_map<std::string, std::unique_ptr<Component> > components;
+        UpdateFunction updateFunction;
+    };
+
+    template<typename T>
+    inline T *GameObject::GetComponent() const {
+        for (auto &component: components) {
+            if (component.second->getComponentType() == T::getStaticComponentType()) {
+                return (T *) component.second.get();
+            }
+        }
+
+        return nullptr;
+    }
+
+    template<typename T>
+    inline bool GameObject::HasComponent() const {
+        for (auto &component: components) {
+            if (component.second->getComponentType() == T::getStaticComponentType()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    template<typename T>
+    inline void GameObject::RemoveComponent() {
+        std::vector<std::string> keys;
+
+        for (auto &component: components) {
+            if (component.second->getComponentType() == T::getStaticComponentType()) {
+                CheckComponentRemoval(component.second.get());
+                keys.push_back(component.first);
+            }
+        }
+
+        for (auto &elem: keys) {
+            components.erase(elem);
+        }
+    }
 };
 
 #endif

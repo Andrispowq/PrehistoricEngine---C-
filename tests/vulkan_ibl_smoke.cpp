@@ -83,8 +83,9 @@ struct Resources {
     }
 };
 
-static void RunIBL(VkPhysicalDevice gpu, uint32_t family, const std::vector<char>& conversion, const std::vector<char>& code,
-                   const std::vector<char>& probe, const std::vector<char>& capture, const char* hdrPath) {
+static void RunIBL(VkPhysicalDevice gpu, uint32_t family, const std::vector<char> &conversion,
+                   const std::vector<char> &code,
+                   const std::vector<char> &probe, const std::vector<char> &capture, const char *hdrPath) {
     Resources resources;
     uint32_t count;
     Check(vkEnumerateDeviceExtensionProperties(gpu, nullptr, &count, nullptr));
@@ -92,8 +93,9 @@ static void RunIBL(VkPhysicalDevice gpu, uint32_t family, const std::vector<char
     Check(vkEnumerateDeviceExtensionProperties(gpu, nullptr, &count, extensions.data()));
     std::vector<const char *> enabled;
     for (const auto &extension: extensions)
-        if (!strcmp(extension.extensionName, "VK_KHR_portability_subset")) enabled.push_back(
-            "VK_KHR_portability_subset");
+        if (!strcmp(extension.extensionName, "VK_KHR_portability_subset"))
+            enabled.push_back(
+                "VK_KHR_portability_subset");
     float priority = 1;
     VkDeviceQueueCreateInfo queueInfo{VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO};
     queueInfo.queueFamilyIndex = family;
@@ -223,7 +225,7 @@ static void RunIBL(VkPhysicalDevice gpu, uint32_t family, const std::vector<char
     Check(vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &resources.pipeline));
 
     std::unique_ptr<VKEnvironmentLighting> previousLighting;
-    for (int pass = 0; pass < 6; ++pass) {
+    for (int pass = 0; pass < 7; ++pass) {
         // Black, constant HDR, analytic directional environment, then the actual
         // sample HDR with its small, bright sun. Exercise every source mip.
         float *mapped;
@@ -236,7 +238,11 @@ static void RunIBL(VkPhysicalDevice gpu, uint32_t family, const std::vector<char
                     cosf(latitude) * cosf(longitude), sinf(latitude), cosf(latitude) * sinf(longitude)
                 };
                 for (int c = 0; c < 3; ++c)
-                    mapped[(y * width + x) * 4 + c] = pass == 0 ? 0 : float(2 + c) + (pass == 2 ? direction[c] : 0);
+                    mapped[(y * width + x) * 4 + c] = pass == 0
+                                                          ? 0
+                                                          : float(2 + c) + ((pass == 2 || pass == 6)
+                                                                                ? direction[c]
+                                                                                : 0);
                 mapped[(y * width + x) * 4 + 3] = 1;
             }
         }
@@ -268,16 +274,20 @@ static void RunIBL(VkPhysicalDevice gpu, uint32_t family, const std::vector<char
             {5.5e-6f, 13e-6f, 22.4e-6f, 21e-6f},
             {6371000, 6471000, 8000, 1200}, {0.758f, midnight ? 0.1f : 0.0f}
         };
-        bool captureSky = pass >= 4;
+        bool captureSky = pass == 4 || pass == 5;
+        const float rotation[16] = {-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1};
         VkDescriptorImageInfo panorama{resources.sampler, resources.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
         VkImageView previousLut = previousLighting ? previousLighting->getBRDF().imageView : VK_NULL_HANDLE;
         auto nextLighting = std::make_unique<VKEnvironmentLighting>(gpu, device, queue, family,
-                                       captureSky ? VkDescriptorImageInfo{} : panorama,
-                                       16, 32, 4, 128, captureSky ? capture : conversion, code, 32, 512,
-                                       captureSky ? &sky : nullptr, previousLighting.get());
+                                                                    captureSky ? VkDescriptorImageInfo{} : panorama,
+                                                                    16, 32, 4, 128, captureSky ? capture : conversion,
+                                                                    code, 32, 512,
+                                                                    captureSky ? &sky : nullptr, previousLighting.get(),
+                                                                    true, pass == 6 ? rotation : nullptr);
         previousLighting = std::move(nextLighting);
-        const auto& lighting = *previousLighting;
-        if (previousLut && previousLut != lighting.getBRDF().imageView) throw std::runtime_error("Source change replaced BRDF LUT");
+        const auto &lighting = *previousLighting;
+        if (previousLut && previousLut != lighting.getBRDF().imageView) throw std::runtime_error(
+            "Source change replaced BRDF LUT");
         if (lighting.getMaxReflectionLOD() != 3) throw std::runtime_error("Incorrect reflection mip range");
         VkDescriptorImageInfo images[] = {lighting.getIrradiance(), lighting.getPrefilter(), lighting.getBRDF()};
         VkDescriptorImageInfo source = lighting.getEnvironment();
@@ -316,10 +326,11 @@ static void RunIBL(VkPhysicalDevice gpu, uint32_t family, const std::vector<char
                 } else if (pass < 2) {
                     if (fabsf(value - (pass == 0 ? 0 : float(2 + c) * (i < 6 ? 3.14159265f : 1.0f))) > 0.015f)
                         throw std::runtime_error("Constant HDR energy not preserved");
-                } else if (pass == 2 && i < 12) {
+                } else if ((pass == 2 || pass == 6) && i < 12) {
                     int face = i % 6;
                     float direction = face / 2 == c ? (face % 2 ? -1.0f : 1.0f) : 0.0f;
                     if (c == 2) direction = -direction;
+                    if (pass == 6 && c != 1) direction = -direction;
                     float expected = float(2 + c) + direction * (i < 6 ? 0.75f : 1.0f);
                     if (i < 6) value /= 3.14159265f;
                     if (fabsf(value - expected) > 0.09f)
@@ -330,12 +341,10 @@ static void RunIBL(VkPhysicalDevice gpu, uint32_t family, const std::vector<char
         if (mapped[30 * 4] < 0.1f) throw std::runtime_error("BRDF integration returned zero");
         if (pass == 2 && mapped[24 * 4] >= mapped[6 * 4] - 0.15f)
             throw std::runtime_error("Roughness did not broaden reflections");
-        if (pass == 4)
-        {
+        if (pass == 4) {
             float mirrorSun = mapped[8 * 4];
             float roughSun = mapped[26 * 4];
-            if (mirrorSun < 10 || roughSun >= mirrorSun || mapped[2 * 4] <= 0)
-            {
+            if (mirrorSun < 10 || roughSun >= mirrorSun || mapped[2 * 4] <= 0) {
                 throw std::runtime_error("Sky capture lost solar energy, diffuse lighting, or roughness response");
             }
         }

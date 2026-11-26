@@ -393,18 +393,47 @@ The editor's **Render Settings** menu groups controls by purpose:
 | Diagnostics              | Wireframe, temporal debug views, history reset, voxel view and GPU timings                                           |
 | Editor interaction       | Viewport pick distance                                                                                               |
 
-The top-right **Environment** panel contains only the HDR filename and file selector.
-Existing dock positions are migrated to its new display name. Baking parameters apply when baking is requested;
-**Regenerate from scene** uses the scene's atmosphere or environment map, replacing any loaded HDR override.
-Selecting an HDR file requests a bake from that file. This reorganisation preserves the existing settings and
-serialization behavior; environment objects and exclusive atmosphere/environment ownership remain future work.
+The object list occupies the left side. **Properties** is above **Stats** on the right; the Viewport and
+Asset Manager remain in the centre. Existing Environment docks migrate to Properties. HDR selection is now in the
+selected Environment Map object's Properties; there is no separate Environment panel.
 
-Validated on Apple M1/MoltenVK with a full Debug build and the native editor lifecycle smoke
-(`python3 tests/temporal_render_smoke.py --api Vulkan --app PrehistoricEditor --samples 1 --width 960 --height 540`).
-Rendered captures show the selector-only Environment panel and Stats below it. Rebaking, resizing, temporal history
-resets and live MSAA transitions passed without reported Vulkan validation errors. Native menu click-through and
-saved-layout migration were not visually verified because UI automation could not attach to the standalone binary.
-OpenGL runtime verification remains unavailable on this host (OpenGL 4.1 versus the engine's requested 4.5).
+Every world owns exactly one enabled Atmosphere or Environment Map GameObject. Use **Replace with Atmosphere** or
+**Replace with Environment Map** in Properties to switch the source. Sky objects cannot be duplicated, disabled,
+deleted without replacement, or used as parents. An atmosphere's sun cannot be deleted or stripped of its Light
+component while referenced. Ordinary lights remain independent when changing sky type.
+
+Environment Maps store a portable asset reference and transform. Only rotation affects the sky and baked lighting;
+position and scale are retained for scene placement. File selection is validated before replacing the existing asset.
+Changes to the source or rotation trigger rebaking and temporal history invalidation. **Render Settings → Environment
+baking → Regenerate lighting** rebakes the current source; resolutions, mip counts and preview LOD remain there.
+
+Right-click an object and choose **Duplicate Object** to copy its transform, components and descendants with fresh
+identities and unique names. Meshes, textures and base materials are shared assets; per-instance submesh material
+overrides are copied. Generic objects with renderer, light, volume, audio and sphere-physics components are supported.
+Unsupported specialised objects/components report an error without inserting a partial duplicate.
+
+World JSON now writes `sky_schema: 1` and one `world_objects` entry of type `scattering_atmosphere` or
+`environment_map`.
+An environment entry contains `name`, `asset`, and `transform` (`position`, `rotation`, `scale`). Legacy
+`environment_map` fields are converted on load; legacy files with neither source receive the configured default HDR.
+Conflicting sources are rejected. Generic object records retain `parent` links and enabled state across save/load.
+Terrain records retain their configuration instead of serializing generated terrain geometry and textures.
+
+Run the all-world scene contracts, round-trips and rendered-frame checks with:
+
+```sh
+python3 tests/temporal_render_smoke.py --api Vulkan --app PrehistoricEditor --world-suite --width 960 --height 540
+python3 tests/vulkan_ibl_smoke.py
+```
+
+Validation on Apple M1/MoltenVK: the full Debug build passed; all 19 checked-in JSON and legacy `.wrld` worlds
+loaded, round-tripped and rendered. Scene contracts covered source exclusivity, replacement, failed HDR selection,
+rotation-only invalidation, legacy migration, New World, duplicated hierarchies and independent mesh overrides.
+The native editor lifecycle passed resize, minimize/restore, rebake, temporal reset and live MSAA changes.
+Rendered captures verified both fresh and migrated panel layouts. The Vulkan runs reported no validation errors.
+
+The IBL readback test includes rotated directional lighting. OpenGL runtime checks require a host supporting the
+engine's requested OpenGL 4.5; macOS exposes only 4.1.
 
 ## Motion blur and temporal antialiasing
 
@@ -521,7 +550,7 @@ green emitter sits in the top-floor side aisle above the amber cube. Toggle
 
 For the same emitters under a night sky, launch with
 `PREHISTORIC_WORLD=res/world/sponza_night_gi.json` from `Prehistoric/`, or open
-that world in the OpenGL editor. The world's optional `environment_map` field
+that world in the OpenGL editor. The world's Environment Map object
 selects the shared Milky Way HDR panorama. This scene has no atmosphere or sun.
 With bloom off, toggle **G** at a fixed camera position to compare emissive
 bounce on nearby surfaces. The panorama supplies the background and environment

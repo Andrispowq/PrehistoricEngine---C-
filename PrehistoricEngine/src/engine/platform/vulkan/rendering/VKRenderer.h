@@ -59,7 +59,7 @@ namespace Prehistoric {
         Vector3f voxelCenter{0.0f};
         float voxelExtent = 400.0f;
 
-        void RequestEnvironmentBake(bool usePanorama) override;
+        void RequestEnvironmentBake() override;
 
         Texture *getOutputTexture() const override;
 
@@ -111,7 +111,6 @@ namespace Prehistoric {
         void FinishFrame() override;
 
         AtmosphereCapture environmentCapture;
-        bool panoramaOverride = false;
         bool bakeRequested = false;
         bool frameReady = false;
     };

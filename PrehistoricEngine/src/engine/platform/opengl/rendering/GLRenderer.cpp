@@ -138,8 +138,9 @@ namespace Prehistoric {
                      });
     }
 
-    void GLRenderer::RequestEnvironmentBake(bool usePanorama) {
-        environmentLighting->RequestBake(usePanorama);
+    void GLRenderer::RequestEnvironmentBake() {
+        environmentLighting->RequestBake();
+        ResetTemporalHistory();
     }
 
     void GLRenderer::DrawBackground(Camera *camera) {
@@ -150,8 +151,9 @@ namespace Prehistoric {
     void GLRenderer::UpdateEnvironmentLighting() {
         // The directional light already supplies direct sun with scene shadows.
         const auto *sun = ShadowCascades::FindSun(*this);
-        environmentLighting->UpdateEnvironment(atmosphere, !atmosphere || sun != atmosphere->getSun(),
-                                               sceneEnvironmentMap);
+        if (environmentLighting->UpdateEnvironment(atmosphere, !atmosphere || sun != atmosphere->getSun(),
+                                                   environmentObject))
+            ResetTemporalHistory();
     }
 
     void GLRenderer::RenderScene() {

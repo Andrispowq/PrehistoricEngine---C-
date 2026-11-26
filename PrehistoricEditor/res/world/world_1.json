@@ -1,4 +1,5 @@
 {
+    "sky_schema": 1,
     "name": "testLevel",
 
     "directories": 
@@ -608,5 +609,29 @@
                 ]
             }
         ]
-    }
+    },
+    "world_objects": [
+        {
+            "name": "Environment",
+            "type": "environment_map",
+            "asset": "sample://textures/environmentMaps/cape_hill_2k.hdr",
+            "transform": {
+                "position": [
+                    0,
+                    0,
+                    0
+                ],
+                "rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "scale": [
+                    1,
+                    1,
+                    1
+                ]
+            }
+        }
+    ]
 }

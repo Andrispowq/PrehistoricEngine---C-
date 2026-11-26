@@ -3,42 +3,44 @@
 
 #include "prehistoric/core/node/component/Component.h"
 
-namespace Prehistoric
-{
-	class Renderer;
+namespace Prehistoric {
+    class Renderer;
 
-	class Light : public Component
-	{
-	public:
-		Light(const Vector3f& colour = 0, float intensity = 1, float radius = 200.0f, bool illuminate = true, bool castShadow = false);
-		virtual ~Light();
+    class Light : public Component {
+    public:
+        Light(const Vector3f &colour = 0, float intensity = 1, float radius = 200.0f, bool illuminate = true,
+              bool castShadow = false);
 
-		virtual void PreRender(Renderer* renderer) override;
+        virtual ~Light();
 
-		inline Vector3f getColour() const { return colour; }
-		inline float getIntensity() const { return intensity; }
-		inline float getRadius() const { return radius; }
+        virtual void PreRender(Renderer *renderer) override;
 
-		inline bool illuminates() const { return illuminate; }
-		inline bool castShadows() const { return castShadow; }
+        inline Vector3f getColour() const { return colour; }
+        inline float getIntensity() const { return intensity; }
+        inline float getRadius() const { return radius; }
 
-		inline void setColour(const Vector3f& colour) { this->colour = colour; }
-		inline void setIntensity(float intensity) { this->intensity = intensity; }
-		inline void setRadius(float radius) { this->radius = radius; }
+        inline bool illuminates() const { return illuminate; }
+        inline bool castShadows() const { return castShadow; }
 
-		inline void setIlluminate(bool set) { this->illuminate = set; }
-		inline void setCastShadow(bool set) { this->castShadow = set; }
+        inline void setColour(const Vector3f &colour) { this->colour = colour; }
+        inline void setIntensity(float intensity) { this->intensity = intensity; }
+        inline void setRadius(float radius) { this->radius = radius; }
 
-		static ComponentType getStaticComponentType() { return ComponentType::LightComponent; }
+        inline void setIlluminate(bool set) { this->illuminate = set; }
+        inline void setCastShadow(bool set) { this->castShadow = set; }
 
-	private:
-		Vector3f colour;
-		float intensity;
-		float radius;
+        std::unique_ptr<Component> Clone() const override { return std::make_unique<Light>(*this); }
 
-		bool illuminate;
-		bool castShadow;
-	};
+        static ComponentType getStaticComponentType() { return ComponentType::LightComponent; }
+
+    private:
+        Vector3f colour;
+        float intensity;
+        float radius;
+
+        bool illuminate;
+        bool castShadow;
+    };
 };
 
 #endif

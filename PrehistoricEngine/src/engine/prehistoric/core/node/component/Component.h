@@ -3,43 +3,52 @@
 
 #include "prehistoric/core/node/Node.h"
 
-namespace Prehistoric
-{
-	class GameObject;
+namespace Prehistoric {
+    class GameObject;
 
-	enum class ComponentType
-	{
-		General,
-		AudioComponent,
-		RenderableComponent,
-		RendererComponent,
-		LightComponent,
-		PhysicsComponent,
-		ScriptComponent,
-		CameraComponent,
-		VolumetricSphereComponent
-	};
+    enum class ComponentType {
+        General,
+        AudioComponent,
+        RenderableComponent,
+        RendererComponent,
+        LightComponent,
+        PhysicsComponent,
+        ScriptComponent,
+        CameraComponent,
+        VolumetricSphereComponent
+    };
 
-	class Component
-	{
-	public:
-		Component() : parent(nullptr), type(ComponentType::General) {}
-		virtual ~Component() {}
+    class Component {
+    public:
+        Component() : parent(nullptr), type(ComponentType::General) {
+        }
 
-		virtual void OnInit() {}
+        virtual ~Component() {
+        }
 
-		virtual void PreUpdate(CoreEngine* engine) {}
-		virtual void PreRender(Renderer* renderer) {}
+        virtual std::unique_ptr<Component> Clone() const {
+            throw std::runtime_error("This component does not support duplication");
+        }
 
-		inline GameObject* getParent() const { return parent; }
-		inline void setParent(GameObject* parent) { this->parent = parent; }
+        virtual void OnInit() {
+        }
 
-		virtual ComponentType getComponentType() const { return type; };
-		static ComponentType getStaticComponentType() { return ComponentType::ScriptComponent; };
-	protected:
-		GameObject* parent;
-		ComponentType type;
-	};
+        virtual void PreUpdate(CoreEngine *engine) {
+        }
+
+        virtual void PreRender(Renderer *renderer) {
+        }
+
+        inline GameObject *getParent() const { return parent; }
+        inline void setParent(GameObject *parent) { this->parent = parent; }
+
+        virtual ComponentType getComponentType() const { return type; };
+        static ComponentType getStaticComponentType() { return ComponentType::ScriptComponent; };
+
+    protected:
+        GameObject *parent;
+        ComponentType type;
+    };
 };
 
 #endif

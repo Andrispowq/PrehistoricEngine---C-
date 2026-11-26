@@ -1,6 +1,6 @@
 {
+  "sky_schema": 1,
     "name": "Sponza Nighttime Voxel GI",
-    "environment_map": "sample://textures/environmentMaps/Milkyway_small.hdr",
     "initial_camera": {
         "position": [-21, -42, -3],
         "forward": [-1, 0.08, 0],
@@ -49,7 +49,30 @@
             ]
         }
     ],
-    "world_objects": [],
+  "world_objects": [
+    {
+      "name": "Environment",
+      "type": "environment_map",
+      "asset": "sample://textures/environmentMaps/Milkyway_small.hdr",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    }
+  ],
     "root": {
         "children": [
             {

@@ -11,6 +11,12 @@
 #include <json.hpp>
 
 namespace Prehistoric {
+    static bool IsTerrainNode(Node *node) {
+        for (; node; node = node->getParent())
+            if (dynamic_cast<Terrain *>(node)) return true;
+        return false;
+    }
+
     void WorldSerialiser::SerialiseWorldJSON(const std::string &worldFile, Scene *scene) {
         GameObject *root = scene->getSceneRoot();
         sceneName = scene->getName();
@@ -19,7 +25,8 @@ namespace Prehistoric {
 
         nlohmann::json file_json;
         file_json["name"] = sceneName;
-        if (!scene->getEnvironmentMap().empty()) file_json["environment_map"] = scene->getEnvironmentMap();
+        scene->ValidateSky();
+        file_json["sky_schema"] = 1;
         file_json["temporal"] = {
             {"motion_blur", scene->temporal.motionBlur},
             {"antialiasing", scene->temporal.antialiasing}, {"shutter_angle", scene->temporal.shutterAngle},
@@ -170,8 +177,30 @@ namespace Prehistoric {
             auto worldObjects = nlohmann::json::array();
 
             std::vector<GameObject *> children = root->getAllChildren();
-            //For now we serialise everything to be root's child
+            // Flat records retain explicit parent links and world-space transforms.
             for (auto child: children) {
+                if (IsTerrainNode(child->getParent())) continue;
+                if (const auto *terrain = dynamic_cast<const Terrain *>(child)) {
+                    worldObjects.push_back({
+                        {"name", child->getName()}, {"type", "terrain"}, {"config", terrain->GetConfigFile()}
+                    });
+                    continue;
+                }
+
+                if (const auto *environment = dynamic_cast<const EnvironmentMap *>(child)) {
+                    const auto &transform = environment->getWorldTransform();
+                    auto vec = [](const Vector3f &value) { return nlohmann::json::array({value.x, value.y, value.z}); };
+                    worldObjects.push_back({
+                        {"name", child->getName()}, {"type", "environment_map"},
+                        {"asset", environment->GetAsset()}, {
+                            "transform", {
+                                {"position", vec(transform.getPosition())}, {"rotation", vec(transform.getRotation())},
+                                {"scale", vec(transform.getScaling())}
+                            }
+                        }
+                    });
+                    continue;
+                }
                 if (const auto *atmosphere = dynamic_cast<const Atmosphere *>(child)) {
                     const auto sun = std::find_if(children.begin(), children.end(), [&](const GameObject *object) {
                         return atmosphere->getSun() && object->GetComponent<Light>() == atmosphere->getSun();
@@ -186,6 +215,9 @@ namespace Prehistoric {
                 }
                 nlohmann::json child_json;
                 child_json["name"] = child->getName();
+                child_json["enabled"] = child->isEnabled();
+                if (child->getParent() && child->getParent() != root)
+                    child_json["parent"] = child->getParent()->getName();
 
                 {
                     nlohmann::json transform_json;
@@ -316,6 +348,7 @@ namespace Prehistoric {
         std::vector<std::string> modelLocations;
         std::vector<std::string> textureLocation;
         for (auto child: children) {
+            if (IsTerrainNode(child)) continue;
             if (child->HasComponent<RendererComponent>()) {
                 RendererComponent *renderer = child->GetComponent<RendererComponent>();
 

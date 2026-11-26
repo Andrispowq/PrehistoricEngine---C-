@@ -39,7 +39,7 @@ namespace Prehistoric {
 
         EnvironmentMapRenderer &getEnvironmentLighting() const { return *environmentLighting; }
 
-        void RequestEnvironmentBake(bool usePanorama) override;
+        void RequestEnvironmentBake() override;
 
         void DrawBackground(Camera *camera);
 

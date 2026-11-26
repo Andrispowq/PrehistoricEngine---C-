@@ -54,7 +54,6 @@ private:
 
     void DrawEditorInteraction();
 
-    void DrawEnvironmentSelector(Prehistoric::Renderer &renderer);
 
     std::uint32_t statsDockId = 0;
     std::unique_ptr<SceneHierarchyPanel> scenePanel;

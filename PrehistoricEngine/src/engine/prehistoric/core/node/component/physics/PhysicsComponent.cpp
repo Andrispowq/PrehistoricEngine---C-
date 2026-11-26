@@ -1,42 +1,48 @@
 #include "Includes.hpp"
 #include "PhysicsComponent.h"
+#include "colliders/SphereCollider.h"
 
 #include "prehistoric/core/CoreEngine.h"
 
-namespace Prehistoric
-{
-	PhysicsComponent::PhysicsComponent(float mass, bool affectedByGravity)
-		: mass(mass), affectedByGravity(affectedByGravity)
-	{
-	}
+namespace Prehistoric {
+    std::unique_ptr<Component> PhysicsComponent::Clone() const {
+        auto copy = std::make_unique<PhysicsComponent>(mass, affectedByGravity);
+        copy->velocity = velocity;
+        copy->acceleration = acceleration;
+        if (collider) {
+            auto *sphere = dynamic_cast<SphereCollider *>(collider);
+            if (!sphere) throw std::runtime_error("Only sphere collider duplication is supported");
+            copy->clonedCollider = std::make_unique<SphereCollider>(*sphere);
+            copy->collider = copy->clonedCollider.get();
+        }
+        return copy;
+    }
 
-	PhysicsComponent::~PhysicsComponent()
-	{
-	}
+    PhysicsComponent::PhysicsComponent(float mass, bool affectedByGravity)
+        : mass(mass), affectedByGravity(affectedByGravity) {
+    }
 
-	void PhysicsComponent::PreUpdate(CoreEngine* engine)
-	{
-		engine->getPhysicsEngine()->addPhysicsComponent(this);
-	}
+    PhysicsComponent::~PhysicsComponent() {
+    }
 
-	void PhysicsComponent::Update(float delta)
-	{
-		if (affectedByGravity)
-		{
-			AddForce(gravity * mass * delta);
-		}
+    void PhysicsComponent::PreUpdate(CoreEngine *engine) {
+        engine->getPhysicsEngine()->addPhysicsComponent(this);
+    }
 
-		velocity += acceleration * delta;
-		parent->Move(velocity * delta);
+    void PhysicsComponent::Update(float delta) {
+        if (affectedByGravity) {
+            AddForce(gravity * mass * delta);
+        }
 
-		if (collider)
-		{
-			collider->Update(parent);
-		}
-	}
+        velocity += acceleration * delta;
+        parent->Move(velocity * delta);
 
-	void PhysicsComponent::AddForce(Vector3f force)
-	{
-		acceleration += (force / mass);
-	}
+        if (collider) {
+            collider->Update(parent);
+        }
+    }
+
+    void PhysicsComponent::AddForce(Vector3f force) {
+        acceleration += (force / mass);
+    }
 };

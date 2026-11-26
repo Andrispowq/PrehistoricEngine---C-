@@ -12,10 +12,12 @@ namespace Prehistoric {
             type = getStaticComponentType();
         }
 
-        static ComponentType getStaticComponentType() { return ComponentType::VolumetricSphereComponent; }
-        static constexpr const char* Name = "VolumetricSphere";
+        std::unique_ptr<Component> Clone() const override { return std::make_unique<VolumetricSphereComponent>(*this); }
 
-        void PreRender(Renderer* renderer) override {
+        static ComponentType getStaticComponentType() { return ComponentType::VolumetricSphereComponent; }
+        static constexpr const char *Name = "VolumetricSphere";
+
+        void PreRender(Renderer *renderer) override {
             if (radius > 0.0f && density > 0.0f) {
                 renderer->RegisterVolumetricSphere({
                     parent->getWorldTransform().getPosition(), radius, density, tint, anisotropy
@@ -25,15 +27,19 @@ namespace Prehistoric {
 
         float getRadius() const { return radius; }
         float getDensity() const { return density; }
-        const Vector3f& getTint() const { return tint; }
+        const Vector3f &getTint() const { return tint; }
         float getAnisotropy() const { return anisotropy; }
 
         void setRadius(float value) { radius = std::max(0.0f, value); }
         void setDensity(float value) { density = std::max(0.0f, value); }
-        void setTint(const Vector3f& value) {
-            tint = {std::clamp(value.x, 0.0f, 1.0f), std::clamp(value.y, 0.0f, 1.0f),
-                    std::clamp(value.z, 0.0f, 1.0f)};
+
+        void setTint(const Vector3f &value) {
+            tint = {
+                std::clamp(value.x, 0.0f, 1.0f), std::clamp(value.y, 0.0f, 1.0f),
+                std::clamp(value.z, 0.0f, 1.0f)
+            };
         }
+
         void setAnisotropy(float value) { anisotropy = std::clamp(value, -0.95f, 0.95f); }
 
     private:

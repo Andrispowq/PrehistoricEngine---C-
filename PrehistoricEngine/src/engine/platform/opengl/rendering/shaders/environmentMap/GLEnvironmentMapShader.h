@@ -7,16 +7,16 @@
 
 #include "prehistoric/common/texture/Texture.h"
 
-namespace Prehistoric
-{
-	class GLEnvironmentMapShader : public GLShader
-	{
-	public:
-		GLEnvironmentMapShader();
-		virtual ~GLEnvironmentMapShader() {}
+namespace Prehistoric {
+    class GLEnvironmentMapShader : public GLShader {
+    public:
+        GLEnvironmentMapShader();
 
-		void UpdateUniforms(Vector2f equirectMapRes) const;
-	};
+        virtual ~GLEnvironmentMapShader() {
+        }
+
+        void UpdateUniforms(Vector2f equirectMapRes, const Matrix4f &rotation) const;
+    };
 };
 
 #endif

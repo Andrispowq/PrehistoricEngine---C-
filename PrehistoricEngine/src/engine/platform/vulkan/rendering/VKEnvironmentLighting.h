@@ -19,7 +19,7 @@ namespace Prehistoric {
                               uint32_t cubeSize, const std::vector<char> &conversion, const std::vector<char> &shader,
                               uint32_t lutSize = DefaultLutSize, uint32_t samples = DefaultSamples,
                               const AtmosphereParameters *sky = nullptr, VKEnvironmentLighting *reuseLutFrom = nullptr,
-                              bool includeSunDisk = true);
+                              bool includeSunDisk = true, const float *rotation = nullptr);
 
         ~VKEnvironmentLighting();
 
@@ -56,7 +56,7 @@ namespace Prehistoric {
 
         void Bake(VkQueue queue, uint32_t queueFamily, VkDescriptorImageInfo source,
                   const std::vector<char> &conversion, const std::vector<char> &shader, uint32_t samples,
-                  const AtmosphereParameters *sky, bool includeSunDisk);
+                  const AtmosphereParameters *sky, bool includeSunDisk, const float *rotation);
 
         VkPhysicalDevice physicalDevice;
         VkDevice device;

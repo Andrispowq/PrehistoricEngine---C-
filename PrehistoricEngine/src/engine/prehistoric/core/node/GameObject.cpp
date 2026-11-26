@@ -2,8 +2,33 @@
 #include "GameObject.h"
 
 #include "prehistoric/core/CoreEngine.h"
+#include "prehistoric/core/scene/Scene.h"
 
 namespace Prehistoric {
+    void GameObject::CheckComponentRemoval(const Component *component) const {
+        if (auto *scene = GetScene()) scene->CheckComponentRemoval(component);
+    }
+
+    std::unique_ptr<GameObject> GameObject::Clone() const {
+        if (typeid(*this) != typeid(GameObject))
+            throw std::runtime_error("This specialised object does not support duplication");
+        auto copy = std::make_unique<GameObject>();
+        copy->worldTransform = worldTransform;
+        copy->enabled = enabled;
+        copy->updateFunction = updateFunction;
+        for (const auto &[name, component]: components) {
+            auto cloned = component->Clone();
+            copy->AddComponent(name, cloned.release());
+        }
+        for (const auto &[id, child]: children) {
+            auto *object = dynamic_cast<GameObject *>(child.get());
+            if (!object) throw std::runtime_error("Cannot duplicate a non-GameObject child");
+            auto cloned = object->Clone();
+            copy->AddChild(child->getName(), cloned.release());
+        }
+        return copy;
+    }
+
     void GameObject::PreUpdate(CoreEngine *engine) {
         if (!enabled)
             return;

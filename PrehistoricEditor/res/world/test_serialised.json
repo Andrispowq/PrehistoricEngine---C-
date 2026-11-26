@@ -1,4 +1,5 @@
 {
+  "sky_schema": 1,
     "directories": {
         "models": "",
         "textures": ""
@@ -896,5 +897,29 @@
             "directory": "res/textures/metalFloor/metalFloor_MROT.png",
             "name": "res/textures/metalFloor/metalFloor_MROT.png"
         }
-    ]
+    ],
+  "world_objects": [
+    {
+      "name": "Environment",
+      "type": "environment_map",
+      "asset": "sample://textures/environmentMaps/cape_hill_2k.hdr",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    }
+  ]
 }

@@ -6,7 +6,9 @@
 #include "prehistoric/core/node/component/VolumetricSphereComponent.h"
 
 #include <filesystem>
+#include <set>
 #include <json.hpp>
+#include "prehistoric/core/modules/atmosphere/EnvironmentMap.h"
 
 namespace Prehistoric {
     static Vector3f ReadWorldVector(const nlohmann::json &value) {
@@ -447,6 +449,16 @@ namespace Prehistoric {
             file.read(&contents[0], size);
 
             nlohmann::json file_json = nlohmann::json::parse(contents);
+            unsigned skyCount = file_json.value("environment_map", std::string{}).empty() ? 0 : 1;
+            for (const auto &object: file_json["world_objects"]) {
+                const auto type = object.value("type", std::string{});
+                if (type == "scattering_atmosphere" || type == "environment_map") {
+                    if (!object.value("enabled", true)) throw std::runtime_error("World sky cannot be disabled");
+                    ++skyCount;
+                }
+            }
+            if (skyCount > 1 || (file_json.value("sky_schema", 0) == 1 && skyCount != 1))
+                throw std::runtime_error("World must declare exactly one sky source: " + worldFile);
             sceneName = file_json["name"];
             environmentMap = file_json.value("environment_map", std::string{});
             if (auto value = file_json.find("temporal"); value != file_json.end() && value->is_object()) {
@@ -614,12 +626,20 @@ namespace Prehistoric {
             {
                 nlohmann::json root_contents = file_json["root"];
                 std::vector<nlohmann::json> root_children = root_contents["children"];
+                std::map<std::string, std::unique_ptr<GameObject> > pending;
+                std::map<std::string, GameObject *> objects;
+                std::map<std::string, std::string> parents;
                 for (auto &root_child: root_children) {
                     std::string name = root_child["name"];
                     nlohmann::json transform = root_child["transform"];
                     std::vector<nlohmann::json> components = root_child["components"];
 
-                    GameObject *object = new GameObject;
+                    if (pending.count(name)) throw std::runtime_error("Duplicate object name: " + name);
+                    auto owned = std::make_unique<GameObject>();
+                    GameObject *object = owned.get();
+                    objects[name] = object;
+                    parents[name] = root_child.value("parent", std::string{});
+                    object->setEnabled(root_child.value("enabled", true));
                     object->setName(name);
 
                     if (transform.contains("position")) {
@@ -716,7 +736,19 @@ namespace Prehistoric {
                         }
                     }
 
-                    root->AddChild(name, object);
+                    pending.emplace(name, std::move(owned));
+                }
+                for (const auto &[name, parent]: parents) {
+                    std::set<std::string> visited{name};
+                    for (auto ancestor = parent; !ancestor.empty(); ancestor = parents.at(ancestor)) {
+                        if (!parents.count(ancestor) || !visited.insert(ancestor).second)
+                            throw std::runtime_error("Missing or cyclic object parent: " + name);
+                    }
+                }
+                for (auto &[name, object]: pending) {
+                    auto *parent = parents.at(name).empty() ? root : objects.at(parents.at(name));
+                    parent->AddChild(name, object.get());
+                    object.release();
                 }
             }
 
@@ -724,8 +756,7 @@ namespace Prehistoric {
                 std::string name = world_object["name"];
                 std::string type = world_object["type"];
 
-                if (type == "scattering_atmosphere" && (
-                        __FrameworkConfig.api == OpenGL || __AtmosphereConfig.scatteringEnabled)) {
+                if (type == "scattering_atmosphere") {
                     GameObject *sun = nullptr;
 
                     std::string sun_name = world_object["sun"];
@@ -738,13 +769,26 @@ namespace Prehistoric {
                         if (!sun || !sun->GetComponent<Light>()) {
                             PR_LOG_ERROR("Atmosphere sun '%s' must name a light in the scene root.\n",
                                          sun_name.c_str());
-                            continue;
+                            throw std::runtime_error("Invalid atmosphere sun: " + sun_name);
                         }
                     }
 
                     Atmosphere *atmosphere = new Atmosphere();
                     atmosphere->setSun(sun->GetComponent<Light>());
                     root->AddChild(name, atmosphere);
+                } else if (type == "environment_map") {
+                    auto environment = std::make_unique<EnvironmentMap>(world_object.at("asset").get<std::string>());
+                    if (const auto transform = world_object.find("transform"); transform != world_object.end()) {
+                        auto vec = [&](const char *key, Vector3f fallback) {
+                            if (!transform->contains(key)) return fallback;
+                            const auto &v = transform->at(key);
+                            return Vector3f(v.at(0).get<float>(), v.at(1).get<float>(), v.at(2).get<float>());
+                        };
+                        environment->SetPosition(vec("position", 0));
+                        environment->SetRotation(vec("rotation", 0));
+                        environment->SetScale(vec("scale", 1));
+                    }
+                    root->AddChild(name, environment.release());
                 } else if (type == "terrain") {
                     std::string config = world_object["config"];
 

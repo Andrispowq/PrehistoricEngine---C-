@@ -27,6 +27,7 @@ def main():
     parser.add_argument('--no-gi', action='store_true')
     parser.add_argument('--debug', type=int, choices=range(5), default=0)
     parser.add_argument('--water', action='store_true', help='Add water and exercise crossing the waterline')
+    parser.add_argument('--world-suite', action='store_true', help='Load, round-trip and render all checked-in worlds')
     parser.add_argument('--benchmark', action='store_true',
                         help='Run four steady effect modes instead of lifecycle tests')
     parser.add_argument('--warmup', type=int, default=60, help='Warm-up frames per benchmark mode')
@@ -46,7 +47,8 @@ def main():
     original = ROOT / args.app / 'src' / ('EditorApp.cpp' if args.app == 'PrehistoricEditor' else 'PrehistoricApp.cpp')
     source = output / 'TemporalApp.cpp'
     text = original.read_text()
-    driver = 'temporal_benchmark_driver.h' if args.benchmark else 'temporal_render_driver.h'
+    driver = 'world_scene_driver.h' if args.world_suite else (
+        'temporal_benchmark_driver.h' if args.benchmark else 'temporal_render_driver.h')
     text = (f'#include "tests/{driver}"\n'
             'namespace { const bool temporalUnbufferedOutput = [] { '
             'std::setvbuf(stdout, nullptr, _IONBF, 0); return true; }(); }\n' + text)
@@ -58,6 +60,8 @@ def main():
     else:
         text = text.replace('        return;',
                             '        PushOverlay(new TemporalRenderDriver(scene.get()));\n        return;', 1)
+    if args.world_suite:
+        text = text.replace('new TemporalRenderDriver(', 'new WorldSceneDriver(')
     source.write_text(text)
     target = f'CMakeFiles/{args.app}.dir/{original.relative_to(ROOT)}.o'
     command = subprocess.check_output(['ninja', '-C', str(build), '-t', 'commands', target], text=True).splitlines()[-1]
@@ -111,6 +115,12 @@ def main():
     env = dict(os.environ, ALSOFT_DRIVERS='null', PREHISTORIC_WORLD=str(world),
                PREHISTORIC_ENGINE_RESOURCES=str(build / 'bin/engine-resources'),
                PREHISTORIC_SAMPLE_RESOURCES=str(build / 'bin/sample-resources'))
+    if args.world_suite:
+        manifest = output / 'worlds.txt'
+        worlds = sorted(p.resolve() for app in ('Prehistoric', 'PrehistoricEditor')
+                        for p in (ROOT / app / 'res/world').rglob('*') if p.suffix in ('.json', '.wrld'))
+        manifest.write_text(''.join(str(p) + '\n' for p in worlds))
+        env['PREHISTORIC_WORLD_MANIFEST'] = str(manifest)
     env['PREHISTORIC_TEMPORAL_DEBUG'] = str(args.debug)
     if args.water: env['PREHISTORIC_TEMPORAL_WATER'] = '1'
     if args.no_gi: env['PREHISTORIC_TEMPORAL_NO_GI'] = '1'
@@ -132,7 +142,7 @@ def main():
         process = subprocess.Popen([output / 'TemporalSmoke'], cwd=output, env=env, stdout=log,
                                    stderr=subprocess.STDOUT)
         try:
-            code = process.wait(timeout=300 if args.benchmark else 180)
+            code = process.wait(timeout=600 if args.world_suite else (300 if args.benchmark else 180))
         except subprocess.TimeoutExpired:
             process.terminate()
             try:
@@ -141,8 +151,9 @@ def main():
                 process.kill(); process.wait()
             raise SystemExit('Timed out; see run.log for native context/window-service errors')
     log = (output / 'run.log').read_text(errors='replace')
-    print('\n'.join(line for line in log.splitlines() if 'TEMPORAL' in line))
-    if code or 'TEMPORAL PASS' not in log or 'Message severity: ERROR' in log:
+    print('\n'.join(line for line in log.splitlines() if 'TEMPORAL' in line or 'WORLD ' in line))
+    if code or (
+    'WORLD SUITE PASS' if args.world_suite else 'TEMPORAL PASS') not in log or 'Message severity: ERROR' in log:
         raise SystemExit(f'GPU smoke failed (exit {code}); see {output}/run.log')
     print('PASS: scripted application run, no reported Vulkan validation errors')
 

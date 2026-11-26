@@ -14,7 +14,7 @@
 
 EditorLayer::EditorLayer(std::unique_ptr<Prehistoric::Scene> scene)
     : scene(std::move(scene)), root(this->scene->getSceneRoot()) {
-    this->scenePanel = std::make_unique<SceneHierarchyPanel>(root);
+    this->scenePanel = std::make_unique<SceneHierarchyPanel>(this->scene.get());
 }
 
 void EditorLayer::OnAttach() {
@@ -77,53 +77,35 @@ void EditorLayer::ImGUIRender() {
             ImGuiID left = ImGui::DockBuilderSplitNode(center, ImGuiDir_Left, 0.22f, nullptr, &center);
             ImGuiID right = ImGui::DockBuilderSplitNode(center, ImGuiDir_Right, 0.29f, nullptr, &center);
             ImGuiID bottom = ImGui::DockBuilderSplitNode(center, ImGuiDir_Down, 0.25f, nullptr, &center);
-            ImGuiID properties = ImGui::DockBuilderSplitNode(left, ImGuiDir_Down, 0.55f, nullptr, &left);
+            ImGuiID properties;
+            statsDockId = ImGui::DockBuilderSplitNode(right, ImGuiDir_Down, 0.28f, nullptr, &properties);
             ImGui::DockBuilderDockWindow("Scene Hierarchy", left);
             ImGui::DockBuilderDockWindow("Properties", properties);
-            ImGui::DockBuilderDockWindow("Environment###Environment map configurations", right);
+            ImGui::DockBuilderDockWindow("Stats", statsDockId);
             ImGui::DockBuilderDockWindow("Asset Manager", bottom);
             ImGui::DockBuilderDockWindow("Viewport", center);
             ImGui::DockBuilderFinish(dockspace_id);
         }
         if (!statsDockId) {
-            // Migrate an existing detached/tabbed Stats panel without discarding
-            // the user's other dock positions. Reuse an already-correct split.
-            auto *environmentSettings = ImGui::FindWindowSettings(
-                ImHashStr("Environment###Environment map configurations"));
-            if (!environmentSettings) {
-                environmentSettings = ImGui::FindWindowSettings(ImHashStr("Environment map configurations"));
-                if (environmentSettings && ImGui::DockBuilderGetNode(environmentSettings->DockId)) {
-                    ImGui::DockBuilderDockWindow("Environment###Environment map configurations",
-                                                 environmentSettings->DockId);
-                    environmentSettings = ImGui::FindWindowSettings(
-                        ImHashStr("Environment###Environment map configurations"));
-                }
+            // Reuse the old environment dock and move Properties there. Other panels keep their docks.
+            auto *old = ImGui::FindWindowSettings(ImHashStr("Environment###Environment map configurations"));
+            if (!old) old = ImGui::FindWindowSettings(ImHashStr("Environment map configurations"));
+            if (old && old->DockId) {
+                const ImGuiID target = old->DockId;
+                old->DockId = 0;
+                if (auto *legacy = ImGui::FindWindowSettings(ImHashStr("Environment map configurations")))
+                    legacy->DockId = 0;
+                if (ImGui::DockBuilderGetNode(target)) ImGui::DockBuilderDockWindow("Properties", target);
             }
-            auto *environment = environmentSettings
-                                    ? ImGui::DockBuilderGetNode(environmentSettings->DockId)
-                                    : nullptr;
-            auto *rootNode = environment;
-            while (rootNode && rootNode->ParentNode) rootNode = rootNode->ParentNode;
-            if (!environment || rootNode->ID != dockspace_id || environment->IsSplitNode()) {
-                auto *leaf = ImGui::DockBuilderGetNode(dockspace_id);
-                while (leaf->IsSplitNode()) leaf = leaf->ChildNodes[1];
-                ImGuiID environmentId = ImGui::DockBuilderSplitNode(leaf->ID, ImGuiDir_Right, 0.5f, nullptr, nullptr);
-                ImGui::DockBuilderDockWindow("Environment###Environment map configurations", environmentId);
-                environment = ImGui::DockBuilderGetNode(environmentId);
+            auto *properties = ImGui::FindWindowSettings(ImHashStr("Properties"));
+            auto *stats = ImGui::FindWindowSettings(ImHashStr("Stats"));
+            if (stats && ImGui::DockBuilderGetNode(stats->DockId)) statsDockId = stats->DockId;
+            else if (properties && ImGui::DockBuilderGetNode(properties->DockId)) {
+                ImGuiID top;
+                statsDockId = ImGui::DockBuilderSplitNode(properties->DockId, ImGuiDir_Down, 0.28f, nullptr, &top);
+                ImGui::DockBuilderDockWindow("Properties", top);
+                ImGui::DockBuilderDockWindow("Stats", statsDockId);
             }
-            auto *statsSettings = ImGui::FindWindowSettings(ImHashStr("Stats"));
-            auto *stats = statsSettings ? ImGui::DockBuilderGetNode(statsSettings->DockId) : nullptr;
-            auto *parent = environment->ParentNode;
-            if (stats && parent && parent->SplitAxis == ImGuiAxis_Y &&
-                parent->ChildNodes[0] == environment && parent->ChildNodes[1] == stats)
-                statsDockId = stats->ID;
-            else {
-                ImGuiID environmentId;
-                statsDockId = ImGui::DockBuilderSplitNode(environment->ID, ImGuiDir_Down, 0.28f,
-                                                          nullptr, &environmentId);
-                ImGui::DockBuilderDockWindow("Environment###Environment map configurations", environmentId);
-            }
-            ImGui::DockBuilderDockWindow("Stats", statsDockId);
             ImGui::DockBuilderFinish(dockspace_id);
         }
         ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
@@ -173,7 +155,6 @@ void EditorLayer::ImGUIRender() {
 
     ImGui::End();
 
-    DrawEnvironmentSelector(*renderer);
     auto *ui = Prehistoric::Application::Get().getImGuiLayer();
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0, 0});
@@ -424,8 +405,8 @@ void EditorLayer::DrawEnvironmentSettings(Prehistoric::Renderer &renderer) {
     const float maxLod = float(std::max(1u, __EnvironmentMapConfig.prefilterLevels) - 1);
     ImGui::SliderFloat("Environment map LOD", &renderer.environmentPreviewLod, 0.0f, maxLod, "%.1f");
     ImGui::Separator();
-    if (ImGui::Button("Regenerate from scene")) renderer.RequestEnvironmentBake(false);
-    ImGui::TextDisabled("Uses scene lighting; replaces a loaded HDR override.");
+    if (ImGui::Button("Regenerate lighting")) renderer.RequestEnvironmentBake();
+    ImGui::TextDisabled("Rebakes the world's atmosphere or environment map.");
 }
 
 void EditorLayer::DrawDiagnostics(Prehistoric::Renderer &renderer) {
@@ -479,24 +460,6 @@ void EditorLayer::DrawEditorInteraction() {
     }
 }
 
-void EditorLayer::DrawEnvironmentSelector(Prehistoric::Renderer &renderer) {
-    ImGui::Begin("Environment###Environment map configurations");
-    const auto &path = __EnvironmentMapConfig.environmentMapLocation;
-    const auto filename = path.substr(path.find_last_of("/\\") + 1);
-    ImGui::TextUnformatted("HDR file");
-    ImGui::TextWrapped("%s", filename.empty() ? "No file selected" : filename.c_str());
-    if (!path.empty() && ImGui::IsItemHovered()) ImGui::SetTooltip("%s", path.c_str());
-    if (ImGui::Button("Load environment map")) {
-        std::optional<std::string> path = Prehistoric::FileDialogues::Get()->OpenFile(
-            "Environment Map (*.hdr)\0*.hdr\0");
-        if (path) {
-            __EnvironmentMapConfig.environmentMapLocation = *path;
-            renderer.RequestEnvironmentBake(true);
-        }
-    }
-    ImGui::End();
-}
-
 void EditorLayer::OnEvent(Prehistoric::Event &e) {
     if (e.getCategoryFlags() & (Prehistoric::EventCategoryKeyboard | Prehistoric::EventCategoryJoystick |
                                 Prehistoric::EventCategoryMouseButton)) {
@@ -511,11 +474,7 @@ void EditorLayer::OnEvent(Prehistoric::Event &e) {
 }
 
 void EditorLayer::NewButton() {
-    std::unordered_map<Prehistoric::GUID, Prehistoric::Node *> children = root->getChildrenByID();
-    for (auto &elem: children) {
-        root->RemoveChild(elem.second);
-    }
-
+    scene->ClearObjects();
     scenePanel->InvalidateSelectionContext();
 }
 
@@ -532,12 +491,17 @@ void EditorLayer::OpenButton() {
         Prehistoric::Camera *camera = renderingEngine->getCamera();
         Prehistoric::AssembledAssetManager *manager = coreEngine->getAssetManager();
 
-        scene = std::make_unique<Prehistoric::Scene>(val, window, camera, manager);
-
-        coreEngine->SetScene(scene.get());
+        std::unique_ptr<Prehistoric::Scene> next;
+        try { next = std::make_unique<Prehistoric::Scene>(val, window, camera, manager); } catch (const std::exception &
+            error) {
+            PR_LOG_WARNING("Could not open world: %s\n", error.what());
+            return;
+        }
+        coreEngine->SetScene(next.get());
+        scene = std::move(next);
 
         root = scene->getSceneRoot();
-        scenePanel->SetContext(root);
+        scenePanel->SetContext(scene.get());
         scenePanel->InvalidateSelectionContext();
     }
 }

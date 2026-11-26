@@ -1,3 +1,5 @@
+#include "prehistoric/core/scene/Scene.h"
+#include "prehistoric/common/util/PlatformUtils.h"
 #include "SceneHierarchyPanel.h"
 
 #include "imgui.h"
@@ -9,12 +11,13 @@
 #include "prehistoric/application/Application.h"
 
 
-SceneHierarchyPanel::SceneHierarchyPanel(Prehistoric::GameObject *root) {
-    SetContext(root);
+SceneHierarchyPanel::SceneHierarchyPanel(Prehistoric::Scene *scene) {
+    SetContext(scene);
 }
 
-void SceneHierarchyPanel::SetContext(Prehistoric::GameObject *root) {
-    this->root = root;
+void SceneHierarchyPanel::SetContext(Prehistoric::Scene *scene) {
+    this->scene = scene;
+    this->root = scene->getSceneRoot();
     InvalidateSelectionContext();
 }
 
@@ -55,6 +58,7 @@ void SceneHierarchyPanel::ImGuiRender() {
     ImGui::End();
 
     ImGui::Begin("Properties");
+    if (!actionError.empty()) ImGui::TextWrapped("%s", actionError.c_str());
     if (selectionContext) {
         auto *component = selectionContext->GetComponent<Prehistoric::RendererComponent>();
         if (selectedSubmesh && component) DrawSubmesh(*component, *selectedSubmesh);
@@ -80,7 +84,8 @@ void SceneHierarchyPanel::DrawGameObjectNode(Prehistoric::GameObject *object) {
         }
     }
     bool opened = ImGui::TreeNodeEx((void *) object, flags, "%s", tag.c_str());
-    if (revealSelection &&selectionContext 
+    if (revealSelection &&selectionContext
+    
     ==
     object && !selectedSubmesh
     )
@@ -91,8 +96,11 @@ void SceneHierarchyPanel::DrawGameObjectNode(Prehistoric::GameObject *object) {
     }
 
     bool entityDeleted = false;
+    bool entityDuplicated = false;
     if (ImGui::BeginPopupContextItem()) {
-        if (ImGui::MenuItem("Delete Entity"))
+        if (ImGui::MenuItem("Duplicate Object", nullptr, false, !Prehistoric::Scene::IsSky(object)))
+            entityDuplicated = true;
+        if (ImGui::MenuItem("Delete Entity", nullptr, false, !Prehistoric::Scene::IsSky(object)))
             entityDeleted = true;
 
         ImGui::EndPopup();
@@ -130,7 +138,19 @@ void SceneHierarchyPanel::DrawGameObjectNode(Prehistoric::GameObject *object) {
         ImGui::TreePop();
     }
 
+    if (entityDuplicated) {
+        try {
+            selectionContext = scene->Duplicate(*object);
+            selectedSubmesh.reset();
+            revealSelection = true;
+            actionError.clear();
+        } catch (const std::exception &error) { actionError = error.what(); }
+    }
     if (entityDeleted) {
+        try { scene->CheckRemoval(object); } catch (const std::exception &error) {
+            actionError = error.what();
+            return;
+        }
         for (Prehistoric::Node *node = selectionContext; node; node = node->getParent()) {
             if (node == object) {
                 selectionContext = nullptr;
@@ -203,8 +223,11 @@ static void DrawComponent(const std::string &name, Prehistoric::GameObject *obje
         }
 
         ImGui::PopID();
-        if (removeComponent)
-            object->RemoveComponent<T>();
+        if (removeComponent) {
+            try { object->RemoveComponent<T>(); } catch (const std::exception &error) {
+                PR_LOG_WARNING("%s\n", error.what());
+            }
+        }
     }
 }
 
@@ -337,6 +360,50 @@ void SceneHierarchyPanel::DrawComponents(Prehistoric::GameObject *object) {
         }
 
         ImGui::EndPopup();
+    }
+
+    if (Prehistoric::Scene::IsSky(object)) {
+        if (auto *environment = dynamic_cast<Prehistoric::EnvironmentMap *>(object)) {
+            ImGui::TextWrapped("HDR: %s", environment->GetAsset().c_str());
+            if (ImGui::Button("Choose HDR file")) {
+                if (auto path = Prehistoric::FileDialogues::Get()->OpenFile("Environment Map (*.hdr)\0*.hdr\0")) {
+                    try {
+                        environment->SetAsset(*path);
+                        actionError.clear();
+                    } catch (const std::exception &error) { actionError = error.what(); }
+                }
+            }
+            ImGui::TextWrapped("Global distant lighting: only rotation affects the image and lighting.");
+            if (ImGui::Button("Replace with Atmosphere")) {
+                try {
+                    auto sky = std::make_unique<Prehistoric::Atmosphere>();
+                    auto sun = Prehistoric::Atmosphere::CreateSun();
+                    sky->setSun(sun->GetComponent<Prehistoric::Light>());
+                    std::string name = "Atmosphere Sun";
+                    for (unsigned n = 2; root->getChild(name); ++n) name = "Atmosphere Sun " + std::to_string(n);
+                    auto *sunObject = sun.get();
+                    root->AddChild(name, sun.release());
+                    try { scene->ReplaceSky(std::move(sky)); } catch (...) {
+                        root->RemoveChild(sunObject);
+                        throw;
+                    }
+                    selectionContext = scene->GetSky();
+                    actionError.clear();
+                    ImGui::PopItemWidth();
+                    return;
+                } catch (const std::exception &error) { actionError = error.what(); }
+            }
+        } else if (ImGui::Button("Replace with Environment Map")) {
+            if (auto path = Prehistoric::FileDialogues::Get()->OpenFile("Environment Map (*.hdr)\0*.hdr\0")) {
+                try {
+                    scene->ReplaceSky(std::make_unique<Prehistoric::EnvironmentMap>(*path));
+                    selectionContext = scene->GetSky();
+                    actionError.clear();
+                    ImGui::PopItemWidth();
+                    return;
+                } catch (const std::exception &error) { actionError = error.what(); }
+            }
+        }
     }
 
     Prehistoric::Transform &tr = object->getWorldTransform();

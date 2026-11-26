@@ -18,6 +18,8 @@ namespace Prehistoric {
 
         virtual ~RendererComponent();
 
+        std::unique_ptr<Component> Clone() const override;
+
         void PreRender(Renderer *renderer) override;
 
         void Render(Renderer *renderer) const override;
