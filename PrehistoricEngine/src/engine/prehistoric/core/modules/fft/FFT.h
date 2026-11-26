@@ -10,48 +10,54 @@
 #include "Hkt.h"
 #include "TwiddleFactors.h"
 
-namespace Prehistoric
-{
-	class FFT
-	{
-	public:
-		FFT(AssembledAssetManager* manager, Window* window, WaterConfig* config);
-		~FFT();
+namespace Prehistoric {
+    class FFT {
+    public:
+        FFT(AssembledAssetManager *manager, Window *window, WaterConfig *config);
 
-		void Render();
+        ~FFT();
 
-		TextureHandle getDyTexture() const { return Dy; }
-		TextureHandle getDxTexture() const { return Dx; }
-		TextureHandle getDzTexture() const { return Dz; }
+        void Render();
 
-	private:
-		AssembledAssetManager* manager = nullptr;
-		Window* window = nullptr;
+        float GetTime() const { return t; }
 
-		TextureHandle Dx;
-		TextureHandle Dy;
-		TextureHandle Dz;
-		bool choppy = false;
+        void SetTime(float value) {
+            t = value;
+            systemTime = Time::getTimeFromStartNanoseconds() / 1000000;
+        }
 
-		ShaderHandle butterflyShader;
-		ShaderHandle inversionShader;
-		TwiddleFactors* twiddleFactors;
+        TextureHandle getDyTexture() const { return Dy; }
+        TextureHandle getDxTexture() const { return Dx; }
+        TextureHandle getDzTexture() const { return Dz; }
 
-		PipelineHandle butterflyPipeline;
-		PipelineHandle inversionPipeline;
+    private:
+        AssembledAssetManager *manager = nullptr;
+        Window *window = nullptr;
 
-		TextureHandle pingpongTexture;
+        TextureHandle Dx;
+        TextureHandle Dy;
+        TextureHandle Dz;
+        bool choppy = false;
 
-		H0k* h0k = nullptr;
-		Hkt* hkt = nullptr;
+        ShaderHandle butterflyShader;
+        ShaderHandle inversionShader;
+        TwiddleFactors *twiddleFactors;
 
-		float t_delta = 0.0f;
-		float t = 0.0f;
-		uint64_t systemTime = 0;
-		int pingpong = 0;
-		int log_2_N = 0;
-		int N = 0;
-	};
+        PipelineHandle butterflyPipeline;
+        PipelineHandle inversionPipeline;
+
+        TextureHandle pingpongTexture;
+
+        H0k *h0k = nullptr;
+        Hkt *hkt = nullptr;
+
+        float t_delta = 0.0f;
+        float t = 0.0f;
+        uint64_t systemTime = 0;
+        int pingpong = 0;
+        int log_2_N = 0;
+        int N = 0;
+    };
 }
 
 #endif

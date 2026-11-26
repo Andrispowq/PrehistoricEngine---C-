@@ -180,7 +180,7 @@ namespace Prehistoric {
 
     bool GLRenderer::isUnderwater() const {
         for (const Water *water: waters) {
-            if (water->isCameraUnderwater()) return true;
+            if (water->GetSettings().underwaterPostProcessing && water->isCameraUnderwater()) return true;
         }
         return false;
     }

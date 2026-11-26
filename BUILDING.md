@@ -410,14 +410,34 @@ baking → Regenerate lighting** rebakes the current source; resolutions, mip co
 Right-click an object and choose **Duplicate Object** to copy its transform, components and descendants with fresh
 identities and unique names. Meshes, textures and base materials are shared assets; per-instance submesh material
 overrides are copied. Generic objects with renderer, light, volume, audio and sphere-physics components are supported.
-Unsupported specialised objects/components report an error without inserting a partial duplicate.
+Terrain, water, orbiting suns, GUI elements, buttons and sliders also support duplication. Procedural copies rebuild
+their patch trees, simulation images and capture resources, retain their own settings and material values, and copy
+authored attachments. Generated patches stay out of the object list. Immutable input textures are shared.
+GUI copies own their payload bytes (buttons use `bool`, sliders use `float`) and retain asset-managed textures;
+references to procedural outputs inside a copied hierarchy are redirected to the copied producer. Generic GUI
+payloads must be explicitly sized, pointer-free byte data. Borrowed renderer debug textures and unsupported
+objects/components report an error without inserting a partial duplicate. Stateless update callbacks are retained
+in memory; executable callbacks are not serialized.
+
+Water keeps its existing horizontal-plane capture model; use translation, scale and yaw for placement.
+Vulkan's legacy GUI-widget drawing remains unimplemented; GUI state can still be cloned and round-tripped.
+This does not add native macOS OpenGL support, which remains the next rendering task.
 
 World JSON now writes `sky_schema: 1` and one `world_objects` entry of type `scattering_atmosphere` or
 `environment_map`.
 An environment entry contains `name`, `asset`, and `transform` (`position`, `rotation`, `scale`). Legacy
 `environment_map` fields are converted on load; legacy files with neither source receive the configured default HDR.
 Conflicting sources are rejected. Generic object records retain `parent` links and enabled state across save/load.
-Terrain records retain their configuration instead of serializing generated terrain geometry and textures.
+Procedural records use `kind` in `root.children`, retaining parent links, enabled state, transform, instance settings,
+material values and water/sun phase. Generated geometry and images are rebuilt, with GUI output references resolved
+after all authored objects are attached. Legacy `world_objects` terrain records still load. Terrain configuration
+files and immutable assets must remain available. FFT dimensions and other allocation settings apply when an
+instance is constructed; this is not a live simulation-resolution control.
+
+The world suite also checks specialised types, independent mutable state, GUI reference remapping, failed-copy
+atomicity, transformed patches, simultaneous terrain/water instances, repeated copies and both deletion orders.
+Native Vulkan verification covers these contracts and all 19 checked-in worlds. Native OpenGL runtime verification
+requires a host supporting the current desktop OpenGL path; macOS support remains next.
 
 Run the all-world scene contracts, round-trips and rendered-frame checks with:
 

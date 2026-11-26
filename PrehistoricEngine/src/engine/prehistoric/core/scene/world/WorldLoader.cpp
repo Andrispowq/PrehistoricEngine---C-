@@ -1,6 +1,7 @@
 #include "Includes.hpp"
 #include "prehistoric/core/resources/EngineResources.h"
 #include "WorldLoader.h"
+#include "ProceduralWorld.h"
 
 #include "prehistoric/application/Application.h"
 #include "prehistoric/core/node/component/VolumetricSphereComponent.h"
@@ -635,7 +636,7 @@ namespace Prehistoric {
                     std::vector<nlohmann::json> components = root_child["components"];
 
                     if (pending.count(name)) throw std::runtime_error("Duplicate object name: " + name);
-                    auto owned = std::make_unique<GameObject>();
+                    auto owned = ReadProceduralObject(root_child, window, manager);
                     GameObject *object = owned.get();
                     objects[name] = object;
                     parents[name] = root_child.value("parent", std::string{});
@@ -750,6 +751,7 @@ namespace Prehistoric {
                     parent->AddChild(name, object.get());
                     object.release();
                 }
+                ResolveProceduralReferences(*root, root_children);
             }
 
             for (const auto &world_object: file_json["world_objects"]) {

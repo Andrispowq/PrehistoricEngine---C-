@@ -20,8 +20,13 @@ namespace Prehistoric {
 
     class Component {
     public:
+        bool generated = false;
+
         Component() : parent(nullptr), type(ComponentType::General) {
         }
+
+        bool IsGenerated() const { return generated; }
+        void SetGenerated(bool value) { generated = value; }
 
         virtual ~Component() {
         }

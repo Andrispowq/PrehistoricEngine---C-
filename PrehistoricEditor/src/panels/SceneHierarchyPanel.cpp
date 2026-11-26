@@ -69,6 +69,7 @@ void SceneHierarchyPanel::ImGuiRender() {
 }
 
 void SceneHierarchyPanel::DrawGameObjectNode(Prehistoric::GameObject *object) {
+    if (object->IsGenerated()) return;
     std::string tag = object->getName();
 
     ImGuiTreeNodeFlags flags = ((selectionContext == object && !selectedSubmesh) ? ImGuiTreeNodeFlags_Selected : 0) |
@@ -85,6 +86,7 @@ void SceneHierarchyPanel::DrawGameObjectNode(Prehistoric::GameObject *object) {
     }
     bool opened = ImGui::TreeNodeEx((void *) object, flags, "%s", tag.c_str());
     if (revealSelection &&selectionContext
+
     
     ==
     object && !selectedSubmesh

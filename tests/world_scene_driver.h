@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <fstream>
 #include <json.hpp>
+#include "tests/procedural_scene_contracts.h"
 
 class WorldSceneDriver : public Prehistoric::Layer {
 public:
@@ -33,7 +34,29 @@ public:
         if (__FrameworkConfig.api == Vulkan)
             vkDeviceWaitIdle(static_cast<VKDevice *>(renderer->getWindow()->getContext()->getDevices())->getDevice());
         else glFinish();
-        if (frame == 1) Contracts(*original, *renderer);
+        if (frame == 1) {
+            Contracts(*original, *renderer);
+            ProceduralSceneContracts(*original, *renderer);
+        }
+        if (frame == 3) {
+            auto *source = dynamic_cast<GameObject *>(original->getSceneRoot()->getChild("Procedural group"));
+            auto *copy = dynamic_cast<GameObject *>(original->getSceneRoot()->getChild("Procedural group copy"));
+            auto *terrain = dynamic_cast<Terrain *>(copy->getChild("Procedural terrain copy"));
+            auto *water = dynamic_cast<Water *>(copy->getChild("Procedural water copy"));
+            if (water->getLeaves().empty() || terrain->getQuadtree()->getLeaves().empty())
+                throw std::runtime_error("Duplicated procedural geometry has no rendered patches");
+            auto *patch = dynamic_cast<TerrainNode *>(terrain->getQuadtree()->getChildren().begin()->second);
+            const auto expected = terrain->getWorldTransform().getTransformationMatrix() *
+                                  Vector4f(patch->getLocation().x + patch->getGap() / 2, 0,
+                                           patch->getLocation().y + patch->getGap() / 2, 1);
+            if (std::abs(patch->getWorldPosition().x - expected.x) > 0.01 ||
+                std::abs(patch->getWorldPosition().z - expected.z) > 0.01)
+                throw std::runtime_error("Terrain patch positions did not follow copied placement");
+            original->RemoveGameObject(source);
+            std::fprintf(
+                stderr,
+                "PROCEDURAL RENDER PASS: multiple terrain/water instances, transformed patches and source deletion\n");
+        }
         if (frame % 4 != 0) return;
         if (current) std::fprintf(stderr, "WORLD RENDER PASS: %s\n", worlds[index - 1].c_str());
         if (index == worlds.size()) {

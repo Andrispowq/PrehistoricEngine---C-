@@ -15,6 +15,32 @@ frames.
 
 ## Remaining work
 
+**Next item: native OpenGL on macOS.** Add a capability-driven OpenGL 4.1 core path for the sample and editor.
+Audit GLSL versions, compute shaders, image load/store, shader-storage buffers, direct-state-access calls and
+resource limits; provide compatible raster/CPU alternatives or explicitly unavailable optional effects. Lowering
+the requested context version alone is insufficient. Preserve the existing desktop OpenGL path and Vulkan behavior.
+Validate first rendered frames, scene loading, IBL, terrain/water, editor docking and supported AA/post-processing on
+macOS. Reference [GLFW platform constraints](https://www.glfw.org/docs/latest/compat.html); the
+[macOS port assessment](MACOS_PORT.md) is historical and must be checked against current code.
+
+Specialised duplication now covers terrain, water, orbiting suns and GUI elements/buttons/sliders, including
+instance settings, generated-resource ownership, authored attachments and world round-trips. See
+[duplication contracts and limitations](../BUILDING.md#editor-render-settings). Native Vulkan multi-instance and
+world-load checks are covered; native OpenGL runtime verification follows the macOS compatibility work above.
+
+**Terrain and water voxelisation.** Include terrain heightfield geometry and displaced water surfaces in voxel
+coverage. Define water transmission/opacity separately from opaque terrain, keep animated coverage up to date,
+and test LOD seams, movement, bounds, shadows and GI on both backends. Measure update and memory costs.
+
+**Voxel-based refraction.** Research transmission through the voxel representation for water and refractive
+materials, including refractive index, thickness, absorption, entry/exit surfaces and off-screen radiance. Define
+how it combines with existing refraction captures and what happens outside the voxel volume. Compare visual quality,
+leakage and performance against the current refraction path; caustics are a separate decision.
+
+**Volumetric-effects toggle.** Add a live Render Settings control to disable volumetric effects without deleting
+scene objects. Define its interaction with the existing sun-shaft control, persist the chosen setting, skip disabled
+GPU passes and invalidate affected temporal history. Verify spheres, shafts and underwater composition on both backends.
+
 Environment Map GameObjects and exclusive atmosphere/environment ownership are implemented. See
 [editor settings and world migration](../BUILDING.md#editor-render-settings). Local probes and spatially varying
 lighting remain separate future work; environment position and scale do not affect distant lighting.

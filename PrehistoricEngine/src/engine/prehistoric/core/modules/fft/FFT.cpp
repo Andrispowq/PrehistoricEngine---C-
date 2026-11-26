@@ -4,113 +4,114 @@
 #include "platform/opengl/rendering/shaders/fft/GLButterflyShader.h"
 #include "platform/opengl/rendering/shaders/fft/GLInversionShader.h"
 
-namespace Prehistoric
-{
-	FFT::FFT(AssembledAssetManager* manager, Window* window, WaterConfig* config)
-		: manager(manager), window(window)
-	{
-		this->N = config->fftResolution;
-		this->choppy = config->choppy;
-		this->t_delta = config->tDelta;
+namespace Prehistoric {
+    FFT::FFT(AssembledAssetManager *manager, Window *window, WaterConfig *config)
+        : manager(manager), window(window) {
+        this->N = config->fftResolution;
+        this->choppy = config->choppy;
+        this->t_delta = config->tDelta;
 
-		systemTime = Time::getTimeFromStartNanoseconds() / 1000000;
+        systemTime = Time::getTimeFromStartNanoseconds() / 1000000;
 
-		log_2_N = (int)(std::log(N) / std::log(2));
-		twiddleFactors = new TwiddleFactors(manager, window, N);
-		h0k = new H0k(manager, window, N, config->fftL, config->fftAmplitude, config->windDirection, 
-			config->alignment, config->windSpeed, config->fftCapillarWavesSupression);
-		hkt = new Hkt(manager, window, N, config->fftL);
+        log_2_N = (int) (std::log(N) / std::log(2));
+        twiddleFactors = new TwiddleFactors(manager, window, N);
+        h0k = new H0k(manager, window, N, config->fftL, config->fftAmplitude, config->windDirection,
+                      config->alignment, config->windSpeed, config->fftCapillarWavesSupression);
+        hkt = new Hkt(manager, window, N, config->fftL);
 
-		AssetManager* man = manager->getAssetManager();
-		butterflyShader = man->loadShader(ShaderName::Butterfly).value();
-		inversionShader = man->loadShader(ShaderName::Inversion).value();
+        AssetManager *man = manager->getAssetManager();
+        butterflyShader = man->loadShader(ShaderName::Butterfly).value();
+        inversionShader = man->loadShader(ShaderName::Inversion).value();
 
-		pingpongTexture = man->storeTexture(GLTexture::Storage2D(N, N, 1, R8G8B8A8_LINEAR, Bilinear));
-		Dy = man->storeTexture(GLTexture::Storage2D(N, N, 1, R8G8B8A8_LINEAR, Bilinear));
-		Dx = man->storeTexture(GLTexture::Storage2D(N, N, 1, R8G8B8A8_LINEAR, Bilinear));
-		Dz = man->storeTexture(GLTexture::Storage2D(N, N, 1, R8G8B8A8_LINEAR, Bilinear));
-	
-		man->addReference<Texture>(pingpongTexture.handle);
-		man->addReference<Texture>(Dy.handle);
-		man->addReference<Texture>(Dx.handle);
-		man->addReference<Texture>(Dz.handle);
+        pingpongTexture = man->storeTexture(GLTexture::Storage2D(N, N, 1, R8G8B8A8_LINEAR, Bilinear));
+        Dy = man->storeTexture(GLTexture::Storage2D(N, N, 1, R8G8B8A8_LINEAR, Bilinear));
+        Dx = man->storeTexture(GLTexture::Storage2D(N, N, 1, R8G8B8A8_LINEAR, Bilinear));
+        Dz = man->storeTexture(GLTexture::Storage2D(N, N, 1, R8G8B8A8_LINEAR, Bilinear));
 
-		butterflyPipeline = manager->createPipeline(PipelineTypeHashFlags::Compute, butterflyShader);
-		manager->addReference<Pipeline>(butterflyPipeline.handle);
-		inversionPipeline = manager->createPipeline(PipelineTypeHashFlags::Compute, inversionShader);
-		manager->addReference<Pipeline>(inversionPipeline.handle);
+        man->addReference<Texture>(pingpongTexture.handle);
+        man->addReference<Texture>(Dy.handle);
+        man->addReference<Texture>(Dx.handle);
+        man->addReference<Texture>(Dz.handle);
 
-		h0k->Render();
-		twiddleFactors->Render();
-		hkt->SetHTexture(h0k->getH0k(), h0k->getH0minusK());
-	}
+        butterflyPipeline = manager->createPipeline(PipelineTypeHashFlags::Compute, butterflyShader);
+        manager->addReference<Pipeline>(butterflyPipeline.handle);
+        inversionPipeline = manager->createPipeline(PipelineTypeHashFlags::Compute, inversionShader);
+        manager->addReference<Pipeline>(inversionPipeline.handle);
 
-	FFT::~FFT()
-	{
-		manager->removeReference<Pipeline>(butterflyPipeline.handle);
-		manager->removeReference<Pipeline>(inversionPipeline.handle);
+        h0k->Render();
+        twiddleFactors->Render();
+        hkt->SetHTexture(h0k->getH0k(), h0k->getH0minusK());
+    }
 
-		AssetManager* man = manager->getAssetManager();
-		man->removeReference<Texture>(pingpongTexture.handle);
-		man->removeReference<Texture>(Dy.handle);
-		man->removeReference<Texture>(Dx.handle);
-		man->removeReference<Texture>(Dz.handle);
-	}
+    FFT::~FFT() {
+        delete hkt;
+        delete h0k;
+        delete twiddleFactors;
+        manager->removeReference<Pipeline>(butterflyPipeline.handle);
+        manager->removeReference<Pipeline>(inversionPipeline.handle);
 
-	void FFT::Render()
-	{
-		hkt->Render(t);
+        AssetManager *man = manager->getAssetManager();
+        man->removeReference<Texture>(pingpongTexture.handle);
+        man->removeReference<Texture>(Dy.handle);
+        man->removeReference<Texture>(Dx.handle);
+        man->removeReference<Texture>(Dz.handle);
+    }
 
-		uint32_t invSize = (uint32_t)N / 16;
+    void FFT::Render() {
+        hkt->Render(t);
 
-		auto invert = [&](Texture* coefficients, Texture* output)
-		{
-			pingpong = 0;
-			dynamic_cast<GLComputePipeline*>(butterflyPipeline.pointer)->ResetBindings();
-			dynamic_cast<GLComputePipeline*>(butterflyPipeline.pointer)->addTextureBinding(0, twiddleFactors->getTexture(), (AccessMask)ComputeAccessFlags::READ_WRITE);
-			dynamic_cast<GLComputePipeline*>(butterflyPipeline.pointer)->addTextureBinding(1, coefficients, (AccessMask)ComputeAccessFlags::READ_WRITE);
-			dynamic_cast<GLComputePipeline*>(butterflyPipeline.pointer)->addTextureBinding(2, pingpongTexture.pointer, (AccessMask)ComputeAccessFlags::READ_WRITE);
-			dynamic_cast<GLComputePipeline*>(butterflyPipeline.pointer)->setInvocationSize({ invSize, invSize, 1 });
-			butterflyPipeline->BindPipeline(nullptr);
+        uint32_t invSize = (uint32_t) N / 16;
 
-			// 1D FFT horizontal
-			for (int i = 0; i < log_2_N; i++)
-			{
-				dynamic_cast<GLButterflyShader*>(butterflyShader.pointer)->UpdateUniforms(pingpong, 0, i);
-				butterflyPipeline->RenderPipeline();
-				pingpong++;
-				pingpong %= 2;
-			}
+        auto invert = [&](Texture *coefficients, Texture *output) {
+            pingpong = 0;
+            dynamic_cast<GLComputePipeline *>(butterflyPipeline.pointer)->ResetBindings();
+            dynamic_cast<GLComputePipeline *>(butterflyPipeline.pointer)->addTextureBinding(
+                0, twiddleFactors->getTexture(), (AccessMask) ComputeAccessFlags::READ_WRITE);
+            dynamic_cast<GLComputePipeline *>(butterflyPipeline.pointer)->addTextureBinding(
+                1, coefficients, (AccessMask) ComputeAccessFlags::READ_WRITE);
+            dynamic_cast<GLComputePipeline *>(butterflyPipeline.pointer)->addTextureBinding(
+                2, pingpongTexture.pointer, (AccessMask) ComputeAccessFlags::READ_WRITE);
+            dynamic_cast<GLComputePipeline *>(butterflyPipeline.pointer)->setInvocationSize({invSize, invSize, 1});
+            butterflyPipeline->BindPipeline(nullptr);
 
-			// 1D FFT vertical
-			for (int j = 0; j < log_2_N; j++)
-			{
-				dynamic_cast<GLButterflyShader*>(butterflyShader.pointer)->UpdateUniforms(pingpong, 1, j);
-				butterflyPipeline->RenderPipeline();
-				pingpong++;
-				pingpong %= 2;
-			}
+            // 1D FFT horizontal
+            for (int i = 0; i < log_2_N; i++) {
+                dynamic_cast<GLButterflyShader *>(butterflyShader.pointer)->UpdateUniforms(pingpong, 0, i);
+                butterflyPipeline->RenderPipeline();
+                pingpong++;
+                pingpong %= 2;
+            }
 
-			butterflyPipeline->UnbindPipeline();
+            // 1D FFT vertical
+            for (int j = 0; j < log_2_N; j++) {
+                dynamic_cast<GLButterflyShader *>(butterflyShader.pointer)->UpdateUniforms(pingpong, 1, j);
+                butterflyPipeline->RenderPipeline();
+                pingpong++;
+                pingpong %= 2;
+            }
 
-			dynamic_cast<GLComputePipeline*>(inversionPipeline.pointer)->ResetBindings();
-			dynamic_cast<GLComputePipeline*>(inversionPipeline.pointer)->addTextureBinding(0, output, (AccessMask)ComputeAccessFlags::READ_WRITE);
-			dynamic_cast<GLComputePipeline*>(inversionPipeline.pointer)->addTextureBinding(1, coefficients, (AccessMask)ComputeAccessFlags::READ_WRITE);
-			dynamic_cast<GLComputePipeline*>(inversionPipeline.pointer)->addTextureBinding(2, pingpongTexture.pointer, (AccessMask)ComputeAccessFlags::READ_WRITE);
-			dynamic_cast<GLComputePipeline*>(inversionPipeline.pointer)->setInvocationSize({ invSize, invSize, 1 });
-			inversionPipeline->BindPipeline(nullptr);
-			dynamic_cast<GLInversionShader*>(inversionShader.pointer)->UpdateUniforms(N, pingpong);
-			inversionPipeline->RenderPipeline();
-			inversionPipeline->UnbindPipeline();
-		};
-		invert(hkt->getDyCoefficients(), Dy.pointer);
-		if (choppy)
-		{
-			invert(hkt->getDxCoefficients(), Dx.pointer);
-			invert(hkt->getDzCoefficients(), Dz.pointer);
-		}
+            butterflyPipeline->UnbindPipeline();
 
-		t += (Time::getTimeFromStartNanoseconds() / 1000000 - systemTime) * t_delta;
-		systemTime = Time::getTimeFromStartNanoseconds() / 1000000;
-	}
+            dynamic_cast<GLComputePipeline *>(inversionPipeline.pointer)->ResetBindings();
+            dynamic_cast<GLComputePipeline *>(inversionPipeline.pointer)->addTextureBinding(
+                0, output, (AccessMask) ComputeAccessFlags::READ_WRITE);
+            dynamic_cast<GLComputePipeline *>(inversionPipeline.pointer)->addTextureBinding(
+                1, coefficients, (AccessMask) ComputeAccessFlags::READ_WRITE);
+            dynamic_cast<GLComputePipeline *>(inversionPipeline.pointer)->addTextureBinding(
+                2, pingpongTexture.pointer, (AccessMask) ComputeAccessFlags::READ_WRITE);
+            dynamic_cast<GLComputePipeline *>(inversionPipeline.pointer)->setInvocationSize({invSize, invSize, 1});
+            inversionPipeline->BindPipeline(nullptr);
+            dynamic_cast<GLInversionShader *>(inversionShader.pointer)->UpdateUniforms(N, pingpong);
+            inversionPipeline->RenderPipeline();
+            inversionPipeline->UnbindPipeline();
+        };
+        invert(hkt->getDyCoefficients(), Dy.pointer);
+        if (choppy) {
+            invert(hkt->getDxCoefficients(), Dx.pointer);
+            invert(hkt->getDzCoefficients(), Dz.pointer);
+        }
+
+        t += (Time::getTimeFromStartNanoseconds() / 1000000 - systemTime) * t_delta;
+        systemTime = Time::getTimeFromStartNanoseconds() / 1000000;
+    }
 }

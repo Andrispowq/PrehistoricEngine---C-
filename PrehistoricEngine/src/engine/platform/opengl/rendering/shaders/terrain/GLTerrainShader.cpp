@@ -8,157 +8,152 @@
 #include "prehistoric/application/Application.h"
 #include "platform/opengl/rendering/renderStage/GLLightCullingPass.h"
 
-namespace Prehistoric
-{
-	GLTerrainShader::GLTerrainShader()
-	{
-		AddShader(ResourceLoader::LoadShaderGL("opengl/terrain/terrain_VS.glsl"), VERTEX_SHADER);
-		AddShader(ResourceLoader::LoadShaderGL("opengl/terrain/terrain_TC.glsl"), TESSELLATION_CONTROL_SHADER);
-		AddShader(ResourceLoader::LoadShaderGL("opengl/terrain/terrain_TE.glsl"), TESSELLATION_EVALUATION_SHADER);
-		AddShader(ResourceLoader::LoadShaderGL("opengl/terrain/terrain_GS.glsl"), GEOMETRY_SHADER);
-		AddShader(ResourceLoader::LoadShaderGL("opengl/terrain/terrain_FS.glsl"), FRAGMENT_SHADER);
-		CompileShader();
+namespace Prehistoric {
+    GLTerrainShader::GLTerrainShader() {
+        AddShader(ResourceLoader::LoadShaderGL("opengl/terrain/terrain_VS.glsl"), VERTEX_SHADER);
+        AddShader(ResourceLoader::LoadShaderGL("opengl/terrain/terrain_TC.glsl"), TESSELLATION_CONTROL_SHADER);
+        AddShader(ResourceLoader::LoadShaderGL("opengl/terrain/terrain_TE.glsl"), TESSELLATION_EVALUATION_SHADER);
+        AddShader(ResourceLoader::LoadShaderGL("opengl/terrain/terrain_GS.glsl"), GEOMETRY_SHADER);
+        AddShader(ResourceLoader::LoadShaderGL("opengl/terrain/terrain_FS.glsl"), FRAGMENT_SHADER);
+        CompileShader();
 
-		AddUniform("heightmap");
+        AddUniform("heightmap");
 
-		location_localMatrix = glGetUniformLocation(program, "localMatrix");
-		location_worldMatrix = glGetUniformLocation(program, "worldMatrix");
+        location_localMatrix = glGetUniformLocation(program, "localMatrix");
+        location_worldMatrix = glGetUniformLocation(program, "worldMatrix");
 
-		AddUniform("cameraPosition");
-		AddUniform("scaleY");
+        AddUniform("cameraPosition");
+        AddUniform("scaleY");
 
-		location_location = glGetUniformLocation(program, "location");
-		location_index = glGetUniformLocation(program, "index");
-		location_gap = glGetUniformLocation(program, "gap");
-		location_lod = glGetUniformLocation(program, "lod");
+        location_location = glGetUniformLocation(program, "location");
+        location_index = glGetUniformLocation(program, "index");
+        location_gap = glGetUniformLocation(program, "gap");
+        location_lod = glGetUniformLocation(program, "lod");
 
-		for (unsigned int i = 0; i < 8; i++)
-		{
-			std::string uName = "lodMorphArea[" + std::to_string(i) + "]";
+        for (unsigned int i = 0; i < 8; i++) {
+            std::string uName = "lodMorphArea[" + std::to_string(i) + "]";
 
-			AddUniform(uName);
-		}
+            AddUniform(uName);
+        }
 
-		AddUniform("tessellationFactor");
-		AddUniform("tessellationSlope");
-		AddUniform("tessellationShift");
+        AddUniform("tessellationFactor");
+        AddUniform("tessellationSlope");
+        AddUniform("tessellationShift");
 
-		AddUniform("viewProjection");
+        AddUniform("viewProjection");
 
-		AddUniform("normalmap");
-		AddUniform("splatmap");
-		AddUniform("emissionEnabled");
+        AddUniform("normalmap");
+        AddUniform("splatmap");
+        AddUniform("emissionEnabled");
 
-		for (unsigned int i = 0; i < 3; i++)
-		{
-			std::string uniformName = "materials[" + std::to_string(i) + "].";
+        for (unsigned int i = 0; i < 3; i++) {
+            std::string uniformName = "materials[" + std::to_string(i) + "].";
 
-			AddUniform(uniformName + ALBEDO_MAP);
-			AddUniform(uniformName + NORMAL_MAP);
-			AddUniform(uniformName + MROT_MAP);
-			AddUniform(uniformName + EMISSION_MAP);
+            AddUniform(uniformName + ALBEDO_MAP);
+            AddUniform(uniformName + NORMAL_MAP);
+            AddUniform(uniformName + MROT_MAP);
+            AddUniform(uniformName + EMISSION_MAP);
 
-			AddUniform(uniformName + HEIGHT_SCALE);
-			AddUniform(uniformName + HORIZONTAL_SCALE);
-			AddUniform(uniformName + MROT);
-		}
+            AddUniform(uniformName + HEIGHT_SCALE);
+            AddUniform(uniformName + HORIZONTAL_SCALE);
+            AddUniform(uniformName + MROT);
+        }
 
-		AddUniform("irradianceMap");
-		AddUniform("prefilterMap");
-		AddUniform("brdfLUT");
+        AddUniform("irradianceMap");
+        AddUniform("prefilterMap");
+        AddUniform("brdfLUT");
 
-		AddUniform("highDetailRange");
-		AddUniform("captureLightCount");
-		AddUniform("numberOfTilesX");
-		AddUniform("max_reflection_lod");
-	}
+        AddUniform("highDetailRange");
+        AddUniform("captureLightCount");
+        AddUniform("numberOfTilesX");
+        AddUniform("max_reflection_lod");
+    }
 
-	void GLTerrainShader::UpdateGlobalUniforms(Renderer* renderer) const
-	{
-		Camera* camera = renderer->getCamera();
-		const std::vector<Light*>& lights = renderer->getLights();
+    void GLTerrainShader::UpdateGlobalUniforms(Renderer *renderer) const {
+        sceneRenderer = renderer;
+        Camera *camera = renderer->getCamera();
+        const std::vector<Light *> &lights = renderer->getLights();
 
-		SetUniform("viewProjection", camera->getViewProjectionMatrix());
-		SetUniform("cameraPosition", camera->getPosition());
+        SetUniform("viewProjection", camera->getViewProjectionMatrix());
+        SetUniform("cameraPosition", camera->getPosition());
 
-		SetUniformi("highDetailRange", __EngineConfig.rendererHighDetailRange);
+        SetUniformi("highDetailRange", __EngineConfig.rendererHighDetailRange);
 
-		BindEnvironmentLighting(renderer, 0);
+        BindEnvironmentLighting(renderer, 0);
 
-		//TODO: This is ugly!!!! 
-		SetUniformi("captureLightCount", __WaterConfig.stage == WaterRenderStage::Default ? -1 : static_cast<int>(lights.size()));
-		SetUniformi("numberOfTilesX", GLLightCullingPass::TileCount(renderer->getWindow()->getWidth()));
-		SetUniformf("max_reflection_lod", __EnvironmentMapConfig.prefilterLevels - 1.0f);
+        //TODO: This is ugly!!!! 
+        SetUniformi("captureLightCount",
+                    __WaterConfig.stage == WaterRenderStage::Default ? -1 : static_cast<int>(lights.size()));
+        SetUniformi("numberOfTilesX", GLLightCullingPass::TileCount(renderer->getWindow()->getWidth()));
+        SetUniformf("max_reflection_lod", __EnvironmentMapConfig.prefilterLevels - 1.0f);
 
-		//Some other stuff that is terrain-related
-		SetUniformf("scaleY", __TerrainConfig.scaleY);
+        //Some other stuff that is terrain-related
+        SetUniformf("scaleY", __TerrainConfig.scaleY);
 
-		SetUniformi("tessellationFactor", __TerrainConfig.tessellationFactor);
-		SetUniformf("tessellationSlope", __TerrainConfig.tessellationSlope);
-		SetUniformf("tessellationShift", __TerrainConfig.tessellationShift);
+        SetUniformi("tessellationFactor", __TerrainConfig.tessellationFactor);
+        SetUniformf("tessellationSlope", __TerrainConfig.tessellationSlope);
+        SetUniformf("tessellationShift", __TerrainConfig.tessellationShift);
 
-		for (unsigned int i = 0; i < 8; i++)
-		{
-			std::string uName = "lodMorphArea[" + std::to_string(i) + "]";
+        for (unsigned int i = 0; i < 8; i++) {
+            std::string uName = "lodMorphArea[" + std::to_string(i) + "]";
 
-			SetUniformi(uName, __TerrainConfig.lodMorphingAreas[i]);
-		}
-	}
+            SetUniformi(uName, __TerrainConfig.lodMorphingAreas[i]);
+        }
+    }
 
-	void GLTerrainShader::UpdateMaterialUniforms(Material* material, uint32_t descriptor_index) const
-	{
-		material->getTexture("heightMap")->Bind(3);
-		SetUniformi("heightmap", 3);
-		material->getTexture("normalMap")->Bind(4);
-		SetUniformi("normalmap", 4);
-		material->getTexture("splatMap")->Bind(5);
-		SetUniformi("splatmap", 5);
+    void GLTerrainShader::UpdateMaterialUniforms(Material *material, uint32_t descriptor_index) const {
+        material->getTexture("heightMap")->Bind(3);
+        SetUniformi("heightmap", 3);
+        material->getTexture("normalMap")->Bind(4);
+        SetUniformi("normalmap", 4);
+        material->getTexture("splatMap")->Bind(5);
+        SetUniformi("splatmap", 5);
 
-		uint32_t texUnit = 6;
-		float emissionEnabled[3]{};
+        uint32_t texUnit = 6;
+        float emissionEnabled[3]{};
 
-		for (unsigned int i = 0; i < 3; i++)
-		{
-			std::string uniformName = "materials[" + std::to_string(i) + "].";
+        for (unsigned int i = 0; i < 3; i++) {
+            std::string uniformName = "materials[" + std::to_string(i) + "].";
 
-			int handle = material->getInt("subMaterial" + std::to_string(i));
-			AssembledAssetManager* manager = Application::Get().getEngineLayer()->getAssetManager();
-			MaterialHandle material = manager->getMaterialFromHandle((size_t)handle);
+            int handle = material->getInt("subMaterial" + std::to_string(i));
+            AssembledAssetManager *manager = Application::Get().getEngineLayer()->getAssetManager();
+            MaterialHandle material = manager->getMaterialFromHandle((size_t) handle);
 
-			material->getTexture(ALBEDO_MAP)->Bind(texUnit);
-			SetUniformi(uniformName + ALBEDO_MAP, texUnit);
-			texUnit++;
+            material->getTexture(ALBEDO_MAP)->Bind(texUnit);
+            SetUniformi(uniformName + ALBEDO_MAP, texUnit);
+            texUnit++;
 
-			material->getTexture(NORMAL_MAP)->Bind(texUnit);
-			SetUniformi(uniformName + NORMAL_MAP, texUnit);
-			texUnit++;
+            material->getTexture(NORMAL_MAP)->Bind(texUnit);
+            SetUniformi(uniformName + NORMAL_MAP, texUnit);
+            texUnit++;
 
-			material->getTexture(MROT_MAP)->Bind(texUnit);
-			SetUniformi(uniformName + MROT_MAP, texUnit);
-			texUnit++;
+            material->getTexture(MROT_MAP)->Bind(texUnit);
+            SetUniformi(uniformName + MROT_MAP, texUnit);
+            texUnit++;
 
-			emissionEnabled[i] = material->exists(EMISSION_MAP) ? 1.0f : 0.0f;
-			material->getTexture(EMISSION_MAP)->Bind(texUnit);
-			SetUniformi(uniformName + EMISSION_MAP, texUnit);
-			texUnit++;
+            emissionEnabled[i] = material->exists(EMISSION_MAP) ? 1.0f : 0.0f;
+            material->getTexture(EMISSION_MAP)->Bind(texUnit);
+            SetUniformi(uniformName + EMISSION_MAP, texUnit);
+            texUnit++;
 
-			SetUniformf(uniformName + HEIGHT_SCALE, material->getFloat(HEIGHT_SCALE));
-			SetUniformf(uniformName + HORIZONTAL_SCALE, material->getFloat(HORIZONTAL_SCALE));
-			SetUniform(uniformName + MROT, material->getVector4f(MROT));
-		}
-		SetUniform("emissionEnabled", Vector3f(emissionEnabled[0], emissionEnabled[1], emissionEnabled[2]));
-	}
+            SetUniformf(uniformName + HEIGHT_SCALE, material->getFloat(HEIGHT_SCALE));
+            SetUniformf(uniformName + HORIZONTAL_SCALE, material->getFloat(HORIZONTAL_SCALE));
+            SetUniform(uniformName + MROT, material->getVector4f(MROT));
+        }
+        SetUniform("emissionEnabled", Vector3f(emissionEnabled[0], emissionEnabled[1], emissionEnabled[2]));
+    }
 
-	void GLTerrainShader::UpdateObjectUniforms(GameObject* object, uint32_t instance_index) const
-	{
-		TerrainNode* node = (TerrainNode*)object;
+    void GLTerrainShader::UpdateObjectUniforms(GameObject *object, uint32_t instance_index) const {
+        ProceduralConfigScope scope(object);
+        if (sceneRenderer) UpdateGlobalUniforms(sceneRenderer);
+        TerrainNode *node = (TerrainNode *) object;
 
-		SetUniform(location_localMatrix, node->getLocalTransform().getTransformationMatrix());
-		SetUniform(location_worldMatrix, node->getWorldTransform().getTransformationMatrix());
+        SetUniform(location_localMatrix, node->getLocalTransform().getTransformationMatrix());
+        SetUniform(location_worldMatrix, node->getWorldTransform().getTransformationMatrix());
 
-		SetUniform(location_location, node->getLocation());
-		SetUniform(location_index, node->getIndex());
-		SetUniformf(location_gap, node->getGap());
-		SetUniformi(location_lod, node->getLod());
-	}
+        SetUniform(location_location, node->getLocation());
+        SetUniform(location_index, node->getIndex());
+        SetUniformf(location_gap, node->getGap());
+        SetUniformi(location_lod, node->getLod());
+    }
 };

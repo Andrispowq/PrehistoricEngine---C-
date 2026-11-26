@@ -63,7 +63,7 @@ namespace Prehistoric {
                 break;
             }
         }
-        float phase = float(Time::getTimeFromStartNanoseconds() * 1.0e-9 * cfg.wavemotion * 0.001);
+        float phase = float(water->GetSimulationTime() * cfg.wavemotion * 0.001);
         const bool wireframe = renderer->isWireframeMode() && pipeline->hasWireframePipeline();
         Vector4f params[] = {
             {float(cfg.tessellationFactor), cfg.tessellationSlope, cfg.tessellationShift, float(wireframe)},

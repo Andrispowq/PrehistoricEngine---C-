@@ -37,7 +37,7 @@ namespace Prehistoric {
                                  : FrontFace::CLOCKWISE;
         const auto key = std::make_pair(hash, winding);
         auto idx = pipelineHashMap.find(key);
-        if (idx != pipelineHashMap.end()) {
+        if (idx != pipelineHashMap.end() && type != PipelineTypeHashFlags::Compute) {
             return {pipelines[idx->second].first.get(), idx->second};
         }
 
@@ -74,7 +74,8 @@ namespace Prehistoric {
         handle.handle = han;
 
         pipelines.insert(std::make_pair(handle.handle, std::make_pair(pipe, 0)));
-        pipelineHashMap.insert(std::make_pair(key, handle.handle));
+        // Compute wrappers contain mutable image bindings and dispatch sizes.
+        if (type != PipelineTypeHashFlags::Compute) pipelineHashMap.insert(std::make_pair(key, handle.handle));
 
         return handle;
     }
@@ -108,10 +109,11 @@ namespace Prehistoric {
 
     PipelineHandle AssembledAssetManager::storePipeline(Pipeline *pipeline) {
         auto *graphics = dynamic_cast<GraphicsPipeline *>(pipeline);
+        const bool compute = dynamic_cast<GLComputePipeline *>(pipeline) || dynamic_cast<VKComputePipeline *>(pipeline);
         const auto key = std::make_pair(pipeline->GetHash(),
                                         graphics ? graphics->getFrontFace() : FrontFace::CLOCKWISE);
         auto idx = pipelineHashMap.find(key);
-        if (idx != pipelineHashMap.end()) {
+        if (idx != pipelineHashMap.end() && !compute) {
             if (pipeline != pipelines.at(idx->second).first.get()) delete pipeline;
             return {pipelines.at(idx->second).first.get(), idx->second};
         }
@@ -123,7 +125,7 @@ namespace Prehistoric {
         handle.handle = han;
 
         pipelines.insert(std::make_pair(handle.handle, std::make_pair(pipeline, 0)));
-        pipelineHashMap.insert(std::make_pair(key, handle.handle));
+        if (!compute) pipelineHashMap.insert(std::make_pair(key, handle.handle));
 
         return handle;
     }

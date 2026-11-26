@@ -42,7 +42,9 @@ namespace Prehistoric {
 
         GameObject(const GameObject &) = delete;
 
-        std::unique_ptr<GameObject> Clone() const;
+        virtual std::unique_ptr<GameObject> Clone() const;
+
+        void CopyAuthoredStateTo(GameObject &copy) const;
 
         void CheckComponentRemoval(const Component *component) const;
 

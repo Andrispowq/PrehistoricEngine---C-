@@ -92,6 +92,12 @@ namespace Prehistoric {
 
     class AssetManager {
     public:
+        std::optional<TextureHandle> FindTexture(Texture *texture) const {
+            for (const auto &[id, entry]: textures)
+                if (entry.first.get() == texture) return TextureHandle{texture, id};
+            return std::nullopt;
+        }
+
         AssetManager(Window *window);
 
         AssetManager(const AssetManager &) = default;

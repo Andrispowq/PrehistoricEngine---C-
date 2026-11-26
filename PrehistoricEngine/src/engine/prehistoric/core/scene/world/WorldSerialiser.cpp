@@ -1,5 +1,6 @@
 #include "Includes.hpp"
 #include "WorldSerialiser.h"
+#include "ProceduralWorld.h"
 
 #include "prehistoric/core/node/component/renderer/RendererComponent.h"
 #include "prehistoric/core/node/component/light/Light.h"
@@ -11,9 +12,9 @@
 #include <json.hpp>
 
 namespace Prehistoric {
-    static bool IsTerrainNode(Node *node) {
+    static bool IsGeneratedNode(Node *node) {
         for (; node; node = node->getParent())
-            if (dynamic_cast<Terrain *>(node)) return true;
+            if (node->IsGenerated()) return true;
         return false;
     }
 
@@ -179,14 +180,7 @@ namespace Prehistoric {
             std::vector<GameObject *> children = root->getAllChildren();
             // Flat records retain explicit parent links and world-space transforms.
             for (auto child: children) {
-                if (IsTerrainNode(child->getParent())) continue;
-                if (const auto *terrain = dynamic_cast<const Terrain *>(child)) {
-                    worldObjects.push_back({
-                        {"name", child->getName()}, {"type", "terrain"}, {"config", terrain->GetConfigFile()}
-                    });
-                    continue;
-                }
-
+                if (IsGeneratedNode(child)) continue;
                 if (const auto *environment = dynamic_cast<const EnvironmentMap *>(child)) {
                     const auto &transform = environment->getWorldTransform();
                     auto vec = [](const Vector3f &value) { return nlohmann::json::array({value.x, value.y, value.z}); };
@@ -213,7 +207,7 @@ namespace Prehistoric {
                     }
                     continue;
                 }
-                nlohmann::json child_json;
+                nlohmann::json child_json = WriteProceduralObject(*child, manager);
                 child_json["name"] = child->getName();
                 child_json["enabled"] = child->isEnabled();
                 if (child->getParent() && child->getParent() != root)
@@ -244,6 +238,7 @@ namespace Prehistoric {
                     std::unordered_map<std::string, Component *> comps = child->getComponents();
                     for (auto elem: comps) {
                         Component *comp = elem.second;
+                        if (comp->IsGenerated()) continue;
                         nlohmann::json comp_json;
 
                         if (comp->getComponentType() == ComponentType::RendererComponent) {
@@ -348,9 +343,10 @@ namespace Prehistoric {
         std::vector<std::string> modelLocations;
         std::vector<std::string> textureLocation;
         for (auto child: children) {
-            if (IsTerrainNode(child)) continue;
+            if (IsGeneratedNode(child)) continue;
             if (child->HasComponent<RendererComponent>()) {
                 RendererComponent *renderer = child->GetComponent<RendererComponent>();
+                if (renderer->IsGenerated()) continue;
 
                 auto *graphics = dynamic_cast<GraphicsPipeline *>(renderer->getPipeline());
                 if (!graphics) continue;

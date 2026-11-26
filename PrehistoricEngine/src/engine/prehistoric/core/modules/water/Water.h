@@ -10,6 +10,7 @@
 
 namespace Prehistoric {
     class Renderer;
+    struct WaterConfig;
     class Framebuffer;
 
     class VKWaterSimulation;
@@ -21,6 +22,13 @@ namespace Prehistoric {
         Water(Window *window, Camera *camera, AssembledAssetManager *manager, Vector3f position);
 
         virtual ~Water();
+
+        Water(Window *window, Camera *camera, AssembledAssetManager *manager, Vector3f position,
+              const WaterConfig &settings);
+
+        float GetSimulationTime() const;
+
+        void SetSimulationTime(float seconds);
 
         void PreRender(Renderer *renderer) override;
 
@@ -37,14 +45,20 @@ namespace Prehistoric {
 
         VKWaterSimulation &simulation() const { return *vkSimulation; }
         const std::vector<QuadPatch> &getLeaves() const { return leaves; }
-        float height() const { return position.y; }
+        Material *GetSurfaceMaterial() const { return material.pointer; }
+        float height() const { return worldTransform.getPosition().y; }
         float captureDepthScale = 0;
+
+        std::unique_ptr<GameObject> Clone() const override;
+
+        WaterConfig &GetSettings() const { return *settings; }
 
     private:
         std::unique_ptr<VKWaterSimulation> vkSimulation;
         std::vector<QuadPatch> leaves;
 
     private:
+        std::unique_ptr<WaterConfig> settings;
         Window *window;
         Camera *camera;
         AssembledAssetManager *manager;
@@ -56,6 +70,7 @@ namespace Prehistoric {
 
         TextureHandle dudv;
         Vector3f position = 0;
+        float timeOffset = 0;
         Vector3f lastLodPosition;
 
         MaterialHandle material;

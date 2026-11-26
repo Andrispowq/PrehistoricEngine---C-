@@ -8,14 +8,16 @@
 #include "prehistoric/core/CoreEngine.h"
 #include "prehistoric/core/ImGUI/ImGUILayer.h"
 
+#include "prehistoric/core/config/ProceduralConfig.h"
+
 #define __EngineSettings ::Prehistoric::Application::Get().getEngineLayer()->getEngineSettings()
 
 #define __FrameworkConfig __EngineSettings->frameworkConfig
 #define __EngineConfig __EngineSettings->engineConfig
-#define __TerrainConfig __EngineSettings->terrainConfig
+#define __TerrainConfig (::Prehistoric::activeTerrainConfig ? *::Prehistoric::activeTerrainConfig : __EngineSettings->terrainConfig)
 #define __AtmosphereConfig __EngineSettings->atmosphereConfig
 #define __EnvironmentMapConfig __EngineSettings->environmentMapConfig
-#define __WaterConfig __EngineSettings->waterConfig
+#define __WaterConfig (::Prehistoric::activeWaterConfig ? *::Prehistoric::activeWaterConfig : __EngineSettings->waterConfig)
 
 namespace Prehistoric {
     class Application {

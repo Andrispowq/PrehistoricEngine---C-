@@ -249,7 +249,8 @@ namespace Prehistoric {
             if (voxelGI) renderpass->TraceVoxelScreen(buffer, *this);
         }
         for (auto *water: waters) {
-            water->simulation().Record(buffer->getCommandBuffer(), float(Time::getTimeFromStartNanoseconds() * 1.0e-9));
+            ProceduralConfigScope scope(water);
+            water->simulation().Record(buffer->getCommandBuffer(), water->GetSimulationTime());
             auto &targets = renderpass->GetWaterTargets(water);
             for (bool reflected: {true, false}) {
                 const Matrix4f view = camera->getViewMatrix();
@@ -289,8 +290,11 @@ namespace Prehistoric {
     }
 
     void VKRenderer::RenderHDR() {
-        const bool underwater = __WaterConfig.underwaterPostProcessing && std::any_of(waters.begin(), waters.end(),
-                                    [](const Water *water) { return water->isCameraUnderwater(); });
+        const bool underwater = std::any_of(waters.begin(), waters.end(),
+                                            [](const Water *water) {
+                                                return water->GetSettings().underwaterPostProcessing && water->
+                                                       isCameraUnderwater();
+                                            });
         renderpass->RenderHDR(getDrawCommandBuffer(), *this, bloomEnabled && bloomIntensity > 0.0f, underwater);
     }
 
@@ -371,6 +375,7 @@ namespace Prehistoric {
             if (buffer && !mesh) shader->BindTextureSets(frameDescriptors.at(shader).materials.at(material));
         };
         auto object = [&](Pipeline *pipeline, RenderableComponent *renderable) {
+            ProceduralConfigScope scope(renderable->getParent());
             if (!shader) return;
             if (buffer) {
                 auto slot = objectSlots[shader]++;

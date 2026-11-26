@@ -121,6 +121,7 @@ def main():
                         for p in (ROOT / app / 'res/world').rglob('*') if p.suffix in ('.json', '.wrld'))
         manifest.write_text(''.join(str(p) + '\n' for p in worlds))
         env['PREHISTORIC_WORLD_MANIFEST'] = str(manifest)
+        env['PREHISTORIC_TEST_TERRAIN_CONFIG'] = str(ROOT / 'Prehistoric/res/config/terrain_1.json')
     env['PREHISTORIC_TEMPORAL_DEBUG'] = str(args.debug)
     if args.water: env['PREHISTORIC_TEMPORAL_WATER'] = '1'
     if args.no_gi: env['PREHISTORIC_TEMPORAL_NO_GI'] = '1'
@@ -136,7 +137,9 @@ def main():
         env['VK_INSTANCE_LAYERS'] = 'VK_LAYER_KHRONOS_validation'
         if not args.benchmark:
             env.update(VK_INSTANCE_LAYERS='VK_LAYER_KHRONOS_validation:VK_LAYER_LUNARG_screenshot',
-                       VK_SCREENSHOT_FRAMES='4,12,17,25,31,39,48,54,62', VK_SCREENSHOT_DIR=str(output))
+                       VK_SCREENSHOT_FRAMES=(
+                           '2,3,4,12,17,25,31,39,48,54,62' if args.world_suite else '4,12,17,25,31,39,48,54,62'),
+                       VK_SCREENSHOT_DIR=str(output))
     print(f'Artifacts: {output}', flush=True)
     with (output / 'run.log').open('w') as log:
         process = subprocess.Popen([output / 'TemporalSmoke'], cwd=output, env=env, stdout=log,
@@ -151,7 +154,8 @@ def main():
                 process.kill(); process.wait()
             raise SystemExit('Timed out; see run.log for native context/window-service errors')
     log = (output / 'run.log').read_text(errors='replace')
-    print('\n'.join(line for line in log.splitlines() if 'TEMPORAL' in line or 'WORLD ' in line))
+    print(
+        '\n'.join(line for line in log.splitlines() if 'TEMPORAL' in line or 'WORLD ' in line or 'PROCEDURAL ' in line))
     if code or (
     'WORLD SUITE PASS' if args.world_suite else 'TEMPORAL PASS') not in log or 'Message severity: ERROR' in log:
         raise SystemExit(f'GPU smoke failed (exit {code}); see {output}/run.log')

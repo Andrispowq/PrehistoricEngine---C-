@@ -1,4 +1,5 @@
 #include "Includes.hpp"
+#include "prehistoric/core/scene/world/ProceduralWorld.h"
 #include "Water.h"
 #include "WaterCapture.h"
 #include "platform/vulkan/rendering/VKWaterSimulation.h"
@@ -10,8 +11,16 @@
 
 namespace Prehistoric {
     Water::Water(Window *window, Camera *camera, AssembledAssetManager *manager, Vector3f position)
-        : window(window), camera(camera), manager(manager), position(position), fft{nullptr}, reflectionFbo{nullptr},
-          refractionFbo{nullptr} {
+        : Water(window, camera, manager, position, __WaterConfig) {
+    }
+
+    Water::Water(Window *window, Camera *camera, AssembledAssetManager *manager, Vector3f position,
+                 const WaterConfig &config)
+        : settings(std::make_unique<WaterConfig>(config)), window(window), camera(camera), manager(manager),
+          position(position) {
+        ProceduralConfigScope scope(nullptr, settings.get());
+        SetPosition(position - Vector3f(settings->scaleXZ / 2, 0, settings->scaleXZ / 2));
+        SetScale({settings->scaleXZ, 1, settings->scaleXZ});
         if (__FrameworkConfig.api == Vulkan) {
             auto *gpu = static_cast<VKDevice *>(window->getContext()->getDevices());
             VkPhysicalDeviceFeatures features{};
@@ -28,11 +37,13 @@ namespace Prehistoric {
             auto shader = assets->loadShader(ShaderName::Water).value();
             auto pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vertices);
             auto *component = new RendererComponent(window, manager, pipeline, material);
+            component->SetGenerated(true);
             component->setReflection(false);
             AddComponent(RENDERER_COMPONENT, component);
             SetPosition(position - Vector3f(__WaterConfig.scaleXZ / 2, 0, __WaterConfig.scaleXZ / 2));
             SetScale({__WaterConfig.scaleXZ, 1, __WaterConfig.scaleXZ});
             quadtree = new WaterQuadtree(window, camera, manager, material, position);
+            quadtree->SetGenerated(true);
             AddChild("Quadtree", quadtree);
             quadtree->CollectLeaves(leaves);
             lastLodPosition = camera->getPosition();
@@ -85,10 +96,32 @@ namespace Prehistoric {
         manager->addReference<Material>(material.handle);
         quadtree = new WaterQuadtree(window, camera, manager, material, position);
         lastLodPosition = camera->getPosition();
+        quadtree->SetGenerated(true);
         AddChild("Quadtree", quadtree);
     }
 
+    std::unique_ptr<GameObject> Water::Clone() const {
+        auto copy = std::make_unique < Water > (window, camera, manager, position, *settings);
+        CopyProceduralMaterials(*this, *copy);
+        CopyAuthoredStateTo(*copy);
+        copy->SetSimulationTime(GetSimulationTime());
+        return copy;
+    }
+
+    float Water::GetSimulationTime() const {
+        return fft && settings->tDelta != 0
+                   ? fft->GetTime() / (1000 * settings->tDelta)
+                   : float(Time::getTimeFromStartNanoseconds() * 1.0e-9) + timeOffset;
+    }
+
+    void Water::SetSimulationTime(float seconds) {
+        timeOffset = seconds - float(Time::getTimeFromStartNanoseconds() * 1.0e-9);
+        if (fft) fft->SetTime(seconds * 1000 * settings->tDelta);
+    }
+
     Water::~Water() {
+        children.clear();
+        components.clear();
         if (!fft) return;
         AssetManager *man = manager->getAssetManager();
         manager->removeReference<Material>(material.handle);
@@ -100,17 +133,21 @@ namespace Prehistoric {
 
     void Water::PreRender(Renderer *renderer) {
         if (!enabled || (!fft && !vkSimulation)) return;
+        ProceduralConfigScope scope(nullptr, settings.get());
         camera = renderer->getCamera();
-        const Vector3f offset = camera->getPosition() - position;
-        const float halfExtent = __WaterConfig.scaleXZ * 0.5f;
-        cameraUnderwater = offset.y < 0 && std::abs(offset.x) <= halfExtent && std::abs(offset.z) <= halfExtent;
+        worldTransform.calculateTransformationMatrix();
+        position = (worldTransform.getTransformationMatrix() * Vector4f(0.5f, 0, 0.5f, 1)).xyz();
+        const auto localEye = (worldTransform.getTransformationMatrix().Invert() * Vector4f(camera->getPosition(), 1)).
+                xyz();
+        cameraUnderwater = localEye.y < 0 && localEye.x >= 0 && localEye.x <= 1 && localEye.z >= 0 && localEye.z <= 1;
         if (vkSimulation) {
             UpdateQuadtree();
             static_cast<VKRenderer *>(renderer)->RegisterWater(this);
-            GetComponent<RendererComponent>()->PreRender(renderer);
+            GameObject::PreRender(renderer);
             return;
         }
-        const float motion = float(Time::getTimeFromStartNanoseconds() * 1.0e-9 * __WaterConfig.wavemotion * 0.001);
+        const float motion = float(GetSimulationTime() * __WaterConfig.wavemotion * 0.001);
+        material->getFloats().at("waterHeight") = height();
         material->getFloats().at("motion") = motion;
         material->getInts().at("underwater") = cameraUnderwater;
 
@@ -121,10 +158,11 @@ namespace Prehistoric {
 
         //Water rendering
         UpdateQuadtree();
-        Node::PreRender(renderer);
+        GameObject::PreRender(renderer);
     }
 
     void Water::RenderCaptures(Renderer *renderer) {
+        ProceduralConfigScope scope(nullptr, settings.get());
         uint32_t width = window->getWidth();
         uint32_t height = window->getHeight();
 
@@ -168,15 +206,10 @@ namespace Prehistoric {
     }
 
     void Water::UpdateQuadtree() {
-        if (quadtree &&camera
-        
-        ->
-        getPosition() != lastLodPosition
-        )
-        {
+        ProceduralConfigScope scope(nullptr, settings.get());
+        if (quadtree) {
             quadtree->UpdateQuadtree(camera);
             if (vkSimulation) quadtree->CollectLeaves(leaves);
-            lastLodPosition = camera->getPosition();
         }
     }
 }

@@ -1,5 +1,6 @@
 #include "Includes.hpp"
 #include "GameObject.h"
+#include "prehistoric/core/scene/world/ProceduralWorld.h"
 
 #include "prehistoric/core/CoreEngine.h"
 #include "prehistoric/core/scene/Scene.h"
@@ -13,20 +14,27 @@ namespace Prehistoric {
         if (typeid(*this) != typeid(GameObject))
             throw std::runtime_error("This specialised object does not support duplication");
         auto copy = std::make_unique<GameObject>();
-        copy->worldTransform = worldTransform;
-        copy->enabled = enabled;
-        copy->updateFunction = updateFunction;
+        CopyAuthoredStateTo(*copy);
+        return copy;
+    }
+
+    void GameObject::CopyAuthoredStateTo(GameObject &copy) const {
+        copy.worldTransform = worldTransform;
+        copy.enabled = enabled;
+        copy.updateFunction = updateFunction;
         for (const auto &[name, component]: components) {
+            if (component->IsGenerated()) continue;
             auto cloned = component->Clone();
-            copy->AddComponent(name, cloned.release());
+            copy.AddComponent(name, cloned.release());
         }
         for (const auto &[id, child]: children) {
+            if (child->IsGenerated()) continue;
             auto *object = dynamic_cast<GameObject *>(child.get());
             if (!object) throw std::runtime_error("Cannot duplicate a non-GameObject child");
             auto cloned = object->Clone();
-            copy->AddChild(child->getName(), cloned.release());
+            copy.AddChild(child->getName(), cloned.release());
         }
-        return copy;
+        RemapProceduralReferences(*this, copy);
     }
 
     void GameObject::PreUpdate(CoreEngine *engine) {

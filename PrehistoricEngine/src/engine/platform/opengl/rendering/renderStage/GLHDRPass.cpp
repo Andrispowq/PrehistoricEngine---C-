@@ -73,7 +73,7 @@ namespace Prehistoric {
         rend->getFlareAtlas()->Bind(1);
         rend->getMainPass()->getNormalImage()->Bind(2);
         static_cast<GLHDRShader *>(hdrPipeline->getShader())->UpdateUniforms(
-            scene, {(float) width, (float) height}, __WaterConfig.underwaterPostProcessing && rend->isUnderwater(),
+            scene, {(float) width, (float) height}, rend->isUnderwater(),
             rend->hasSelection(), rend->GetSunFlare(), rend->GetSunFlareFootprint());
         auto *hdr = static_cast<GLHDRShader *>(hdrPipeline->getShader());
         const auto &lens = rend->depthOfField;

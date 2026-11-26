@@ -71,9 +71,26 @@ namespace Prehistoric {
         }
     }
 
+    void Material::CopyPropertiesFrom(const Material &source) {
+        vector4s = source.vector4s;
+        vector3s = source.vector3s;
+        vector2s = source.vector2s;
+        floats = source.floats;
+        ints = source.ints;
+        for (const auto &[key, texture]: source.textures)
+            for (const auto &[name, resource]: manager->getIDMap())
+                if (resource.type == ResourceType::Texture && resource.handle == texture.handle) {
+                    addTexture(key, texture);
+                    break;
+                }
+        hash = 0;
+    }
+
     void Material::addTexture(const std::string &key, TextureHandle texture) {
+        if (auto old = textures.find(key); old != textures.end() && old->second.handle == texture.handle) return;
         manager->addReference<Texture>(texture.handle);
-        textures.emplace(std::make_pair(key, texture));
+        if (auto old = textures.find(key); old != textures.end()) manager->removeReference<Texture>(old->second.handle);
+        textures.insert_or_assign(key, texture);
         hash = 0;
     }
 

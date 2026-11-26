@@ -49,6 +49,9 @@ namespace Prehistoric {
 
         Scene *GetScene() const;
 
+        bool IsGenerated() const { return generated; }
+        void SetGenerated(bool value) { generated = value; }
+
         inline std::string getName() const { return name; }
         inline std::string &getName() { return name; }
         inline void setName(const std::string &name) { this->name = name; }
@@ -70,6 +73,7 @@ namespace Prehistoric {
 
         Transform worldTransform;
         bool enabled;
+        bool generated = false;
     };
 };
 

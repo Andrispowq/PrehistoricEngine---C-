@@ -6,213 +6,199 @@
 
 #include "prehistoric/application/Application.h"
 
-namespace Prehistoric
-{
-	TerrainNode::TerrainNode(Factory<TerrainNode>* factory, Window* window, Camera* camera, AssembledAssetManager* manager, TerrainMaps* maps,
-		MaterialHandle material, PipelineHandle pipeline, PipelineHandle wireframePipeline, PipelineHandle shadowPipeline,
-		const Vector2f& location, int lod, const Vector2f& index)
-		: factory(factory), window(window), camera(camera), manager(manager), maps(maps), material(material), location(location), lod(lod), index(index)
-	{
-		this->gap = 1.0f / float(TerrainQuadtree::rootNodes * pow(2, lod));
+namespace Prehistoric {
+    TerrainNode::TerrainNode(Factory<TerrainNode> *factory, Window *window, Camera *camera,
+                             AssembledAssetManager *manager, TerrainMaps *maps,
+                             MaterialHandle material, PipelineHandle pipeline, PipelineHandle wireframePipeline,
+                             PipelineHandle shadowPipeline,
+                             const Vector2f &location, int lod, const Vector2f &index)
+        : factory(factory), window(window), camera(camera), manager(manager), maps(maps), material(material),
+          location(location), lod(lod), index(index) {
+        SetGenerated(true);
+        this->gap = 1.0f / float(TerrainQuadtree::rootNodes * pow(2, lod));
 
-		Vector3f localScaling = { gap, 0, gap };
-		Vector3f localPosition = { location.x, 0, location.y };
+        Vector3f localScaling = {gap, 0, gap};
+        Vector3f localPosition = {location.x, 0, location.y};
 
-		localTransform.setScaling(localScaling);
-		localTransform.setPosition(localPosition);
+        localTransform.setScaling(localScaling);
+        localTransform.setPosition(localPosition);
 
-		worldTransform.setScaling({ __TerrainConfig.scaleXZ, __TerrainConfig.scaleY, __TerrainConfig.scaleXZ });
-		worldTransform.setPosition(Vector3f{ -__TerrainConfig.scaleXZ / 2.0f, 0, -__TerrainConfig.scaleXZ / 2.0f } + maps->getPosition());
+        worldTransform.setScaling({__TerrainConfig.scaleXZ, __TerrainConfig.scaleY, __TerrainConfig.scaleXZ});
+        worldTransform.setPosition(
+            Vector3f{-__TerrainConfig.scaleXZ / 2.0f, 0, -__TerrainConfig.scaleXZ / 2.0f} + maps->getPosition());
 
-		if (pipeline.pointer)
-		{
-			rendererComponent = new RendererComponent(window, manager, pipeline, material);
-			wireframeRendererComponent = new RendererComponent(window, manager, wireframePipeline, material);
-			shadowComponent = new RendererComponent(window, manager, shadowPipeline, material);
-			AddComponent(RENDERER_COMPONENT, rendererComponent);
-			AddComponent(WIREFRAME_RENDERER_COMPONENT, wireframeRendererComponent);
-		}
+        if (pipeline.pointer) {
+            rendererComponent = new RendererComponent(window, manager, pipeline, material);
+            wireframeRendererComponent = new RendererComponent(window, manager, wireframePipeline, material);
+            shadowComponent = new RendererComponent(window, manager, shadowPipeline, material);
+            shadowComponent->setParent(this);
+            AddComponent(RENDERER_COMPONENT, rendererComponent);
+            AddComponent(WIREFRAME_RENDERER_COMPONENT, wireframeRendererComponent);
+        }
 
-		ComputeWorldPosition();
-		UpdateQuadtree();
-	}
+        ComputeWorldPosition();
+        UpdateQuadtree();
+    }
 
-	TerrainNode::~TerrainNode()
-	{
-		//Ensure custom deletion for the children, as they are allocated differently from the rest of the Nodes
-		for (auto& child : children)
-		{
-			TerrainNode::operator delete(child.second.release(), *factory);
-		}
+    TerrainNode::~TerrainNode() {
+        //Ensure custom deletion for the children, as they are allocated differently from the rest of the Nodes
+        for (auto &child: children) {
+            TerrainNode::operator delete(child.second.release(), *factory);
+        }
 
-		children.clear();
-		delete shadowComponent;
-	}
+        children.clear();
+        delete shadowComponent;
+    }
 
-	void TerrainNode::PreRender(Renderer* renderer)
-	{
-		if (!rendererComponent) return;
-		if (leaf)
-		{
-			if (renderer->isShadowMode())
-			{
-				shadowComponent->PreRender(renderer);
-			}
-			else
-			{
-				if (renderer->isWireframeMode())
-				{
-					wireframeRendererComponent->PreRender(renderer);
-				}
-				else
-				{
-					rendererComponent->PreRender(renderer);
-				}
-			}
-		}
+    void TerrainNode::PreRender(Renderer *renderer) {
+        if (!rendererComponent) return;
+        if (leaf) {
+            if (renderer->isShadowMode()) {
+                shadowComponent->PreRender(renderer);
+            } else {
+                if (renderer->isWireframeMode()) {
+                    wireframeRendererComponent->PreRender(renderer);
+                } else {
+                    rendererComponent->PreRender(renderer);
+                }
+            }
+        }
 
-		for (auto& child : children)
-		{
-			child.second->PreRender(renderer);
-		}
-	}
+        for (auto &child: children) {
+            child.second->PreRender(renderer);
+        }
+    }
 
-	void TerrainNode::UpdateQuadtree()
-	{
-		UpdateChildNodes();
+    void TerrainNode::UpdateQuadtree() {
+        UpdateChildNodes();
 
-		if (children.size() != 0)
-		{
-			for (auto& child : children)
-			{
-				((TerrainNode*)child.second.get())->UpdateQuadtree();
-			}
-		}
-	}
+        if (children.size() != 0) {
+            for (auto &child: children) {
+                ((TerrainNode *) child.second.get())->UpdateQuadtree();
+            }
+        }
+    }
 
-	void TerrainNode::UpdateChildNodes()
-	{
-		float distance = (camera->getPosition() - worldPosition).length();
+    void TerrainNode::UpdateChildNodes() {
+        if (maps->HasInstanceTransform()) worldTransform = maps->GetInstanceTransform();
+        ComputeWorldPosition();
+        float distance = (camera->getPosition() - worldPosition).length();
 
-		if (size_t(lod) < __TerrainConfig.lodRanges.size() && distance < __TerrainConfig.lodRanges[lod])
-		{
-			AddChildNodes(lod + 1);
-		}
-		else
-		{
-			RemoveChildNodes();
-		}
-	}
+        if (size_t(lod) < __TerrainConfig.lodRanges.size() && distance < __TerrainConfig.lodRanges[lod]) {
+            AddChildNodes(lod + 1);
+        } else {
+            RemoveChildNodes();
+        }
+    }
 
-	void TerrainNode::AddChildNodes(int lod)
-	{
-		if (leaf)
-		{
-			leaf = false;
-		}
+    void TerrainNode::AddChildNodes(int lod) {
+        if (leaf) {
+            leaf = false;
+        }
 
-		if (children.size() == 0)
-		{
-			for (int i = 0; i < 2; i++)
-			{
-				for (int j = 0; j < 2; j++)
-				{
-					std::stringstream ss;
-					ss << "Child ";
-					ss << i;
-					ss << ", ";
-					ss << j;
-					ss << ", lod: ";
-					ss << lod;
+        if (children.size() == 0) {
+            for (int i = 0; i < 2; i++) {
+                for (int j = 0; j < 2; j++) {
+                    std::stringstream ss;
+                    ss << "Child ";
+                    ss << i;
+                    ss << ", ";
+                    ss << j;
+                    ss << ", lod: ";
+                    ss << lod;
 
-					AddChild(ss.str(), new(*factory) TerrainNode(factory, window, camera, manager, maps, material, rendererComponent ? rendererComponent->getPipelineHandle() : PipelineHandle{}, wireframeRendererComponent ? wireframeRendererComponent->getPipelineHandle() : PipelineHandle{},
-						shadowComponent ? shadowComponent->getPipelineHandle() : PipelineHandle{}, location + Vector2f(float(i), float(j)) * (gap / 2.f), lod, { float(i), float(j) }));
-				}
-			}
-		}
-	}
+                    AddChild(ss.str(), new(*factory) TerrainNode(factory, window, camera, manager, maps, material,
+                                                                 rendererComponent
+                                                                     ? rendererComponent->getPipelineHandle()
+                                                                     : PipelineHandle{},
+                                                                 wireframeRendererComponent
+                                                                     ? wireframeRendererComponent->getPipelineHandle()
+                                                                     : PipelineHandle{},
+                                                                 shadowComponent
+                                                                     ? shadowComponent->getPipelineHandle()
+                                                                     : PipelineHandle{},
+                                                                 location + Vector2f(float(i), float(j)) * (gap / 2.f),
+                                                                 lod, {float(i), float(j)}));
+                }
+            }
+        }
+    }
 
-	void TerrainNode::RemoveChildNodes()
-	{
-		if (!leaf)
-		{
-			leaf = true;
-		}
+    void TerrainNode::RemoveChildNodes() {
+        if (!leaf) {
+            leaf = true;
+        }
 
-		if (children.size() != 0)
-		{
-			for (auto& child : children)
-			{
-				TerrainNode::operator delete(child.second.release(), *factory);
-			}
+        if (children.size() != 0) {
+            for (auto &child: children) {
+                TerrainNode::operator delete(child.second.release(), *factory);
+            }
 
-			children.clear();
-		}
-	}
+            children.clear();
+        }
+    }
 
-	void TerrainNode::CollectLeaves(std::vector<QuadPatch>& leaves) const
-	{
-		if (leaf)
-		{
-			float morph = lod ? float(__TerrainConfig.lodMorphingAreas[lod - 1]) : 0.0f;
-			leaves.push_back({{location.x, location.y, gap, morph}, {index.x, index.y, float(lod), 0}});
-			return;
-		}
-		for (const auto& child : children)
-			static_cast<const TerrainNode*>(child.second.get())->CollectLeaves(leaves);
-	}
+    void TerrainNode::CollectLeaves(std::vector<QuadPatch> &leaves) const {
+        if (leaf) {
+            float morph = lod ? float(__TerrainConfig.lodMorphingAreas[lod - 1]) : 0.0f;
+            leaves.push_back({{location.x, location.y, gap, morph}, {index.x, index.y, float(lod), 0}});
+            return;
+        }
+        for (const auto &child: children)
+            static_cast<const TerrainNode *>(child.second.get())->CollectLeaves(leaves);
+    }
 
-	void TerrainNode::ComputeWorldPosition()
-	{
-		Vector2f loc = (location + gap / 2.0f) * __TerrainConfig.scaleXZ - __TerrainConfig.scaleXZ / 2.0f;
-		float height = getTerrainHeight(loc);
-		this->worldPosition = Vector3f(loc.x, height, loc.y) + maps->getPosition();
-	}
+    void TerrainNode::ComputeWorldPosition() {
+        Vector2f loc = (location + gap / 2.0f) * __TerrainConfig.scaleXZ - __TerrainConfig.scaleXZ / 2.0f;
+        float height = getTerrainHeight(loc);
+        this->worldPosition = Vector3f(loc.x, height, loc.y) + maps->getPosition();
+        if (maps->HasInstanceTransform())
+            worldPosition = (maps->GetInstanceTransform().getTransformationMatrix() *
+                             Vector4f(location.x + gap / 2, height / __TerrainConfig.scaleY, location.y + gap / 2,
+                                      1)).xyz();
+    }
 
-	float TerrainNode::getTerrainHeight(const Vector2f& location) const
-	{
-		float height = 0;
+    float TerrainNode::getTerrainHeight(const Vector2f &location) const {
+        float height = 0;
 
-		Vector2f position = location;
-		position += __TerrainConfig.scaleXZ / 2.0f;
-		position /= __TerrainConfig.scaleXZ;
+        Vector2f position = location;
+        position += __TerrainConfig.scaleXZ / 2.0f;
+        position /= __TerrainConfig.scaleXZ;
 
-		Texture* heightmap = maps->getHeightmap();
-		uint32_t width = heightmap->getWidth();
-		float* heights = maps->getHeights();
+        Texture *heightmap = maps->getHeightmap();
+        uint32_t width = heightmap->getWidth();
+        float *heights = maps->getHeights();
 
-		Vector2f floor = { std::floor(position.x), std::floor(position.y) };
-		position -= floor;
-		position *= float(width);
+        Vector2f floor = {std::floor(position.x), std::floor(position.y)};
+        position -= floor;
+        position *= float(width);
 
-		int x0 = (int)std::floor(position.x);
-		int x1 = (x0 + 1) % width;
-		int z0 = (int)std::floor(position.y);
-		int z1 = (z0 + 1) % width;
+        int x0 = (int) std::floor(position.x);
+        int x1 = (x0 + 1) % width;
+        int z0 = (int) std::floor(position.y);
+        int z1 = (z0 + 1) % width;
 
-		float h0 = heights[width * z0 + x0];
-		float h1 = heights[width * z0 + x1];
-		float h2 = heights[width * z1 + x0];
-		float h3 = heights[width * z1 + x1];
+        float h0 = heights[width * z0 + x0];
+        float h1 = heights[width * z0 + x1];
+        float h2 = heights[width * z1 + x0];
+        float h3 = heights[width * z1 + x1];
 
-		float percentU = position.x - x0;
-		float percentV = position.y - z0;
+        float percentU = position.x - x0;
+        float percentV = position.y - z0;
 
-		float dU, dV;
-		if (percentU > percentV)
-		{ //bottom triangle
-			dU = h1 - h0;
-			dV = h3 - h1;
-		}
-		else
-		{
-			dU = h3 - h2;
-			dV = h2 - h0;
-		}
+        float dU, dV;
+        if (percentU > percentV) {
+            //bottom triangle
+            dU = h1 - h0;
+            dV = h3 - h1;
+        } else {
+            dU = h3 - h2;
+            dV = h2 - h0;
+        }
 
-		height = h0 + (dU * percentU) + (dV * percentV);
-		height *= __TerrainConfig.scaleY;
+        height = h0 + (dU * percentU) + (dV * percentV);
+        height *= __TerrainConfig.scaleY;
 
-		return height;
-	}
+        return height;
+    }
 };

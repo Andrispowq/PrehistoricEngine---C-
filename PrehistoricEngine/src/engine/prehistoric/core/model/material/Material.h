@@ -7,62 +7,72 @@
 
 #include "prehistoric/core/resources/AssetManager.h"
 
-namespace Prehistoric
-{
-	class Material
-	{
-	public:
-		Material(AssetManager* manager, std::string name = "UnnamedMaterial");
-		//Material(AssetManager* manager, nlohmann::json material);
-		~Material();
-		
-		void addTexture(const std::string& key, TextureHandle texture);
-		void addVector4f(const std::string& key, Vector4f value);
-		void addVector3f(const std::string& key, Vector3f value);
-		void addVector2f(const std::string& key, Vector2f value);
-		void addFloat(const std::string& key, float value);
-		void addInt(const std::string& key, int value);
+namespace Prehistoric {
+    class Material {
+    public:
+        Material(AssetManager *manager, std::string name = "UnnamedMaterial");
 
-		uint64_t GetHash();
+        //Material(AssetManager* manager, nlohmann::json material);
+        ~Material();
 
-		Texture* getTexture(const std::string& key) const;
+        void CopyPropertiesFrom(const Material &source);
 
-		Vector4f getVector4f(const std::string& key) const;
-		Vector3f getVector3f(const std::string& key) const;
-		Vector2f getVector2f(const std::string& key) const;
+        void addTexture(const std::string &key, TextureHandle texture);
 
-		float getFloat(const std::string& key) const;
-		int getInt(const std::string& key) const;
+        void addVector4f(const std::string &key, Vector4f value);
 
-		Texture* getDefault() const;
-		bool exists(const std::string& key) const { return textures.find(key) != textures.end(); }
+        void addVector3f(const std::string &key, Vector3f value);
 
-		uint64_t getID() const { return ID; }
-		std::string getName() const { return name; }
+        void addVector2f(const std::string &key, Vector2f value);
 
-		std::unordered_map<std::string, TextureHandle>& getTextures() { return textures; }
-		std::unordered_map<std::string, Vector4f>& getVector4fs() { return vector4s; }
-		std::unordered_map<std::string, Vector3f>& getVector3fs() { return vector3s; }
-		std::unordered_map<std::string, Vector2f>& getVector2fs() { return vector2s; }
-		std::unordered_map<std::string, float>& getFloats() { return floats; }
-		std::unordered_map<std::string, int>& getInts() { return ints; }
+        void addFloat(const std::string &key, float value);
 
-		void setName(const std::string& name) { this->name = name; }
+        void addInt(const std::string &key, int value);
 
-	private:
-		std::string name;
+        uint64_t GetHash();
 
-		AssetManager* manager;
-		uint64_t hash = 0;
-		uint64_t ID;
+        Texture *getTexture(const std::string &key) const;
 
-		std::unordered_map<std::string, TextureHandle> textures;
-		std::unordered_map<std::string, Vector4f> vector4s;
-		std::unordered_map<std::string, Vector3f> vector3s;
-		std::unordered_map<std::string, Vector2f> vector2s;
-		std::unordered_map<std::string, float> floats;
-		std::unordered_map<std::string, int> ints;
-	};
+        Vector4f getVector4f(const std::string &key) const;
+
+        Vector3f getVector3f(const std::string &key) const;
+
+        Vector2f getVector2f(const std::string &key) const;
+
+        float getFloat(const std::string &key) const;
+
+        int getInt(const std::string &key) const;
+
+        Texture *getDefault() const;
+
+        bool exists(const std::string &key) const { return textures.find(key) != textures.end(); }
+
+        uint64_t getID() const { return ID; }
+        std::string getName() const { return name; }
+
+        std::unordered_map<std::string, TextureHandle> &getTextures() { return textures; }
+        std::unordered_map<std::string, Vector4f> &getVector4fs() { return vector4s; }
+        std::unordered_map<std::string, Vector3f> &getVector3fs() { return vector3s; }
+        std::unordered_map<std::string, Vector2f> &getVector2fs() { return vector2s; }
+        std::unordered_map<std::string, float> &getFloats() { return floats; }
+        std::unordered_map<std::string, int> &getInts() { return ints; }
+
+        void setName(const std::string &name) { this->name = name; }
+
+    private:
+        std::string name;
+
+        AssetManager *manager;
+        uint64_t hash = 0;
+        uint64_t ID;
+
+        std::unordered_map<std::string, TextureHandle> textures;
+        std::unordered_map<std::string, Vector4f> vector4s;
+        std::unordered_map<std::string, Vector3f> vector3s;
+        std::unordered_map<std::string, Vector2f> vector2s;
+        std::unordered_map<std::string, float> floats;
+        std::unordered_map<std::string, int> ints;
+    };
 };
 
 #endif

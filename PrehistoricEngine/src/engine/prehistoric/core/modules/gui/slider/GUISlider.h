@@ -3,47 +3,50 @@
 
 #include "prehistoric/core/modules/gui/GUIElement.h"
 
-namespace Prehistoric
-{
-	class GUISlider : public GUIElement
-	{
-	public:
-		GUISlider(Window* window, AssembledAssetManager* manager, float minValue, float maxValue, Vector3f colour = -1, float* data = nullptr, size_t dataSize = 0, bool visible = true);
-		~GUISlider();
+namespace Prehistoric {
+    class GUISlider : public GUIElement {
+    public:
+        GUISlider(Window *window, AssembledAssetManager *manager, float minValue, float maxValue, Vector3f colour = -1,
+                  float *data = nullptr, size_t dataSize = 0, bool visible = true);
 
-		virtual void PreUpdate(CoreEngine* engine) override;
-		virtual void PreRender(Renderer* renderer) override;
+        ~GUISlider();
 
-		float getMinValue() const { return minValue; }
-		float getMaxValue() const { return maxValue; }
-		float getProgress() const { return progress; }
+        virtual void PreUpdate(CoreEngine *engine) override;
 
-		const Matrix4f& getSliderTransform() const { return slider_transform; }
-		Vector3f getSliderColour() const { return colour + 0.1f; }
+        virtual void PreRender(Renderer *renderer) override;
 
-		void setMinValue(float minValue) { this->minValue = minValue; }
-		void setMaxValue(float maxValue) { this->maxValue = maxValue; }
-		void setProgress(float progress) { this->progress = progress; }
+        float getMinValue() const { return minValue; }
+        float getMaxValue() const { return maxValue; }
+        float getProgress() const { return progress; }
 
-		GUISlider(const GUISlider&) = default;
+        const Matrix4f &getSliderTransform() const { return slider_transform; }
+        Vector3f getSliderColour() const { return colour + 0.1f; }
 
-	private:
-		float minValue;
-		float maxValue;
-		float progress;
+        void setMinValue(float minValue) { this->minValue = minValue; }
+        void setMaxValue(float maxValue) { this->maxValue = maxValue; }
+        void setProgress(float progress) { this->progress = progress; }
 
-		Matrix4f slider_transform;
-		Vector2f slider_position;
-		Vector2f slider_scale;
-		
-		//This is the handle we can use to slide between values, sits on top of the standard GUI mesh
-		static VertexBufferHandle slider_vbo;
-		static PipelineHandle slider_pipeline;
+        std::unique_ptr<GameObject> Clone() const override;
 
-		GUIElement* background;
-		bool dragged = false;
-		float cursorOldPositionX = -1;
-	};
+        GUISlider(const GUISlider &) = delete;
+
+    private:
+        float minValue;
+        float maxValue;
+        float progress;
+
+        Matrix4f slider_transform;
+        Vector2f slider_position;
+        Vector2f slider_scale;
+
+        //This is the handle we can use to slide between values, sits on top of the standard GUI mesh
+        static VertexBufferHandle slider_vbo;
+        static PipelineHandle slider_pipeline;
+
+        GUIElement *background;
+        bool dragged = false;
+        float cursorOldPositionX = -1;
+    };
 };
 
 #endif

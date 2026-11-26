@@ -7,13 +7,16 @@
 
 namespace Prehistoric {
     class Renderer;
+    struct TerrainConfig;
 
     class Terrain : public GameObject {
     public:
         Terrain(Window *window, Camera *camera, AssembledAssetManager *manager, const std::string &terrainConfigFile);
 
-        virtual ~Terrain() {
-        }
+        ~Terrain() override;
+
+        Terrain(Window *window, Camera *camera, AssembledAssetManager *manager,
+                const std::string &config, const TerrainConfig &settings);
 
         void PreRender(Renderer *renderer) override;
 
@@ -26,10 +29,16 @@ namespace Prehistoric {
 
         const std::string &GetConfigFile() const { return configFile; }
 
+        std::unique_ptr<GameObject> Clone() const override;
+
+        TerrainConfig &GetSettings() const { return *settings; }
+
     private:
         std::string configFile;
+        std::unique_ptr<TerrainConfig> settings;
         Window *window;
         Camera *camera;
+        AssembledAssetManager *manager;
         Vector3f lastLodCameraPosition;
 
         TerrainQuadtree *quadtree = nullptr;

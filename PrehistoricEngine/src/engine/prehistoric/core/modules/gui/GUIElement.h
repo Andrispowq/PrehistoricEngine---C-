@@ -19,59 +19,71 @@
 
 #include "prehistoric/core/util/ModelFabricator.h"
 
-namespace Prehistoric
-{
-	enum class GUIType
-	{
-		Element, Button, Slider
-	};
+namespace Prehistoric {
+    enum class GUIType {
+        Element, Button, Slider
+    };
 
-	class GUIElement : public GameObject
-	{
-	public:
-		GUIElement(Window* window, AssembledAssetManager* manager, Vector3f colour = -1, void* data = nullptr, size_t dataSize = 0, bool visible = true);
-		virtual ~GUIElement() {}
+    class GUIElement : public GameObject {
+    public:
+        GUIElement(Window *window, AssembledAssetManager *manager, Vector3f colour = -1, void *data = nullptr,
+                   size_t dataSize = 0, bool visible = true);
 
-		virtual void PreUpdate(CoreEngine* engine) override;
-		virtual void PreRender(Renderer* renderer) override;
+        virtual ~GUIElement();
 
-		bool inside(Vector2f cursor, Vector2f _start = -1, Vector2f _end = -1);
+        virtual void PreUpdate(CoreEngine *engine) override;
 
-		bool isVisible() const { return visible; }
-		bool hasChanged() const { return statusChanged; }
-		Vector3f getColour() { return colour; }
+        virtual void PreRender(Renderer *renderer) override;
 
-		Texture* getTexture() const { return texture; }
+        bool inside(Vector2f cursor, Vector2f _start = -1, Vector2f _end = -1);
 
-		void* getData() { return data; }
-		size_t getDataSize() const { return dataSize; }
-		GUIType getType() const { return type; }
+        bool isVisible() const { return visible; }
+        bool hasChanged() const { return statusChanged; }
+        Vector3f getColour() { return colour; }
 
-		void setVisible(bool visible) { this->visible = visible; }
-		void setColour(Vector3f colour) { this->colour = colour; }
+        Texture *getTexture() const { return texture; }
 
-		void setTexture(Texture* texture) { this->texture = texture; };
+        void *getData() { return data; }
+        size_t getDataSize() const { return dataSize; }
+        GUIType getType() const { return type; }
 
-		void setData(void* data, size_t dataSize = 0) { this->data = data; this->dataSize = dataSize; }
+        void setVisible(bool visible) { this->visible = visible; }
+        void setColour(Vector3f colour) { this->colour = colour; }
 
-		GUIElement(const GUIElement&) = default;
-	protected:
-		Window* window;
-		AssembledAssetManager* manager;
-		GUIType type;
+        void setTexture(Texture *texture);
 
-		bool visible;
-		bool statusChanged;
-		Vector3f colour;
+        void setData(void *data, size_t dataSize = 0) {
+            this->data = data;
+            this->dataSize = dataSize;
+        }
 
-		Texture* texture = nullptr;
+        std::unique_ptr<GameObject> Clone() const override;
 
-		void* data;
-		size_t dataSize;
+        void OwnData(const void *source, size_t bytes);
 
-		static VertexBufferHandle vbo;
-		static PipelineHandle pipeline;
-	};
+        void CopyGUIStateTo(GUIElement &copy, size_t payloadSize) const;
+
+        GUIElement(const GUIElement &) = delete;
+
+    protected:
+        Window *window;
+        AssembledAssetManager *manager;
+        GUIType type;
+
+        bool visible;
+        bool statusChanged = false;
+        Vector3f colour;
+
+        Texture *texture = nullptr;
+        std::optional<TextureHandle> retainedTexture;
+
+        void *data;
+        std::shared_ptr<void> ownedData;
+        size_t dataSize;
+
+        static VertexBufferHandle vbo;
+        static PipelineHandle pipeline;
+    };
 };
 
 #endif

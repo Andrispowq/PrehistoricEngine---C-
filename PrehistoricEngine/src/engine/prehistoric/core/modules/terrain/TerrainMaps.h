@@ -8,51 +8,62 @@
 #include "prehistoric/core/modules/gpgpu/SplatMapRenderer.h"
 #include "prehistoric/core/modules/gpgpu/TerrainHeightsQuery.h"
 
-namespace Prehistoric
-{
-	class TerrainMaps
-	{
-	public:
-		static constexpr float normalStrength = 60.0f;
+namespace Prehistoric {
+    class TerrainMaps {
+    public:
+        static constexpr float normalStrength = 60.0f;
 
-		TerrainMaps(Window* window, AssembledAssetManager* manager, const std::string& terrainConfigFile);
-		virtual ~TerrainMaps();
+        TerrainMaps(Window *window, AssembledAssetManager *manager, const std::string &terrainConfigFile);
 
-		Texture* getHeightmap() const { return heightmap.pointer; }
-		Texture* getNormalmap() const { return normalmap.pointer; }
-		Texture* getSplatmap() const { return splatmap.pointer; }
+        virtual ~TerrainMaps();
 
-		TextureHandle getHeightmapHandle() const { return heightmap; }
-		TextureHandle getNormalmapHandle() const { return normalmap; }
-		TextureHandle getSplatmapHandle() const { return splatmap; }
+        Texture *getHeightmap() const { return heightmap.pointer; }
+        Texture *getNormalmap() const { return normalmap.pointer; }
+        Texture *getSplatmap() const { return splatmap.pointer; }
 
-		float* getHeights() const { return heights; }
+        TextureHandle getHeightmapHandle() const { return heightmap; }
+        TextureHandle getNormalmapHandle() const { return normalmap; }
+        TextureHandle getSplatmapHandle() const { return splatmap; }
 
-		Vector3f getPosition() const { return position; }
+        float *getHeights() const { return heights; }
 
-		std::vector<MaterialHandle> getMaterials() const { return materials; }
-	private:
-		void LoadConfigFile(const std::string& terrainConfigFile);
-	private:
-		Window* window;
-		AssembledAssetManager* manager;
+        Vector3f getPosition() const { return position; }
 
-		TextureHandle heightmap;
-		TextureHandle normalmap;
-		TextureHandle splatmap;
+        void SetInstanceTransform(const Transform &value) {
+            instanceTransform = value;
+            hasInstanceTransform = true;
+        }
 
-		std::vector<float> vulkanHeights;
-		float* heights = nullptr;
+        const Transform &GetInstanceTransform() const { return instanceTransform; }
+        bool HasInstanceTransform() const { return hasInstanceTransform; }
 
-		NormalMapRenderer* normalmapRendererComponent = nullptr;
-		SplatMapRenderer* splatmapRendererComponent = nullptr;
-		TerrainHeightsQuery* query = nullptr;
+        std::vector<MaterialHandle> getMaterials() const { return materials; }
 
-		Vector3f position;
+    private:
+        void LoadConfigFile(const std::string &terrainConfigFile);
 
-		std::string heightmapLocation;
-		std::vector<MaterialHandle> materials;
-	};
+    private:
+        Window *window;
+        AssembledAssetManager *manager;
+
+        TextureHandle heightmap;
+        TextureHandle normalmap;
+        TextureHandle splatmap;
+
+        std::vector<float> vulkanHeights;
+        float *heights = nullptr;
+
+        NormalMapRenderer *normalmapRendererComponent = nullptr;
+        SplatMapRenderer *splatmapRendererComponent = nullptr;
+        TerrainHeightsQuery *query = nullptr;
+
+        Vector3f position;
+
+        std::string heightmapLocation;
+        Transform instanceTransform;
+        bool hasInstanceTransform = false;
+        std::vector<MaterialHandle> materials;
+    };
 };
 
 #endif

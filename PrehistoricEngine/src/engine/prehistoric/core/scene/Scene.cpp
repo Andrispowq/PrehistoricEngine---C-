@@ -145,8 +145,9 @@ namespace Prehistoric {
                      : nullptr
              }) {
             for (auto *ancestor = protectedNode; ancestor; ancestor = ancestor->parent)
-                if (ancestor == node) throw std::runtime_error(
-                    "Replace the sky before removing or disabling it or its sun");
+                if (ancestor == node)
+                    throw std::runtime_error(
+                        "Replace the sky before removing or disabling it or its sun");
         }
     }
 
@@ -210,7 +211,8 @@ namespace Prehistoric {
             return name;
         };
         const auto name = unique(object.getName());
-        for (auto *child: copy->getAllChildren()) child->setName(unique(child->getName()));
+        for (auto *child: copy->getAllChildren())
+            if (!child->IsGenerated()) child->setName(unique(child->getName()));
         auto *result = copy.get();
         object.getParent()->AddChild(name, copy.get());
         copy.release();

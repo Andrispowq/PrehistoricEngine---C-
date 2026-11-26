@@ -1,5 +1,6 @@
 #include "Includes.hpp"
 #include "Atmosphere.h"
+#include "OrbitingSun.h"
 #include "EnvironmentMap.h"
 #include "AtmosphereCapture.h"
 #include "prehistoric/application/Application.h"
@@ -92,35 +93,6 @@ namespace Prehistoric {
         if (!isEnabled()) return;
         if (sun) renderer->RegisterAtmosphere(*this);
         GameObject::PreRender(renderer);
-    }
-
-    namespace {
-        class OrbitingSun final : public GameObject {
-        public:
-            OrbitingSun() {
-                UpdatePosition(0.0);
-                AddComponent(LIGHT_COMPONENT, new Light(Vector3f(1, 0.95f, 0.87f), 100.0f, 50000.0f, true, true));
-            }
-
-            void PreUpdate(CoreEngine *engine) override {
-                if (!isEnabled()) return;
-                const auto now = Clock::now();
-                if (!sunrise) sunrise = now;
-                UpdatePosition(std::chrono::duration<double>(now - *sunrise).count());
-                GameObject::PreUpdate(engine);
-            }
-
-        private:
-            using Clock = std::chrono::steady_clock;
-            std::optional<Clock::time_point> sunrise;
-
-            void UpdatePosition(double elapsed) {
-                constexpr double period = 120.0;
-                constexpr double distance = 32000.0;
-                double angle = 2.0 * PI * std::fmod(elapsed, period) / period;
-                SetPosition({float(distance * std::cos(angle)), float(distance * std::sin(angle)), 0});
-            }
-        };
     }
 
     std::unique_ptr<GameObject> Atmosphere::CreateSun() {
