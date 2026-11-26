@@ -110,8 +110,9 @@ namespace Prehistoric
 				}
 			}
 
-			if (render && !InputInstance.IsPauseRendering())
-			{
+			// Editor panels may have focus in another platform window. Keep the
+			// scene/UI live while unfocused; iconification is handled above.
+			if (render && (editorMode || !InputInstance.IsPauseRendering())) {
 				engineLayer->BeginRendering();
 				auto *renderer = engineLayer->getRenderingEngine()->getRenderer();
 				const bool drawUI = imGUILayer && renderer->CanRenderFrame();

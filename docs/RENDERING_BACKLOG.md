@@ -106,8 +106,11 @@ to use the Vulkan backend. Both paths open Midnight Sponza. Both editors enable 
 
 The [editor panels](../PrehistoricEditor/src/EditorLayer.cpp) share the scene
 hierarchy, inspector, File menu, statistics, texture browser and environment
-controls. A first-run layout docks the panels around the scene. Saved ImGui
-layouts take precedence on subsequent launches.
+controls. A first-run layout docks Scene Hierarchy above Properties, with a visible
+Stats panel below Environment map configurations on the right of the main window. Saved layouts retain their other
+panel positions; Stats is migrated into its own dock below Environment map configurations. Stats remains docked and
+cannot be covered by another panel's tab.
+The editor keeps rendering when focus moves to another window; minimization still pauses it.
 
 The [Vulkan renderer](../PrehistoricEngine/src/engine/platform/vulkan/rendering/VKRenderer.cpp)
 tone-maps the editor scene into a sampleable image. The main window draws

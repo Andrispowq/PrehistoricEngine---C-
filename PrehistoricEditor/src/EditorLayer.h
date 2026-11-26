@@ -6,6 +6,7 @@
 #include "Prehistoric/core/scene/Scene.h"
 
 #include "panels/SceneHierarchyPanel.h"
+#include <cstdint>
 
 class EditorLayer : public Prehistoric::Layer {
 public:
@@ -33,6 +34,7 @@ protected:
     void QuitButton();
 
 private:
+    std::uint32_t statsDockId = 0;
     std::unique_ptr<SceneHierarchyPanel> scenePanel;
     std::unique_ptr<Prehistoric::Scene> scene;
 

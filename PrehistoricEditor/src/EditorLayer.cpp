@@ -77,12 +77,43 @@ void EditorLayer::ImGUIRender() {
             ImGuiID left = ImGui::DockBuilderSplitNode(center, ImGuiDir_Left, 0.22f, nullptr, &center);
             ImGuiID right = ImGui::DockBuilderSplitNode(center, ImGuiDir_Right, 0.29f, nullptr, &center);
             ImGuiID bottom = ImGui::DockBuilderSplitNode(center, ImGuiDir_Down, 0.25f, nullptr, &center);
+            ImGuiID properties = ImGui::DockBuilderSplitNode(left, ImGuiDir_Down, 0.55f, nullptr, &left);
             ImGui::DockBuilderDockWindow("Scene Hierarchy", left);
-            ImGui::DockBuilderDockWindow("Properties", right);
+            ImGui::DockBuilderDockWindow("Properties", properties);
             ImGui::DockBuilderDockWindow("Environment map configurations", right);
-            ImGui::DockBuilderDockWindow("Stats", bottom);
             ImGui::DockBuilderDockWindow("Asset Manager", bottom);
             ImGui::DockBuilderDockWindow("Viewport", center);
+            ImGui::DockBuilderFinish(dockspace_id);
+        }
+        if (!statsDockId) {
+            // Migrate an existing detached/tabbed Stats panel without discarding
+            // the user's other dock positions. Reuse an already-correct split.
+            auto *environmentSettings = ImGui::FindWindowSettings(ImHashStr("Environment map configurations"));
+            auto *environment = environmentSettings
+                                    ? ImGui::DockBuilderGetNode(environmentSettings->DockId)
+                                    : nullptr;
+            auto *rootNode = environment;
+            while (rootNode && rootNode->ParentNode) rootNode = rootNode->ParentNode;
+            if (!environment || rootNode->ID != dockspace_id || environment->IsSplitNode()) {
+                auto *leaf = ImGui::DockBuilderGetNode(dockspace_id);
+                while (leaf->IsSplitNode()) leaf = leaf->ChildNodes[1];
+                ImGuiID environmentId = ImGui::DockBuilderSplitNode(leaf->ID, ImGuiDir_Right, 0.5f, nullptr, nullptr);
+                ImGui::DockBuilderDockWindow("Environment map configurations", environmentId);
+                environment = ImGui::DockBuilderGetNode(environmentId);
+            }
+            auto *statsSettings = ImGui::FindWindowSettings(ImHashStr("Stats"));
+            auto *stats = statsSettings ? ImGui::DockBuilderGetNode(statsSettings->DockId) : nullptr;
+            auto *parent = environment->ParentNode;
+            if (stats && parent && parent->SplitAxis == ImGuiAxis_Y &&
+                parent->ChildNodes[0] == environment && parent->ChildNodes[1] == stats)
+                statsDockId = stats->ID;
+            else {
+                ImGuiID environmentId;
+                statsDockId = ImGui::DockBuilderSplitNode(environment->ID, ImGuiDir_Down, 0.28f,
+                                                          nullptr, &environmentId);
+                ImGui::DockBuilderDockWindow("Environment map configurations", environmentId);
+            }
+            ImGui::DockBuilderDockWindow("Stats", statsDockId);
             ImGui::DockBuilderFinish(dockspace_id);
         }
         ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
@@ -207,7 +238,12 @@ void EditorLayer::ImGUIRender() {
 
     scenePanel->ImGuiRender();
 
-    ImGui::Begin("Stats");
+    ImGuiWindowClass statsClass;
+    statsClass.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_NoDockingOverMe | ImGuiDockNodeFlags_NoDockingSplitMe;
+    ImGui::SetNextWindowClass(&statsClass);
+    if (statsDockId) ImGui::SetNextWindowDockID(statsDockId, ImGuiCond_Always);
+    ImGui::SetNextWindowCollapsed(false, ImGuiCond_Always);
+    ImGui::Begin("Stats", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
 
     auto stats = Prehistoric::RenderingEngine::getStats();
     ImGui::Text("RenderingEngine statistics:");

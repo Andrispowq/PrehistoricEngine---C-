@@ -382,3 +382,55 @@ boots captured rendered frames without reported Vulkan validation errors. The wi
 editor retry logged the Cocoa icon message and remained at zero FPS until the 90-second capture
 timeout; no frame was captured in that retry. This does not supersede the successful native captures
 from the earlier checkout verification, and no new native-window success is claimed for this follow-up.
+
+### Native editor stall and Stats docking follow-up
+
+The zero-FPS retry exposed a CPU-side render gate, not a Vulkan submission failure.
+`Input::pauseRendering` was uninitialized, so startup could skip rendering until a focus event
+wrote it. Independently, losing the main window's focus set that flag even when an editor
+platform window had focus. The loop continued updating and logging zero rendered frames.
+The saved ImGui layout explicitly placed Stats in a detached platform window.
+
+The input constructor now initializes both pause flags to false. The editor keeps rendering
+when unfocused, while the sample retains its focus-pause policy and both retain their existing
+iconification handling. Stats now occupies its own dock below Environment map configurations on the right. Startup
+migrates the
+old detached/tabbed arrangement without resetting the other panel positions; an already-correct
+split is reused. Stats cannot be dragged out or covered by a newly docked tab. No machine-local
+ImGui layout is tracked in Git.
+
+The implementation follows the distinction between focus and iconification in the
+[GLFW window guide](https://www.glfw.org/docs/latest/window_guide.html), the continuously serviced
+event/render loop in
+the [ImGui Vulkan sample](https://github.com/ocornut/imgui/blob/docking/examples/example_glfw_vulkan/main.cpp),
+and the existing DockBuilder approach described
+in [ImGui's docking guide](https://github.com/ocornut/imgui/wiki/Docking).
+Keeping the editor live while unfocused supports multi-window editing without changing the sample's
+background-rendering policy. Migrating the existing dock tree preserves user layout choices instead
+of replacing the entire saved layout.
+
+Verification on 2026-11-26:
+
+- Full debug and arm64 builds passed. The native verification executable was confirmed as Mach-O arm64.
+- A placement-construction probe over nonzero storage reproduced the incorrect initial paused state
+  before the constructor fix and passed afterward.
+- A probe using the production docking block and vendored ImGui passed fresh-layout, legacy detached
+  Stats migration, and save/reload checks. Stats was visible below Properties in the main viewport;
+  saving and reloading did not add another split.
+- Two native arm64 editor launches on Apple M1/MoltenVK each reached frame 20, capturing frames
+  1, 4, 8, 12, 16 and 20. Switching focus to Finder after frame 4 did not stop rendering.
+  All twelve captures were full main-window scene frames, with Stats visibly below Properties.
+  Both runs reported **zero Vulkan validation errors**. The second launch reused the saved dock layout.
+- The native debug/validation scene ran at roughly **4 FPS** after startup. This verifies progress
+  and correct presentation, not acceptable interactive performance or a performance improvement.
+  Cocoa icon/display-service messages remain. Native minimize/restore and OpenGL parity were not
+  exercised in this follow-up.
+
+![Native arm64 editor with Stats below Environment map configurations](render-quality/native-editor-docked.png)
+
+The requested placement was subsequently corrected to the right side, below **Environment map
+configurations**. The migration also handles the earlier left-side Stats dock. Fresh, detached,
+and left-docked layout fixtures all passed migration and save/reload checks. The earlier native
+capture counts above describe the initial left-side placement.
+The corrected right-side layout then passed a native arm64 M1 run through frame 20 with zero Vulkan
+validation errors, including rendering after focus moved to Finder. The image above shows this final placement.
