@@ -43,6 +43,7 @@ namespace Prehistoric {
 
         std::string getName() const { return name; }
         GameObject *getSceneRoot() const { return sceneRoot; }
+        DepthOfFieldSettings depthOfField;
         const std::optional<WorldCameraPose> &getInitialCamera() const { return initialCamera; }
 
         const std::string &getEnvironmentMap() const { return environmentMap; }

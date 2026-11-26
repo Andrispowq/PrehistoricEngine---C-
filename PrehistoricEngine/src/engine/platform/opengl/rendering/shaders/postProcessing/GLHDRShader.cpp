@@ -14,6 +14,8 @@ namespace Prehistoric {
         AddUniform("scene");
         AddUniform("underwater");
         AddUniform("outline");
+        AddUniform("lens");
+        AddUniform("viewDepthRow");
         AddUniform("flare");
         AddUniform("flareFootprint");
         AddUniform("resolution");

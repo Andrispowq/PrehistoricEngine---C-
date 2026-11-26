@@ -1,6 +1,7 @@
 #ifndef WORLD_LOADER_H
 #define WORLD_LOADER_H
 
+#include "prehistoric/common/rendering/DepthOfField.h"
 #include <fstream>
 
 #include "prehistoric/core/node/GameObject.h"
@@ -46,6 +47,7 @@ namespace Prehistoric {
 
     public:
         std::string sceneName;
+        DepthOfFieldSettings depthOfField;
         std::optional<WorldCameraPose> initialCamera;
         std::string environmentMap;
 

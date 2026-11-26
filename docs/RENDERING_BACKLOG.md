@@ -22,11 +22,12 @@ and submesh selection outlines only the selected part.
 Sunlight scatters through volumetric spheres using the directional shadow visibility. **Render Settings** exposes
 shaft strength and the intensity and size of the seven-sprite sun lens flare. Both effects default to enabled.
 
-1. **Depth of field and related lens effects.** Add configurable focus distance and aperture, with foreground and
-   background blur and bokeh highlights.
-2. **Ambient occlusion.** Add a configurable ambient occlusion pass and check its interaction with material occlusion
+**Depth of field** is available in Render Settings. Focus distance and aperture diameter use world units.
+The editor saves them with the scene. Existing scenes start with the effect disabled.
+
+1. **Ambient occlusion.** Add a configurable ambient occlusion pass and check its interaction with material occlusion
    and VXGI in sheltered areas.
-3. **Motion blur and temporal effects.** Add camera and object motion vectors for motion blur, then investigate
+2. **Motion blur and temporal effects.** Add camera and object motion vectors for motion blur, then investigate
    temporal accumulation and history rejection.
 
 Imported OBJ and PMF submeshes appear under each model instance in the editor

@@ -60,7 +60,7 @@ namespace Prehistoric {
             VkFramebuffer framebuffer;
             VkExtent2D extent;
             VkDescriptorSet inputs;
-            float settings[11];
+            float settings[15];
         };
 
         std::unique_ptr<VKVoxelView> voxelPass;
@@ -111,7 +111,7 @@ namespace Prehistoric {
         VkImageView flareAtlas;
         VkSampler sampler{};
         VkPipelineLayout hdrLayout{};
-        VkPipeline hdrPipeline{};
+        VkPipeline hdrPipeline{}, dofPipeline{};
         VkPipeline bloomPipeline{};
         VkDescriptorSet hdrInputs[2]{};
         VKFramebuffer *receiverFramebuffer{};

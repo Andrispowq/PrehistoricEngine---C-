@@ -1,6 +1,7 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
+#include "prehistoric/common/rendering/DepthOfField.h"
 #include "prehistoric/common/framework/Window.h"
 #include "prehistoric/core/node/movement/Camera.h"
 
@@ -49,6 +50,7 @@ namespace Prehistoric {
 
         virtual void RequestEnvironmentBake(bool usePanorama) = 0;
 
+        DepthOfFieldSettings depthOfField;
         bool sunShafts = true;
         float sunShaftStrength = 1.0f;
         bool sunFlare = true;

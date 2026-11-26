@@ -44,6 +44,13 @@ with tempfile.TemporaryDirectory(prefix='vulkan-background-') as temporary:
                    for id_ in ids), name
     assert 'OpImageSampleImplicitLod' in assembly
     assert ' Exp ' in assembly and ' Pow ' in assembly
+    # The active lens pipeline must match the sample count of the depth attachment.
+    for filename, multisampled in (('hdr_dof.frag', 0), ('hdr_dof_ms.frag', 1)):
+        subprocess.run(['glslc', '--target-env=vulkan1.1', hdr.with_name(filename), '-o', binary], check=True)
+        subprocess.run(['spirv-val', '--target-env', 'vulkan1.1', binary], check=True)
+        asm = subprocess.check_output(['spirv-dis', binary], text=True)
+        assert re.search(r'OpDecorate\s+%sceneDepth\s+Binding\s+4\b', asm)
+        assert re.search(rf'OpTypeImage %float 2D 0 0 {multisampled} 1 Unknown', asm)
     for app in ('Prehistoric', 'PrehistoricEditor'):
         config = json.loads((ROOT / app / 'res/config/settings.json').read_text())
         assert config['environmentMap']['location'] == 'sample://textures/environmentMaps/cape_hill_2k.hdr'

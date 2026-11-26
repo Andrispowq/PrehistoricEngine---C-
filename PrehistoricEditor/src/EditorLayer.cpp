@@ -112,6 +112,17 @@ void EditorLayer::ImGUIRender() {
             bool bloom = renderer->isBloomEnabled();
             if (ImGui::Checkbox("Bloom (K)", &bloom)) renderer->setBloomEnabled(bloom);
 
+            auto &lens = scene->depthOfField;
+            ImGui::Checkbox("Depth of field", &lens.enabled);
+            if (lens.enabled) {
+                ImGui::DragFloat("Focus distance", &lens.focusDistance, 0.25f, 0.01f, __EngineConfig.rendererFarPlane,
+                                 "%.2f", ImGuiSliderFlags_AlwaysClamp);
+                ImGui::DragFloat("Aperture diameter", &lens.aperture, 0.02f, 0.0f, 100.0f, "%.2f",
+                                 ImGuiSliderFlags_AlwaysClamp);
+                ImGui::TextDisabled("Both distances are in world units.");
+            }
+            renderer->depthOfField = lens;
+
             ImGui::Checkbox("Sun shafts", &renderer->sunShafts);
             if (renderer->sunShafts)
                 ImGui::SliderFloat("Shaft strength", &renderer->sunShaftStrength, 0.0f, 4.0f);

@@ -20,6 +20,11 @@ namespace Prehistoric {
         nlohmann::json file_json;
         file_json["name"] = sceneName;
         if (!scene->getEnvironmentMap().empty()) file_json["environment_map"] = scene->getEnvironmentMap();
+        const auto &lens = scene->depthOfField;
+        file_json["depth_of_field"] = {
+            {"enabled", lens.enabled}, {"focus_distance", lens.focusDistance},
+            {"aperture", lens.aperture}
+        };
         if (const auto &pose = scene->getInitialCamera()) {
             file_json["initial_camera"] = {
                 {"position", {pose->position.x, pose->position.y, pose->position.z}},

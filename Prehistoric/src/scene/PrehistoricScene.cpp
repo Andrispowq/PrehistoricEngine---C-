@@ -20,9 +20,9 @@ PrehistoricScene::PrehistoricScene(const std::string &name, Prehistoric::Window 
 
         // Keep the material display, its platform and its local lights together above the terrain.
         const Vector3f displayOrigin(0, 340, 415);
-        for (const auto& [name, node] : sceneRoot->getChildren()) {
-            auto* object = dynamic_cast<GameObject*>(node);
-            if (object && object->GetComponent<RendererComponent>() && !dynamic_cast<Terrain*>(object))
+        for (const auto &[_, node]: sceneRoot->getChildren()) {
+            if (auto *object = dynamic_cast<GameObject *>(node);
+                object && object->GetComponent<RendererComponent>() && !dynamic_cast<Terrain *>(object))
                 object->Move(displayOrigin);
         }
 
@@ -60,10 +60,11 @@ PrehistoricScene::PrehistoricScene(const std::string &name, Prehistoric::Window 
                                            x == -(count / 2.0f) ? 0.05f : (x + count / 2.0f) / count, 1.0f, 0.0f
                                        });
 
-                GameObject *obj = new GameObject;
-                obj->SetPosition(displayOrigin + Vector3f(x * space, y * space, -50));
-                obj->AddComponent(RENDERER_COMPONENT, new RendererComponent(window, manager, pipeline2, material2));
-                sceneRoot->AddChild(std::string("obj" + std::to_string(x) + std::to_string(y)), obj);
+                GameObject *sphere_idx = new GameObject;
+                sphere_idx->SetPosition(displayOrigin + Vector3f(x * space, y * space, -50));
+                sphere_idx->AddComponent(RENDERER_COMPONENT,
+                                         new RendererComponent(window, manager, pipeline2, material2));
+                sceneRoot->AddChild(std::string("obj" + std::to_string(x) + std::to_string(y)), sphere_idx);
             }
         }
     } else {
@@ -160,7 +161,6 @@ PrehistoricScene::PrehistoricScene(const std::string &name, Prehistoric::Window 
         phys_obj1->Move({0, 80, 0});
     }
     sceneRoot->AddChild("water", new Water(window, camera, manager, Vector3f(0, 200, 0)));
-
 }
 
 PrehistoricScene::~PrehistoricScene() {

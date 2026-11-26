@@ -252,7 +252,8 @@ namespace Prehistoric {
         }
         if (voxelGI)
             renderpass->Voxels(voxelResolution, true).Mark(buffer->getCommandBuffer(), VKVoxelView::Shading, false);
-        renderpass->BeginRenderpass(buffer, swapchain->getClearColour(), nullptr, !getVolumetricSpheres().empty());
+        renderpass->BeginRenderpass(buffer, swapchain->getClearColour(), nullptr,
+                                    depthOfField.active() || !getVolumetricSpheres().empty());
         background->Draw(buffer->getCommandBuffer(), camera,
                          __AtmosphereConfig.scatteringEnabled ? atmosphere : nullptr, environmentPreviewLod);
         ProcessDraws(buffer);

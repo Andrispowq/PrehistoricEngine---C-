@@ -278,7 +278,8 @@ namespace Prehistoric {
             {sampler, source, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
             {sampler, second, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
             {sampler, flareAtlas, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
-            {sampler, emission->getImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL}
+            {sampler, emission->getImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
+            {depthSampler, swapchain->getDepthImage()->getImageView(), VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL}
         };
         VkWriteDescriptorSet writes[std::size(inputs)]{};
         for (uint32_t i = 0; i < std::size(inputs); ++i) {
@@ -309,12 +310,16 @@ namespace Prehistoric {
         sampling.magFilter = sampling.minFilter = VK_FILTER_LINEAR;
         sampling.addressModeU = sampling.addressModeV = sampling.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
         Check(vkCreateSampler(handle, &sampling, nullptr, &sampler));
+        VkSamplerCreateInfo nearest{VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
+        nearest.addressModeU = nearest.addressModeV = nearest.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        Check(vkCreateSampler(handle, &nearest, nullptr, &depthSampler));
         VkDescriptorSetLayoutBinding bindings[] =
         {
             {0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
             {1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
             {2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
-            {3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}
+            {3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+            {4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}
         };
         VkDescriptorSetLayoutCreateInfo setInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
         setInfo.bindingCount = std::size(bindings);
@@ -399,9 +404,6 @@ namespace Prehistoric {
         volumeFramebuffer = CreateFramebuffer(bloomPass, extent, 1, &view)->getFramebuffer();
         volumeOutput = CreateInputs(view, view);
 
-        VkSamplerCreateInfo nearest{VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
-        nearest.addressModeU = nearest.addressModeV = nearest.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        Check(vkCreateSampler(handle, &nearest, nullptr, &depthSampler));
 
         const VkDescriptorSetLayoutBinding bindings[] = {
             {0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
@@ -545,6 +547,7 @@ namespace Prehistoric {
         waterTargets.clear();
         framebuffers.clear();
         vkDestroyRenderPass(handle, editorPass, nullptr);
+        vkDestroyPipeline(handle, dofPipeline, nullptr);
         vkDestroyPipeline(handle, hdrPipeline, nullptr);
         vkDestroyPipeline(handle, bloomPipeline, nullptr);
         vkDestroyPipelineLayout(handle, hdrLayout, nullptr);
@@ -626,14 +629,25 @@ namespace Prehistoric {
         }
         const auto flare = renderer.GetSunFlare();
         const auto footprint = renderer.GetSunFlareFootprint();
-        draw(editorOutput ? editorPass : presentPass, hdrPipeline,
+        const auto &lens = renderer.depthOfField;
+        const auto &projection = renderer.getCamera()->getProjectionMatrix();
+        if (lens.active() && !dofPipeline) {
+            const char *fragment = swapchain->getSceneSamples() == VK_SAMPLE_COUNT_1_BIT
+                                       ? "vulkan/postProcessing/hdr_dof_FS.spv"
+                                       : "vulkan/postProcessing/hdr_dof_ms_FS.spv";
+            dofPipeline = CreateFullscreenPipeline("vulkan/postProcessing/hdr_VS.spv", fragment, hdrLayout,
+                                                   editorOutput ? editorPass : presentPass);
+        }
+        draw(editorOutput ? editorPass : presentPass, lens.active() ? dofPipeline : hdrPipeline,
              {
                  editorOutput ? editorFramebuffer : framebuffer, extent,
                  inputs, {
                      __EngineConfig.rendererExposure,
                      VKPBRShaderGamma(swapchain->getSwapchainImageFormat(), __EngineConfig.rendererGamma),
                      float(addBloom), float(underwater), float(renderer.hasSelection()),
-                     flare.x, flare.y, flare.z, flare.w, footprint.x, footprint.y
+                     flare.x, flare.y, flare.z, flare.w, footprint.x, footprint.y,
+                     lens.focusDistance, 0.25f * extent.height * std::abs(projection.m[5]) * lens.aperture,
+                     projection.m[10], projection.m[14]
                  }
              });
     }

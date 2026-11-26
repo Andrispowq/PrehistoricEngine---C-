@@ -75,6 +75,18 @@ namespace Prehistoric {
         static_cast<GLHDRShader *>(hdrPipeline->getShader())->UpdateUniforms(
             scene, {(float) width, (float) height}, __WaterConfig.underwaterPostProcessing && rend->isUnderwater(),
             rend->hasSelection(), rend->GetSunFlare(), rend->GetSunFlareFootprint());
+        auto *hdr = static_cast<GLHDRShader *>(hdrPipeline->getShader());
+        const auto &lens = rend->depthOfField;
+        const auto &camera = *rend->getCamera();
+        float scale = lens.active()
+                          ? 0.25f * height * std::abs(camera.getProjectionMatrix().m[5]) * lens.aperture
+                          : 0.0f;
+        hdr->SetUniform("lens", Vector2f(lens.focusDistance, scale));
+        if (lens.active()) {
+            rend->getMainPass()->getPositionMetallicImage()->Bind(3);
+            const auto &view = camera.getViewMatrix();
+            hdr->SetUniform("viewDepthRow", Vector4f(-view.m[2], -view.m[6], -view.m[10], -view.m[14]));
+        }
         hdrPipeline->RenderPipeline();
         hdrPipeline->UnbindPipeline();
     }
