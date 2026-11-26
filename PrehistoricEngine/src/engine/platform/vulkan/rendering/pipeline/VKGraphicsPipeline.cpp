@@ -4,8 +4,8 @@
 
 namespace Prehistoric {
     VKGraphicsPipeline::VKGraphicsPipeline(Window *window, AssetManager *manager, ShaderHandle shader,
-                                           VertexBufferHandle vbo)
-        : VKPipeline(window, manager, shader), GraphicsPipeline(manager, vbo) {
+                                           VertexBufferHandle vbo, std::optional<FrontFace> face)
+        : VKPipeline(window, manager, shader), GraphicsPipeline(manager, vbo, face) {
         CreatePipeline();
     }
 
@@ -113,10 +113,10 @@ namespace Prehistoric {
         rasterizer.rasterizerDiscardEnable = VK_FALSE;
         rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
         rasterizer.lineWidth = 1.0f;
-        rasterizer.cullMode = backfaceCulling && vbo->getFrontFace() != FrontFace::DOUBLE_SIDED
+        rasterizer.cullMode = backfaceCulling && getFrontFace() != FrontFace::DOUBLE_SIDED
                                   ? VK_CULL_MODE_BACK_BIT
                                   : VK_CULL_MODE_NONE;
-        rasterizer.frontFace = vbo->getFrontFace() == FrontFace::COUNTER_CLOCKWISE
+        rasterizer.frontFace = getFrontFace() == FrontFace::COUNTER_CLOCKWISE
                                    ? VK_FRONT_FACE_COUNTER_CLOCKWISE
                                    : VK_FRONT_FACE_CLOCKWISE;
         rasterizer.depthBiasEnable = VK_FALSE;

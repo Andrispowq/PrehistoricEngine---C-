@@ -9,7 +9,8 @@
 namespace Prehistoric {
     class GLGraphicsPipeline : public GLPipeline, public GraphicsPipeline {
     public:
-        GLGraphicsPipeline(Window *window, AssetManager *manager, ShaderHandle shader, VertexBufferHandle vbo);
+        GLGraphicsPipeline(Window *window, AssetManager *manager, ShaderHandle shader, VertexBufferHandle vbo,
+                           std::optional<FrontFace> face = std::nullopt);
 
         virtual ~GLGraphicsPipeline() {
         }

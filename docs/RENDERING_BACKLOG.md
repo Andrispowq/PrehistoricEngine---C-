@@ -12,6 +12,17 @@ OpenGL and Vulkan water are enabled in the sample. Vulkan selects its geometry o
 
 ## Remaining work
 
+1. **Engine raycasting and editor viewport picking.** Add a world-space raycast with a configurable maximum pick
+   distance. Return the nearest hit object within that distance and the hit submesh when available. In the editor, cast
+   from the active viewport camera through the clicked pixel. A first click on an object selects the whole instance.
+   Clicking that same selected object selects the submesh under the cursor, or keeps the object selected if it has no
+   submeshes. Clicking a different object starts with that whole object. Keep the viewport, hierarchy and material
+   inspector in sync on OpenGL and Vulkan.
+2. **Selection outline post-processing.** Outline the current selection in the editor viewport on both backends. Outline
+   the whole instance for an object selection, including all its submeshes. For a submesh selection, outline only that
+   part of that instance. Update the outline when selection changes from either the viewport or the hierarchy, and clear
+   it when selection is cleared.
+
 Imported OBJ and PMF submeshes appear under each model instance in the editor
 hierarchy. Selecting a part opens its material controls. Edits and resets apply
 to that instance, and world JSON stores edited parts with the model renderer.

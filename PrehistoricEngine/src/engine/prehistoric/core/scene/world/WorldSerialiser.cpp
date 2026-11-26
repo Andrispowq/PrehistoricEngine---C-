@@ -44,9 +44,9 @@ namespace Prehistoric {
             for (auto &model: models) {
                 nlohmann::json model_json;
                 model_json["name"] = model.first;
-                model_json["directory"] = model.first; //TODO: get the extension!!!
+                model_json["directory"] = model.second.directory;
 
-                FrontFace frontFace = model.second->getFrontFace();
+                FrontFace frontFace = model.second.face;
                 int front_face = 2;
                 if (frontFace == FrontFace::CLOCKWISE) {
                     front_face = 0;
@@ -220,8 +220,9 @@ namespace Prehistoric {
                             if (!graphics) continue;
                             size_t vboHandle = graphics->getVertexBufferHandle().handle;
 
-                            for (auto elem: models) {
-                                if (elem.second.handle == vboHandle) {
+                            for (const auto &elem: models) {
+                                if (elem.second.buffer.handle == vboHandle && elem.second.face == graphics->
+                                    getFrontFace()) {
                                     comp_json["model"] = elem.first;
                                     break;
                                 }
@@ -316,11 +317,12 @@ namespace Prehistoric {
                 for (auto &elem: ID_map) {
                     if (elem.second.type == ResourceType::VertexBuffer) {
                         if (elem.second.handle == vbo.handle) {
-                            auto idx = models.find(elem.first);
-                            if (idx == models.end()) {
-                                models.insert(std::make_pair(elem.first, vbo));
-                                break;
-                            }
+                            const auto face = graphics->getFrontFace();
+                            auto name = elem.first;
+                            if (auto it = models.find(name); it != models.end() && it->second.face != face)
+                                name += "#" + std::to_string(static_cast<int>(face));
+                            models.emplace(name, ModelReference{vbo, face, elem.first});
+                            break;
                         }
                     }
                 }

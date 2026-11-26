@@ -55,6 +55,11 @@ namespace Prehistoric {
                 if (nameTokens[0] == "models") {
                     if (nameTokens[1] == "load") {
                         std::string meshName = tokens[1];
+                        modelFaces[meshName] = tokens[3] == "clockwise"
+                                                   ? FrontFace::CLOCKWISE
+                                                   : (tokens[3] == "counter-clockwise"
+                                                          ? FrontFace::COUNTER_CLOCKWISE
+                                                          : FrontFace::DOUBLE_SIDED);
                         std::string directory = tokens[2];
 
                         // In case we already loaded this, don't add it to the queue
@@ -66,11 +71,6 @@ namespace Prehistoric {
                             meshIndex++;
                             meshNames.push_back(meshName);
                             meshDirectories.push_back(directory);
-                            frontFaces.push_back(tokens[3] == "clockwise"
-                                                     ? FrontFace::CLOCKWISE
-                                                     : (tokens[3] == "counter-clockwise"
-                                                            ? FrontFace::COUNTER_CLOCKWISE
-                                                            : FrontFace::DOUBLE_SIDED));
                         }
                     } else if (nameTokens[1] == "dispatch") {
                         man->getVertexBufferLoader()->ForceLoadQueue();
@@ -89,7 +89,6 @@ namespace Prehistoric {
                                                          man->storeVertexBuffer(
                                                              pointers[i],
                                                              JoinAssetReference(directoryModels, meshDirectories[i]))));
-                            pointers[i]->setFrontFace(frontFaces[i]);
                         }
 
                         man->getVertexBufferLoader()->FlushPointers();
@@ -319,13 +318,8 @@ namespace Prehistoric {
                             if (pipelineIndex != pipelines.end()) {
                                 pipeline = pipelineIndex->second;
                             } else {
-                                pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
-
-                                if (__FrameworkConfig.api == OpenGL) {
-                                    reinterpret_cast<GLGraphicsPipeline *>(pipeline.pointer)->setBackfaceCulling(true);
-                                } else if (__FrameworkConfig.api == Vulkan) {
-                                    reinterpret_cast<VKGraphicsPipeline *>(pipeline.pointer)->setBackfaceCulling(true);
-                                }
+                                pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo,
+                                                                   modelFaces.at(compTokens[0]));
 
                                 pipelines.emplace(std::make_pair(compTokens[0] + "," + compTokens[1], pipeline));
                             }
@@ -395,15 +389,8 @@ namespace Prehistoric {
                                         pipeline = pipelineIndex->second;
                                     } else {
                                         pipeline = manager->
-                                                createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
-
-                                        if (__FrameworkConfig.api == OpenGL) {
-                                            reinterpret_cast<GLGraphicsPipeline *>(pipeline.pointer)->
-                                                    setBackfaceCulling(true);
-                                        } else if (__FrameworkConfig.api == Vulkan) {
-                                            reinterpret_cast<VKGraphicsPipeline *>(pipeline.pointer)->
-                                                    setBackfaceCulling(true);
-                                        }
+                                                createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo,
+                                                               modelFaces.at(compTokens[0]));
 
                                         pipelines.emplace(
                                             std::make_pair(compTokens[0] + "," + compTokens[1], pipeline));
@@ -495,18 +482,17 @@ namespace Prehistoric {
                         frontFace = FrontFace::COUNTER_CLOCKWISE;
                     }
 
+                    modelFaces[name] = frontFace;
                     const std::string reference = JoinAssetReference(directoryModels, directory);
                     // OBJ material parsing loads textures immediately. Keep these uploads on the render thread.
                     const bool synchronous = std::filesystem::path(reference).extension() != ".pmf";
                     std::optional<VertexBufferHandle> handle = man->loadVertexBuffer(
                         std::nullopt, reference, synchronous ? BatchSettings::Load : BatchSettings::QueuedLoad);
                     if (handle.has_value()) {
-                        handle.value()->setFrontFace(frontFace);
                         models.insert(std::make_pair(name, handle.value()));
                     } else {
                         meshNames.push_back(name);
                         meshDirectories.push_back(directory);
-                        frontFaces.push_back(frontFace);
                     }
                 }
 
@@ -524,7 +510,6 @@ namespace Prehistoric {
                                                  man->storeVertexBuffer(
                                                      pointers[i],
                                                      JoinAssetReference(directoryModels, meshDirectories[i]))));
-                    pointers[i]->setFrontFace(frontFaces[i]);
                 }
 
                 man->getVertexBufferLoader()->FlushPointers();
@@ -662,13 +647,8 @@ namespace Prehistoric {
                             if (pipelineIndex != pipelines.end()) {
                                 pipeline = pipelineIndex->second;
                             } else {
-                                pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo);
-
-                                if (__FrameworkConfig.api == OpenGL) {
-                                    reinterpret_cast<GLGraphicsPipeline *>(pipeline.pointer)->setBackfaceCulling(true);
-                                } else if (__FrameworkConfig.api == Vulkan) {
-                                    reinterpret_cast<VKGraphicsPipeline *>(pipeline.pointer)->setBackfaceCulling(true);
-                                }
+                                pipeline = manager->createPipeline(PipelineTypeHashFlags::Graphics, shader, vbo,
+                                                                   modelFaces.at(modelName));
 
                                 pipelines.emplace(std::make_pair(modelName + "," + shaderName, pipeline));
                             }

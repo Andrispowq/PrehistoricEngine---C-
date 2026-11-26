@@ -12,8 +12,8 @@ namespace Prehistoric {
     static char state_culling = CULL;
 
     GLGraphicsPipeline::GLGraphicsPipeline(Window *window, AssetManager *manager, ShaderHandle shader,
-                                           VertexBufferHandle vbo)
-        : GLPipeline(window, manager, shader), GraphicsPipeline(manager, vbo) {
+                                           VertexBufferHandle vbo, std::optional<FrontFace> face)
+        : GLPipeline(window, manager, shader), GraphicsPipeline(manager, vbo, face) {
     }
 
     void GLGraphicsPipeline::BindPipeline(CommandBuffer *buffer) const {
@@ -33,17 +33,17 @@ namespace Prehistoric {
         GLPipeline::RenderPipeline();
 
         const bool mirrored = __WaterConfig.stage == WaterRenderStage::Reflection;
-        const char winding = ((vbo->getFrontFace() == FrontFace::CLOCKWISE) != mirrored) ? CW : CCW;
+        const char winding = ((getFrontFace() == FrontFace::CLOCKWISE) != mirrored) ? CW : CCW;
         if (winding != state_frontface) {
             glFrontFace(winding == CW ? GL_CW : GL_CCW);
             state_frontface = winding;
         }
 
-        if (backfaceCulling && (vbo->getFrontFace() != FrontFace::DOUBLE_SIDED) && (state_culling != CULL)) {
+        if (backfaceCulling && (getFrontFace() != FrontFace::DOUBLE_SIDED) && (state_culling != CULL)) {
             glEnable(GL_CULL_FACE);
             glCullFace(GL_BACK);
             state_culling = CULL;
-        } else if ((!backfaceCulling || (vbo->getFrontFace() == FrontFace::DOUBLE_SIDED)) && (state_culling == CULL)) {
+        } else if ((!backfaceCulling || (getFrontFace() == FrontFace::DOUBLE_SIDED)) && (state_culling == CULL)) {
             glDisable(GL_CULL_FACE);
             state_culling = NO_CULL;
         }

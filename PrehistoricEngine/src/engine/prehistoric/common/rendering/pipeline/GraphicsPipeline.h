@@ -5,27 +5,31 @@
 
 #include "prehistoric/core/resources/AssembledAssetManager.h"
 
-namespace Prehistoric
-{
-	class GraphicsPipeline
-	{
-	public:
-		GraphicsPipeline(AssetManager* manager, VertexBufferHandle handle);
-		GraphicsPipeline() : backfaceCulling(false) {}
+namespace Prehistoric {
+    class GraphicsPipeline {
+    public:
+        GraphicsPipeline(AssetManager *manager, VertexBufferHandle handle,
+                         std::optional<FrontFace> face = std::nullopt);
 
-		virtual ~GraphicsPipeline();
+        GraphicsPipeline() : backfaceCulling(false) {
+        }
 
-		VertexBuffer* getVertexBuffer() const { return vbo.pointer; }
-		VertexBufferHandle getVertexBufferHandle() const { return vbo; }
+        virtual ~GraphicsPipeline();
 
-		bool isBackfaceCulling() const { return backfaceCulling; }
-		void setBackfaceCulling(bool backfaceCulling) { this->backfaceCulling = backfaceCulling; }
-	protected:
-		AssetManager* manager;
+        VertexBuffer *getVertexBuffer() const { return vbo.pointer; }
+        VertexBufferHandle getVertexBufferHandle() const { return vbo; }
 
-		VertexBufferHandle vbo;
-		bool backfaceCulling;
-	};
+        FrontFace getFrontFace() const { return frontFace; }
+        bool isBackfaceCulling() const { return backfaceCulling; }
+        void setBackfaceCulling(bool backfaceCulling) { this->backfaceCulling = backfaceCulling; }
+
+    protected:
+        AssetManager *manager;
+
+        VertexBufferHandle vbo;
+        FrontFace frontFace = FrontFace::CLOCKWISE;
+        bool backfaceCulling;
+    };
 };
 
 #endif

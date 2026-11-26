@@ -7,158 +7,164 @@
 #include "prehistoric/core/model/material/Material.h"
 
 #include "AssetManager.h"
+#include <map>
 
-namespace Prehistoric
-{
-	HANDLE_OF(Pipeline);
-	HANDLE_OF(Material);
+namespace Prehistoric {
+    HANDLE_OF (Pipeline);
+    HANDLE_OF (Material);
 
-	class AssembledAssetManager
-	{
-	public:
-		AssembledAssetManager(Window* window);
-		~AssembledAssetManager() {}
+    class AssembledAssetManager {
+    public:
+        AssembledAssetManager(Window *window);
 
-		PipelineHandle createPipeline(PipelineTypeHashFlags type, ShaderHandle shaderHandle, VertexBufferHandle vboHandle = { nullptr, (size_t)-1 });
-		MaterialHandle getMaterial(size_t hash);
+        ~AssembledAssetManager() {
+        }
 
-		PipelineHandle getPipelineFromHandle(size_t handle);
-		MaterialHandle getMaterialFromHandle(size_t handle);
+        PipelineHandle createPipeline(PipelineTypeHashFlags type, ShaderHandle shaderHandle,
+                                      VertexBufferHandle vboHandle = {nullptr, (size_t) -1},
+                                      std::optional<FrontFace> face = std::nullopt);
 
-		PipelineHandle storePipeline(Pipeline* pipeline);
-		MaterialHandle storeMaterial(Material* material);
+        MaterialHandle getMaterial(size_t hash);
 
-		template<typename T> void addReference(size_t handle) {}
-		template<typename T> void removeReference(size_t handle) {}
-		template<typename T> std::vector<T*> get() {}
+        PipelineHandle getPipelineFromHandle(size_t handle);
 
-		template<>
-		void addReference<Pipeline>(size_t handle)
-		{
-			const auto& idx = pipelines.find(handle);
-			if (idx == pipelines.end())
-			{
-				PR_LOG_RUNTIME_ERROR("Could not find Pipeline handle %x\n", handle);
-			}
+        MaterialHandle getMaterialFromHandle(size_t handle);
 
-			idx->second.second++;
-		}
+        PipelineHandle storePipeline(Pipeline *pipeline);
 
-		template<>
-		void addReference<Material>(size_t handle)
-		{
-			const auto& idx = materials.find(handle);
-			if (idx == materials.end())
-			{
-				PR_LOG_RUNTIME_ERROR("Could not find Material handle %x\n", handle);
-			}
+        MaterialHandle storeMaterial(Material *material);
 
-			idx->second.second++;
-		}
-		
-		template<>
-		void removeReference<Pipeline>(size_t handle)
-		{
-			const auto& idx = pipelines.find(handle);
-			if (idx == pipelines.end())
-			{
-				PR_LOG_RUNTIME_ERROR("Could not find Pipeline handle %x\n", handle);
-			}
+        template<typename T>
+        void addReference(size_t handle) {
+        }
 
-			uint32_t& refCount = idx->second.second;
-			refCount--;
+        template<typename T>
+        void removeReference(size_t handle) {
+        }
 
-			if (refCount == 0)
-			{
-				pipelines.erase(handle);
+        template<typename T>
+        std::vector<T *> get() {
+        }
 
-				for (const auto& elem : pipelineHashMap)
-				{
-					if (elem.second == handle)
-					{
-						pipelineHashMap.erase(elem.first);
-						return;
-					}
-				}
-			}
-		}
+        template<>
+        void addReference<Pipeline>(size_t handle) {
+            const auto &idx = pipelines.find(handle);
+            if (idx == pipelines.end()) {
+                PR_LOG_RUNTIME_ERROR("Could not find Pipeline handle %x\n", handle);
+            }
 
-		template<>
-		void removeReference<Material>(size_t handle)
-		{
-			const auto& idx = materials.find(handle);
-			if (idx == materials.end())
-			{
-				PR_LOG_RUNTIME_ERROR("Could not find Material handle %x\n", handle);
-			}
+            idx->second.second++;
+        }
 
-			uint32_t& refCount = idx->second.second;
-			refCount--;
+        template<>
+        void addReference<Material>(size_t handle) {
+            const auto &idx = materials.find(handle);
+            if (idx == materials.end()) {
+                PR_LOG_RUNTIME_ERROR("Could not find Material handle %x\n", handle);
+            }
 
-			if (refCount == 0)
-			{
-				materials.erase(handle);
+            idx->second.second++;
+        }
 
-				for (const auto& elem : materialHashMap)
-				{
-					if (elem.second == handle)
-					{
-						materialHashMap.erase(elem.first);
-						return;
-					}
-				}
-			}
-		}
+        template<>
+        void removeReference<Pipeline>(size_t handle) {
+            const auto &idx = pipelines.find(handle);
+            if (idx == pipelines.end()) {
+                PR_LOG_RUNTIME_ERROR("Could not find Pipeline handle %x\n", handle);
+            }
 
-		template<>
-		std::vector<Pipeline*> get<Pipeline>()
-		{
-			std::vector<Pipeline*> ret;
-			ret.reserve(pipelines.size());
-			for (auto& _ : pipelines)
-			{
-				ret.push_back(_.second.first.get());
-			}
+            uint32_t &refCount = idx->second.second;
+            refCount--;
 
-			return ret;
-		}
+            if (refCount == 0) {
+                pipelines.erase(handle);
 
-		template<>
-		std::vector<Material*> get<Material>()
-		{
-			std::vector<Material*> ret;
-			ret.reserve(materials.size());
-			for (auto& _ : materials)
-			{
-				ret.push_back(_.second.first.get());
-			}
+                for (const auto &elem: pipelineHashMap) {
+                    if (elem.second == handle) {
+                        pipelineHashMap.erase(elem.first);
+                        return;
+                    }
+                }
+            }
+        }
 
-			return ret;
-		}
+        template<>
+        void removeReference<Material>(size_t handle) {
+            const auto &idx = materials.find(handle);
+            if (idx == materials.end()) {
+                PR_LOG_RUNTIME_ERROR("Could not find Material handle %x\n", handle);
+            }
 
-		AssetManager* getAssetManager() { return manager.get(); }
+            uint32_t &refCount = idx->second.second;
+            refCount--;
 
-	private:
-		Window* window;
+            if (refCount == 0) {
+                materials.erase(handle);
 
-		std::unique_ptr<AssetManager> manager;
+                for (const auto &elem: materialHashMap) {
+                    if (elem.second == handle) {
+                        materialHashMap.erase(elem.first);
+                        return;
+                    }
+                }
+            }
+        }
 
-		//size_t: ID, pointer: data, uint32_t: refcount
-		std::unordered_map<size_t, std::pair<std::unique_ptr<Pipeline>, uint32_t>> pipelines;
-		std::unordered_map<size_t, std::pair<std::unique_ptr<Material>, uint32_t>> materials;
+        template<>
+        std::vector<Pipeline *> get<Pipeline>() {
+            std::vector<Pipeline *> ret;
+            ret.reserve(pipelines.size());
+            for (auto &_: pipelines) {
+                ret.push_back(_.second.first.get());
+            }
 
-		//You give it a hash and get back the corresponding ID
-		std::unordered_map<size_t, size_t> pipelineHashMap;
-		std::unordered_map<size_t, size_t> materialHashMap;
+            return ret;
+        }
 
-		//The IDs that we assign the next asset we add
-		size_t pipeline_ID = 0;
-		size_t material_ID = 0;
+        template<>
+        std::vector<Material *> get<Material>() {
+            std::vector<Material *> ret;
+            ret.reserve(materials.size());
+            for (auto &_: materials) {
+                ret.push_back(_.second.first.get());
+            }
 
-		//These values are just for reference, so I'll mark it as TODO
-		constexpr static size_t PipelinesSize = 40;
-		constexpr static size_t MaterialsSize = 30;
-	};
+            return ret;
+        }
+
+        AssetManager *getAssetManager() { return manager.get(); }
+
+    private:
+        Window *window;
+
+        std::unique_ptr<AssetManager> manager;
+
+        //size_t: ID, pointer: data, uint32_t: refcount
+        std::unordered_map<size_t, std::pair < std::unique_ptr < Pipeline>
+        ,
+        uint32_t
+        >
+        >
+        pipelines;
+        std::unordered_map<size_t, std::pair < std::unique_ptr < Material>
+        ,
+        uint32_t
+        >
+        >
+        materials;
+
+        //You give it a hash and get back the corresponding ID
+        std::map<std::pair<uint64_t, FrontFace>, size_t> pipelineHashMap;
+        std::unordered_map<size_t, size_t> materialHashMap;
+
+        //The IDs that we assign the next asset we add
+        size_t pipeline_ID = 0;
+        size_t material_ID = 0;
+
+        //These values are just for reference, so I'll mark it as TODO
+        constexpr static size_t PipelinesSize = 40;
+        constexpr static size_t MaterialsSize = 30;
+    };
 };
 
 #endif

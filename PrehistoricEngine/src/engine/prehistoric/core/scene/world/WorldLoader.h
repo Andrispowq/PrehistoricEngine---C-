@@ -62,7 +62,7 @@ namespace Prehistoric {
         std::unordered_map<std::string, VertexBufferHandle> models;
         std::vector<std::string> meshNames;
         std::vector<std::string> meshDirectories;
-        std::vector<FrontFace> frontFaces;
+        std::unordered_map<std::string, FrontFace> modelFaces;
         std::unordered_map<std::string, ShaderHandle> shaders;
         std::unordered_map<std::string, PipelineHandle> pipelines;
 

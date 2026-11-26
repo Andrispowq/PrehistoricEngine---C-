@@ -10,159 +10,146 @@
 #include "platform/vulkan/rendering/pipeline/VKGraphicsPipeline.h"
 #include "platform/vulkan/rendering/pipeline/VKComputePipeline.h"
 
-namespace Prehistoric
-{
-	AssembledAssetManager::AssembledAssetManager(Window* window)
-		: manager{nullptr}
-	{
-		this->window = window;
+namespace Prehistoric {
+    AssembledAssetManager::AssembledAssetManager(Window *window)
+        : manager{nullptr} {
+        this->window = window;
 
-		manager = std::make_unique<AssetManager>(window);
+        manager = std::make_unique<AssetManager>(window);
 
-		pipelines.reserve(PipelinesSize);
-		materials.reserve(MaterialsSize);
-	}
+        pipelines.reserve(PipelinesSize);
+        materials.reserve(MaterialsSize);
+    }
 
-	PipelineHandle AssembledAssetManager::createPipeline(PipelineTypeHashFlags type, ShaderHandle shaderHandle, VertexBufferHandle vboHandle)
-	{
-		uint64_t hash;
-		if (__FrameworkConfig.api == OpenGL)
-		{
-			hash = Pipeline::GetHash(APIHashFlags::GL, type, shaderHandle.handle, type == PipelineTypeHashFlags::Compute ? 0 : vboHandle.handle);
-		}
-		else if (__FrameworkConfig.api == Vulkan)
-		{
-			hash = Pipeline::GetHash(APIHashFlags::VK, type, shaderHandle.handle, type == PipelineTypeHashFlags::Compute ? 0 : vboHandle.handle);
-		}
+    PipelineHandle AssembledAssetManager::createPipeline(PipelineTypeHashFlags type, ShaderHandle shaderHandle,
+                                                         VertexBufferHandle vboHandle, std::optional<FrontFace> face) {
+        uint64_t hash;
+        if (__FrameworkConfig.api == OpenGL) {
+            hash = Pipeline::GetHash(APIHashFlags::GL, type, shaderHandle.handle,
+                                     type == PipelineTypeHashFlags::Compute ? 0 : vboHandle.handle);
+        } else if (__FrameworkConfig.api == Vulkan) {
+            hash = Pipeline::GetHash(APIHashFlags::VK, type, shaderHandle.handle,
+                                     type == PipelineTypeHashFlags::Compute ? 0 : vboHandle.handle);
+        }
 
-		auto idx = pipelineHashMap.find(hash);
-		if (idx != pipelineHashMap.end())
-		{			
-			return { pipelines[idx->second].first.get(), idx->second };
-		}
+        const auto winding = type == PipelineTypeHashFlags::Graphics
+                                 ? face.value_or(vboHandle->getFrontFace())
+                                 : FrontFace::CLOCKWISE;
+        const auto key = std::make_pair(hash, winding);
+        auto idx = pipelineHashMap.find(key);
+        if (idx != pipelineHashMap.end()) {
+            return {pipelines[idx->second].first.get(), idx->second};
+        }
 
-		Pipeline* pipe = nullptr;
+        Pipeline *pipe = nullptr;
 
-		switch (type)
-		{
-		case Prehistoric::PipelineTypeHashFlags::Graphics:
-			if (__FrameworkConfig.api == OpenGL)
-			{
-				pipe = new GLGraphicsPipeline(window, manager.get(), shaderHandle, vboHandle);
-			}
-			else if(__FrameworkConfig.api == Vulkan)
-			{
-				pipe = new VKGraphicsPipeline(window, manager.get(), shaderHandle, vboHandle);
-			}
-			break;
-		case Prehistoric::PipelineTypeHashFlags::Compute:
-			if (__FrameworkConfig.api == OpenGL)
-			{
-				pipe = new GLComputePipeline(window, manager.get(), shaderHandle);
-			}
-			else if (__FrameworkConfig.api == Vulkan)
-			{
-				pipe = new VKComputePipeline(window, manager.get(), shaderHandle);
-			}
-			break;
-		case Prehistoric::PipelineTypeHashFlags::RayTracing:
-			if (__FrameworkConfig.api == OpenGL)
-			{
-				pipe = new GLRayTracingPipeline(window, manager.get(), shaderHandle);
-			}
-			break;
-		default:
-			break;
-		}
+        switch (type) {
+            case Prehistoric::PipelineTypeHashFlags::Graphics:
+                if (__FrameworkConfig.api == OpenGL) {
+                    pipe = new GLGraphicsPipeline(window, manager.get(), shaderHandle, vboHandle, winding);
+                } else if (__FrameworkConfig.api == Vulkan) {
+                    pipe = new VKGraphicsPipeline(window, manager.get(), shaderHandle, vboHandle, winding);
+                }
+                break;
+            case Prehistoric::PipelineTypeHashFlags::Compute:
+                if (__FrameworkConfig.api == OpenGL) {
+                    pipe = new GLComputePipeline(window, manager.get(), shaderHandle);
+                } else if (__FrameworkConfig.api == Vulkan) {
+                    pipe = new VKComputePipeline(window, manager.get(), shaderHandle);
+                }
+                break;
+            case Prehistoric::PipelineTypeHashFlags::RayTracing:
+                if (__FrameworkConfig.api == OpenGL) {
+                    pipe = new GLRayTracingPipeline(window, manager.get(), shaderHandle);
+                }
+                break;
+            default:
+                break;
+        }
 
-		size_t han = pipeline_ID++;
+        size_t han = pipeline_ID++;
 
-		PipelineHandle handle;
-		handle.pointer = pipe;
-		handle.handle = han;
+        PipelineHandle handle;
+        handle.pointer = pipe;
+        handle.handle = han;
 
-		pipelines.insert(std::make_pair(handle.handle, std::make_pair(pipe, 0)));
-		pipelineHashMap.insert(std::make_pair(hash, handle.handle));
+        pipelines.insert(std::make_pair(handle.handle, std::make_pair(pipe, 0)));
+        pipelineHashMap.insert(std::make_pair(key, handle.handle));
 
-		return handle;
-	}
+        return handle;
+    }
 
-	MaterialHandle AssembledAssetManager::getMaterial(size_t hash)
-	{
-		auto idx = materialHashMap.find(hash);
-		if (idx != materialHashMap.end())
-		{
-			return { materials[idx->second].first.get(), idx->second };
-		}
+    MaterialHandle AssembledAssetManager::getMaterial(size_t hash) {
+        auto idx = materialHashMap.find(hash);
+        if (idx != materialHashMap.end()) {
+            return {materials[idx->second].first.get(), idx->second};
+        }
 
-		return { nullptr, (size_t)-1 };
-	}
+        return {nullptr, (size_t) -1};
+    }
 
-	PipelineHandle AssembledAssetManager::getPipelineFromHandle(size_t handle)
-	{
-		auto idx = pipelines.find(handle);
-		if (idx != pipelines.end())
-		{
-			return { idx->second.first.get(), handle };
-		}
+    PipelineHandle AssembledAssetManager::getPipelineFromHandle(size_t handle) {
+        auto idx = pipelines.find(handle);
+        if (idx != pipelines.end()) {
+            return {idx->second.first.get(), handle};
+        }
 
-		return { nullptr, (size_t)-1 };
-	}
+        return {nullptr, (size_t) -1};
+    }
 
-	MaterialHandle AssembledAssetManager::getMaterialFromHandle(size_t handle)
-	{
-		auto idx = materials.find(handle);
-		if (idx != materials.end())
-		{
-			return { idx->second.first.get(), handle };
-		}
+    MaterialHandle AssembledAssetManager::getMaterialFromHandle(size_t handle) {
+        auto idx = materials.find(handle);
+        if (idx != materials.end()) {
+            return {idx->second.first.get(), handle};
+        }
 
-		return { nullptr, (size_t)-1 };
-	}
+        return {nullptr, (size_t) -1};
+    }
 
-	PipelineHandle AssembledAssetManager::storePipeline(Pipeline* pipeline)
-	{
-		auto idx = pipelineHashMap.find(pipeline->GetHash());
-		if (idx != pipelineHashMap.end())
-		{
-			return { pipeline, idx->second };
-		}
+    PipelineHandle AssembledAssetManager::storePipeline(Pipeline *pipeline) {
+        auto *graphics = dynamic_cast<GraphicsPipeline *>(pipeline);
+        const auto key = std::make_pair(pipeline->GetHash(),
+                                        graphics ? graphics->getFrontFace() : FrontFace::CLOCKWISE);
+        auto idx = pipelineHashMap.find(key);
+        if (idx != pipelineHashMap.end()) {
+            if (pipeline != pipelines.at(idx->second).first.get()) delete pipeline;
+            return {pipelines.at(idx->second).first.get(), idx->second};
+        }
 
-		size_t han = pipeline_ID++;
+        size_t han = pipeline_ID++;
 
-		PipelineHandle handle;
-		handle.pointer = pipeline;
-		handle.handle = han;
+        PipelineHandle handle;
+        handle.pointer = pipeline;
+        handle.handle = han;
 
-		pipelines.insert(std::make_pair(handle.handle, std::make_pair(pipeline, 0)));
-		pipelineHashMap.insert(std::make_pair(pipeline->GetHash(), handle.handle));
+        pipelines.insert(std::make_pair(handle.handle, std::make_pair(pipeline, 0)));
+        pipelineHashMap.insert(std::make_pair(key, handle.handle));
 
-		return handle;
-	}
+        return handle;
+    }
 
-	MaterialHandle AssembledAssetManager::storeMaterial(Material* material)
-	{
-		uint64_t hash;
-		if (material == nullptr)
-			hash = 0;
-		else
-			hash = material->GetHash();
+    MaterialHandle AssembledAssetManager::storeMaterial(Material *material) {
+        uint64_t hash;
+        if (material == nullptr)
+            hash = 0;
+        else
+            hash = material->GetHash();
 
-		/*auto idx = materialHashMap.find(hash);
+        /*auto idx = materialHashMap.find(hash);
 		if (idx != materialHashMap.end())
 		{
 			return { material, idx->second };
 		}*/
 
-		size_t han = material_ID++;
+        size_t han = material_ID++;
 
-		MaterialHandle handle;
-		handle.pointer = material;
-		handle.handle = han;
+        MaterialHandle handle;
+        handle.pointer = material;
+        handle.handle = han;
 
-		materials.insert(std::make_pair(handle.handle, std::make_pair(material, 0)));
-		materialHashMap.insert(std::make_pair(hash, handle.handle));
+        materials.insert(std::make_pair(handle.handle, std::make_pair(material, 0)));
+        materialHashMap.insert(std::make_pair(hash, handle.handle));
 
-		return handle;
-	}
+        return handle;
+    }
 };

@@ -23,37 +23,45 @@
 
 #include "Includes.hpp"
 
-namespace Prehistoric
-{
-	class WorldSerialiser
-	{
-	public:
-		WorldSerialiser(Window* window, AssembledAssetManager* manager)
-			: window(window), manager(manager) {}
-		virtual ~WorldSerialiser() {}
+namespace Prehistoric {
+    class WorldSerialiser {
+    public:
+        WorldSerialiser(Window *window, AssembledAssetManager *manager)
+            : window(window), manager(manager) {
+        }
 
-		void SerialiseWorld(const std::string& worldFile, Scene* scene);
-		void SerialiseWorldJSON(const std::string& worldFile, Scene* scene);
+        virtual ~WorldSerialiser() {
+        }
 
-	private:
-		void ListResources(GameObject* root);
+        void SerialiseWorld(const std::string &worldFile, Scene *scene);
 
-	public:
-		std::string sceneName;
+        void SerialiseWorldJSON(const std::string &worldFile, Scene *scene);
 
-		std::string directoryModels;
-		std::string directoryTextures;
+    private:
+        void ListResources(GameObject *root);
 
-		//Rendering stuff
-		std::unordered_map<std::string, VertexBufferHandle> models;
+    public:
+        std::string sceneName;
 
-		std::unordered_map<std::string, TextureHandle> textures;
-		std::unordered_map<std::string, MaterialHandle> materials;
+        std::string directoryModels;
+        std::string directoryTextures;
 
-	private:
-		Window* window;
-		AssembledAssetManager* manager;
-	};
+        //Rendering stuff
+        struct ModelReference {
+            VertexBufferHandle buffer;
+            FrontFace face;
+            std::string directory;
+        };
+
+        std::unordered_map<std::string, ModelReference> models;
+
+        std::unordered_map<std::string, TextureHandle> textures;
+        std::unordered_map<std::string, MaterialHandle> materials;
+
+    private:
+        Window *window;
+        AssembledAssetManager *manager;
+    };
 };
 
 #endif

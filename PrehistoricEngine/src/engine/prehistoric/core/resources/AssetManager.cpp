@@ -249,8 +249,16 @@ namespace Prehistoric {
         const std::string cacheName = CanonicalAssetReference(reference);
         for (auto &entry: vertexBuffers) {
             if (entry.second.first.get() == vertexBuffer) {
-                return {vertexBuffer, entry.second.second};
+                return {vertexBuffer, entry.first};
             }
+        }
+
+        // Queued world declarations may name the same mesh before either has been stored.
+        if (auto existing = ID_map.find(cacheName); !cacheName.empty() && existing != ID_map.end() &&
+                                                    existing->second.type == ResourceType::VertexBuffer) {
+            const auto handle = existing->second.handle;
+            delete vertexBuffer;
+            return {vertexBuffers.at(handle).first.get(), handle};
         }
 
         size_t han = vertexBuffer_ID++;

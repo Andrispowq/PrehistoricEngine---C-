@@ -9,7 +9,11 @@
     "directories": {"models": "", "textures": ""},
     "models": [
         {"name": "sponza", "directory": "sample://models/sponza.obj", "front-face": 0},
-        {"name": "cube", "directory": "engine://models/cube.obj", "front-face": 1}
+      {
+        "name": "cube",
+        "directory": "engine://models/cube.obj",
+        "front-face": 0
+      }
     ],
     "textures": [],
     "materials": [
