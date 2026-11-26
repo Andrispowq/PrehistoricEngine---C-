@@ -60,7 +60,7 @@ namespace Prehistoric {
             VkFramebuffer framebuffer;
             VkExtent2D extent;
             VkDescriptorSet inputs;
-            float settings[4];
+            float settings[5];
         };
 
         std::unique_ptr<VKVoxelView> voxelPass;

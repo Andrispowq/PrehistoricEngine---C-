@@ -106,5 +106,6 @@ void main()
 
     outColour = vec4(colour, 1.0);
     outBloom = vec4(0);
+    outColour.a = 1.0 + float(waterView.selected);
     if (waterView.eyeAndCapture.w != 0.0) outColour.a = gl_FragCoord.z;
 }

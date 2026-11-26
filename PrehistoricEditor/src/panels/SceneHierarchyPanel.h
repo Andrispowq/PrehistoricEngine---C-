@@ -23,6 +23,9 @@ public:
 
     void SelectViewportHit(Prehistoric::GameObject *object, std::optional<uint32_t> submesh);
 
+    Prehistoric::GameObject *getSelectedObject() const { return selectionContext; }
+    std::optional<uint32_t> getSelectedSubmesh() const { return selectedSubmesh; }
+
     void ImGuiRender();
 
 private:

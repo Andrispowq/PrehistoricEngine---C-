@@ -260,6 +260,11 @@ void EditorLayer::ImGUIRender() {
     ImGui::End();
     ImGui::PopStyleVar();
 
+    auto *selected = scenePanel->getSelectedObject();
+    auto *component = selected ? selected->GetComponent<Prehistoric::RendererComponent>() : nullptr;
+    renderer->SetSelection(component && component->getMeshBuffer() ? selected : nullptr,
+                           scenePanel->getSelectedSubmesh());
+
     //Asset manager
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0, 0});
     ImGui::Begin("Asset Manager");

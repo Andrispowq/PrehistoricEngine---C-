@@ -53,6 +53,17 @@ namespace Prehistoric {
 
         void Render();
 
+        void SetSelection(const GameObject *object, std::optional<uint32_t> submesh) {
+            selectedObject = object;
+            selectedSubmesh = submesh;
+        }
+
+        bool hasSelection() const { return selectedObject != nullptr; }
+
+        bool isSelected(const GameObject *object, uint32_t submesh) const {
+            return selectedObject && object == selectedObject && (!selectedSubmesh || *selectedSubmesh == submesh);
+        }
+
         bool isBloomEnabled() const { return bloomEnabled; }
         void setBloomEnabled(bool enabled) { bloomEnabled = enabled; }
         void ToggleBloom() { setBloomEnabled(!isBloomEnabled()); }
@@ -68,7 +79,7 @@ namespace Prehistoric {
         void RegisterAtmosphere(const Atmosphere &sky) { atmosphere = &sky; }
         const Atmosphere *getAtmosphere() const { return atmosphere; }
 
-        void RegisterVolumetricSphere(const VolumetricSphere& sphere) { volumetricSpheres.push_back(sphere); }
+        void RegisterVolumetricSphere(const VolumetricSphere &sphere) { volumetricSpheres.push_back(sphere); }
         const std::vector<VolumetricSphere> &getVolumetricSpheres() const { return volumetricSpheres; }
 
         void UnregisterModel(RenderableComponent *renderable);
@@ -112,10 +123,11 @@ namespace Prehistoric {
             }
         }
 
-        void SetSceneEnvironmentMap(const std::string& location) { sceneEnvironmentMap = location; }
+        void SetSceneEnvironmentMap(const std::string &location) { sceneEnvironmentMap = location; }
 
     protected:
         std::string sceneEnvironmentMap;
+
         virtual void UpdateEnvironmentLighting() = 0;
 
         virtual void RenderScene() = 0;
@@ -124,6 +136,8 @@ namespace Prehistoric {
 
         virtual void FinishFrame() = 0;
 
+        const GameObject *selectedObject = nullptr;
+        std::optional<uint32_t> selectedSubmesh;
         bool bloomEnabled = true;
 
         void ClearFrameSubmissions();

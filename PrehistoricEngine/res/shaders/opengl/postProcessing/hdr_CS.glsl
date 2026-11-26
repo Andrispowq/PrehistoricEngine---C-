@@ -7,6 +7,7 @@ layout(binding = 0, rgba32f) uniform writeonly image2D outColour;
 uniform sampler2D scene;
 
 uniform int underwater;
+uniform bool outline;
 uniform float gamma;
 uniform float exposure;
 uniform vec2 resolution;
@@ -31,5 +32,6 @@ void main()
     if (underwater != 0) sceneColour = underwaterColour(texCoord, resolution, sceneColour);
     sceneColour = ToneMapHDR(sceneColour, exposure, gamma);
 
+    if (outline) sceneColour = selectionOutline(scene, x, sceneColour);
     imageStore(outColour, x, vec4(sceneColour, 1.0));
 }

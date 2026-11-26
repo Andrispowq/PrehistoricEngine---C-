@@ -13,30 +13,40 @@
 #include "prehistoric/core/model/material/Material.h"
 #include "platform/opengl/texture/GLTexture.h"
 
-namespace Prehistoric
-{
-	class GLPBRShader : public GLShader
-	{
-	public:
-		GLPBRShader();
-		virtual ~GLPBRShader() {}
+namespace Prehistoric {
+    class GLPBRShader : public GLShader {
+    public:
+        GLPBRShader();
 
-		virtual void UpdateGlobalUniforms(Renderer* renderer) const override;
-		virtual void UpdateMaterialUniforms(Material* material, uint32_t descriptor_index = 0) const override;
-		virtual void UpdateObjectUniforms(GameObject* object, uint32_t instance_index = 0) const override;
+        virtual ~GLPBRShader() {
+        }
 
-	private:
-		int m_transform;
+        virtual void UpdateGlobalUniforms(Renderer *renderer) const override;
 
-		int albedoMap;
-		int normalMap;
-		int mrotMap;
+        virtual void UpdateMaterialUniforms(Material *material, uint32_t descriptor_index = 0) const override;
 
-		int colour;
-		int usesNormalMap;
-		int mrot;
-		int emission;
-	};
+        virtual void UpdateObjectUniforms(GameObject *object, uint32_t instance_index = 0) const override;
+
+        void SetSelected(bool selected) {
+            if (lastSelected == selected) return;
+            SetUniformi(selectedLocation, selected);
+            lastSelected = selected;
+        }
+
+    private:
+        int selectedLocation;
+        bool lastSelected = false;
+        int m_transform;
+
+        int albedoMap;
+        int normalMap;
+        int mrotMap;
+
+        int colour;
+        int usesNormalMap;
+        int mrot;
+        int emission;
+    };
 };
 
 #endif

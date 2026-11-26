@@ -1,6 +1,7 @@
 #include "Includes.hpp"
 #include "prehistoric/application/Application.h"
 #include "GLGraphicsPipeline.h"
+#include "platform/opengl/rendering/shaders/pbr/GLPBRShader.h"
 
 namespace Prehistoric {
 #define CW 0
@@ -48,6 +49,8 @@ namespace Prehistoric {
             state_culling = NO_CULL;
         }
 
+        auto *pbr = dynamic_cast<GLPBRShader *>(getShader());
+        auto *renderer = pbr ? Application::Get().getEngineLayer()->getRenderingEngine()->getRenderer() : nullptr;
         for (uint32_t i = 0; i < vbo->getSubmeshCount(); i++) {
             if (vbo->getType() == VertexBufferType::PATCH) {
                 vbo->Draw(buffer, i);
@@ -58,6 +61,9 @@ namespace Prehistoric {
             Model &model = mesh_vbo->getModel();
             int matIdx = model.getMesh(i).getMaterialIndex();
 
+            if (pbr)
+                pbr->SetSelected(object && renderer->isSelected(object->getParent(), i)
+                                 && __WaterConfig.stage == WaterRenderStage::Default);
             if (object) {
                 shader->UpdateMaterialUniforms(object->ResolveSubmeshMaterial(model, i, object->getMaterial()), 0);
             } else if (matIdx != -1) {

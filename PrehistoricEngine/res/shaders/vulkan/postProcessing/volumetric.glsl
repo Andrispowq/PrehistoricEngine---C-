@@ -49,8 +49,8 @@ void main()
     vec3 origin = unprojectVolumeRay(ndc, 0.0);
     vec3 direction = normalize(origin - cameraAndCount.xyz);
     float distanceToSurface = max(0.0, dot(unprojectVolumeRay(ndc, depth) - origin, direction));
-    vec3 background = texelFetch(scene, pixel, 0).rgb;
-    if (options.x > 0.0) background += texture(bloom, uv).rgb;
+    vec4 background = texelFetch(scene, pixel, 0);
+    if (options.x > 0.0) background.rgb += texture(bloom, uv).rgb;
     float offset = volumeSampleOffset(pixel);
-    outColour = vec4(compositeVolumes(background, origin, direction, distanceToSurface, offset), 1.0);
+    outColour = vec4(compositeVolumes(background.rgb, origin, direction, distanceToSurface, offset), background.a);
 }

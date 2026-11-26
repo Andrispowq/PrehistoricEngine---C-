@@ -317,6 +317,7 @@ namespace Prehistoric {
             }
             if (buffer) graphics->BindPipeline(buffer, wireframe, receivers);
         };
+        uint32_t lastSelected = 0;
         auto beginScene = [&](Pipeline *pipeline) {
             begin(pipeline, isWireframeMode());
             if (!shader) return;
@@ -324,6 +325,7 @@ namespace Prehistoric {
                 auto *vertices = static_cast<VKGraphicsPipeline *>(pipeline)->getVertexBuffer();
                 if (vertices->getType() == VertexBufferType::MESH)
                     mesh = static_cast<MeshVertexBuffer *>(vertices);
+                lastSelected = 0;
                 constexpr CaptureConstants mainView{};
                 vkCmdPushConstants(buffer->getCommandBuffer(), shader->GetPipelineLayout(),
                                    VK_SHADER_STAGE_ALL_GRAPHICS,
@@ -347,15 +349,15 @@ namespace Prehistoric {
                     return;
                 }
                 const auto &materials = frameDescriptors.at(shader).materials;
-                const auto *component = dynamic_cast<const RendererComponent *>(renderable);
-                if (mesh->getModel().getMaterials().empty() && (
-                        !component || component->getSubmeshOverrides().empty())) {
-                    shader->BindTextureSets(materials.at(fallback));
-                    pipeline->RenderPipeline();
-                    return;
-                }
                 Material *bound = nullptr;
                 for (uint32_t i = 0; i < mesh->getSubmeshCount(); ++i) {
+                    const uint32_t selectedPart = !capture && !receivers && isSelected(renderable->getParent(), i);
+                    if (selectedPart != lastSelected) {
+                        vkCmdPushConstants(buffer->getCommandBuffer(), shader->GetPipelineLayout(),
+                                           VK_SHADER_STAGE_ALL_GRAPHICS, offsetof(CaptureConstants, selected),
+                                           sizeof(selectedPart), &selectedPart);
+                        lastSelected = selectedPart;
+                    }
                     auto *selected = renderable->ResolveSubmeshMaterial(mesh->getModel(), i, fallback);
                     if (selected != bound) {
                         shader->BindTextureSets(materials.at(selected));

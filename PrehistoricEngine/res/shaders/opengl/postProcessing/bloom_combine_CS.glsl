@@ -13,9 +13,9 @@ void main()
 	ivec2 x = ivec2(gl_GlobalInvocationID.xy);
     if (any(greaterThanEqual(x, ivec2(targetSize)))) return;
     vec2 texCoord = (vec2(x) + 0.5) / targetSize;
-	
-	vec3 colour0 = texture(image0, texCoord).rgb;
+
+    vec4 colour0 = texture(image0, texCoord);
     vec3 colour1 = texture(image1, texCoord).rgb;
 
-	imageStore(outColour, x, vec4(colour0 + colour1, 1.0));
+    imageStore(outColour, x, vec4(colour0.rgb + colour1, colour0.a));
 }

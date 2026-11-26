@@ -322,7 +322,7 @@ namespace Prehistoric {
         pool.poolSizeCount = 1;
         pool.pPoolSizes = &size;
         Check(vkCreateDescriptorPool(handle, &pool, nullptr, &hdrPool));
-        VkPushConstantRange range{VK_SHADER_STAGE_FRAGMENT_BIT, 0, 4 * sizeof(float)};
+        VkPushConstantRange range{VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(BloomDraw::settings)};
         VkPipelineLayoutCreateInfo layout{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
         layout.setLayoutCount = layout.pushConstantRangeCount = 1;
         layout.pSetLayouts = &hdrSetLayout;
@@ -461,7 +461,7 @@ namespace Prehistoric {
             vkUpdateDescriptorSets(handle, std::size(writes), writes, 0, nullptr);
         }
         const VkDescriptorSetLayout inputs[] = {hdrSetLayout, volumeSetLayout};
-        VkPushConstantRange range{VK_SHADER_STAGE_FRAGMENT_BIT, 0, 4 * sizeof(float)};
+        VkPushConstantRange range{VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(BloomDraw::settings)};
         VkPipelineLayoutCreateInfo layout{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
         layout.setLayoutCount = std::size(inputs);
         layout.pSetLayouts = inputs;
@@ -622,7 +622,7 @@ namespace Prehistoric {
                  inputs, {
                      __EngineConfig.rendererExposure,
                      VKPBRShaderGamma(swapchain->getSwapchainImageFormat(), __EngineConfig.rendererGamma),
-                     float(addBloom), float(underwater)
+                     float(addBloom), float(underwater), float(renderer.hasSelection())
                  }
              });
     }

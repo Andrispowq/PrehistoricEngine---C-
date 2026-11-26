@@ -41,7 +41,7 @@ namespace Prehistoric {
         _layoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         _layoutCreateInfo.setLayoutCount = (uint32_t) layouts.size();
         _layoutCreateInfo.pSetLayouts = layouts.data();
-        VkPushConstantRange captureRange{VK_SHADER_STAGE_ALL_GRAPHICS, 0, 80};
+        VkPushConstantRange captureRange{VK_SHADER_STAGE_ALL_GRAPHICS, 0, 84};
         _layoutCreateInfo.pushConstantRangeCount = 1;
         _layoutCreateInfo.pPushConstantRanges = &captureRange;
 

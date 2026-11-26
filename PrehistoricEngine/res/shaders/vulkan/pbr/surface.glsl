@@ -71,6 +71,7 @@ void main()
     outBloom = vec4(N, 1);
     #else
     shadeSurface(albedoColour, metallic, roughness, occlusion, N, emission);
+    outColour.a = 1.0 + float(waterView.selected);
     if (waterView.eyeAndCapture.w != 0.0) outColour.a = gl_FragCoord.z;
     #endif
 }

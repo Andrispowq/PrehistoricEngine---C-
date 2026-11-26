@@ -73,10 +73,11 @@ namespace Prehistoric {
         struct CaptureConstants {
             float worldToClip[16];
             float eyeAndCapture[4];
+            uint32_t selected = 0;
         };
 
         static_assert(offsetof(CaptureConstants, eyeAndCapture) == 64);
-        static_assert(sizeof(CaptureConstants) == 80);
+        static_assert(offsetof(CaptureConstants, selected) == 80);
 
         struct FrameDescriptors {
             std::unordered_map<Material *, uint32_t> materials;

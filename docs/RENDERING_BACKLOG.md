@@ -16,16 +16,15 @@ Engine mesh raycasting and editor viewport picking are implemented. Set **Pick d
 Settings. Click once to select an instance and click it again to select a submesh. Clicking empty space clears the
 selection.
 
-1. **Selection outline post-processing.** Outline the current selection in the editor viewport on both backends. Outline
-   the whole instance for an object selection, including all its submeshes. For a submesh selection, outline only that
-   part of that instance. Update the outline when selection changes from either the viewport or the hierarchy, and clear
-   it when selection is cleared.
-2. **Sun shafts.** Extend the existing shadowed volumetric lighting in Sponza Sun Shafts with a dedicated sun-shaft
+Selected meshes have an amber outline in the lit viewport. Object selection outlines the instance as a whole,
+and submesh selection outlines only the selected part.
+
+1. **Sun shafts.** Extend the existing shadowed volumetric lighting in Sponza Sun Shafts with a dedicated sun-shaft
    effect. Verify occlusion and camera motion on both backends and avoid counting the existing volumetric contribution
    twice.
-3. **Depth of field and related lens effects.** Add configurable focus distance and aperture, with foreground and
+2. **Depth of field and related lens effects.** Add configurable focus distance and aperture, with foreground and
    background blur and bokeh highlights.
-4. **Ambient occlusion.** Add a configurable ambient occlusion pass and check its interaction with material occlusion
+3. **Ambient occlusion.** Add a configurable ambient occlusion pass and check its interaction with material occlusion
    and VXGI in sheltered areas.
 
 Imported OBJ and PMF submeshes appear under each model instance in the editor

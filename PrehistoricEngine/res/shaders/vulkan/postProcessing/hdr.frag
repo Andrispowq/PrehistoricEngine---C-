@@ -10,6 +10,7 @@ layout(push_constant) uniform Settings
     float gamma;
     float bloomEnabled;
     float underwater;
+    float outline;
 } hdr;
 
 #include "../../shared/postProcessing/hdr.glsl"
@@ -27,5 +28,7 @@ void main()
 {
     vec3 colour = sampleSceneColour(uv);
     if (hdr.underwater > 0) colour = underwaterColour(uv, vec2(textureSize(scene, 0)), colour);
-    outColour = vec4(ToneMapHDR(colour, hdr.exposure, hdr.gamma), 1.0);
+    colour = ToneMapHDR(colour, hdr.exposure, hdr.gamma);
+    if (hdr.outline > 0.0) colour = selectionOutline(scene, ivec2(gl_FragCoord.xy), colour);
+    outColour = vec4(colour, 1.0);
 }

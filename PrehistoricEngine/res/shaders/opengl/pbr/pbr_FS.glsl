@@ -68,6 +68,8 @@ uniform vec3 sunRadiance;
 #include "shared/pbr/lighting.glsl"
 #include "opengl/shadow/cascades.glsl"
 
+uniform bool selected;
+
 void main()
 {
 	ivec2 location = ivec2(gl_FragCoord.xy);
@@ -201,7 +203,7 @@ void main()
 	}
 
 
-	outColour = vec4(colour, 1);
+    outColour = vec4(colour, 1.0 + float(selected));
 	outPositionMetallic = vec4(position_FS, metallic);
 	outAlbedoRoughness = vec4(albedoColour, roughness);
 	outNormal = vec4(N, 1);

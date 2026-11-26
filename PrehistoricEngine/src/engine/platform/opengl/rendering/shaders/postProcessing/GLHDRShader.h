@@ -5,16 +5,16 @@
 
 #include <glad/glad.h>
 
-namespace Prehistoric
-{
-	class GLHDRShader : public GLShader
-	{
-	public:
-		GLHDRShader();
-		virtual ~GLHDRShader() {}
+namespace Prehistoric {
+    class GLHDRShader : public GLShader {
+    public:
+        GLHDRShader();
 
-		void UpdateUniforms(Texture* scene, Vector2f resolution, bool underwater) const;
-	};
+        virtual ~GLHDRShader() {
+        }
+
+        void UpdateUniforms(Texture *scene, Vector2f resolution, bool underwater, bool outline) const;
+    };
 };
 
 #endif

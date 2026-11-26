@@ -6,30 +6,29 @@
 
 #include "prehistoric/core/node/GameObject.h"
 
-namespace Prehistoric
-{
-	GLHDRShader::GLHDRShader() : GLShader()
-	{
-		AddShader(ResourceLoader::LoadShaderGL("opengl/postProcessing/hdr_CS.glsl"), COMPUTE_SHADER);
-		CompileShader();
+namespace Prehistoric {
+    GLHDRShader::GLHDRShader() : GLShader() {
+        AddShader(ResourceLoader::LoadShaderGL("opengl/postProcessing/hdr_CS.glsl"), COMPUTE_SHADER);
+        CompileShader();
 
-		AddUniform("scene");
+        AddUniform("scene");
         AddUniform("underwater");
-		AddUniform("resolution");
+        AddUniform("outline");
+        AddUniform("resolution");
 
-		AddUniform("gamma");
-		AddUniform("exposure");
-	}
+        AddUniform("gamma");
+        AddUniform("exposure");
+    }
 
-	void GLHDRShader::UpdateUniforms(Texture* scene, Vector2f resolution, bool underwater) const
-	{
-		SetUniformi("underwater", underwater);
+    void GLHDRShader::UpdateUniforms(Texture *scene, Vector2f resolution, bool underwater, bool outline) const {
+        SetUniformi("underwater", underwater);
+        SetUniformi("outline", outline);
         scene->Bind();
-		SetUniformi("scene", 0);
+        SetUniformi("scene", 0);
 
-		SetUniform("resolution", resolution);
+        SetUniform("resolution", resolution);
 
-		SetUniformf("gamma", __EngineConfig.rendererGamma);
-		SetUniformf("exposure", __EngineConfig.rendererExposure);
-	}
+        SetUniformf("gamma", __EngineConfig.rendererGamma);
+        SetUniformf("exposure", __EngineConfig.rendererExposure);
+    }
 };

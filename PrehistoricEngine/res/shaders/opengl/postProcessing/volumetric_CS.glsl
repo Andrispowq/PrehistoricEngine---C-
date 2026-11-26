@@ -32,7 +32,7 @@ void main()
     vec3 origin = unprojectVolumeRay(ndc, -1.0);
     vec3 direction = normalize(origin - cameraPosition);
     float surfaceDistance = max(0.0, dot(unprojectVolumeRay(ndc, depth * 2.0 - 1.0) - origin, direction));
-    vec3 background = texelFetch(scene, pixel, 0).rgb;
+    vec4 background = texelFetch(scene, pixel, 0);
     float sampleOffset = volumeSampleOffset(pixel);
-    imageStore(outColour, pixel, vec4(compositeVolumes(background, origin, direction, surfaceDistance, sampleOffset), 1.0));
+    imageStore(outColour, pixel, vec4(compositeVolumes(background.rgb, origin, direction, surfaceDistance, sampleOffset), background.a));
 }
