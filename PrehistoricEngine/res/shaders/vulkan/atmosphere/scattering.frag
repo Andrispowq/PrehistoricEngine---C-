@@ -8,6 +8,6 @@ layout(location = 1) out vec4 outBloom;
 
 void main()
 {
-    outBloom = vec4(0);
+    outBloom = vec4(0, 0, 0, 1);
     outColour = vec4(SkyRadiance(direction, false), 1.0);
 }

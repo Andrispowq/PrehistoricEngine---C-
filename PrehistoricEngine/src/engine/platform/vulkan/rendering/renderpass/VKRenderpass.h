@@ -18,7 +18,7 @@ namespace Prehistoric {
 
     class VKRenderpass {
     public:
-        VKRenderpass(VKDevice *device, VKSwapchain *swapchain);
+        VKRenderpass(VKDevice *device, VKSwapchain *swapchain, VkImageView flareAtlas);
 
         virtual ~VKRenderpass();
 
@@ -60,7 +60,7 @@ namespace Prehistoric {
             VkFramebuffer framebuffer;
             VkExtent2D extent;
             VkDescriptorSet inputs;
-            float settings[5];
+            float settings[11];
         };
 
         std::unique_ptr<VKVoxelView> voxelPass;
@@ -108,6 +108,7 @@ namespace Prehistoric {
         VkRenderPass presentPass{};
         VkDescriptorSetLayout hdrSetLayout{};
         VkDescriptorPool hdrPool{};
+        VkImageView flareAtlas;
         VkSampler sampler{};
         VkPipelineLayout hdrLayout{};
         VkPipeline hdrPipeline{};

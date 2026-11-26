@@ -30,7 +30,9 @@ namespace Prehistoric {
         VKDevice *device = (VKDevice *) context->getDevices();
 
         shadows = std::make_unique<VKShadowPass>(device);
-        renderpass = std::make_unique<VKRenderpass>(device, swapchain);
+        renderpass = std::make_unique<VKRenderpass>(device, swapchain,
+                                                    static_cast<VKTexture *>(getFlareAtlas())->getImage()->
+                                                    getImageView());
 
         size_t NumImages = swapchain->getSwapchainImages().size();
 
@@ -130,7 +132,9 @@ namespace Prehistoric {
             uint32_t height = extent.height;
             camera->SetProjection(camera->getFov(), (float) width, (float) height);
 
-            renderpass = std::make_unique<VKRenderpass>(device, swapchain);
+            renderpass = std::make_unique<VKRenderpass>(device, swapchain,
+                                                        static_cast<VKTexture *>(getFlareAtlas())->getImage()->
+                                                        getImageView());
             swapchain->setRenderpass(renderpass.get());
 
             size_t NumImages = swapchain->getSwapchainImages().size();

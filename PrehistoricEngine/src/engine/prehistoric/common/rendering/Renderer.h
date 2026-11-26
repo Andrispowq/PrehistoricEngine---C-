@@ -49,6 +49,18 @@ namespace Prehistoric {
 
         virtual void RequestEnvironmentBake(bool usePanorama) = 0;
 
+        bool sunShafts = true;
+        float sunShaftStrength = 1.0f;
+        bool sunFlare = true;
+        float sunFlareStrength = 0.8f;
+        float sunFlareSize = 1.0f;
+
+        Vector4f GetSunFlare() const;
+
+        Vector2f GetSunFlareFootprint() const;
+
+        Texture *getFlareAtlas() const { return flareAtlas.get(); }
+
         float environmentPreviewLod = 0.0f;
 
         void Render();
@@ -138,6 +150,7 @@ namespace Prehistoric {
 
         const GameObject *selectedObject = nullptr;
         std::optional<uint32_t> selectedSubmesh;
+        std::unique_ptr<Texture> flareAtlas;
         bool bloomEnabled = true;
 
         void ClearFrameSubmissions();

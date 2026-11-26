@@ -6,6 +6,13 @@ layout(binding = 0, rgba32f) uniform writeonly image2D outColour;
 
 uniform sampler2D scene;
 
+uniform vec4 flare;
+uniform vec2 flareFootprint;
+layout(binding = 1) uniform sampler2D flareAtlas;
+layout(binding = 2) uniform sampler2D normals;
+float skyCoverage(vec2 uv) { return 1.0 - clamp(textureLod(normals, uv, 0.0).a, 0.0, 1.0); }
+#include "shared/postProcessing/sun_flare.glsl"
+
 uniform int underwater;
 uniform bool outline;
 uniform float gamma;
@@ -30,6 +37,7 @@ void main()
     vec3 sceneColour = sampleSceneColour(texCoord);
 
     if (underwater != 0) sceneColour = underwaterColour(texCoord, resolution, sceneColour);
+    if (underwater == 0) sceneColour += sunLensFlare(texCoord, flare, flareFootprint);
     sceneColour = ToneMapHDR(sceneColour, exposure, gamma);
 
     if (outline) sceneColour = selectionOutline(scene, x, sceneColour);

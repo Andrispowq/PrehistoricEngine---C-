@@ -20,5 +20,5 @@ void main()
 	outPositionMetallic = vec4(position_FS * 10000, 0);
 	outAlbedoRoughness = vec4(colour, 0);
 	outNormal = vec4(-normalize(position_FS), 0);
-	outBloom = vec4(0.0);
+    outBloom = vec4(0, 0, 0, 1);
 }

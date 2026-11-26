@@ -14,15 +14,20 @@ namespace Prehistoric {
         AddUniform("scene");
         AddUniform("underwater");
         AddUniform("outline");
+        AddUniform("flare");
+        AddUniform("flareFootprint");
         AddUniform("resolution");
 
         AddUniform("gamma");
         AddUniform("exposure");
     }
 
-    void GLHDRShader::UpdateUniforms(Texture *scene, Vector2f resolution, bool underwater, bool outline) const {
+    void GLHDRShader::UpdateUniforms(Texture *scene, Vector2f resolution, bool underwater, bool outline,
+                                     const Vector4f &flare, const Vector2f &footprint) const {
         SetUniformi("underwater", underwater);
         SetUniformi("outline", outline);
+        SetUniform("flare", flare);
+        SetUniform("flareFootprint", footprint);
         scene->Bind();
         SetUniformi("scene", 0);
 

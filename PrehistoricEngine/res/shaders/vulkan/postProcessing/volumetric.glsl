@@ -1,3 +1,5 @@
+layout(push_constant) uniform Settings { vec4 options; };
+#define shaftStrength options.z
 layout(location = 0) in vec2 uv;
 layout(location = 0) out vec4 outColour;
 layout(set = 0, binding = 0) uniform sampler2D scene;
@@ -34,7 +36,7 @@ float directionalVisibility(vec3 p, vec3 n, float bias, bool volume)
     return cascadeSunVisibility(p, n, bias, volume);
 }
 #include "../../shared/postProcessing/volumetric.glsl"
-layout(push_constant) uniform Settings { vec4 options; };
+
 
 void main()
 {

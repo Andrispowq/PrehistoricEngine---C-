@@ -11,7 +11,7 @@ layout(push_constant) uniform Background { vec4 rayX; } sky;
 
 void main()
 {
-    outBloom = vec4(0);
+    outBloom = vec4(0, 0, 0, 1);
     vec3 ray = normalize(direction);
     vec3 colour = textureLod(environmentMap, ray, sky.rayX.w).rgb;
     outColour = vec4(colour, 1.0);

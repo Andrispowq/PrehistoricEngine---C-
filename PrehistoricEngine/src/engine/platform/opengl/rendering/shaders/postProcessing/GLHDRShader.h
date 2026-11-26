@@ -13,7 +13,8 @@ namespace Prehistoric {
         virtual ~GLHDRShader() {
         }
 
-        void UpdateUniforms(Texture *scene, Vector2f resolution, bool underwater, bool outline) const;
+        void UpdateUniforms(Texture *scene, Vector2f resolution, bool underwater, bool outline, const Vector4f &flare,
+                            const Vector2f &footprint) const;
     };
 };
 

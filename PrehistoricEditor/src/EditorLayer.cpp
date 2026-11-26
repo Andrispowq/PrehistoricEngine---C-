@@ -112,6 +112,15 @@ void EditorLayer::ImGUIRender() {
             bool bloom = renderer->isBloomEnabled();
             if (ImGui::Checkbox("Bloom (K)", &bloom)) renderer->setBloomEnabled(bloom);
 
+            ImGui::Checkbox("Sun shafts", &renderer->sunShafts);
+            if (renderer->sunShafts)
+                ImGui::SliderFloat("Shaft strength", &renderer->sunShaftStrength, 0.0f, 4.0f);
+            ImGui::Checkbox("Sun lens flare", &renderer->sunFlare);
+            if (renderer->sunFlare) {
+                ImGui::SliderFloat("Flare intensity", &renderer->sunFlareStrength, 0.0f, 3.0f);
+                ImGui::SliderFloat("Flare size", &renderer->sunFlareSize, 0.25f, 2.0f);
+            }
+
             auto *gl = dynamic_cast<Prehistoric::GLRenderer *>(renderer);
             auto *vk = dynamic_cast<Prehistoric::VKRenderer *>(renderer);
             auto *pass = gl ? gl->getVoxelPass() : nullptr;

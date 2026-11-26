@@ -96,8 +96,8 @@ namespace Prehistoric {
         return pipeline;
     }
 
-    VKRenderpass::VKRenderpass(VKDevice *device, VKSwapchain *swapchain)
-        : device(device), swapchain(swapchain) {
+    VKRenderpass::VKRenderpass(VKDevice *device, VKSwapchain *swapchain, VkImageView flareAtlas)
+        : flareAtlas(flareAtlas), device(device), swapchain(swapchain) {
         CreateScenePass();
         CreatePostProcessing();
     }
@@ -276,10 +276,12 @@ namespace Prehistoric {
         Check(vkAllocateDescriptorSets(handle, &alloc, &set));
         VkDescriptorImageInfo inputs[] = {
             {sampler, source, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
-            {sampler, second, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL}
+            {sampler, second, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
+            {sampler, flareAtlas, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
+            {sampler, emission->getImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL}
         };
-        VkWriteDescriptorSet writes[2]{};
-        for (uint32_t i = 0; i < 2; ++i) {
+        VkWriteDescriptorSet writes[std::size(inputs)]{};
+        for (uint32_t i = 0; i < std::size(inputs); ++i) {
             writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             writes[i].dstSet = set;
             writes[i].dstBinding = i;
@@ -287,7 +289,7 @@ namespace Prehistoric {
             writes[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
             writes[i].pImageInfo = &inputs[i];
         }
-        vkUpdateDescriptorSets(handle, 2, writes, 0, nullptr);
+        vkUpdateDescriptorSets(handle, std::size(writes), writes, 0, nullptr);
         return set;
     }
 
@@ -310,13 +312,15 @@ namespace Prehistoric {
         VkDescriptorSetLayoutBinding bindings[] =
         {
             {0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
-            {1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}
+            {1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+            {2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+            {3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}
         };
         VkDescriptorSetLayoutCreateInfo setInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
-        setInfo.bindingCount = 2;
+        setInfo.bindingCount = std::size(bindings);
         setInfo.pBindings = bindings;
         Check(vkCreateDescriptorSetLayout(handle, &setInfo, nullptr, &hdrSetLayout));
-        VkDescriptorPoolSize size{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, maxSets * 2};
+        VkDescriptorPoolSize size{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, maxSets * uint32_t(std::size(bindings))};
         VkDescriptorPoolCreateInfo pool{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
         pool.maxSets = maxSets;
         pool.poolSizeCount = 1;
@@ -557,6 +561,7 @@ namespace Prehistoric {
                                        const VKFramebuffer *target, bool sampleDepth) {
         VkClearValue clear[3]{};
         clear[0].color = {clearColour.x, clearColour.y, clearColour.z, clearColour.w};
+        clear[1].color.float32[3] = target ? 0.0f : 1.0f; // Emission alpha stores unobstructed sky coverage.
         clear[2].depthStencil = {1, 0};
         VkRenderPassBeginInfo info{VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
         info.renderPass = sampleDepth ? sceneWithReadableDepth : renderpass;
@@ -610,19 +615,25 @@ namespace Prehistoric {
             UpdateVolumeInputs(renderer);
             draw(bloomPass, volumePipeline, {
                      volumeFramebuffer, extent, inputs,
-                     {float(bloomEnabled), float(swapchain->getSceneSamples())}
+                     {
+                         float(bloomEnabled), float(swapchain->getSceneSamples()),
+                         renderer.sunShafts ? renderer.sunShaftStrength : 0.0f
+                     }
                  }, volumeSets[swapchain->getAquiredImageIndex()]);
             vkCmdEndRenderPass(command);
             inputs = volumeOutput;
             addBloom = false;
         }
+        const auto flare = renderer.GetSunFlare();
+        const auto footprint = renderer.GetSunFlareFootprint();
         draw(editorOutput ? editorPass : presentPass, hdrPipeline,
              {
                  editorOutput ? editorFramebuffer : framebuffer, extent,
                  inputs, {
                      __EngineConfig.rendererExposure,
                      VKPBRShaderGamma(swapchain->getSwapchainImageFormat(), __EngineConfig.rendererGamma),
-                     float(addBloom), float(underwater), float(renderer.hasSelection())
+                     float(addBloom), float(underwater), float(renderer.hasSelection()),
+                     flare.x, flare.y, flare.z, flare.w, footprint.x, footprint.y
                  }
              });
     }

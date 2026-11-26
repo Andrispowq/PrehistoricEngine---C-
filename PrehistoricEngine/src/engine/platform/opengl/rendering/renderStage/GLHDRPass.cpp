@@ -70,9 +70,11 @@ namespace Prehistoric {
         Texture *scene = rend->getVolumetricSpheres().empty()
                              ? rend->getMainPass()->getColourImage().pointer
                              : rend->getVolumetricPostProcessingPass()->getOutputTexture().pointer;
+        rend->getFlareAtlas()->Bind(1);
+        rend->getMainPass()->getNormalImage()->Bind(2);
         static_cast<GLHDRShader *>(hdrPipeline->getShader())->UpdateUniforms(
             scene, {(float) width, (float) height}, __WaterConfig.underwaterPostProcessing && rend->isUnderwater(),
-            rend->hasSelection());
+            rend->hasSelection(), rend->GetSunFlare(), rend->GetSunFlareFootprint());
         hdrPipeline->RenderPipeline();
         hdrPipeline->UnbindPipeline();
     }

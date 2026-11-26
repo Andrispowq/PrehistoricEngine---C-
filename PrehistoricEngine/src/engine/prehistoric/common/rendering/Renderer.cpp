@@ -1,5 +1,8 @@
 #include "Includes.hpp"
 #include "Renderer.h"
+#include "ShadowCascades.h"
+#include "prehistoric/core/modules/atmosphere/Atmosphere.h"
+#include "prehistoric/core/resources/loaders/TextureLoader.h"
 
 #include "prehistoric/core/node/component/renderer/RenderableComponent.h"
 #include "prehistoric/core/node/component/renderer/RendererComponent.h"
@@ -14,6 +17,41 @@
 namespace Prehistoric {
     Renderer::Renderer(Window *window, Camera *camera, AssembledAssetManager *manager)
         : window(window), camera(camera), manager(manager), wireframeMode(false) {
+        flareAtlas.reset(TextureLoader::LoadTexture(window, "engine://textures/sun_flare.png", Bilinear, ClampToEdge));
+    }
+
+    Vector4f Renderer::GetSunFlare() const {
+        if (!sunFlare || sunFlareStrength <= 0.0f) return {};
+        const bool skyDisk = atmosphere && __AtmosphereConfig.scatteringEnabled;
+        const Light *sun = skyDisk ? atmosphere->getSun() : ShadowCascades::FindSun(*this);
+        if (!sun || sun->getIntensity() <= 0 || sun->getColour().lengthSquared() == 0) return {};
+        auto direction = sun->getParent()->getWorldTransform().getPosition();
+        if (direction.lengthSquared() == 0) return {};
+        direction = direction.normalise();
+        if (skyDisk) {
+            const float radius = __AtmosphereConfig.planetRadius;
+            const float horizon = radius / (radius + 1000.0f);
+            if (__AtmosphereConfig.sunIntensity <= 0 || direction.y < -std::sqrt(1.0f - horizon * horizon))
+                return {};
+            // Invert the sky shader's normalize(viewRay + verticalShift).
+            const float shift = __AtmosphereConfig.horizontalVerticalShift;
+            const float discriminant = 1 - shift * shift * (1 - direction.y * direction.y);
+            if (discriminant <= 0) return {};
+            direction *= shift * direction.y + std::sqrt(discriminant);
+            direction.y -= shift;
+        }
+        const auto clip = camera->getProjectionMatrix() * camera->getViewMatrix() * Vector4f(direction, 0);
+        if (clip.w <= 0 || std::abs(clip.x) >= clip.w || std::abs(clip.y) >= clip.w) return {};
+        return {0.5f + 0.5f * clip.x / clip.w, 0.5f + 0.5f * clip.y / clip.w, sunFlareStrength, sunFlareSize};
+    }
+
+    Vector2f Renderer::GetSunFlareFootprint() const {
+        const auto &projection = camera->getProjectionMatrix();
+        // Sample the bright core of the atmospheric disk, or a solar angular radius for a directional light.
+        const float angle = atmosphere && __AtmosphereConfig.scatteringEnabled
+                                ? std::max(0.001f, __AtmosphereConfig.sunRadius * 0.1f)
+                                : 0.00465f;
+        return {0.5f * angle * std::abs(projection.m[0]), 0.5f * angle * std::abs(projection.m[5])};
     }
 
     void register_model(ModelBatches &batches, RenderableComponent *renderable) {

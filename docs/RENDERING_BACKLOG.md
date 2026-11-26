@@ -19,13 +19,15 @@ selection.
 Selected meshes have an amber outline in the lit viewport. Object selection outlines the instance as a whole,
 and submesh selection outlines only the selected part.
 
-1. **Sun shafts.** Extend the existing shadowed volumetric lighting in Sponza Sun Shafts with a dedicated sun-shaft
-   effect. Verify occlusion and camera motion on both backends and avoid counting the existing volumetric contribution
-   twice.
-2. **Depth of field and related lens effects.** Add configurable focus distance and aperture, with foreground and
+Sunlight scatters through volumetric spheres using the directional shadow visibility. **Render Settings** exposes
+shaft strength and the intensity and size of the seven-sprite sun lens flare. Both effects default to enabled.
+
+1. **Depth of field and related lens effects.** Add configurable focus distance and aperture, with foreground and
    background blur and bokeh highlights.
-3. **Ambient occlusion.** Add a configurable ambient occlusion pass and check its interaction with material occlusion
+2. **Ambient occlusion.** Add a configurable ambient occlusion pass and check its interaction with material occlusion
    and VXGI in sheltered areas.
+3. **Motion blur and temporal effects.** Add camera and object motion vectors for motion blur, then investigate
+   temporal accumulation and history rejection.
 
 Imported OBJ and PMF submeshes appear under each model instance in the editor
 hierarchy. Selecting a part opens its material controls. Edits and resets apply

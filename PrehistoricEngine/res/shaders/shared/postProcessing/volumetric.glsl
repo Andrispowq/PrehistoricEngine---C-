@@ -98,8 +98,8 @@ vec3 compositeVolumes(vec3 background, vec3 origin, vec3 direction, float surfac
                 if (extinction <= 0.0) continue;
                 float segmentTransmittance = exp(-extinction * stepLength);
                 vec3 source = ambientScattering * ambient;
-                if (any(greaterThan(sunRadiance.rgb, vec3(0.0))))
-                source += scattering * sunRadiance.rgb * directionalVisibility(position, vec3(0.0), 0.25, true);
+                if (shaftStrength > 0.0 && any(greaterThan(sunRadiance.rgb, vec3(0.0))))
+                source += scattering * shaftStrength * sunRadiance.rgb * directionalVisibility(position, vec3(0.0), 0.25, true);
                 radiance += transmittance * (1.0 - segmentTransmittance) * (source / extinction);
                 transmittance *= segmentTransmittance;
             }

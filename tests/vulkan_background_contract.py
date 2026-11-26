@@ -37,9 +37,11 @@ with tempfile.TemporaryDirectory(prefix='vulkan-background-') as temporary:
     subprocess.run(['glslc', '--target-env=vulkan1.1', str(hdr), '-o', str(binary)], check=True)
     subprocess.run(['spirv-val', '--target-env', 'vulkan1.1', str(binary)], check=True)
     assembly = subprocess.check_output(['spirv-dis', str(binary)], text=True)
-    for name, binding in (('scene', 0), ('bloom', 1)):
-        sampler = re.search(r'OpName\s+(%\S+)\s+"' + name + '"', assembly).group(1)
-        assert re.search(r'OpDecorate\s+' + re.escape(sampler) + rf'\s+Binding\s+{binding}\b', assembly)
+    for name, binding in (('scene', 0), ('bloom', 1), ('flareAtlas', 2), ('emission', 3)):
+        # A helper's sampler parameter can share the descriptor's debug name.
+        ids = re.findall(r'OpName\s+(%\S+)\s+"' + name + '"', assembly)
+        assert any(re.search(r'OpDecorate\s+' + re.escape(id_) + rf'\s+Binding\s+{binding}\b', assembly)
+                   for id_ in ids), name
     assert 'OpImageSampleImplicitLod' in assembly
     assert ' Exp ' in assembly and ' Pow ' in assembly
     for app in ('Prehistoric', 'PrehistoricEditor'):
