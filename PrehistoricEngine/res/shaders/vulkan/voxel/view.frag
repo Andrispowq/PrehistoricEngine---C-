@@ -10,11 +10,15 @@ layout(push_constant) uniform View { mat4 inverseViewProjection; vec4 grid; int 
 const float voxelNearClip = 0.0;
 
 int voxelResolution() {
-    return resolution;
+    return resolution & 65535;
 }
 
 uint readVoxel(ivec3 p) {
-    return cells[p.x + resolution * (p.y + resolution * p.z)];
+    int size = voxelResolution();
+    uint value = cells[p.x + size * (p.y + size * p.z)];
+    if (value == 0u || (resolution >> 16) == 0) return value;
+    const vec3 colours[4] = vec3[4](vec3(1, .25, .15), vec3(.2, 1, .3), vec3(.2, .5, 1), vec3(1, .4, 1));
+    return packUnorm4x8(vec4(colours[(resolution >> 16) - 1], 1));
 }
 
 #include "../../shared/voxel/view.glsl"

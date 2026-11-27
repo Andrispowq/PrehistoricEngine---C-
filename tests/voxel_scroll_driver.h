@@ -1,5 +1,6 @@
 #pragma once
 #include "tests/voxel_readback.h"
+#include "tests/voxel_cascade_traversal.h"
 
 class VoxelScrollDriver : public Prehistoric::Layer {
 public:
@@ -26,16 +27,17 @@ public:
             renderer->SetVoxelVolume({volume.x, volume.y, volume.z}, width);
         };
         auto compare = [&]() {
-            auto fresh = ReadVoxelFixture(*renderer);
+            auto fresh = ReadVoxelCascades(*renderer);
             if (fresh != scrolled) {
                 size_t geometry = 0, light = 0;
                 for (size_t i = 0; i < fresh.size(); ++i)
-                    if (fresh[i] != scrolled[i]) (i < 3 * 64 * 64 * 64 ? geometry : light)++;
+                    if (fresh[i] != scrolled[i]) (i % (5 * 64 * 64 * 64) < 3 * 64 * 64 * 64 ? geometry : light)++;
                 throw std::runtime_error(
                     "Scroll/full mismatch: geometry=" + std::to_string(geometry) + " light=" + std::to_string(light));
             }
         };
         if (frame == 1) {
+            renderer->voxelCascadeCount = 4;
             renderer->voxelFollowCamera = true;
             renderer->voxeliseTerrain = false;
             renderer->terrainReceivesGI = false;
@@ -70,12 +72,13 @@ public:
             material->addFloat(EMISSION, 3);
             const Vector3f positions[] = {
                 {0, 0, -4}, {16.5f, 0, 0}, {-16.5f, 0, 0},
-                {0, 16.5f, 0}, {0, -16.5f, 0}, {0, 0, 16.5f}, {0, 0, -16.5f}
+                {0, 16.5f, 0}, {0, -16.5f, 0}, {0, 0, 16.5f}, {0, 0, -16.5f},
+                {24, 0, -4}, {48, 0, -4}, {96, 0, -4}
             };
             for (unsigned i = 0; i < std::size(positions); ++i) {
                 auto *object = new GameObject();
                 object->SetPosition(positions[i]);
-                object->SetScale({1.3f, 1.7f, 1.1f});
+                object->SetScale(i >= 7 ? Vector3f(8) : Vector3f(1.3f, 1.7f, 1.1f));
                 object->AddComponent(RENDERER_COMPONENT,
                                      new RendererComponent(renderer->getWindow(), manager, pipeline, material));
                 scene->AddGameObject("scroll cube " + std::to_string(i), object);
@@ -83,9 +86,15 @@ public:
             }
         }
         if (frame == 3) {
-            auto initial = ReadVoxelFixture(*renderer);
+            ValidateCascadeTraversal(*renderer);
+            auto initial = ReadVoxelCascades(*renderer);
             if (std::count_if(initial.begin(), initial.begin() + 64 * 64 * 64, [](auto v) { return v != 0; }) < 50)
                 throw std::runtime_error("Scroll fixture has insufficient occupied cells");
+            for (unsigned c = 1; c < 4; ++c) {
+                const auto begin = initial.begin() + c * 5 * 64 * 64 * 64;
+                if (std::none_of(begin, begin + 64 * 64 * 64, [](auto v) { return v != 0; }))
+                    throw std::runtime_error("Distant cascade has no geometry");
+            }
             camera->setPosition({0.1f, 0, 0});
         }
         if (frame == 4) {
@@ -98,9 +107,13 @@ public:
         }
         if (frame == 6) {
             expect(Mode::Scrolled);
-            if (renderer->voxelUpdate.dirtyCells != 4096) throw std::runtime_error(
-                "Single-cell scroll dirtied retained cells");
-            scrolled = ReadVoxelFixture(*renderer);
+            if (renderer->voxelCascadeUpdates[2].mode != Mode::Reused ||
+                renderer->voxelCascadeUpdates[3].mode != Mode::Reused)
+                throw std::runtime_error("Coarse grids did not retain their independent snapped centres");
+            if (renderer->voxelUpdate.dirtyCells != 4096)
+                throw std::runtime_error(
+                    "Single-cell scroll dirtied retained cells");
+            scrolled = ReadVoxelCascades(*renderer);
             renderer->voxelFollowCamera = false;
             setWidth(33);
         }
@@ -116,7 +129,7 @@ public:
         }
         if (frame == 9) {
             expect(Mode::Scrolled);
-            scrolled = ReadVoxelFixture(*renderer);
+            scrolled = ReadVoxelCascades(*renderer);
             renderer->voxelFollowCamera = false;
             setWidth(33);
         }
@@ -145,9 +158,30 @@ public:
         if (frame == 15) expect(Mode::Rebuilt);
         if (frame == 16) {
             expect(Mode::Reused);
+            renderer->voxelCascadeCount = 1;
+        }
+        if (frame == 17) {
+            if (ReadVoxelCascades(*renderer).size() != 5 * 64 * 64 * 64)
+                throw std::runtime_error("Single cascade reconfiguration failed");
+            renderer->voxelCascadeCount = 4;
+        }
+        if (frame == 19) {
+            if (ReadVoxelCascades(*renderer).size() != 20 * 64 * 64 * 64)
+                throw std::runtime_error("Four cascade reconfiguration failed");
+            renderer->voxelDebugCascade = 3;
+            renderer->voxelCascadeColours = true;
+            if (auto *vk = dynamic_cast<VKRenderer *>(renderer)) vk->voxelView = true;
+            if (auto *gl = dynamic_cast<GLRenderer *>(renderer)) gl->getVoxelPass()->GetSettings().debugView = true;
+        }
+        if (frame == 20) renderer->voxelDebugCascade = 0;
+        if (frame == 21) {
+            if (auto *vk = dynamic_cast<VKRenderer *>(renderer)) vk->voxelView = false;
+            if (auto *gl = dynamic_cast<GLRenderer *>(renderer)) gl->getVoxelPass()->GetSettings().debugView = false;
+        }
+        if (frame == 23) {
             std::fprintf(
                 stderr,
-                "VOXEL SCROLL PASS: subcell/rotation reuse, axis/diagonal scroll equals full geometry and radiance, resize/teleport/mutation fallback\n");
+                "VOXEL SCROLL PASS: subcell/rotation reuse, four cascades axis/diagonal scroll equals full geometry and radiance, resize/teleport/mutation fallback\n");
             Application::Get().Stop();
         }
     }

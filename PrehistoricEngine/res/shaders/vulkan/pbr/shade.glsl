@@ -9,6 +9,8 @@ int voxelGridSize() { return int(voxelOptions.x); }
 #define directionalMips (voxelOptions.z != 0.0)
 #include "../voxel/grid.glsl"
 #include "../../shared/voxel/reflection.glsl"
+#define cascadeWords cells
+#include "../../shared/voxel/cascades.glsl"
 
 #ifndef VOXEL_RECEIVER
 #define SSR_DEPTH_BOUNDS
@@ -45,7 +47,7 @@ void shadeSurface(vec3 albedoColour, float metallic, float roughness, float occl
     if (any(greaterThan(sunRadiance.rgb, vec3(0))))
     {
         float visibility = voxelOptions.x > 0 && voxelOptions.w > 0
-        ? voxelVisibility(position_FS, N, sunDirection.xyz, 2.0 * voxelBounds.w)
+        ? voxelVisibility(position_FS, N, sunDirection.xyz, 2.0 * vxCascadeBounds(vxCascadeCount() - 1).w)
         : cascadeSunVisibility(position_FS, N, 0.65, false);
         Lo = visibility * directPbrLight(N, V, sunDirection.xyz, F0, albedoColour, metallic, roughness, sunRadiance.rgb);
     }
@@ -90,7 +92,7 @@ void shadeSurface(vec3 albedoColour, float metallic, float roughness, float occl
     ambient += screen.a * (screen.rgb - prefilteredColor) * (F * envBRDF.x + envBRDF.y);
     vec3 origin = (position_FS - voxelBounds.xyz) / voxelBounds.w;
     if (traceOptions.y != 0 && waterView.eyeAndCapture.w == 0.0 &&
-        all(greaterThanEqual(origin, vec3(0))) && all(lessThan(origin, vec3(1))))
+        inside(origin))
     {
         float weight = voxelReflectionWeight(metallic, roughness, voxelOptions.y);
         if (screen.a < 1.0 && weight > 0.0 && voxelOptions.x > 0.0)

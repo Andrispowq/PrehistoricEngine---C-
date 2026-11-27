@@ -6,7 +6,11 @@ vec4 filteredIndirect(ivec2 pixel, ivec2 size, vec3 position, vec3 normal, int t
     if (!halfResolution && indirect.a == 0.0) return vec4(0);
 
     vec3 uvw = (position - volumeMin) / volumeExtent;
+    #ifdef inside
+    if (halfResolution && !inside(uvw)) return vec4(0);
+    #else
     if (halfResolution && (any(lessThan(uvw, vec3(0))) || any(greaterThanEqual(uvw, vec3(1))))) return vec4(0);
+    #endif
     vec3 sum = halfResolution ? vec3(0.0) : 4.0 * indirect.rgb;
     float total = halfResolution ? 0.0 : 4.0;
     ivec2 indirectSize = textureSize(indirectImage, 0);

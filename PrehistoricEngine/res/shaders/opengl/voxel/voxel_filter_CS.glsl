@@ -15,8 +15,14 @@ layout(binding = 15) uniform sampler2D brdfLUT;
 layout(r16f, binding = 1) uniform readonly image2D screenConfidence;
 uniform bool useScreenReflections;
 uniform float maxReflectionLOD;
+uniform vec3 volumeMin;
+uniform float volumeExtent;
 #include "opengl/voxel/voxel_cones.glsl"
 #include "shared/voxel/reflection.glsl"
+layout(std430, binding = 6) readonly buffer VoxelCascadeData { uint cascadeWords[]; };
+#define voxelOcclusionMin volumeMin
+#define voxelOcclusionExtent volumeExtent
+#include "shared/voxel/cascades.glsl"
 uniform vec3 cameraPosition;
 const float PI = 3.14159265359;
 #include "shared/pbr/lighting.glsl"
@@ -24,8 +30,6 @@ uniform float giStrength;
 uniform bool terrainReceivesGI;
 uniform float voxelSize;
 uniform int traceStride;
-uniform vec3 volumeMin;
-uniform float volumeExtent;
 
 #include "shared/voxel/filter.glsl"
 

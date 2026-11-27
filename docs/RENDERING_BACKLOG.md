@@ -20,10 +20,12 @@ instance settings, generated-resource ownership, authored attachments and world 
 [duplication contracts and limitations](../BUILDING.md#editor-render-settings). Native Vulkan multi-instance and
 world-load checks are covered; verify native OpenGL on a supported PC. macOS OpenGL compatibility is deferred below.
 
-**Camera-following voxel GI: stage one implemented.** A single snapped volume retains mesh coverage while
-scrolling and voxelises newly exposed regions. Lighting still refreshes across the volume; scene edits and
-teleports rebuild it. See [scope and checks](../BUILDING.md#camera-following-voxel-volume). Next: multiple
-resolution levels, transition blending, partial lighting updates and native OpenGL GPU validation.
+**Camera-following voxel GI: four cascades implemented.** Both backends have independent snapped grids,
+incremental static mesh scrolling, blended tracing across levels and synchronous cross-cascade bounce rounds.
+The default widths are 256/512/1,024/2,048 with 128³/64³/64³/64³ grids. Terrain remains opt-in.
+See [scope and checks](../BUILDING.md#camera-following-voxel-volume). Next: profile snapshot copies and manual
+filtering, spatially cull submissions, then investigate staggered distant updates and partial lighting work.
+Native OpenGL GPU validation is explicitly postponed; Vulkan checks cover all four grids and traversal.
 
 **Terrain voxelisation and GI reception.** Optional terrain coverage and terrain/water GI reception are implemented,
 with native Vulkan smoke checks; see [scope and checks](../BUILDING.md#terrain-voxel-contribution-and-water-reception).

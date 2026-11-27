@@ -1,0 +1,32 @@
+#version 450
+layout(local_size_x = 1) in;
+layout(std430, binding = 0) readonly buffer Data { uint cascadeWords[]; };
+layout(std430, binding = 1) writeonly buffer Result { uint checks[]; };
+#define voxelOcclusionMin vec3(0)
+#define voxelOcclusionExtent 1.0
+#include "../PrehistoricEngine/res/shaders/shared/voxel/cascades.glsl"
+void main()
+{
+    float distance;
+    int c;
+    ivec3 cell;
+    bool exhausted;
+    bool hit = vxCascadeHit(vec3(0, .25, .25), vec3(1, 0, 0), 120, distance, c, cell, exhausted);
+    checks[0] = uint(hit && c == 1 && distance > 19 && distance < 22 && !exhausted);
+    hit = vxCascadeHit(vec3(24, 2.25, .25), vec3(-1, 0, 0), 40, distance, c, cell, exhausted);
+    checks[1] = uint(hit && c == 0 && distance > 23 && distance < 25 && !exhausted);
+    hit = vxCascadeHit(vec3(40, .25, .25), vec3(1, 0, 0), 100, distance, c, cell, exhausted);
+    checks[2] = uint(hit && c == 3 && distance > 55 && distance < 61 && !exhausted);
+    hit = vxCascadeHit(vec3(0, 0, 4), vec3(0, 0, 1), 200, distance, c, cell, exhausted);
+    checks[3] = uint(!hit && !exhausted && distance >= 124);
+    hit = vxCascadeHit(vec3(0, .25, .25), vec3(1, 0, 0), 10, distance, c, cell, exhausted);
+    checks[4] = uint(!hit && !exhausted);
+    bool continuous = true;
+    for (int i = 0; i < 100; ++i)
+    {
+        vec3 p = vec3(14.0 + float(i) * .04, 0, 0);
+        vec4 value = vxCascadeSampleBlended(p, normalize(vec3(1, 1, 1)), .5 + float(i) * .02);
+        continuous = continuous && all(lessThan(abs(value - vec4(1)), vec4(.0001)));
+    }
+    checks[5] = uint(continuous); // Overlap weights preserve constant radiance and opacity.
+}

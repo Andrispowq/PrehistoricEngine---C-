@@ -150,7 +150,7 @@ private:
         vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 1, &barrier, 0,
                              nullptr, 0, nullptr);
         VkBufferCopy copy{0, 0, words.size() * 4};
-        vkCmdCopyBuffer(cmd, vk->GetVoxelBuffer(), output.getBuffer(), 1, &copy);
+        vkCmdCopyBuffer(cmd, vk->GetVoxelGeometryBuffer(), output.getBuffer(), 1, &copy);
         barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
         barrier.dstAccessMask = VK_ACCESS_HOST_READ_BIT;
         vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_HOST_BIT, 0, 1, &barrier, 0,

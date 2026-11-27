@@ -34,6 +34,8 @@ int voxelGridSize() { return int(waterVoxelOptions.x); }
 const bool directionalMips = false;
 #include "../voxel/grid.glsl"
 #include "../../shared/voxel/reflection.glsl"
+#define cascadeWords cells
+#include "../../shared/voxel/cascades.glsl"
 #define WATER_VOXEL_REFLECTION
 #include "../../shared/water/voxel_reflection.glsl"
 vec3 sampleReflection(vec2 uv) { return texture(waterReflection, vec2(1.0 - uv.x, uv.y)).rgb; }

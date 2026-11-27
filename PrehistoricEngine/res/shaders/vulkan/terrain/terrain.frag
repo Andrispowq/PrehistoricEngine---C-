@@ -36,6 +36,9 @@ const bool useEnvironment = true;
 #include "../voxel/grid.glsl"
 #include "../../shared/voxel/voxel_cones.glsl"
 #include "../../shared/voxel/reflection.glsl"
+#define CASCADE_ENVIRONMENT
+#define cascadeWords cells
+#include "../../shared/voxel/cascades.glsl"
 
 void accumulateLayer(float weight, int i, sampler2D albedoTex, sampler2D mrotTex,
                      inout vec3 colour, inout vec4 mrot)

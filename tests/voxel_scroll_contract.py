@@ -22,10 +22,18 @@ with tempfile.TemporaryDirectory(prefix='voxel-scroll-shaders-') as directory:
         stages.append(output)
     subprocess.run(['glslangValidator', '-l', *stages], check=True)
     for source in ['voxel_scroll_CS.glsl', 'voxel_inject_CS.glsl', 'voxel_filter_CS.glsl', 'voxel_view_CS.glsl',
-                   'terrain_CS.glsl']:
+                   'voxel_bounce_CS.glsl', 'terrain_CS.glsl']:
         output = work / 'shader.comp'
         output.write_text(expand(SHADERS / 'opengl/voxel' / source))
         subprocess.run(['glslangValidator', output], check=True)
+    for group, suffixes in [('water', [('VS', 'vert'), ('TC', 'tesc'), ('TE', 'tese'), ('GS', 'geom'), ('FS', 'frag')]),
+                            ('pbr', [('VS', 'vert'), ('FS', 'frag')])]:
+        stages = []
+        for suffix, stage in suffixes:
+            output = work / (group + '.' + stage)
+            output.write_text(expand(SHADERS / f'opengl/{group}/{group}_{suffix}.glsl'))
+            stages.append(output)
+        subprocess.run(['glslangValidator', '-l', *stages], check=True)
     for source in ['scroll.comp', 'occupancy.comp']:
         output = work / 'shader.spv'
         subprocess.run(['glslc', '--target-env=vulkan1.1', SHADERS / 'vulkan/voxel' / source, '-o', output], check=True)

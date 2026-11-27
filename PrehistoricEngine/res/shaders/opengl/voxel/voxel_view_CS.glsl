@@ -10,6 +10,7 @@ layout(binding = 3) uniform sampler2D normals;
 layout(binding = 4) uniform usampler3D packedVoxels;
 
 uniform bool debugView;
+uniform int debugCascadeColour;
 uniform bool terrainReceivesGI;
 uniform vec3 volumeMin;
 uniform float volumeExtent;
@@ -20,6 +21,11 @@ layout(binding = 5) uniform samplerCube coneEnvironment;
 const bool useEnvironment = true;
 #include "opengl/voxel/voxel_cones.glsl"
 #include "shared/voxel/voxel_cones.glsl"
+#define CASCADE_ENVIRONMENT
+layout(std430, binding = 6) readonly buffer VoxelCascadeData { uint cascadeWords[]; };
+#define voxelOcclusionMin volumeMin
+#define voxelOcclusionExtent volumeExtent
+#include "shared/voxel/cascades.glsl"
 
 const float voxelNearClip = -1.0;
 int voxelResolution() { return textureSize(packedVoxels, 0).x; }
@@ -27,6 +33,11 @@ uint readVoxel(ivec3 cell)
 {
     uint value = texelFetch(packedVoxels, cell, 0).r;
     if (value == 0u) return 0u;
+    if (debugCascadeColour > 0)
+    {
+        const vec3 colours[4] = vec3[4](vec3(1, .25, .15), vec3(.2, 1, .3), vec3(.2, .5, 1), vec3(1, .4, 1));
+        return packUnorm4x8(vec4(colours[debugCascadeColour - 1], 1));
+    }
     return packUnorm4x8(vec4(pow(unpackUnorm4x8(value).rgb, vec3(1.0 / 2.2)), 1));
 }
 #include "shared/voxel/view.glsl"

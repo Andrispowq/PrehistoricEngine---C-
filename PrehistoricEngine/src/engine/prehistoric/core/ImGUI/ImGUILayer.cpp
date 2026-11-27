@@ -16,6 +16,25 @@
 #include "platform/opengl/rendering/GLRenderer.h"
 
 namespace Prehistoric {
+    void ImGuiLayer::DrawVoxelCascades(Renderer &renderer, unsigned nearResolution) {
+        int count = int(renderer.voxelCascadeCount);
+        if (ImGui::SliderInt("Voxel cascades", &count, 1, 4)) {
+            renderer.voxelCascadeCount = unsigned(count);
+            renderer.voxelDebugCascade = std::min(renderer.voxelDebugCascade, count - 1);
+            renderer.ResetTemporalHistory();
+        }
+        ImGui::SliderInt("Debug cascade", &renderer.voxelDebugCascade, 0, count - 1);
+        ImGui::Checkbox("Cascade colours in voxel view", &renderer.voxelCascadeColours);
+        ImGui::Text("Voxel storage estimate: %.1f MiB", double(renderer.voxelCascadeBytes) / (1024 * 1024));
+        const char *modes[] = {"reused", "scrolled", "rebuilt"};
+        const float width = renderer.GetVoxelVolume().w;
+        for (int i = 0; i < count; ++i) {
+            const auto &update = renderer.voxelCascadeUpdates[i];
+            ImGui::Text("%d: %u cubed | width %.0f | %s | %llu cells", i, i ? 64 : nearResolution,
+                        width * float(1 << i), modes[update.mode], static_cast<unsigned long long>(update.dirtyCells));
+        }
+    }
+
     ImGuiLayer::ImGuiLayer() {
     }
 
@@ -149,6 +168,8 @@ namespace Prehistoric {
         }
         if (showRenderingControls) {
             ImGui::SetNextWindowBgAlpha(0.9f);
+            ImGui::SetNextWindowSizeConstraints(ImVec2(350, 100),
+                                                ImVec2(800, ImGui::GetMainViewport()->WorkSize.y - 40));
             if (ImGui::Begin("Rendering comparison (F8)", &showRenderingControls, ImGuiWindowFlags_AlwaysAutoResize)) {
                 ImGui::Text("%d FPS | %.2f ms/frame", Application::Get().getLastFPS(),
                             Application::Get().getFrameTime());
@@ -159,8 +180,9 @@ namespace Prehistoric {
                             directional ? "on" : "off");
                 ImGui::Text("J Voxel shadows: %s | [ / ] Trace depth: %d", shadows ? "on" : "off", bounces);
                 ImGui::TextUnformatted("E Wireframe | K Bloom");
-                if (ImGui::Checkbox("Follow camera (snapped)", &renderer->voxelFollowCamera)) renderer->
-                        ResetTemporalHistory();
+                if (ImGui::Checkbox("Follow camera (snapped)", &renderer->voxelFollowCamera))
+                    renderer->
+                            ResetTemporalHistory();
                 if (ImGui::Checkbox("Terrain receives GI", &renderer->terrainReceivesGI)) {
                     if (auto *scene = core->getScene()) scene->terrainReceivesGI = renderer->terrainReceivesGI;
                     renderer->ResetTemporalHistory();
@@ -169,6 +191,7 @@ namespace Prehistoric {
                 ImGui::Text("Geometry: %s | Revoxelised cells: %llu", modes[renderer->voxelUpdate.mode],
                             static_cast<unsigned long long>(renderer->voxelUpdate.dirtyCells));
                 ImGui::TextUnformatted("Coverage changes refresh lighting across the volume.");
+                DrawVoxelCascades(*renderer, unsigned(resolution));
                 auto bounds = renderer->GetVoxelVolume();
                 ImGui::TextUnformatted("C Place voxel volume around the current view");
                 bool boundsChanged = ImGui::DragFloat3("Volume centre", &bounds.x, 1.0f);
@@ -192,7 +215,8 @@ namespace Prehistoric {
                 ImGui::Separator();
                 ImGui::TextUnformatted("Latest available GPU measurements (ms)");
                 const char *labels[] = {
-                    "Geometry / occluders", "Radiance injection", "Bounces", "Radiance mips", "Cone tracing",
+                    "Near geometry / occluders", "Near injection", "All cascade bounces / copies", "Near initial mips",
+                    "Cone tracing",
                     "Shading / composite"
                 };
                 for (unsigned i = 0; i < std::size(labels); ++i) {

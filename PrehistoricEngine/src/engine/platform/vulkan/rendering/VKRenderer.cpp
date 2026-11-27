@@ -194,8 +194,14 @@ namespace Prehistoric {
         for (unsigned i = 0; i < memory.memoryHeapCount; ++i)
             if (memory.memoryHeaps[i].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)
                 heap = std::max(heap, memory.memoryHeaps[i].size);
-        auto bytes = VKVoxelView::GridBytes(size, voxelGI || voxelSunShadows);
-        return bytes <= properties.limits.maxStorageBufferRange && bytes <= heap / 4 && bytes <= 768ull * 1024 * 1024;
+        VoxelCascadeSnapshot snapshot;
+        const auto snapshotBytes = MakeVoxelCascades(snapshot, size, voxelCascadeCount, {0, 0, 0}, voxelExtent,
+                                                     voxelDirectional);
+        auto bytes = snapshotBytes + VKVoxelView::GridBytes(size, true);
+        bytes += (snapshot.meta[0] - 1) * VKVoxelView::GridBytes(64, true);
+        return snapshotBytes <= properties.limits.maxStorageBufferRange &&
+               VKVoxelView::GridBytes(size, true) <= properties.limits.maxStorageBufferRange &&
+               bytes <= heap / 4 && bytes <= 768ull * 1024 * 1024;
     }
 
     VkDescriptorImageInfo VKRenderer::GetVoxelScreenInput(int index) const {
@@ -206,8 +212,15 @@ namespace Prehistoric {
                    : environmentLighting->getBRDF();
     }
 
+    VkBuffer VKRenderer::GetVoxelGeometryBuffer(unsigned cascade) const {
+        if (cascade == 0) return renderpass->Voxels(voxelResolution, true).Buffer();
+        return cascade < voxelCascadeCount && renderpass->farVoxels[cascade - 1]
+                   ? renderpass->farVoxels[cascade - 1]->Buffer()
+                   : VK_NULL_HANDLE;
+    }
+
     VkBuffer VKRenderer::GetVoxelBuffer() const {
-        return voxelGI || voxelSunShadows ? renderpass->Voxels(voxelResolution, true).Buffer() : VK_NULL_HANDLE;
+        return voxelGI || voxelSunShadows ? renderpass->CascadeBuffer() : VK_NULL_HANDLE;
     }
 
     void VKRenderer::RenderScene() {
@@ -219,6 +232,7 @@ namespace Prehistoric {
             getDrawCommandBuffer()->BindBuffer();
             return;
         }
+        if (voxelGI || voxelSunShadows) renderpass->EnsureVoxelCascades(*this);
         renderpass->RetainWaterTargets(waters);
         for (auto *water: waters) {
             renderpass->GetWaterTargets(water);
@@ -240,7 +254,7 @@ namespace Prehistoric {
         VKCommandBuffer *buffer = commandPool->getCommandBuffer(index);
         buffer->BindBuffer();
         if (voxelGI || voxelSunShadows)
-            renderpass->Voxels(voxelResolution, true).Prepare(buffer->getCommandBuffer(), *this);
+            renderpass->PrepareVoxelCascades(buffer->getCommandBuffer(), *this);
         shadows->Record(*this, buffer);
         if (needReceivers) {
             renderpass->BeginVoxelReceivers(buffer, screenSpaceReflections);

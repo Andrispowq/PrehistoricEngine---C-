@@ -602,9 +602,12 @@ voxel sun shadows and trace resolution. Disable bloom to isolate the emitters'
 indirect illumination.
 
 The compute pass conservatively budgets its storage grid and scrolling scratch
-buffer against the device's maximum descriptor range, a quarter of the device-local
-heap and a 768 MiB ceiling. At 128³ these buffers occupy about 97 MiB, excluding
-the filtered radiance textures. Sub-voxel camera movement reuses the bake. The
+buffer and the combined tracing snapshot against the device's maximum descriptor range.
+The combined allocation must fit a quarter of the device-local heap and a 768 MiB
+ceiling. A 128³ working grid occupies about 97 MiB; the three 64³ grids and shared
+snapshot bring the four-cascade allocation to about 190 MiB. Radiance is filtered
+from packed buffers; separate Vulkan filtered radiance images are no longer allocated. Sub-voxel camera movement reuses
+the bake. The
 receiver pass records mesh position and normal, and a surface-aware filter
 applies the traced irradiance during material shading. Timings are shown in
 milliseconds on queues that support timestamps. The main shading measurement
@@ -612,38 +615,59 @@ includes the GI composite.
 
 ## Camera-following voxel volume
 
-Stage one uses one dense volume on both backends. The centre snaps to the nearest
-voxel boundary on each axis. Turning the camera or moving within the current cell
-does not rebuild geometry. For a static mesh scene, crossing cell boundaries copies
-retained occupancy, material and emission cells into their new logical positions,
-clears exposed cells and voxelises only newly exposed regions. Voxelisation shaders
-reject retained triangles/cells; mesh submissions are still traversed, so this is
-not yet spatially culled scene submission. A one-cell shift of a 64³ grid exposes
-4,096 cells, or 1.56% of the volume.
+Both backends now use up to four nested dense volumes. New renderer defaults are
+128³ over a full width of 256 world units, followed by three 64³ grids over widths
+512, 1,024 and 2,048. Changing the near width scales the outer
+widths to 2×, 4× and 8× that value. These are cubes: the default outer
+volume reaches approximately 1,024 units along each axis from the camera.
+The near resolution remains selectable, including 256³ where the combined GPU
+budget and descriptor-range limits permit it. Oversized choices are disabled or
+reduced before allocation. Cascade count and debug selection are runtime controls.
 
-Lighting is refreshed across the volume after a scroll: a new occluder can affect
-shadows and bounces in retained regions. Occlusion/radiance mipmaps are rebuilt,
-and screen-space tracing continues every frame. Retained-cell copies and relighting
-still scale with volume size. This stage does not promise constant-cost movement.
-F8 shows whether the last geometry update reused, scrolled or rebuilt the volume,
-and how many cells required voxelisation, alongside the existing GPU timings.
+Each centre snaps independently to its own voxel size. Rotation and movement
+within a level's snapped cell reuse its geometry. Static mesh scrolling retains
+occupancy, material and emission cells, clears exposed cells and voxelises newly
+exposed regions. Mesh submissions are still traversed; spatial submission culling
+is not implemented. Scene/material edits and non-overlapping teleports use full
+rebuilds. Terrain contribution and reception remain separate opt-ins; terrain
+coverage uses the full-rebuild path. Water never contributes occupancy.
 
-Resolution/width changes, non-integral manual shifts, teleports without overlap,
-mesh/material changes and object removal use a full rebuild. Terrain remains
-excluded by default. If explicitly enabled, its procedural/distance-dependent
-coverage uses the existing full-rebuild path when changed; incremental terrain
-scrolling is not part of this stage. Water remains a receiver only.
+Tracing uses world-space distances and continues through coarser coverage instead
+of exposing the sky at a near-grid boundary. Hierarchical ray traversal limits
+empty-space steps when entering finer coverage. Cone samples choose levels from
+position and footprint, and blend premultiplied radiance and opacity across overlap
+regions. Reflection, diffuse, shadow, ambient-occlusion and optional terrain paths
+use the shared traversal. All levels publish direct lighting before synchronous
+bounce rounds; each round reads the same snapshot, then publishes its next-bounce
+radiance. Lighting changes or a scroll refresh lighting across all active levels.
 
-The design follows the scrolling/invalidation principle demonstrated by
-[AMD Brixelizer](https://gpuopen.com/manuals/fidelityfx_sdk/techniques/brixelizer/).
-Its sparse distance-field bricks and separate dynamic cascades differ from this
-engine's dense radiance
-grids. [NVIDIA VXGI](https://developer.download.nvidia.com/assets/events/GDC15/GEFORCE/VXGI_Dynamic_Global_Illumination_GDC15.pdf)
-shows the larger clipmap direction. A toroidal address scheme would avoid copying
-retained cells, but would also change every hierarchy and tracing consumer. This
-stage keeps contiguous logical storage plus one scratch volume, preserving those
-interfaces. Multiple levels, blend zones, dirty-object regions and incremental
-lighting propagation remain future work.
+The tracing snapshot stores occupancy and half-float radiance chains in one SSBO.
+This avoids multiplying directional texture bindings past the devices' sampler
+limits. Vulkan copies packed chains into it; OpenGL exports 3D texture mip levels
+through a pixel-pack buffer without CPU readback. Vulkan no longer allocates
+unused filtered radiance images. Manual trilinear sampling and snapshot copies
+are real costs: this is a correctness implementation, not a demonstrated frame-time
+improvement. Stationary unchanged GI reuses the published snapshot. Whole-volume
+lighting, snapshot bandwidth, geometry submission culling, sparse storage and
+staggered distant updates remain optimisation work. Existing mesh voxelisation
+samples projected pixel centres, so sub-voxel details can disappear at coarse
+levels; fully conservative mesh coverage remains a separate improvement.
+
+**F8** and **Render Settings → Voxel GI** expose cascade count, selected debug level,
+optional debug colours, storage estimates and per-level geometry update counters.
+The existing width/resolution controls affect the near volume. **C** or manual
+centre editing disables camera following. Timing labels distinguish near-grid
+geometry/injection from all-cascade bounce rounds and their snapshot copies;
+these stage timings are not a complete total of cascade-update work.
+
+The dense clipmap approach follows
+[NVIDIA VXGI](https://developer.download.nvidia.com/assets/events/GDC15/GEFORCE/VXGI_Dynamic_Global_Illumination_GDC15.pdf).
+[AMD's Brixelizer sample](https://gpuopen.com/manuals/fidelityfx_sdk/samples/brixelizer-gi/)
+provides useful camera-following and cascade diagnostics, but its sparse distance
+fields require a different representation. Recent
+[Split Radiance Cascades research](https://arxiv.org/abs/2607.20384) uses sparse
+radiance probes rather than the engine's dense surface voxels. Neither alternative
+is substituted into this implementation.
 
 Validation commands after a full build:
 
@@ -656,9 +680,12 @@ python3 tests/temporal_render_smoke.py --voxel-scroll --api Vulkan --app Prehist
 ```
 
 Add `--build-dir build/macos-arm64` for Apple Silicon. The GPU fixture compares
-scrolled occupancy, material, emission and base radiance against fresh full bakes,
-including diagonal movement, three lighting passes and directional mips. It also
-checks sub-cell/rotation reuse and resize/teleport/mutation fallbacks. These checks
+all four cascades' scrolled occupancy, material, emission and base radiance against
+fresh full bakes, including diagonal movement, three lighting passes and directional
+mips. It also checks independent snapping, sub-cell/rotation reuse, resize/teleport/
+mutation fallbacks, count changes and debug-level switching. A separate GPU fixture
+checks distant hits, entry into finer coverage, finite ray limits, outer sky escape
+and constant-radiance/opacity preservation across overlap blending. These checks
 passed on native Vulkan; OpenGL shaders compile offline, but its GPU comparisons
 must still be run on a supported PC using `--api OpenGL`.
 

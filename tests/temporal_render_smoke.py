@@ -181,8 +181,15 @@ def main():
         if not args.benchmark:
             env.update(VK_INSTANCE_LAYERS='VK_LAYER_KHRONOS_validation:VK_LAYER_LUNARG_screenshot',
                        VK_SCREENSHOT_FRAMES=(
-                           '2,3,4,12,17,25,31,39,48,54,62' if args.world_suite else '4,12,17,25,31,39,48,54,62'),
+                           '2,3,4,12,17,25,31,39,48,54,62' if args.world_suite else (
+                               '4,12,17,19,20,21,22' if args.voxel_scroll else '4,12,17,25,31,39,48,54,62')),
                        VK_SCREENSHOT_DIR=str(output))
+    if args.voxel_scroll and args.api == 'Vulkan':
+        shader = output / 'cascade-traversal.spv'
+        subprocess.run(
+            ['glslc', '--target-env=vulkan1.1', str(ROOT / 'tests/voxel_cascade_traversal.comp'), '-o', str(shader)],
+            check=True)
+        env['PREHISTORIC_CASCADE_TEST_SHADER'] = str(shader)
     print(f'Artifacts: {output}', flush=True)
     with (output / 'run.log').open('w') as log:
         process = subprocess.Popen([output / 'TemporalSmoke'], cwd=output, env=env, stdout=log,

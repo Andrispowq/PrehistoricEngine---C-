@@ -12,6 +12,9 @@ uniform bool useEnvironment;
 #include "opengl/voxel/voxel_cones.glsl"
 #include "shared/voxel/voxel_cones.glsl"
 #include "opengl/voxel/voxel_surface.glsl"
+layout(std430, binding = 6) readonly buffer VoxelCascadeData { uint cascadeWords[]; };
+#define CASCADE_ENVIRONMENT
+#include "shared/voxel/cascades.glsl"
 
 void main()
 {

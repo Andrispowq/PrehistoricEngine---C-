@@ -46,6 +46,8 @@ vec4 baseSample(ivec3 p) { return texelFetch(waterVoxelRadiance, p, 0); }
 vec3 baseRadiance(ivec3 p) { return baseSample(p).rgb; }
 #include "shared/voxel/cone_hit.glsl"
 #include "shared/voxel/reflection.glsl"
+layout(std430, binding = 6) readonly buffer VoxelCascadeData { uint cascadeWords[]; };
+#include "shared/voxel/cascades.glsl"
 #define WATER_VOXEL_REFLECTION
 #include "shared/water/voxel_reflection.glsl"
 vec3 sampleReflection(vec2 uv) { return texture(waterReflection, uv).rgb; }

@@ -17,6 +17,9 @@ layout(set = 1, binding = 1) uniform samplerCube coneEnvironment;
 const bool useEnvironment = true;
 #include "grid.glsl"
 #include "../../shared/voxel/voxel_cones.glsl"
+#define CASCADE_ENVIRONMENT
+#define cascadeWords cells
+#include "../../shared/voxel/cascades.glsl"
 void main()
 {
     ivec2 p = min(ivec2(gl_FragCoord.xy) * options.z + options.z / 2, textureSize(normals, 0) - 1);

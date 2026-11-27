@@ -17,9 +17,6 @@ namespace Prehistoric {
         AddUniform("sunRadiance");
         AddUniform("shadowMap");
         AddUniform("useVoxelSunShadows");
-        AddUniform("voxelOccluders");
-        AddUniform("voxelOcclusionMin");
-        AddUniform("voxelOcclusionExtent");
         for (size_t i = 0; i < (ShadowCascades::Count - 1); ++i) {
             AddUniform("cascadePlaneDistances[" + std::to_string(i) + "]");
         }
@@ -29,7 +26,6 @@ namespace Prehistoric {
         const auto *gl = static_cast<GLRenderer *>(renderer);
         const auto *shadows = gl->getShadowDepthPass();
         const bool voxelSun = gl->getVoxelPass()->UsesVoxelSunShadows();
-        gl->getVoxelPass()->BindOccluders(*this, 8);
         SetUniformi("useVoxelSunShadows", voxelSun);
         shadows->BindMatrices();
         shadows->getDepthTexture()->Bind(textureUnit);

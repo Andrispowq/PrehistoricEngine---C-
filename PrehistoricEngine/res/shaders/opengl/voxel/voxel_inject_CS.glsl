@@ -12,6 +12,11 @@ uniform bool useVoxelSunShadows, useTerrainOcclusion;
 #include "shared/voxel/voxel_surface.glsl"
 #include "opengl/voxel/voxel_visibility.glsl"
 #include "shared/voxel/shadow.glsl"
+uniform bool globalInjection;
+layout(std430, binding = 6) readonly buffer VoxelCascadeData { uint cascadeWords[]; };
+#include "shared/voxel/cascades.glsl"
+#undef voxelVisibility
+
 void main()
 {
     ivec3 cell = ivec3(gl_GlobalInvocationID);
@@ -25,10 +30,12 @@ void main()
     float cosine = max(dot(normal, sunDirection), 0);
     float visibility = 0;
     if (cosine > 0 && any(greaterThan(sunRadiance, vec3(0))))
-    visibility = useVoxelSunShadows ? voxelVisibility(position, normal, sunDirection, 2 * voxelOcclusionExtent)
+    visibility = useVoxelSunShadows ? (globalInjection ? vxCascadeVisibility(position, normal, sunDirection, 2.0 * vxCascadeBounds(vxCascadeCount() - 1).w)
+    : voxelVisibility(position, normal, sunDirection, 2 * voxelOcclusionExtent))
     : voxelShadowVisibility((lightViewProjection * vec4(position, 1)).xyz * 0.5 + 0.5, shadowBias);
     if (useTerrainOcclusion && !useVoxelSunShadows && visibility > 0)
-    visibility *= voxelVisibility(position, normal, sunDirection, 2 * voxelOcclusionExtent);
+    visibility *= (globalInjection ? vxCascadeVisibility(position, normal, sunDirection, 2.0 * vxCascadeBounds(vxCascadeCount() - 1).w)
+    : voxelVisibility(position, normal, sunDirection, 2 * voxelOcclusionExtent));
     vec3 radiance = decodeVoxelRadiance(imageLoad(emissionCells, cell).r) + base * sunRadiance * (cosine * visibility / 3.14159265);
     imageStore(radianceCells, cell, vec4(radiance, 1));
 }

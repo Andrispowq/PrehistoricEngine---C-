@@ -18,9 +18,17 @@ namespace Prehistoric {
         void Render(VkCommandBuffer cmd, VKRenderer &renderer, VkRenderPass pass, VkFramebuffer frame,
                     VkExtent2D extent);
 
-        void Prepare(VkCommandBuffer cmd, VKRenderer &renderer);
+        void Prepare(VkCommandBuffer cmd, VKRenderer &renderer, bool deferBounces = false,
+                     bool globalInjection = false);
 
-        bool UsesFilteredRadiance() const { return radianceSampler != VK_NULL_HANDLE; }
+        bool lightingChanged = false;
+        bool reportTimings = true;
+        VkBuffer cascadeSource = VK_NULL_HANDLE, boundCascadeSource = VK_NULL_HANDLE;
+        size_t cascadeSourceBytes = 0;
+        void InvalidateLighting() { previousBounces = -1; }
+
+        void CascadeBounce(VkCommandBuffer cmd, int bounce, bool last);
+
 
         VkDescriptorSet GridSet() const { return viewInputs; }
         VkDescriptorSetLayout GridLayout() const { return viewSet; }
@@ -68,21 +76,6 @@ namespace Prehistoric {
                   const VoxelScroll &scroll);
 
         void Release();
-
-        struct RadianceTexture {
-            VkImage image{};
-            VkDeviceMemory memory{};
-            VkImageView view{};
-            uint32_t levels = 0;
-        };
-
-        std::array<RadianceTexture, 7> radianceTextures{};
-        VkSampler radianceSampler{};
-        bool radianceUploaded = false;
-
-        void CreateRadianceTextures(VKDevice *gpu);
-
-        void UploadRadiance(VkCommandBuffer cmd);
 
         VKDevice *gpu;
         VkDevice device;

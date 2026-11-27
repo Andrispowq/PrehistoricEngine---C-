@@ -52,12 +52,14 @@ namespace Prehistoric {
 
         VkBuffer GetVoxelBuffer() const;
 
+        VkBuffer GetVoxelGeometryBuffer(unsigned cascade = 0) const;
+
         VkDescriptorImageInfo GetVoxelScreenInput(int index) const;
 
         bool SupportsVoxelResolution(int size) const;
 
         Vector3f voxelCenter{0.0f};
-        float voxelExtent = 400.0f;
+        float voxelExtent = 256.0f;
         Vector4f GetVoxelVolume() const override { return Vector4f(voxelCenter, voxelExtent); }
 
         void SetVoxelVolume(const Vector3f &center, float width, bool resetHistory = true) override {

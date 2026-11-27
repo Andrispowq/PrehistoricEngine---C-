@@ -5,6 +5,7 @@
 
 namespace Prehistoric {
     class Texture;
+    class Renderer;
     class VKImGui;
 
     class ImGuiLayer : public Layer {
@@ -22,6 +23,8 @@ namespace Prehistoric {
         void End();
 
         void Draw();
+
+        static void DrawVoxelCascades(Renderer &renderer, unsigned nearResolution);
 
         void DrawImage(Texture *texture, float width, float height);
 

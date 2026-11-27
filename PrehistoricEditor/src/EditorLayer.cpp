@@ -5,6 +5,7 @@
 #include "platform/vulkan/rendering/VKRenderer.h"
 
 #include "imgui.h"
+#include "prehistoric/core/ImGUI/ImGUILayer.h"
 #include "imgui_internal.h"
 
 #include "prehistoric/common/util/PlatformUtils.h"
@@ -405,6 +406,7 @@ void EditorLayer::DrawVoxelSettings(Prehistoric::Renderer &renderer) {
         ImGui::SliderInt("GI Trace Depth ([ / ])", vk ? &vk->voxelBounces : &settings->traceDepth, 1,
                          VoxelPass::MaxTraceDepth, "%d", ImGuiSliderFlags_AlwaysClamp);
         ImGui::Text("Voxel size %.2f", width / resolution);
+        Prehistoric::ImGuiLayer::DrawVoxelCascades(renderer, unsigned(resolution));
     } else {
         ImGui::TextDisabled("Voxel GI is unavailable on this device.");
     }

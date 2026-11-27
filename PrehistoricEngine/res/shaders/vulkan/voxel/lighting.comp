@@ -7,6 +7,7 @@ layout(push_constant) uniform Lighting
     vec4 sunlight;
     ivec4 stage;
     mat4 lightFromCell;
+    vec4 cascadeWorldBounds;
 };
 int voxelGridSize() { return stage.x; }
 #define directionalMips ((stage.w & 1) != 0)
@@ -19,6 +20,12 @@ layout(binding = 2) uniform samplerCube coneEnvironment;
 #include "../../shared/voxel/voxel_cones.glsl"
 #include "../../shared/voxel/voxel_surface.glsl"
 #include "../../shared/voxel/shadow.glsl"
+layout(std430, binding = 3) readonly buffer CascadeData { uint cascadeWords[]; };
+#define CASCADE_ENVIRONMENT
+#include "../../shared/voxel/cascades.glsl"
+#undef traceHemisphere
+#undef voxelVisibility
+
 void storeFlux(int word, vec4 v)
 {
     cells[word] = packHalf2x16(v.rg);
@@ -53,7 +60,10 @@ void main()
             if (cosine > 0 && any(greaterThan(sunlight.rgb, vec3(0))))
             {
                 if ((stage.w & 2) != 0)
-                visibility = voxelVisibility(vec3(p) + 0.5, n, direction.xyz, 2.0 * size);
+                visibility = (stage.w & 32) != 0
+                ? vxCascadeVisibility(cascadeWorldBounds.xyz + (vec3(p) + 0.5) / size * cascadeWorldBounds.w,
+                        n, direction.xyz, 2.0 * vxCascadeBounds(vxCascadeCount() - 1).w)
+                : voxelVisibility(vec3(p) + 0.5, n, direction.xyz, 2.0 * size);
                 else
                 visibility =
                 voxelShadowVisibility((lightFromCell * vec4(vec3(p) + 0.5, 1)).xyz * 0.5 + 0.5,
@@ -104,8 +114,13 @@ void main()
     {
         if (!occupiedBlock(p, 0)) return;
         uint surface = cells[surfaceOffset() + cell];
-        vec3 bounce = unpackBounceReflectance(surface) *
-        traceHemisphere((vec3(p) + 0.5) / size, unpackBounceNormal(surface), 1.0 / size);
+        vec3 origin = (vec3(p) + 0.5) / size;
+        vec3 normal = unpackBounceNormal(surface);
+        vec3 world = cascadeWorldBounds.xyz + origin * cascadeWorldBounds.w;
+        vec3 incoming = (stage.w & 16) != 0
+        ? vxCascadeHemisphere(world / float(voxelGridSize()), normal, 1.0 / size)
+        : traceHemisphere(origin, normal, 1.0 / size);
+        vec3 bounce = unpackBounceReflectance(surface) * incoming;
         int accum = accumulatedOffset() + 2 * cell;
         storeFlux(accum, vec4(readFlux(accum).rgb + bounce, 1));
         storeFlux(nextOffset() + 2 * cell, vec4(bounce, 1));

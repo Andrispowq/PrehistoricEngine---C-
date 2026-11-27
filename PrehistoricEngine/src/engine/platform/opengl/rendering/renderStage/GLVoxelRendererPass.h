@@ -3,6 +3,7 @@
 
 #include "prehistoric/common/rendering/renderStage/RenderStage.h"
 #include "platform/opengl/rendering/shaders/GLShader.h"
+#include "prehistoric/common/rendering/VoxelCascades.h"
 
 namespace Prehistoric {
     class GLVoxelRendererPass : public RenderStage {
@@ -14,7 +15,7 @@ namespace Prehistoric {
             bool halfResolution = false;
             int resolutionIndex = 1;
             Vector3f center = Vector3f(0);
-            float extent = 400.0f;
+            float extent = 256.0f;
             float giStrength = 1.0f;
             int traceDepth = 1;
             bool directionalMips = false;
@@ -48,6 +49,7 @@ namespace Prehistoric {
 
         bool HasOccluders() const { return usesOccluders; }
         GLuint GetOccluderTexture() const { return debugVolume; }
+        GLVoxelRendererPass *GetCascade(unsigned index) { return index ? farCascades.at(index - 1).get() : this; }
         GLuint GetSurfaceTexture() const { return bounceSurfaces; }
         GLuint GetEmissionTexture() const { return emissionVolume; }
         GLuint GetRadianceTexture() const { return radianceVolume; }
@@ -58,6 +60,16 @@ namespace Prehistoric {
         void BindWaterLighting(const GLShader &shader) const;
 
     private:
+        std::array<std::unique_ptr<GLVoxelRendererPass>, 3> farCascades;
+        GLuint cascadeBuffer = 0;
+        size_t cascadeBufferBytes = 0;
+
+        void ExportCascades(const VoxelCascadeSnapshot &snapshot, size_t bytes, bool bounceSource = false);
+
+        bool deferBounces = false, lightingChanged = false, globalInjection = false;
+
+        void CascadeBounce(int bounce, bool last);
+
         bool Initialise();
 
         void SetResolution(int size);
@@ -74,11 +86,9 @@ namespace Prehistoric {
 
         void GenerateRadianceMips(GLuint texture);
 
-        void BindDirectionalMips(const GLShader &shader, bool enabled) const;
 
         void ReleaseDirectionalMips();
 
-        void PropagateBounces(int traceDepth);
 
         void ReleaseBounceVolumes();
 

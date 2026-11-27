@@ -30,9 +30,11 @@ int voxelGridSize() { return voxelOptions.x; }
 #define voxelOcclusionExtent voxelBounds.w
 #define voxelOcclusionMin voxelBounds.xyz
 #include "../voxel/occlusion.glsl"
+#define cascadeWords cells
+#include "../../shared/voxel/cascades.glsl"
 float directionalVisibility(vec3 p, vec3 n, float bias, bool volume)
 {
-    if (voxelOptions.x > 0) return voxelVisibility(p, n, sunDirection.xyz, 2.0 * voxelBounds.w);
+    if (voxelOptions.x > 0) return voxelVisibility(p, n, sunDirection.xyz, 2.0 * vxCascadeBounds(vxCascadeCount() - 1).w);
     return cascadeSunVisibility(p, n, bias, volume);
 }
 #include "../../shared/postProcessing/volumetric.glsl"

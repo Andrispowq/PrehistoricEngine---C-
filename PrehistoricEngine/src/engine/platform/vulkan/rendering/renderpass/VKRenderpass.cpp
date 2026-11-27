@@ -800,9 +800,7 @@ namespace Prehistoric {
             create.pushConstantRangeCount = 1;
             create.pPushConstantRanges = &push;
             Check(vkCreatePipelineLayout(device->getDevice(), &create, nullptr, &traceLayout));
-            const char *shader = voxelPass->UsesFilteredRadiance()
-                                     ? "vulkan/voxel/trace_filtered.spv"
-                                     : "vulkan/voxel/trace.spv";
+            const char *shader = "vulkan/voxel/trace.spv";
             tracePipeline =
                     CreateFullscreenPipeline("vulkan/postProcessing/hdr_VS.spv", shader, traceLayout, bloomPass);
         }
@@ -837,6 +835,121 @@ namespace Prehistoric {
         voxelPass->Mark(cmd, VKVoxelView::Trace, true);
     }
 
+    VkBuffer VKRenderpass::CascadeBuffer() const {
+        return cascadeBuffer ? cascadeBuffer->getBuffer() : VK_NULL_HANDLE;
+    }
+
+    void VKRenderpass::EnsureVoxelCascades(VKRenderer &renderer) {
+        const auto center = renderer.voxelFollowCamera ? renderer.getCamera()->getPosition() : renderer.voxelCenter;
+        const auto bytes = MakeVoxelCascades(cascadeSnapshot, renderer.voxelResolution, renderer.voxelCascadeCount,
+                                             {center.x, center.y, center.z}, renderer.voxelExtent,
+                                             renderer.voxelDirectional);
+        // Near bounds retain manual positioning and the existing scroll cache contract.
+        auto minimum = renderer.voxelCenter - Vector3f(renderer.voxelExtent / 2);
+        cascadeSnapshot.bounds[0] = {minimum.x, minimum.y, minimum.z, renderer.voxelExtent};
+        if (!cascadeBuffer || cascadeBuffer->getSize() != bytes) {
+            vkDeviceWaitIdle(device->getDevice());
+            cascadeBuffer = std::make_unique<VKBuffer>(device, bytes,
+                                                       VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+                                                       VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                                                       VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                                       VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        }
+        renderer.voxelCascadeBytes = bytes;
+        Voxels(renderer.voxelResolution, true);
+        for (unsigned i = 1; i < 4; ++i) {
+            if (i < cascadeSnapshot.meta[0] && !farVoxels[i - 1])
+                farVoxels[i - 1] = std::make_unique<VKVoxelView>(device, *this,
+                                                                 editorOutput ? editorPass : presentPass, 64, true);
+            if (i >= cascadeSnapshot.meta[0] && farVoxels[i - 1]) {
+                vkDeviceWaitIdle(device->getDevice());
+                farVoxels[i - 1].reset();
+            }
+            if (farVoxels[i - 1]) {
+                farVoxels[i - 1]->reportTimings = false;
+                renderer.voxelCascadeBytes += VKVoxelView::GridBytes(64, true);
+            }
+        }
+        renderer.voxelCascadeBytes += VKVoxelView::GridBytes(renderer.voxelResolution, true);
+    }
+
+    void VKRenderpass::PrepareVoxelCascades(VkCommandBuffer cmd, VKRenderer &renderer) {
+        const auto center = renderer.voxelCenter;
+        const auto width = renderer.voxelExtent;
+        auto barrier = [&](VkAccessFlags source, VkAccessFlags destination) {
+            VkMemoryBarrier memory{VK_STRUCTURE_TYPE_MEMORY_BARRIER, nullptr, source, destination};
+            vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+                                 0, 1, &memory, 0, nullptr, 0, nullptr);
+        };
+        barrier(VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT, VK_ACCESS_TRANSFER_WRITE_BIT);
+        vkCmdUpdateBuffer(cmd, cascadeBuffer->getBuffer(), 0, sizeof(cascadeSnapshot), &cascadeSnapshot);
+        bool lightingChanged = false;
+        for (unsigned i = 0; i < cascadeSnapshot.meta[0]; ++i) {
+            const auto &bounds = cascadeSnapshot.bounds[i];
+            renderer.voxelCenter = Vector3f(bounds[0], bounds[1], bounds[2]) + Vector3f(bounds[3] / 2);
+            renderer.voxelExtent = bounds[3];
+            renderer.voxelUpdate = {};
+            auto &pass = i ? *farVoxels[i - 1] : *voxelPass;
+            if (pass.cascadeSource != cascadeBuffer->getBuffer()) pass.InvalidateLighting();
+            pass.cascadeSource = cascadeBuffer->getBuffer();
+            pass.cascadeSourceBytes = cascadeBuffer->getSize();
+            pass.Prepare(cmd, renderer, true);
+            lightingChanged |= pass.lightingChanged;
+            renderer.voxelCascadeUpdates[i] = renderer.voxelUpdate;
+        }
+        auto publish = [&]() {
+            for (unsigned i = 0; i < cascadeSnapshot.meta[0]; ++i) {
+                auto &pass = i ? *farVoxels[i - 1] : *voxelPass;
+                const auto &grid = cascadeSnapshot.grids[i];
+                const uint32_t n = grid[0], count = n * n * n, pyramid = VoxelPyramid(n);
+                const uint32_t radiance = (pyramid + 2 * count + 1) & ~1u;
+                barrier(VK_ACCESS_MEMORY_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT);
+                VkBufferCopy regions[] = {
+                    {0, VkDeviceSize(grid[1]) * 4, VkDeviceSize(pyramid) * 4},
+                    {
+                        VkDeviceSize(radiance) * 4, VkDeviceSize(grid[2]) * 4,
+                        VkDeviceSize(2 * pyramid + 12 * (pyramid - count)) * 4
+                    }
+                };
+                vkCmdCopyBuffer(cmd, pass.Buffer(), cascadeBuffer->getBuffer(), 2, regions);
+            }
+            barrier(VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT);
+        };
+        if (lightingChanged) {
+            publish(); // Current geometry must be visible to cross-cascade shadows.
+            // Every cascade must start from direct light, including otherwise unchanged grids.
+            for (unsigned i = 0; i < cascadeSnapshot.meta[0]; ++i) {
+                auto &pass = i ? *farVoxels[i - 1] : *voxelPass;
+                const auto &b = cascadeSnapshot.bounds[i];
+                renderer.voxelCenter = Vector3f(b[0], b[1], b[2]) + Vector3f(b[3] / 2);
+                renderer.voxelExtent = b[3];
+                pass.InvalidateLighting();
+                pass.Prepare(cmd, renderer, true, true);
+            }
+            publish();
+            voxelPass->Mark(cmd, VKVoxelView::Bounces, false);
+            for (int bounce = 1; renderer.voxelGI && bounce < renderer.voxelBounces; ++bounce) {
+                for (unsigned i = 0; i < cascadeSnapshot.meta[0]; ++i) {
+                    auto &pass = i ? *farVoxels[i - 1] : *voxelPass;
+                    pass.CascadeBounce(cmd, bounce,
+                                       bounce + 1 == renderer.voxelBounces);
+                }
+                publish();
+            }
+            voxelPass->Mark(cmd, VKVoxelView::Bounces, true);
+        }
+        renderer.voxelCenter = center;
+        renderer.voxelExtent = width;
+        renderer.voxelUpdate = renderer.voxelCascadeUpdates[0];
+        barrier(VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT);
+        VkDescriptorBufferInfo grid{cascadeBuffer->getBuffer(), 0, cascadeBuffer->getSize()};
+        VkWriteDescriptorSet write{
+            VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, voxelPass->GridSet(),
+            0, 0, 1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, nullptr, &grid
+        };
+        vkUpdateDescriptorSets(device->getDevice(), 1, &write, 0, nullptr);
+    }
+
     VKVoxelView &VKRenderpass::Voxels(uint32_t resolution, bool lighting) {
         if (!voxelPass || voxelPass->resolution != resolution || voxelPass->lighting != lighting) {
             if (voxelPass) vkDeviceWaitIdle(device->getDevice());
@@ -857,8 +970,24 @@ namespace Prehistoric {
         const auto framebuffer = presentFramebuffers[swapchain->getAquiredImageIndex()];
         if (renderer.voxelView) {
             const auto pass = editorOutput ? editorPass : presentPass;
-            Voxels(renderer.voxelResolution, false)
+            const auto center = renderer.voxelCenter;
+            const float width = renderer.voxelExtent;
+            const unsigned selected = unsigned(std::clamp(renderer.voxelDebugCascade, 0,
+                                                          int(renderer.voxelCascadeCount) - 1));
+            VoxelCascadeSnapshot snapshot;
+            const auto eye = renderer.voxelFollowCamera ? renderer.getCamera()->getPosition() : center;
+            MakeVoxelCascades(snapshot, renderer.voxelResolution, renderer.voxelCascadeCount,
+                              {eye.x, eye.y, eye.z}, width, false);
+            if (selected) {
+                const auto &b = snapshot.bounds[selected];
+                renderer.voxelCenter = Vector3f(b[0], b[1], b[2]) + Vector3f(b[3] / 2);
+                renderer.voxelExtent = b[3];
+            }
+            Voxels(selected ? 64 : renderer.voxelResolution, false)
                     .Render(command, renderer, pass, editorOutput ? editorFramebuffer : framebuffer, extent);
+            renderer.voxelCascadeUpdates[selected] = renderer.voxelUpdate;
+            renderer.voxelCenter = center;
+            renderer.voxelExtent = width;
         } else RenderLitHDR(commandBuffer, renderer, bloomEnabled, underwater);
         if (editorOutput) {
             vkCmdEndRenderPass(command);

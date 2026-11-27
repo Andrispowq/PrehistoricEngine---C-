@@ -4,13 +4,13 @@
 
 // Diagnostic readback at the smoke fixture's 64-cubed resolution. Compare geometry
 // separately from light so an occupancy-only pass cannot hide stale radiance.
-inline std::vector<uint32_t> ReadVoxelFixture(Prehistoric::Renderer &renderer) {
+inline std::vector<uint32_t> ReadVoxelFixture(Prehistoric::Renderer &renderer, unsigned cascade = 0) {
     using namespace Prehistoric;
     constexpr uint32_t count = 64 * 64 * 64, pyramid = (8 * count - 1) / 7;
     std::vector<uint32_t> words(5 * count);
     if (auto *gl = dynamic_cast<GLRenderer *>(&renderer)) {
         glFinish();
-        auto *pass = gl->getVoxelPass();
+        auto *pass = gl->getVoxelPass()->GetCascade(cascade);
         const GLuint textures[] = {pass->GetOccluderTexture(), pass->GetSurfaceTexture(), pass->GetEmissionTexture()};
         for (unsigned i = 0; i < 3; ++i)
             glGetTextureImage(textures[i], 0, GL_RED_INTEGER, GL_UNSIGNED_INT, count * 4, words.data() + i * count);
@@ -35,7 +35,7 @@ inline std::vector<uint32_t> ReadVoxelFixture(Prehistoric::Renderer &renderer) {
     const VkDeviceSize offsets[] = {0, pyramid, pyramid + count, (pyramid + 2 * count + 1) & ~1u};
     for (unsigned i = 0; i < 4; ++i) {
         VkBufferCopy copy{offsets[i] * 4, VkDeviceSize(i * count) * 4, VkDeviceSize(count) * (i == 3 ? 8u : 4u)};
-        vkCmdCopyBuffer(cmd, vk->GetVoxelBuffer(), output.getBuffer(), 1, &copy);
+        vkCmdCopyBuffer(cmd, vk->GetVoxelGeometryBuffer(cascade), output.getBuffer(), 1, &copy);
     }
     barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
     barrier.dstAccessMask = VK_ACCESS_HOST_READ_BIT;
@@ -54,4 +54,13 @@ inline std::vector<uint32_t> ReadVoxelFixture(Prehistoric::Renderer &renderer) {
     std::memcpy(words.data(), mapped, output.getSize());
     vkUnmapMemory(gpu->getDevice(), output.getMemory());
     return words;
+}
+
+inline std::vector<uint32_t> ReadVoxelCascades(Prehistoric::Renderer &renderer) {
+    std::vector<uint32_t> all;
+    for (unsigned i = 0; i < renderer.voxelCascadeCount; ++i) {
+        auto words = ReadVoxelFixture(renderer, i);
+        all.insert(all.end(), words.begin(), words.end());
+    }
+    return all;
 }

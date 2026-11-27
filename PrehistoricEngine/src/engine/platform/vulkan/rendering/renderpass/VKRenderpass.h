@@ -2,6 +2,7 @@
 #define VK_RENDERPASS_H
 
 #include <vulkan/vulkan.h>
+#include "prehistoric/common/rendering/VoxelCascades.h"
 #include "platform/vulkan/texture/VKTexture.h"
 
 #include "platform/vulkan/framework/device/VKDevice.h"
@@ -48,6 +49,16 @@ namespace Prehistoric {
         VkDescriptorImageInfo VoxelScreenInput(int index, bool half) const;
 
         VKVoxelView &Voxels(uint32_t resolution, bool lighting);
+
+        void EnsureVoxelCascades(VKRenderer &renderer);
+
+        void PrepareVoxelCascades(VkCommandBuffer cmd, VKRenderer &renderer);
+
+        VkBuffer CascadeBuffer() const;
+
+        std::array<std::unique_ptr<VKVoxelView>, 3> farVoxels;
+        std::unique_ptr<VKBuffer> cascadeBuffer;
+        VoxelCascadeSnapshot cascadeSnapshot{};
 
         VkRenderPass getPresentPass() const { return presentPass; }
 

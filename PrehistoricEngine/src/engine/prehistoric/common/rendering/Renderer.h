@@ -73,6 +73,10 @@ namespace Prehistoric {
         bool voxeliseTerrain = false;
         bool terrainReceivesGI = false;
         bool voxelFollowCamera = true;
+        unsigned voxelCascadeCount = 4;
+        int voxelDebugCascade = 0;
+        bool voxelCascadeColours = false;
+        uint64_t voxelCascadeBytes = 0;
 
         void UpdateVoxelFollow(unsigned resolution);
 
@@ -81,6 +85,8 @@ namespace Prehistoric {
 
             uint64_t dirtyCells = 0;
         } voxelUpdate;
+
+        std::array<VoxelUpdate, 4> voxelCascadeUpdates{};
 
         float bloomIntensity = 0.06f;
         AmbientOcclusionSettings ambientOcclusion;
