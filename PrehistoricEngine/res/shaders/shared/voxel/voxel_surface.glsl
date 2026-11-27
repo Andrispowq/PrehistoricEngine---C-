@@ -4,9 +4,9 @@ vec3 encodeVoxelRadiance(vec3 radiance)
     return clamp(log2(1.0 + radiance) / 10.0, 0.0, 1.0);
 }
 
-vec3 decodeVoxelRadiance(uint packed)
+vec3 decodeVoxelRadiance(uint encodedRadiance)
 {
-    return exp2(unpackUnorm4x8(packed).rgb * 10.0) - 1.0;
+    return exp2(unpackUnorm4x8(encodedRadiance).rgb * 10.0) - 1.0;
 }
 
 vec2 octFold(vec2 p)

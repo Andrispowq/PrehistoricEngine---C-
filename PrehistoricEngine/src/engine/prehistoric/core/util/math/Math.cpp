@@ -410,7 +410,7 @@ namespace Prehistoric {
         for (int i = 0; i < 4; i++) {
             __m128 res = _mm_cmpeq_ps(coloumns[i], v.coloumns[i]);
 
-            if (res.m128_f32[0] != 0 || res.m128_f32[1] != 0 || res.m128_f32[2] != 0 || res.m128_f32[3] != 0) {
+            if (_mm_movemask_ps(res) != 0xF) {
                 return false;
             }
         }

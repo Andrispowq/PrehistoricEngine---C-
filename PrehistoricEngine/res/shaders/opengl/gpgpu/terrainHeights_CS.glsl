@@ -16,4 +16,4 @@ void main()
 	vec2 texCoord = gl_GlobalInvocationID.xy / float(N);
 	
 	heights[x.y * N + x.x] = texture(heightmap, texCoord).r;
-};
+}

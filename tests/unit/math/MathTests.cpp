@@ -235,6 +235,23 @@ TEST_CASE (
 }
 
 TEST_CASE (
+"Matrix equality compares every element"
+,
+"[math][matrix]"
+)
+{
+    const auto identity = Matrix4f::Identity();
+    REQUIRE(identity == Matrix4f::Identity());
+
+    for (int i = 0; i < 16; ++i) {
+        auto changed = identity;
+        changed.m[i] += 1.0f;
+        INFO("matrix element " << i);
+        REQUIRE_FALSE(identity == changed);
+    }
+}
+
+TEST_CASE (
 "Matrix storage is column major and rows are addressable"
 ,
 "[math][matrix]"

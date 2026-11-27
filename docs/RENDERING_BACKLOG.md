@@ -137,6 +137,8 @@ Parts use the parent model transform. Individual submesh transforms remain open.
 
 ### Engine maintenance
 
+- Review asset management and loading. Profile cold startup and repeated scene loads in the editor and demo. Measure decode and GPU upload time, duplicate loads, cache reuse, and retained memory after scene unload. Review resource ownership and load failure diagnostics, then prioritize improvements using those measurements while preserving portable asset IDs and legacy aliases.
+
 - Review the world file format and loader/editor round-trip. Compare existing worlds for schema consistency, asset references, defaults, validation and versioning. Propose improvements and a migration path that preserves existing worlds.
 
 - Migrate native vector, quaternion, and matrix operations to GLM incrementally behind the existing math API. Start with matrix multiplication and inversion. Preserve transform order, angle and clip-space conventions, and GPU and scripting layouts. Run the [math suite](../tests/unit/math/MathTests.cpp) and smoke-test both renderers before changing public types.
