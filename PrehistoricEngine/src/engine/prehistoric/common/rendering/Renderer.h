@@ -88,7 +88,7 @@ namespace Prehistoric {
 
         std::array<VoxelUpdate, 4> voxelCascadeUpdates{};
 
-        float bloomIntensity = 0.06f;
+        float bloomIntensity = 0.05f;
         AmbientOcclusionSettings ambientOcclusion;
         DepthOfFieldSettings depthOfField;
         TemporalSettings temporal;

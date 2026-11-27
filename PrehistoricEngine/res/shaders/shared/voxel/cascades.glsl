@@ -68,7 +68,14 @@ vec4 vxCascadeSample(int c, vec3 p, vec3 ray, float diameter)
 {
     float lod = clamp(log2(max(1.0, diameter / vxCascadeCell(c))), 0.0, float(findMSB(vxCascadeGrid(c).x)));
     int low = int(lod), high = min(low + 1, findMSB(vxCascadeGrid(c).x));
+    #ifdef VOXEL_SKIP_ZERO_WEIGHT_SAMPLES
+    vec4 lower = vxCascadeDirectional(c, p, ray, low);
+    float fraction = fract(lod);
+    if (fraction == 0.0 || low == high) return lower;
+    return mix(lower, vxCascadeDirectional(c, p, ray, high), fraction);
+    #else
     return mix(vxCascadeDirectional(c, p, ray, low), vxCascadeDirectional(c, p, ray, high), fract(lod));
+    #endif
 }
 vec4 vxCascadeSampleBlended(vec3 p, vec3 ray, float diameter)
 {
@@ -82,7 +89,11 @@ vec4 vxCascadeSampleBlended(vec3 p, vec3 ray, float diameter)
         float margin = max(2.0 * vxCascadeCell(c), diameter);
         float edgeBlend = 1.0 - smoothstep(0.0, margin, min(edge.x, min(edge.y, edge.z)));
         float lodBlend = smoothstep(vxCascadeCell(c), 2.0 * vxCascadeCell(c), diameter);
-        value = mix(value, vxCascadeSample(c + 1, p, ray, diameter), max(edgeBlend, lodBlend));
+        float blend = max(edgeBlend, lodBlend);
+        #ifdef VOXEL_SKIP_ZERO_WEIGHT_SAMPLES
+        if (blend > 0.0)
+        #endif
+            value = mix(value, vxCascadeSample(c + 1, p, ray, diameter), blend);
     }
     return value;
 }

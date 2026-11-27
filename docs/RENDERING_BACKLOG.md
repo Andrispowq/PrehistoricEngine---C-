@@ -137,6 +137,8 @@ Parts use the parent model transform. Individual submesh transforms remain open.
 
 ### Engine maintenance
 
+- Add an offline reference path tracer for reflection and GI validation. Replay saved worlds with matched cameras, lights, materials, and exposure. Export linear HDR reference frames with reproducible sample counts and seeds, starting with the mirror sphere, mirror runway, glossy sweep, and daylight reflection room. Compare raster captures against converged references at the same camera poses.
+
 - Review asset management and loading. Profile cold startup and repeated scene loads in the editor and demo. Measure decode and GPU upload time, duplicate loads, cache reuse, and retained memory after scene unload. Review resource ownership and load failure diagnostics, then prioritize improvements using those measurements while preserving portable asset IDs and legacy aliases.
 
 - Review the world file format and loader/editor round-trip. Compare existing worlds for schema consistency, asset references, defaults, validation and versioning. Propose improvements and a migration path that preserves existing worlds.

@@ -21,6 +21,38 @@ void loadReflectionSurface(ivec2 pixel, inout ReflectionSurface surface)
     }
 }
 
+// Interpolate reciprocal depth within a surface so subpixel steps do not inherit texel boundaries.
+float reflectionDepthAt(vec2 uv, ivec2 size, ReflectionSurface anchor)
+{
+    #ifndef SSR_INTERPOLATE_DEPTH
+    return anchor.depth;
+    #else
+    if (anchor.depth >= -0.0001) return anchor.depth;
+    vec2 samplePosition = uv * vec2(size) - 0.5;
+    ivec2 base = ivec2(floor(samplePosition));
+    vec2 fraction = fract(samplePosition);
+    float sum = 0.0;
+    float total = 0.0;
+    for (int y = 0; y < 2; ++y)
+    for (int x = 0; x < 2; ++x)
+    {
+        ivec2 tap = clamp(base + ivec2(x, y), ivec2(0), size - 1);
+        float weight = (x == 0 ? 1.0 - fraction.x : fraction.x)
+                     * (y == 0 ? 1.0 - fraction.y : fraction.y);
+        if (weight <= 0.0) continue;
+        ReflectionSurface sampleSurface = anchor;
+        loadReflectionSurface(tap, sampleSurface);
+        if (sampleSurface.normal.a < 0.99 || sampleSurface.depth >= -0.0001 ||
+            dot(sampleSurface.normal.xyz, anchor.normal.xyz) < 0.95 ||
+            abs(sampleSurface.depth - anchor.depth) > max(0.02, 0.02 * abs(anchor.depth)))
+            return anchor.depth;
+        sum += weight / sampleSurface.depth;
+        total += weight;
+    }
+    return total / sum;
+    #endif
+}
+
 // Hit colours are linear HDR from this frame, before reflections and post-processing.
 vec4 traceScreenRay(vec3 worldPosition, vec3 normal, vec3 reflection, out float hitDistance, out ivec2 hitPixel)
 {
@@ -70,7 +102,7 @@ vec4 traceScreenRay(vec3 worldPosition, vec3 normal, vec3 reflection, out float 
         if (surface.a >= 0.99)
         {
             vec3 hit = cached.position;
-            float gap = cached.depth - point.z;
+            float gap = reflectionDepthAt(uv, size, cached) - point.z;
             if (inFront && gap >= 0.0)
             {
                 float lo = previous, hi = distance;
@@ -83,7 +115,7 @@ vec4 traceScreenRay(vec3 worldPosition, vec3 normal, vec3 reflection, out float 
                     ivec2 tap = clamp(ivec2(tapUV * size), ivec2(0), size - 1);
                     loadReflectionSurface(tap, cached);
                     vec3 p = cached.position;
-                    float dz = cached.depth - probe.z;
+                    float dz = cached.normal.a >= 0.99 ? reflectionDepthAt(tapUV, size, cached) - probe.z : 0.0;
                     if (cached.normal.a >= 0.99 && dz >= 0.0)
                     {
                         hi = mid;

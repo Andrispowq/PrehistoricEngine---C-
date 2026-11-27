@@ -14,6 +14,8 @@ layout(binding = 7) uniform samplerCube prefilterMap;
 layout(binding = 15) uniform sampler2D brdfLUT;
 layout(r16f, binding = 1) uniform readonly image2D screenConfidence;
 uniform bool useScreenReflections;
+uniform bool applyDiffuse;
+uniform bool applySpecular;
 uniform float maxReflectionLOD;
 uniform vec3 volumeMin;
 uniform float volumeExtent;
@@ -42,7 +44,7 @@ void main()
     vec4 receiver = texelFetch(normals, pixel, 0);
     if (receiver.a < 0.99 || dot(receiver.xyz, receiver.xyz) < 0.01) return;
     vec4 position = texelFetch(positionMetallic, pixel, 0);
-    vec4 irradiance = filteredIndirect(pixel, size, position.xyz, normalize(receiver.xyz), traceStride, voxelSize, volumeMin, volumeExtent);
+
 
     vec4 surface = texelFetch(albedoRoughness, pixel, 0);
     vec3 normal = normalize(receiver.xyz);
@@ -61,7 +63,7 @@ void main()
         vec3 origin = (position.xyz - volumeMin) / volumeExtent;
         float weight = voxelReflectionWeight(metallic, surface.a, giStrength);
         if (useScreenReflections) weight *= 1.0 - imageLoad(screenConfidence, pixel).r;
-        if (weight > 0.0 && inside(origin))
+        if (applySpecular && weight > 0.0 && inside(origin))
         {
             vec3 R = reflect(-V, normal);
             vec4 reflected = traceReflection(origin, normal, R, surface.a);
@@ -69,10 +71,17 @@ void main()
             vec2 brdf = textureLod(brdfLUT, vec2(max(dot(normal, V), 0.01), surface.a), 0.0).rg;
             scene.rgb += reflectionCorrection(reflected, sky, F * brdf.x + brdf.y, weight * (terrain ? ao : 1.0));
         }
-        vec3 response = (1.0 - F) * (1.0 - metallic) * surface.rgb * ao;
-        scene.rgb += response * diffuseTraceCorrection(irradiance, textureLod(skyIrradiance, normal, 0.0).rgb, giStrength);
+        if (applyDiffuse)
+        {
+            vec4 irradiance = filteredIndirect(pixel, size, position.xyz, normal, traceStride, voxelSize, volumeMin, volumeExtent);
+            vec3 response = (1.0 - F) * (1.0 - metallic) * surface.rgb * ao;
+            scene.rgb += response * diffuseTraceCorrection(irradiance, textureLod(skyIrradiance, normal, 0.0).rgb, giStrength);
+        }
     }
-    else
-    scene.rgb += surface.rgb * irradiance.rgb * giStrength;
+    else if (applyDiffuse)
+    {
+        vec4 irradiance = filteredIndirect(pixel, size, position.xyz, normal, traceStride, voxelSize, volumeMin, volumeExtent);
+        scene.rgb += surface.rgb * irradiance.rgb * giStrength;
+    }
     imageStore(outputImage, pixel, scene);
 }

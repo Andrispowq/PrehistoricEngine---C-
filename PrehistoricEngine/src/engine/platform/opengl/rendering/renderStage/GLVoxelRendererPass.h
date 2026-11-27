@@ -39,7 +39,8 @@ namespace Prehistoric {
 
         void RenderScreenReflections(Texture *output);
 
-        void Composite(Texture *output);
+        enum class CompositeLighting { DiffuseAndSpecular, DiffuseOnly, SpecularOnly };
+        void Composite(Texture *output, CompositeLighting lighting = CompositeLighting::DiffuseAndSpecular);
 
         bool IsSupported() const { return GLAD_GL_VERSION_4_5; }
         bool IsReady() const { return ready; }

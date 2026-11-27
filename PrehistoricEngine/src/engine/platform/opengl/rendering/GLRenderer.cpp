@@ -186,16 +186,22 @@ namespace Prehistoric {
     }
 
     void GLRenderer::RenderHDR() {
-        if (screenSpaceReflections && !(voxelPass->IsReady() && voxelPass->GetSettings().debugView))
-            voxelPass->RenderScreenReflections(mainPass->getColourImage().pointer);
-        if (voxelPass->IsReady()) {
-            const auto &settings = voxelPass->GetSettings();
-            if (settings.debugView) {
-                voxelPass->Composite(getOutputTexture());
-                return;
-            }
-            if (settings.globalIllumination)
-                voxelPass->Composite(mainPass->getColourImage().pointer);
+        using Lighting = GLVoxelRendererPass::CompositeLighting;
+        const auto &voxel = voxelPass->GetSettings();
+        if (voxelPass->IsReady() && voxel.debugView) {
+            voxelPass->Composite(getOutputTexture());
+            return;
+        }
+
+        auto *colour = mainPass->getColourImage().pointer;
+        const bool diffuseGI = voxelPass->IsReady() && voxel.globalIllumination;
+        if (screenSpaceReflections) {
+            // Snapshot the diffusely lit scene before writing any screen-space reflections.
+            if (diffuseGI) voxelPass->Composite(colour, Lighting::DiffuseOnly);
+            voxelPass->RenderScreenReflections(colour);
+            if (diffuseGI) voxelPass->Composite(colour, Lighting::SpecularOnly);
+        } else if (diffuseGI) {
+            voxelPass->Composite(colour);
         }
         if (UseTemporalEffects()) {
             if (!temporalPass) temporalPass = std::make_unique<GLTemporalPass>();

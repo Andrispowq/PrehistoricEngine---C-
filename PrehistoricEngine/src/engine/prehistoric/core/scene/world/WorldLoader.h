@@ -53,7 +53,7 @@ namespace Prehistoric {
         bool screenSpaceReflections = false;
         bool voxeliseTerrain = false;
         bool terrainReceivesGI = false;
-        float bloomIntensity = 0.35f;
+        float bloomIntensity = 0.05f;
         AmbientOcclusionSettings ambientOcclusion;
         DepthOfFieldSettings depthOfField;
         TemporalSettings temporal;

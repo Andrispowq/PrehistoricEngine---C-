@@ -1,6 +1,7 @@
 {
   "sky_schema": 1,
   "screen_space_reflections": true,
+  "bloom_intensity": 0.05,
   "ambient_occlusion": {
     "enabled": true,
     "radius": 2.0,
@@ -16,7 +17,7 @@
         0
       ],
       "exposure": 0.3,
-      "bloom": false
+      "bloom": true
     },
     "directories": {"models": "", "textures": ""},
     "models": [
@@ -131,7 +132,7 @@
                           1.0,
                           -1.0
                         ],
-                        "emission": 400.0
+                        "emission": 0.0
                       }
                     ]
                   }
@@ -168,6 +169,14 @@
                 ]
             },
             {
+                "name": "Amber Point Light",
+                "parent": "Amber Cube Behind Red Curtain",
+                "transform": {"position": [30, -40.25, -37]},
+                "components": [
+                    {"type": "Light", "colour": [1.0, 0.36, 0.07], "intensity": 400, "range": 1000}
+                ]
+            },
+            {
                 "name": "Cyan Cube Behind Green Curtain",
                 "transform": {"position": [30, -46.25, 29], "scaling": [4, 4, 4]},
                 "components": [
@@ -175,10 +184,26 @@
                 ]
             },
             {
+                "name": "Cyan Point Light",
+                "parent": "Cyan Cube Behind Green Curtain",
+                "transform": {"position": [30, -40.25, 29]},
+                "components": [
+                    {"type": "Light", "colour": [0.06, 0.65, 1.0], "intensity": 400, "range": 1000}
+                ]
+            },
+            {
                 "name": "Green Cube on Upper Side Aisle",
                 "transform": {"position": [30, -4, -44], "scaling": [3.5, 3.5, 3.5]},
                 "components": [
                     {"type": "Renderer", "model": "cube", "shader": "pbr", "material": "green_emitter"}
+                ]
+            },
+            {
+                "name": "Green Point Light",
+                "parent": "Green Cube on Upper Side Aisle",
+                "transform": {"position": [30, 1.25, -44]},
+                "components": [
+                    {"type": "Light", "colour": [0.08, 1.0, 0.17], "intensity": 400, "range": 1000}
                 ]
             }
         ]

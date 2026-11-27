@@ -164,6 +164,7 @@ namespace Prehistoric {
         std::optional<BakeInputs> radiance;
         LightingState lighting;
         BakeClock::time_point completed;
+        GpuTimer diffuseCompositeTiming;
         GpuTimer timings[static_cast<size_t>(GpuStage::Count)];
         GLuint directionalVolumes[6] = {};
         std::unique_ptr<GLShader> directionalMipShader;
@@ -172,7 +173,11 @@ namespace Prehistoric {
     };
 
     double GLVoxelRendererPass::GetGpuMilliseconds(GpuStage stage) const {
-        return cache->Timer(stage).milliseconds;
+        const double milliseconds = cache->Timer(stage).milliseconds;
+        if (stage == GpuStage::Composite && milliseconds >= 0.0 && renderer->screenSpaceReflections &&
+            settings.globalIllumination && !settings.debugView)
+            return milliseconds + std::max(0.0, cache->diffuseCompositeTiming.milliseconds);
+        return milliseconds;
     }
 
     GLVoxelRendererPass::GLVoxelRendererPass(Renderer *renderer)
@@ -236,6 +241,8 @@ namespace Prehistoric {
             injectShader->AddUniform(uniform);
         cache->directionalMipShader->AddUniform("directionIndex");
         filterShader->AddUniform("useScreenReflections");
+        filterShader->AddUniform("applyDiffuse");
+        filterShader->AddUniform("applySpecular");
         filterShader->AddUniform("giStrength");
         filterShader->AddUniform("terrainReceivesGI");
         filterShader->AddUniform("voxelSize");
@@ -493,6 +500,7 @@ namespace Prehistoric {
     void GLVoxelRendererPass::Render() {
         usesOccluders = false;
         for (auto &timer: cache->timings) timer.Collect();
+        cache->diffuseCompositeTiming.Collect();
         if (!settings.directionalMips) ReleaseDirectionalMips();
         if (!IsSupported() || (!settings.debugView && !settings.globalIllumination && !settings.voxelSunShadows)
             || !Initialise())
@@ -852,7 +860,7 @@ namespace Prehistoric {
         screenShader->Unbind();
     }
 
-    void GLVoxelRendererPass::Composite(Texture *output) {
+    void GLVoxelRendererPass::Composite(Texture *output, CompositeLighting lighting) {
         PR_PROFILE("Voxel composite");
         const uint32_t width = output->getWidth();
         const uint32_t height = output->getHeight();
@@ -890,18 +898,21 @@ namespace Prehistoric {
             main->getPositionMetallicImage()->Bind(1);
             main->getBloomImage()->Bind(2);
             main->getNormalImage()->Bind(3);
-            glBindImageTexture(1, indirectImage, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F);
-            {
+            const bool applyDiffuse = lighting != CompositeLighting::SpecularOnly;
+            const bool applySpecular = lighting != CompositeLighting::DiffuseOnly;
+            if (applyDiffuse) {
+                glBindImageTexture(1, indirectImage, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F);
                 ScopedGpuTimer timer(cache->Timer(GpuStage::Trace));
                 glDispatchCompute((indirectWidth + 7) / 8, (indirectHeight + 7) / 8, 1);
                 glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT);
             }
-            glBindImageTexture(1, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F);
 
             filterShader->Bind(nullptr);
+            filterShader->SetUniformi("applyDiffuse", applyDiffuse);
+            filterShader->SetUniformi("applySpecular", applySpecular);
             main->getAlbedoRoughnessImage()->Bind(2);
             filterShader->SetUniformi("terrainReceivesGI", renderer->terrainReceivesGI);
-            filterShader->SetUniformi("useScreenReflections", renderer->screenSpaceReflections && screenConfidence);
+            filterShader->SetUniformi("useScreenReflections", applySpecular && renderer->screenSpaceReflections && screenConfidence);
             glBindImageTexture(1, screenConfidence, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R16F);
             filterShader->SetUniform("cameraPosition", renderer->getCamera()->getPosition());
             main->getBloomImage()->Bind(4);
@@ -918,7 +929,8 @@ namespace Prehistoric {
             glBindTextureUnit(0, indirectImage);
             glBindImageTexture(0, outputId, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
             {
-                ScopedGpuTimer timer(cache->Timer(GpuStage::Composite));
+                ScopedGpuTimer timer(applySpecular ? cache->Timer(GpuStage::Composite)
+                                                   : cache->diffuseCompositeTiming);
                 glDispatchCompute(groupsX, groupsY, 1);
             }
             glBindImageTexture(1, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R16F);

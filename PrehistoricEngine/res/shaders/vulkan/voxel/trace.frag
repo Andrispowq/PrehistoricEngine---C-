@@ -19,6 +19,7 @@ const bool useEnvironment = true;
 #include "../../shared/voxel/voxel_cones.glsl"
 #define CASCADE_ENVIRONMENT
 #define cascadeWords cells
+#define VOXEL_SKIP_ZERO_WEIGHT_SAMPLES
 #include "../../shared/voxel/cascades.glsl"
 void main()
 {

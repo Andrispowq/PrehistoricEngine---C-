@@ -25,6 +25,7 @@ const bool useEnvironment = true;
 layout(std430, binding = 6) readonly buffer VoxelCascadeData { uint cascadeWords[]; };
 #define voxelOcclusionMin volumeMin
 #define voxelOcclusionExtent volumeExtent
+#define VOXEL_SKIP_ZERO_WEIGHT_SAMPLES
 #include "shared/voxel/cascades.glsl"
 
 const float voxelNearClip = -1.0;

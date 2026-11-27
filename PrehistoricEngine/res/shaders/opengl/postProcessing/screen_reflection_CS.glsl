@@ -14,6 +14,7 @@ uniform vec3 cameraPosition;
 uniform float maxReflectionLOD;
 const float PI = 3.14159265359;
 #include "shared/pbr/lighting.glsl"
+#define SSR_INTERPOLATE_DEPTH
 #include "shared/postProcessing/screen_reflection.glsl"
 void main()
 {
