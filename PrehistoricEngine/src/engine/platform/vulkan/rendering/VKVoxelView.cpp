@@ -46,7 +46,7 @@ namespace Prehistoric {
 
     VKVoxelView::VKVoxelView(VKDevice *gpu, VKRenderpass &passes, VkRenderPass output, uint32_t resolution,
                              bool lighting)
-        : resolution(resolution), lighting(lighting), device(gpu->getDevice()) {
+        : resolution(resolution), lighting(lighting), gpu(gpu), device(gpu->getDevice()) {
         static_assert(Vertex::getNumberOfFloats() == 11);
         static_assert(sizeof(Surface) == 128);
         try {
@@ -117,6 +117,21 @@ namespace Prehistoric {
                 CheckVoxel(result);
             };
             compute("vulkan/voxel/occupancy.spv", bakeLayout, bakePipeline);
+            VkDescriptorSetLayoutBinding terrainBindings[] = {
+                {0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr},
+                {1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr},
+                {2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 12, VK_SHADER_STAGE_COMPUTE_BIT, nullptr}
+            };
+            VkDescriptorSetLayoutCreateInfo terrainInfo{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
+            terrainInfo.bindingCount = 3;
+            terrainInfo.pBindings = terrainBindings;
+            CheckVoxel(vkCreateDescriptorSetLayout(device, &terrainInfo, nullptr, &terrainSet));
+            VkPipelineLayoutCreateInfo terrainCreate{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
+            terrainCreate.setLayoutCount = 1;
+            terrainCreate.pSetLayouts = &terrainSet;
+            CheckVoxel(vkCreatePipelineLayout(device, &terrainCreate, nullptr, &terrainLayout));
+            compute("vulkan/voxel/terrain.spv", terrainLayout, terrainPipeline);
+
             if (lighting) {
                 CreateRadianceTextures(gpu);
                 layout(VK_SHADER_STAGE_COMPUTE_BIT, 1, 2, 112, lightSet, lightLayout);
@@ -204,7 +219,8 @@ namespace Prehistoric {
             barrier.srcQueueFamilyIndex = barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             barrier.image = texture.image;
             barrier.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, texture.levels, 0, 1};
-            vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+            vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                                 VK_PIPELINE_STAGE_TRANSFER_BIT,
                                  0, 0, nullptr, 0, nullptr, 1, &barrier);
             std::vector<VkBufferImageCopy> copies;
             size_t offset = face == 0 ? radiance : radiance + 2 * (pyramid + (face - 1) * (pyramid - volume));
@@ -241,6 +257,9 @@ namespace Prehistoric {
         vkDestroyPipeline(device, lightPipeline, nullptr);
         vkDestroyPipelineLayout(device, lightLayout, nullptr);
         vkDestroyDescriptorSetLayout(device, lightSet, nullptr);
+        vkDestroyPipeline(device, terrainPipeline, nullptr);
+        vkDestroyPipelineLayout(device, terrainLayout, nullptr);
+        vkDestroyDescriptorSetLayout(device, terrainSet, nullptr);
         vkDestroyPipeline(device, bakePipeline, nullptr);
         vkDestroyPipeline(device, viewPipeline, nullptr);
         vkDestroyPipelineLayout(device, bakeLayout, nullptr);
@@ -303,10 +322,16 @@ namespace Prehistoric {
         return draws;
     }
 
-    void VKVoxelView::Bake(VkCommandBuffer cmd, const std::vector<Draw> &draws) {
+    void VKVoxelView::Bake(VkCommandBuffer cmd, const std::vector<Draw> &draws,
+                           const std::vector<TerrainVoxelInput> &terrains) {
         const uint32_t count = static_cast<uint32_t>(draws.size());
         VkDescriptorBufferInfo grid{cells->getBuffer(), 0, cells->getSize()};
-        const bool reuse = pool && previous.size() == draws.size() &&
+        const bool reuse = pool && previousTerrains.size() == terrains.size() &&
+                           std::equal(previousTerrains.begin(), previousTerrains.end(), terrains.begin(),
+                                      [](const auto &a, const auto &b) {
+                                          return a.textures == b.textures && a.textureIds == b.textureIds;
+                                      }) &&
+                           previous.size() == draws.size() &&
                            std::equal(previous.begin(), previous.end(), draws.begin(),
                                       [](const Draw &a, const Draw &b) {
                                           return a.vertices == b.vertices && a.indices == b.indices &&
@@ -320,17 +345,21 @@ namespace Prehistoric {
                 pool = VK_NULL_HANDLE;
             }
             VkDescriptorPoolSize sizes[] = {
-                {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 3 * count + 2},
-                {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2 * count + 3 + (lighting ? 7u : 0u)}
+                {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 3 * count + 2 + 2 * uint32_t(terrains.size())},
+                {
+                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    2 * count + 3 + (lighting ? 7u : 0u) + 12 * uint32_t(terrains.size())
+                }
             };
             VkDescriptorPoolCreateInfo create{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
-            create.maxSets = count + 1 + uint32_t(lighting);
+            create.maxSets = count + 1 + uint32_t(lighting) + uint32_t(terrains.size());
             create.poolSizeCount = 2;
             create.pPoolSizes = sizes;
             CheckVoxel(vkCreateDescriptorPool(device, &create, nullptr, &pool));
             std::vector<VkDescriptorSetLayout> layouts(count + 1, bakeSet);
             layouts.back() = viewSet;
             if (lighting) layouts.push_back(lightSet);
+            layouts.insert(layouts.end(), terrains.size(), terrainSet);
             sets.resize(layouts.size());
             VkDescriptorSetAllocateInfo alloc{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
             alloc.descriptorPool = pool;
@@ -355,7 +384,7 @@ namespace Prehistoric {
                 }
                 if (radianceSampler)
                     vkUpdateDescriptorSets(device, uint32_t(writes.size()), writes.data(), 0, nullptr);
-                gridWrite.dstSet = lightInputs = sets.back();
+                gridWrite.dstSet = lightInputs = sets[count + 1];
                 vkUpdateDescriptorSets(device, 1, &gridWrite, 0, nullptr);
             }
             for (uint32_t i = 0; i < count; ++i) {
@@ -384,10 +413,49 @@ namespace Prehistoric {
                 vkUpdateDescriptorSets(device, 5, writes, 0, nullptr);
             }
         }
+        if (!reuse) {
+            terrainParameters.clear();
+            for (size_t i = 0; i < terrains.size(); ++i) {
+                auto params = std::make_unique<VKBuffer>(gpu, sizeof(TerrainVoxelParameters),
+                                                         VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+                                                         VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                                                         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+                VkDescriptorBufferInfo buffers[] = {grid, {params->getBuffer(), 0, params->getSize()}};
+                const auto set = sets[count + 1 + uint32_t(lighting) + i];
+                VkDescriptorImageInfo images[12]{};
+                for (unsigned j = 0; j < 12; ++j) {
+                    auto *texture = static_cast<VKTexture *>(terrains[i].textures[j]);
+                    images[j] = {
+                        texture->getSampler(), texture->getImage()->getImageView(),
+                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+                    };
+                }
+                VkWriteDescriptorSet writes[] = {
+                    {
+                        VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, set, 0, 0, 1,
+                        VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, nullptr, &buffers[0]
+                    },
+                    {
+                        VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, set, 1, 0, 1,
+                        VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, nullptr, &buffers[1]
+                    },
+                    {
+                        VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, set, 2, 0, 12,
+                        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, images
+                    }
+                };
+                vkUpdateDescriptorSets(device, 3, writes, 0, nullptr);
+                terrainParameters.push_back(std::move(params));
+            }
+        }
         // A previous frame may still be tracing this grid when the scene changes.
-        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                             VK_PIPELINE_STAGE_TRANSFER_BIT,
                              0, 0, nullptr, 0, nullptr, 0, nullptr);
         vkCmdFillBuffer(cmd, grid.buffer, 0, grid.range, 0);
+        for (size_t i = 0; i < terrains.size(); ++i)
+            vkCmdUpdateBuffer(cmd, terrainParameters[i]->getBuffer(), 0, sizeof(TerrainVoxelParameters),
+                              &terrains[i].parameters);
         VkMemoryBarrier clear{
             VK_STRUCTURE_TYPE_MEMORY_BARRIER, nullptr, VK_ACCESS_TRANSFER_WRITE_BIT,
             VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT
@@ -408,6 +476,13 @@ namespace Prehistoric {
                 params.range[1] = remaining - params.range[1];
             }
         }
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, terrainPipeline);
+        for (size_t i = 0; i < terrains.size(); ++i) {
+            const auto set = sets[count + 1 + uint32_t(lighting) + i];
+            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, terrainLayout, 0, 1, &set, 0, nullptr);
+            const auto &region = terrains[i].parameters.region;
+            vkCmdDispatch(cmd, (uint32_t(region[2]) + 7) / 8, (uint32_t(region[3]) + 7) / 8, 1);
+        }
         VkMemoryBarrier ready{
             VK_STRUCTURE_TYPE_MEMORY_BARRIER, nullptr, VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_SHADER_WRITE_BIT,
             VK_ACCESS_SHADER_READ_BIT
@@ -423,12 +498,14 @@ namespace Prehistoric {
         const Vec4 grid{min.x, min.y, min.z, width};
         StartTimings(cmd, renderer);
         auto draws = Collect(renderer, grid);
-        const bool geometryChanged = !pool || previous != draws;
+        auto terrains = CollectTerrainVoxels(renderer, grid, resolution, lighting);
+        const bool geometryChanged = !pool || previous != draws || previousTerrains != terrains;
         if (geometryChanged) {
             Mark(cmd, Geometry, false);
-            Bake(cmd, draws);
+            Bake(cmd, draws, terrains);
             Mark(cmd, Geometry, true);
             previous = std::move(draws);
+            previousTerrains = std::move(terrains);
         }
         if (!lighting) return;
         const auto &sun = renderer.GetShadows().GetUniforms();
@@ -495,7 +572,8 @@ namespace Prehistoric {
                 radiance,
                 {
                     int(resolution), stage, level,
-                    int(previousDirectional) | (int(previousVoxelShadows) << 1) | (int(skyBounce) << 2)
+                    int(previousDirectional) | (int(previousVoxelShadows) << 1) | (int(skyBounce) << 2) | (
+                        int(!previousTerrains.empty()) << 3)
                 }
             };
             std::copy_n(lightFromCell.m, 16, params.light);

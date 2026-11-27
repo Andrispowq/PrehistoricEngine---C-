@@ -361,6 +361,12 @@ void EditorLayer::DrawVoxelSettings(Prehistoric::Renderer &renderer) {
         auto &width = vk ? vk->voxelExtent : settings->extent;
         auto &center = vk ? vk->voxelCenter : settings->center;
         ImGui::Checkbox("Voxel GI (G)", &gi);
+        if (ImGui::Checkbox("Voxelise terrain", &scene->voxeliseTerrain)) {
+            renderer.voxeliseTerrain = scene->voxeliseTerrain;
+            renderer.ResetTemporalHistory();
+        }
+        if (ImGui::IsItemHovered()) ImGui::SetTooltip(
+            "Include terrain in voxel shadows and GI. Terrain receives GI independently of this setting.");
         ImGui::Checkbox("Half-Resolution GI", vk ? &vk->voxelHalfResolution : &settings->halfResolution);
         ImGui::Checkbox("Directional Voxel Mips", vk ? &vk->voxelDirectional : &settings->directionalMips);
         ImGui::Checkbox("Voxel Sun Shadows", vk ? &vk->voxelSunShadows : &settings->voxelSunShadows);

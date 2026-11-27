@@ -15,22 +15,16 @@ frames.
 
 ## Remaining work
 
-**Next item: native OpenGL on macOS.** Add a capability-driven OpenGL 4.1 core path for the sample and editor.
-Audit GLSL versions, compute shaders, image load/store, shader-storage buffers, direct-state-access calls and
-resource limits; provide compatible raster/CPU alternatives or explicitly unavailable optional effects. Lowering
-the requested context version alone is insufficient. Preserve the existing desktop OpenGL path and Vulkan behavior.
-Validate first rendered frames, scene loading, IBL, terrain/water, editor docking and supported AA/post-processing on
-macOS. Reference [GLFW platform constraints](https://www.glfw.org/docs/latest/compat.html); the
-[macOS port assessment](MACOS_PORT.md) is historical and must be checked against current code.
-
 Specialised duplication now covers terrain, water, orbiting suns and GUI elements/buttons/sliders, including
 instance settings, generated-resource ownership, authored attachments and world round-trips. See
 [duplication contracts and limitations](../BUILDING.md#editor-render-settings). Native Vulkan multi-instance and
-world-load checks are covered; native OpenGL runtime verification follows the macOS compatibility work above.
+world-load checks are covered; verify native OpenGL on a supported PC. macOS OpenGL compatibility is deferred below.
 
-**Terrain and water voxelisation.** Include terrain heightfield geometry and displaced water surfaces in voxel
-coverage. Define water transmission/opacity separately from opaque terrain, keep animated coverage up to date,
-and test LOD seams, movement, bounds, shadows and GI on both backends. Measure update and memory costs.
+**Terrain voxelisation and GI reception.** Optional terrain coverage and terrain/water GI reception are implemented,
+with native Vulkan smoke checks; see [scope and checks](../BUILDING.md#terrain-voxel-contribution-and-water-reception).
+Water is a lighting receiver only. Defer animated water voxelisation because rebuilding ocean coverage each frame
+would add substantial cost. Remaining quality checks include complex heightfields, LOD seams, native OpenGL parity
+and representative update timings.
 
 **Voxel-based refraction.** Research transmission through the voxel representation for water and refractive
 materials, including refractive index, thickness, absorption, entry/exit surfaces and off-screen radiance. Define
@@ -171,3 +165,17 @@ resize, detached the Viewport and exercised Save As, New and Open using test
 dialog paths. Frame captures showed the scene and asset thumbnails. The run
 completed with Vulkan validation enabled and no reported validation errors.
 Native input, file pickers and a visual OpenGL comparison remain open.
+
+### Deferred — end of backlog
+
+**Native OpenGL on macOS — deferred; lowest priority.** Revisit only if a concrete need for native macOS OpenGL
+justifies the substantial compatibility rewrite. OpenGL can be tested on PC, and the existing Vulkan backend
+provides the near-equivalent macOS rendering path.
+
+If revisited, add a capability-driven OpenGL 4.1 core path for the sample and editor.
+Audit GLSL versions, compute shaders, image load/store, shader-storage buffers, direct-state-access calls and
+resource limits; provide compatible raster/CPU alternatives or explicitly unavailable optional effects. Lowering
+the requested context version alone is insufficient. Preserve the existing desktop OpenGL path and Vulkan behavior.
+Validate first rendered frames, scene loading, IBL, terrain/water, editor docking and supported AA/post-processing on
+macOS. Reference [GLFW platform constraints](https://www.glfw.org/docs/latest/compat.html); the
+[macOS port assessment](MACOS_PORT.md) is historical and must be checked against current code.

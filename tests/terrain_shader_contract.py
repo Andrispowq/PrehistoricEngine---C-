@@ -24,6 +24,16 @@ with tempfile.TemporaryDirectory(prefix="terrain-shaders-") as directory:
         path.write_text(expand_gl(shaders / f"opengl/terrain/terrain_{suffix}.glsl"))
         reference.append(path)
     subprocess.run(["glslangValidator", "-l", *reference], check=True)
+    voxel = work / "terrain_voxel.comp"
+    voxel.write_text(expand_gl(shaders / "opengl/voxel/terrain_CS.glsl"))
+    subprocess.run(["glslangValidator", str(voxel)], check=True)
+    module = work / "terrain_voxel.spv"
+    subprocess.run(["glslc", "--target-env=vulkan1.1", shaders / "vulkan/voxel/terrain.comp", "-o", module], check=True)
+    subprocess.run(["spirv-val", "--target-env", "vulkan1.1", module], check=True)
+    interface = json.loads(subprocess.check_output(["spirv-cross", module, "--reflect"]))
+    params = next(block for block in interface["ssbos"] if block["binding"] == 1)
+    assert params["block_size"] == 224, "Terrain parameter ABI differs from the host"
+    assert interface["textures"][0]["array"] == [12]
     for detail in (["terrain.tese"], ["geometry.tese", "terrain.geom"]):
         stages = ["terrain.vert", "terrain.tesc", *detail, "terrain.frag"]
         subprocess.run(["glslangValidator", "-V", "--target-env", "vulkan1.1", "-l",

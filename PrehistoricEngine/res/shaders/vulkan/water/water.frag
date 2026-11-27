@@ -26,6 +26,16 @@ layout(set=1,binding=0) uniform sampler2D dudvMap;
 #define sunDirection sunlight.xyz
 #define specularFactor sunlight.w
 #define sunRadiance radiance.rgb
+layout(std430, set = 0, binding = 1) readonly buffer WaterVoxelGrid { uint cells[]; };
+layout(std140, set = 0, binding = 2) uniform WaterVoxelSettings { vec4 waterVoxelBounds; vec4 waterVoxelOptions; };
+int voxelGridSize() { return int(waterVoxelOptions.x); }
+#define voxelOcclusionMin waterVoxelBounds.xyz
+#define voxelOcclusionExtent waterVoxelBounds.w
+const bool directionalMips = false;
+#include "../voxel/grid.glsl"
+#include "../../shared/voxel/reflection.glsl"
+#define WATER_VOXEL_REFLECTION
+#include "../../shared/water/voxel_reflection.glsl"
 vec3 sampleReflection(vec2 uv) { return texture(waterReflection, vec2(1.0 - uv.x, uv.y)).rgb; }
 float sampleRefractionDepth(vec2 uv)
 {

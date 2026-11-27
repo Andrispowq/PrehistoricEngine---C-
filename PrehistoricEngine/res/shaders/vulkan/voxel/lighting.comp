@@ -59,6 +59,8 @@ void main()
                 voxelShadowVisibility((lightFromCell * vec4(vec3(p) + 0.5, 1)).xyz * 0.5 + 0.5,
                         1.5 * 1.7320508 / (1024.0 * 2.7320508));
             }
+            if ((stage.w & 8) != 0 && (stage.w & 2) == 0 && visibility > 0)
+            visibility *= voxelVisibility(vec3(p) + 0.5, n, direction.xyz, 2.0 * size);
             vec3 emission = decodeVoxelRadiance(cells[emissionOffset() + cell]);
             v = vec4(emission + albedo * sunlight.rgb * (visibility * cosine / 3.141593), 1);
         }

@@ -16,6 +16,7 @@ layout(binding = 1, r32ui) uniform uimage3D bounceSurfaces;
 #include "opengl/voxel/voxel_surface.glsl"
 #include "opengl/voxel/voxel_visibility.glsl"
 uniform bool useVoxelSunShadows;
+uniform bool useTerrainOcclusion;
 uniform vec3 sunDirection;
 uniform vec3 sunRadiance;
 
@@ -60,6 +61,9 @@ void main()
         visibility = useVoxelSunShadows
             ? voxelVisibility(fragment.position, normal, sunDirection, 2.0 * voxelOcclusionExtent)
         : voxelShadowVisibility((lightViewProjection * vec4(fragment.position, 1)).xyz * 0.5 + 0.5, shadowBias);
+
+    if (useTerrainOcclusion && !useVoxelSunShadows && visibility > 0)
+    visibility *= voxelVisibility(fragment.position, normal, sunDirection, 2.0 * voxelOcclusionExtent);
 
     // Keep one deterministic sample per cell, prioritising brighter radiance.
     vec3 radiance = base * (sunRadiance * (cosine * visibility / 3.14159) + emission);

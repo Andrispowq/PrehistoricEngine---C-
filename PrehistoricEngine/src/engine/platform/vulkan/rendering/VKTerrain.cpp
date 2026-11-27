@@ -148,7 +148,8 @@ namespace Prehistoric {
         }
         dependency.dstAccessMask = VK_ACCESS_HOST_READ_BIT;
         vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-                             VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT | VK_PIPELINE_STAGE_HOST_BIT, 0, 1, &dependency, 0,
+                             VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT |
+                             VK_PIPELINE_STAGE_HOST_BIT, 0, 1, &dependency, 0,
                              nullptr, 2, transitions);
         recording->UnbindBuffer();
 

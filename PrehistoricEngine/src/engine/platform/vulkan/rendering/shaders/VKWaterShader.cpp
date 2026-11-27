@@ -23,6 +23,8 @@ namespace Prehistoric {
         }
         AddShader(ResourceLoader::LoadShaderVK("vulkan/water/water.frag.spv"), FRAGMENT_SHADER);
         AddUniform("camera", stages, UniformBuffer, 0, 0, 144);
+        AddUniform("waterVoxelGrid", FRAGMENT_SHADER, StorageBuffer, 0, 1, 4);
+        AddUniform("waterVoxelSettings", FRAGMENT_SHADER, UniformBuffer, 0, 2, 32);
         AddUniform("dudvMap", FRAGMENT_SHADER, CombinedImageSampler, 1, 0, 0);
         AddUniform("model", VERTEX_SHADER, UniformBuffer, 2, 0, 64);
         AddUniform("leaves", VERTEX_SHADER, StorageBuffer, 2, 1, WaterQuadtree::maxNodes * sizeof(QuadPatch));
@@ -37,6 +39,20 @@ namespace Prehistoric {
 
     void VKWaterShader::UpdateGlobalUniforms(Renderer *scene) const {
         renderer = static_cast<VKRenderer *>(scene);
+        auto buffer = renderer->GetVoxelBuffer();
+        auto *fallback = descriptorPool->getUniform("waterVoxelGrid", 0)->getBuffer();
+        VkDescriptorBufferInfo grid{buffer ? buffer : fallback->getBuffer(), 0, VK_WHOLE_SIZE};
+        auto slot = descriptorPool->getUniformLocation("waterVoxelGrid");
+        auto set = descriptorPool->getSet(slot.first, 0)->getSets()[swapchain->getAquiredImageIndex()];
+        VkWriteDescriptorSet write{
+            VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, set, slot.second, 0, 1,
+            VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, nullptr, &grid
+        };
+        vkUpdateDescriptorSets(device->getDevice(), 1, &write, 0, nullptr);
+        auto minimum = renderer->voxelCenter - Vector3f(renderer->voxelExtent * 0.5f);
+        SetUniform("waterVoxelSettings", Vector4f(minimum, renderer->voxelExtent), 0);
+        SetUniform("waterVoxelSettings", Vector4f(buffer ? float(renderer->voxelResolution) : 0,
+                                                  renderer->voxelStrength, float(renderer->voxelGI), 0), 16);
         auto *camera = scene->getCamera();
         SetUniform("camera", camera->getViewMatrix(), 0);
         SetUniform("camera", camera->getProjectionMatrix(), 64);

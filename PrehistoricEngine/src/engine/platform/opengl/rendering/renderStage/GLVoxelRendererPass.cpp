@@ -8,6 +8,7 @@
 #include "prehistoric/core/node/component/renderer/RenderableComponent.h"
 #include "prehistoric/application/Application.h"
 
+#include "prehistoric/common/rendering/TerrainVoxel.h"
 #include <array>
 #include <chrono>
 #include <optional>
@@ -103,12 +104,13 @@ namespace Prehistoric {
             uint32_t environment;
             SceneState meshes;
             SceneState transparentCasters;
+            std::vector<TerrainVoxelInput> terrains;
 
             bool operator==(const BakeInputs &other) const {
                 return center == other.center && extent == other.extent && traceDepth == other.traceDepth
                        && voxelSunShadows == other.voxelSunShadows && directionalMips == other.directionalMips
                        && environment == other.environment && meshes == other.meshes && transparentCasters == other.
-                       transparentCasters;
+                       transparentCasters && terrains == other.terrains;
             }
         };
     }
@@ -177,6 +179,7 @@ namespace Prehistoric {
     }
 
     GLVoxelRendererPass::~GLVoxelRendererPass() {
+        if (terrainParameters) glDeleteBuffers(1, &terrainParameters);
         glDeleteTextures(1, &screenColour);
         glDeleteTextures(1, &screenConfidence);
         if (voxelisationShader.pointer)
@@ -493,6 +496,18 @@ namespace Prehistoric {
         shader.SetUniformf("voxelOcclusionExtent", settings.extent);
     }
 
+    void GLVoxelRendererPass::BindWaterLighting(const GLShader &shader) const {
+        const bool active = ready && usesOccluders && settings.globalIllumination && !settings.debugView;
+        if (IsSupported()) {
+            glBindTextureUnit(0, active ? debugVolume : 0);
+            glBindTextureUnit(1, active ? radianceVolume : 0);
+        }
+        shader.SetUniform("waterVoxelBounds",
+                          Vector4f(settings.center - Vector3f(settings.extent * 0.5f), settings.extent));
+        shader.SetUniform("waterVoxelOptions",
+                          Vector4f(active ? float(resolution) : 0, settings.giStrength, float(active), 0));
+    }
+
     void GLVoxelRendererPass::Render() {
         usesOccluders = false;
         for (auto &timer: cache->timings) timer.Collect();
@@ -529,6 +544,9 @@ namespace Prehistoric {
                                : CaptureMode::Radiance, captureBounceSurfaces),
             {}
         };
+        const auto minimum = settings.center - Vector3f(settings.extent * 0.5f);
+        inputs.terrains = CollectTerrainVoxels(*renderer, {minimum.x, minimum.y, minimum.z, settings.extent},
+                                               unsigned(resolution), !debugView);
         if (lighting.source && !voxelSunShadows)
             inputs.transparentCasters = CaptureBatches(renderer->getModelsTransparency(), CaptureMode::ShadowCasters);
 
@@ -578,6 +596,7 @@ namespace Prehistoric {
         shader->SetUniformi("captureBounceSurfaces", captureBounceSurfaces);
         glBindTextureUnit(1, shadowDepth);
         shader->SetUniformi("useVoxelSunShadows", voxelSunShadows);
+        shader->SetUniformi("useTerrainOcclusion", !inputs.terrains.empty());
         if (!debugView) {
             BindOccluders(*shader, 8);
             shader->SetUniform("sunDirection", lighting.direction);
@@ -615,6 +634,35 @@ namespace Prehistoric {
         if (scissor) glEnable(GL_SCISSOR_TEST);
         if (rasterizerDiscard) glEnable(GL_RASTERIZER_DISCARD);
 
+        if (!inputs.terrains.empty()) {
+            if (!terrainShader) {
+                terrainShader = std::make_unique<GLShader>();
+                terrainShader->AddShader(ResourceLoader::LoadShaderGL("opengl/voxel/terrain_CS.glsl"), COMPUTE_SHADER);
+                terrainShader->CompileShader();
+                for (const char *name: {"sunDirection", "sunRadiance", "captureBounceSurfaces"}) terrainShader->
+                        AddUniform(name);
+                glGenBuffers(1, &terrainParameters);
+            }
+            terrainShader->Bind(nullptr);
+            terrainShader->SetUniform("sunDirection", lighting.direction);
+            terrainShader->SetUniform("sunRadiance", lighting.radiance);
+            terrainShader->SetUniformi("captureBounceSurfaces", captureBounceSurfaces);
+            glBindTextureUnit(12, debugView ? 0 : debugVolume);
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, terrainParameters);
+            for (const auto &terrain: inputs.terrains) {
+                glBindBuffer(GL_SHADER_STORAGE_BUFFER, terrainParameters);
+                glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(TerrainVoxelParameters), &terrain.parameters,
+                             GL_STREAM_DRAW);
+                for (unsigned i = 0; i < terrain.textures.size(); ++i) terrain.textures[i]->Bind(i);
+                const auto &region = terrain.parameters.region;
+                glDispatchCompute((unsigned(region[2]) + 7) / 8, (unsigned(region[3]) + 7) / 8, 1);
+            }
+            glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, 0);
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+            glBindTextureUnit(12, 0);
+            terrainShader->Unbind();
+        }
         if (debugView) {
             GenerateOccluderMips();
             glBindImageTexture(0, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);

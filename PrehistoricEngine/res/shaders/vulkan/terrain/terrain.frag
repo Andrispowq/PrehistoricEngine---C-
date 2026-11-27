@@ -23,6 +23,20 @@ layout(set=1, binding=12) uniform sampler2D emission0;
 layout(set=1, binding=13) uniform sampler2D emission1;
 layout(set=1, binding=14) uniform sampler2D emission2;
 
+// Trace terrain directly: its tessellated surface is not in the mesh receiver prepass.
+// Reuse the existing environment sampler to stay within Apple's 16-sampler limit.
+layout(std430, set = 0, binding = 7) readonly buffer VoxelGrid { uint cells[]; };
+layout(std140, set = 0, binding = 8) uniform VoxelSettings { vec4 voxelBounds; vec4 voxelOptions; ivec4 traceOptions; vec4 aoSettings; };
+int voxelGridSize() { return int(voxelOptions.x); }
+#define voxelOcclusionMin voxelBounds.xyz
+#define voxelOcclusionExtent voxelBounds.w
+#define directionalMips (voxelOptions.z != 0)
+#define coneEnvironment prefilterMap
+const bool useEnvironment = true;
+#include "../voxel/grid.glsl"
+#include "../../shared/voxel/voxel_cones.glsl"
+#include "../../shared/voxel/reflection.glsl"
+
 void accumulateLayer(float weight, int i, sampler2D albedoTex, sampler2D mrotTex,
                      inout vec3 colour, inout vec4 mrot)
 {
@@ -59,6 +73,21 @@ void main()
 	vec3 F0 = mix(vec3(0.04), colour, mrot.r);
 	vec3 lit = terrainAmbient(N, V, F0, colour, mrot.r, mrot.g, mrot.b,
 		irradianceMap, prefilterMap, brdfLUT, maxReflectionLOD);
+    vec3 origin = (position_FS - voxelBounds.xyz) / voxelBounds.w;
+    if (traceOptions.y != 0 && voxelOptions.x > 0 && inside(origin))
+    {
+        N = normalize(N);
+        vec3 F = FresnelSchlickRoughness(max(dot(N, V), 0), F0, mrot.g);
+        vec3 sky = texture(irradianceMap, N).rgb;
+        vec3 traced = traceHemisphere(origin, N, 1.0 / voxelOptions.x);
+        lit += (1 - F) * (1 - mrot.r) * colour * mrot.b *
+        (voxelOptions.y * traced - min(voxelOptions.y, 1.0) * sky);
+        vec3 R = reflect(-V, N);
+        vec4 reflected = traceReflection(origin, N, R, mrot.g);
+        vec2 brdf = texture(brdfLUT, vec2(max(dot(N, V), 0.01), mrot.g)).rg;
+        lit += reflectionCorrection(reflected, textureLod(prefilterMap, R, mrot.g * maxReflectionLOD).rgb,
+                F * brdf.x + brdf.y, mrot.b * voxelReflectionWeight(mrot.r, mrot.g, voxelOptions.y));
+    }
 	for (int i = 0; i < numberOfLights; ++i)
 		lit += terrainLight(N, V, F0, colour, mrot.r, mrot.g,
 			lights.position[i].xyz - position_FS, lights.colour[i].rgb, lights.intensity[i].rg);

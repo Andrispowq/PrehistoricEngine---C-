@@ -15,6 +15,7 @@ namespace Prehistoric {
     class Light;
     class Atmosphere;
     class EnvironmentMap;
+    class Terrain;
 
     //The light structure used in the internal Forward+ renderer calculations
     struct InternalLight {
@@ -62,6 +63,7 @@ namespace Prehistoric {
         virtual void RequestEnvironmentBake() = 0;
 
         bool screenSpaceReflections = false;
+        bool voxeliseTerrain = false;
         float bloomIntensity = 0.06f;
         AmbientOcclusionSettings ambientOcclusion;
         DepthOfFieldSettings depthOfField;
@@ -125,6 +127,9 @@ namespace Prehistoric {
         void RegisterModel(RenderableComponent *renderable);
 
         void RegisterLight(Light *light);
+
+        void RegisterTerrain(Terrain *terrain) { terrains.push_back(terrain); }
+        const std::vector<Terrain *> &getTerrains() const { return terrains; }
 
         void RegisterAtmosphere(const Atmosphere &sky) {
             if (atmosphere || environmentObject) throw std::runtime_error("Multiple world sky sources submitted");
@@ -221,6 +226,7 @@ namespace Prehistoric {
         ModelBatches models_water;
 
         std::vector<Light *> lights;
+        std::vector<Terrain *> terrains;
         const Atmosphere *atmosphere = nullptr;
         std::vector<VolumetricSphere> volumetricSpheres;
 

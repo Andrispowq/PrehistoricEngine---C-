@@ -551,6 +551,50 @@ applies the traced irradiance during material shading. Timings are shown in
 milliseconds on queues that support timestamps. The main shading measurement
 includes the GI composite.
 
+## Terrain voxel contribution and water reception
+
+**Render Settings → Voxel GI → Voxelise terrain** optionally adds terrain to the
+existing opaque voxel volume on OpenGL and Vulkan. It defaults to off and is saved
+as `voxelise_terrain` in world JSON. Terrain receives VXGI whenever GI is enabled,
+independently of whether it contributes geometry. Water receives a voxel reflection
+correction blended with its existing reflection capture; it never contributes
+occupancy, and its FFT simulation does not invalidate the voxel bake.
+
+Both backends sample the heightfield on a regular grid, cover each triangle with
+conservative triangle/voxel overlap tests, and inject blended layer albedo, metallic
+and emissive properties. Sampling is at least the heightmap resolution and twice
+the voxel resolution across the transformed terrain. Only the region intersecting
+the voxel volume is dispatched. This approximates the tessellated surface at voxel
+scale rather than following camera-dependent patch LOD and morphing.
+
+Terrain movement, material parameters, texture replacement, grid changes and the
+contribution toggle invalidate coverage. Camera movement also invalidates terrain
+with nonzero layer detail displacement, matching its distance-dependent height.
+Unchanged terrain reuses the existing bake; editing terrain rebuilds the shared
+volume, not individual dirty bricks. In-place texture-content edits without resource
+replacement are not currently tracked. Large heightmaps can still make a bake
+expensive. Use **Voxel GPU Timings** to measure the chosen scene and grid.
+
+The conservative coverage follows [Schwarz and Seidel](https://michael-schwarz.com/research/publ/2010/vox/).
+Compute coverage avoids requiring conservative rasterisation extensions and shares
+the algorithm across the two backends. A separate static/dynamic volume, as in
+[Villegas's voxel shading implementation](https://jose-villegas.github.io/post/deferred_voxel_shading/),
+would reduce some updates but adds storage and composition work. Animated ocean
+voxelisation remains deferred.
+
+After building, run `python3 tests/terrain_shader_contract.py` and
+`python3 tests/temporal_render_smoke.py --terrain-voxels --water --api Vulkan`.
+Add `--build-dir build/macos-arm64` for the Apple Silicon build, or select
+`--api OpenGL` on a supported PC. The GPU test checks flat-terrain coverage,
+movement, contribution toggling, persistence and unchanged occupancy during water
+animation. It does not establish visual quality or performance on complex terrain.
+
+Validation on Apple M1: full native build, shader contracts, resource-pipeline
+checks and Vulkan editor/sample GPU runs passed. The flat fixture contributed
+2,500 cells, cleared them on movement/disable, restored identical coverage, and
+kept it unchanged during water animation. GI-off receiver frames also passed Vulkan
+validation. Native OpenGL runtime checks remain required on a supported PC.
+
 ## OpenGL voxel rendering
 
 Set `framework.api.active` to `OpenGL` in the application's

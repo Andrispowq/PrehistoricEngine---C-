@@ -180,6 +180,7 @@ namespace Prehistoric {
         models_water.clear();
         models_2d.clear();
         lights.clear();
+        terrains.clear();
         volumetricSpheres.clear();
         atmosphere = nullptr;
         environmentObject = nullptr;

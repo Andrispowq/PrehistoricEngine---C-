@@ -11,6 +11,9 @@ vec3 shadeWater(vec4 position_FS, vec2 mapCoord_FS, vec3 normal_FS, out vec3 n)
     vec2 uv = clip.xy / clip.w * 0.5 + 0.5;
     vec2 slope = n.xz + (texture(dudvMap, mapCoord_FS * dudvDownsampling).rg * 2.0 - 1.0) * 0.25;
     vec3 reflected = sampleReflection(clamp(uv + slope * kReflection, 0.001, 0.999));
+    #ifdef WATER_VOXEL_REFLECTION
+    reflected = waterVoxelReflection(position_FS.xyz, n, eye, reflected);
+    #endif
     // The oblique near plane encodes signed distance to the water plane divided by clip W.
     float depth = sampleRefractionDepth(uv);
     float rayY = position_FS.y - cameraPosition.y;

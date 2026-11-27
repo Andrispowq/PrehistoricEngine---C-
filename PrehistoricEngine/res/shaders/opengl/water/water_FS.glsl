@@ -32,6 +32,22 @@ uniform float capillarDownsampling;
 uniform float dudvDownsampling;
 uniform int isCameraUnderWater;
 
+layout(binding = 0) uniform usampler3D waterVoxelOccluders;
+layout(binding = 1) uniform sampler3D waterVoxelRadiance;
+uniform vec4 waterVoxelBounds, waterVoxelOptions;
+int voxelGridSize() { return int(waterVoxelOptions.x); }
+int voxelTopLevel() { return textureQueryLevels(waterVoxelOccluders) - 1; }
+bool occupiedBlock(ivec3 p, int level) { return texelFetch(waterVoxelOccluders, p, level).r != 0u; }
+#define voxelOcclusionMin waterVoxelBounds.xyz
+#define voxelOcclusionExtent waterVoxelBounds.w
+#include "shared/voxel/voxel_visibility.glsl"
+vec4 sampleConeRadiance(vec3 p, vec3 ray, float lod) { return textureLod(waterVoxelRadiance, p, lod); }
+vec4 baseSample(ivec3 p) { return texelFetch(waterVoxelRadiance, p, 0); }
+vec3 baseRadiance(ivec3 p) { return baseSample(p).rgb; }
+#include "shared/voxel/cone_hit.glsl"
+#include "shared/voxel/reflection.glsl"
+#define WATER_VOXEL_REFLECTION
+#include "shared/water/voxel_reflection.glsl"
 vec3 sampleReflection(vec2 uv) { return texture(waterReflection, uv).rgb; }
 float sampleRefractionDepth(vec2 uv) { return texture(refractionDepth, uv).r; }
 #include "shared/water/surface.glsl"
@@ -44,5 +60,5 @@ void main()
     outPositionMetallic = vec4(position_FS.xyz, 0);
     outAlbedoRoughness = vec4(colour, 0.08);
     outNormal = vec4(n, 1);
-    outBloom = vec4(0);
+    outBloom = vec4(0, 0, 0, -1); // Already receives voxel specular in shadeWater.
 }

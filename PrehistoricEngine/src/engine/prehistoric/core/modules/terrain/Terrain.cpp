@@ -46,10 +46,12 @@ namespace Prehistoric {
         ProceduralConfigScope scope(settings.get(), nullptr);
         camera = renderer->getCamera();
         if (__FrameworkConfig.api == Vulkan)
-            if (auto *surface = GetComponent<RendererComponent>()) UpdateVulkanTerrainLayers(
-                *surface->getMaterialHandle().pointer, *maps);
+            if (auto *surface = GetComponent<RendererComponent>())
+                UpdateVulkanTerrainLayers(
+                    *surface->getMaterialHandle().pointer, *maps);
         worldTransform.calculateTransformationMatrix();
         maps->SetInstanceTransform(worldTransform);
+        renderer->RegisterTerrain(this);
         UpdateQuadtree();
         GameObject::PreRender(renderer);
     }

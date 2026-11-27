@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('--build-dir', type=Path, default=ROOT / 'build/debug')
     parser.add_argument('--api', choices=['Vulkan', 'OpenGL'], default='Vulkan')
     parser.add_argument('--app', choices=['PrehistoricEditor', 'Prehistoric'], default='PrehistoricEditor')
     parser.add_argument('--samples', type=int, default=1)
@@ -27,6 +28,8 @@ def main():
     parser.add_argument('--no-gi', action='store_true')
     parser.add_argument('--debug', type=int, choices=range(5), default=0)
     parser.add_argument('--water', action='store_true', help='Add water and exercise crossing the waterline')
+    parser.add_argument('--terrain-voxels', action='store_true',
+                        help='Check optional terrain voxel coverage and lifecycle')
     parser.add_argument('--world-suite', action='store_true', help='Load, round-trip and render all checked-in worlds')
     parser.add_argument('--benchmark', action='store_true',
                         help='Run four steady effect modes instead of lifecycle tests')
@@ -43,11 +46,11 @@ def main():
     output = args.output or Path(tempfile.mkdtemp(prefix='prehistoric-temporal-render-'))
     output = output.resolve()
     output.mkdir(parents=True, exist_ok=True)
-    build = ROOT / 'build/debug'
+    build = args.build_dir.resolve()
     original = ROOT / args.app / 'src' / ('EditorApp.cpp' if args.app == 'PrehistoricEditor' else 'PrehistoricApp.cpp')
     source = output / 'TemporalApp.cpp'
     text = original.read_text()
-    driver = 'world_scene_driver.h' if args.world_suite else (
+    driver = 'terrain_voxel_driver.h' if args.terrain_voxels else 'world_scene_driver.h' if args.world_suite else (
         'temporal_benchmark_driver.h' if args.benchmark else 'temporal_render_driver.h')
     text = (f'#include "tests/{driver}"\n'
             'namespace { const bool temporalUnbufferedOutput = [] { '
@@ -62,6 +65,8 @@ def main():
                             '        PushOverlay(new TemporalRenderDriver(scene.get()));\n        return;', 1)
     if args.world_suite:
         text = text.replace('new TemporalRenderDriver(', 'new WorldSceneDriver(')
+    if args.terrain_voxels:
+        text = text.replace('new TemporalRenderDriver(', 'new TerrainVoxelDriver(')
     source.write_text(text)
     target = f'CMakeFiles/{args.app}.dir/{original.relative_to(ROOT)}.o'
     command = subprocess.check_output(['ninja', '-C', str(build), '-t', 'commands', target], text=True).splitlines()[-1]
@@ -115,6 +120,21 @@ def main():
     env = dict(os.environ, ALSOFT_DRIVERS='null', PREHISTORIC_WORLD=str(world),
                PREHISTORIC_ENGINE_RESOURCES=str(build / 'bin/engine-resources'),
                PREHISTORIC_SAMPLE_RESOURCES=str(build / 'bin/sample-resources'))
+    if args.terrain_voxels:
+        flat = output / 'flat.ppm'
+        flat.write_bytes(b'P6\n16 16\n255\n' + bytes([128, 128, 128]) * 256)
+        terrain = json.loads((ROOT / 'Prehistoric/res/config/terrain_1.json').read_text())
+        terrain['heightmap'] = str(flat)
+        for material in terrain['materials']:
+            for item in material['contents']:
+                if item['name'] == 'heightScale': item['value'] = 0
+        fixture = output / 'terrain.json'
+        fixture.write_text(json.dumps(terrain))
+        env['PREHISTORIC_TEST_TERRAIN_CONFIG'] = str(fixture)
+        data = {'name': 'Terrain voxels', 'directories': {'models': '', 'textures': ''},
+                'models': [], 'textures': [], 'materials': [], 'world_objects': [], 'root': {'children': []},
+                'initial_camera': {'position': [0, 12, 20], 'forward': [0, 0.4, 1], 'up': [0, 1, 0]}}
+        world.write_text(json.dumps(data))
     if args.world_suite:
         manifest = output / 'worlds.txt'
         worlds = sorted(p.resolve() for app in ('Prehistoric', 'PrehistoricEditor')
@@ -155,9 +175,10 @@ def main():
             raise SystemExit('Timed out; see run.log for native context/window-service errors')
     log = (output / 'run.log').read_text(errors='replace')
     print(
-        '\n'.join(line for line in log.splitlines() if 'TEMPORAL' in line or 'WORLD ' in line or 'PROCEDURAL ' in line))
+        '\n'.join(line for line in log.splitlines() if
+                  'TEMPORAL' in line or 'WORLD ' in line or 'PROCEDURAL ' in line or 'TERRAIN ' in line))
     if code or (
-    'WORLD SUITE PASS' if args.world_suite else 'TEMPORAL PASS') not in log or 'Message severity: ERROR' in log:
+            'TERRAIN PASS' if args.terrain_voxels else 'WORLD SUITE PASS' if args.world_suite else 'TEMPORAL PASS') not in log or 'Message severity: ERROR' in log:
         raise SystemExit(f'GPU smoke failed (exit {code}); see {output}/run.log')
     print('PASS: scripted application run, no reported Vulkan validation errors')
 

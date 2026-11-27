@@ -2,6 +2,7 @@
 
 #include "platform/vulkan/buffer/VKBuffer.h"
 #include <array>
+#include "prehistoric/common/rendering/TerrainVoxel.h"
 
 namespace Prehistoric {
     class VKRenderer;
@@ -62,7 +63,7 @@ namespace Prehistoric {
 
         std::vector<Draw> Collect(VKRenderer &renderer, const Vec4 &grid) const;
 
-        void Bake(VkCommandBuffer cmd, const std::vector<Draw> &draws);
+        void Bake(VkCommandBuffer cmd, const std::vector<Draw> &draws, const std::vector<TerrainVoxelInput> &terrains);
 
         void Release();
 
@@ -81,7 +82,13 @@ namespace Prehistoric {
 
         void UploadRadiance(VkCommandBuffer cmd);
 
+        VKDevice *gpu;
         VkDevice device;
+        VkDescriptorSetLayout terrainSet{};
+        VkPipelineLayout terrainLayout{};
+        VkPipeline terrainPipeline{};
+        std::vector<std::unique_ptr<VKBuffer> > terrainParameters;
+        std::vector<TerrainVoxelInput> previousTerrains;
         VkQueryPool timers{};
         double timestampMs = 0;
         uint64_t timestampMask = 0;

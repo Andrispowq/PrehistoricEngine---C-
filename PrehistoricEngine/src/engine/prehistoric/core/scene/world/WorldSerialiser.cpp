@@ -34,6 +34,7 @@ namespace Prehistoric {
             {"max_blur_pixels", scene->temporal.maxBlurPixels}, {"samples", scene->temporal.samples}
         };
         file_json["screen_space_reflections"] = scene->screenSpaceReflections;
+        file_json["voxelise_terrain"] = scene->voxeliseTerrain;
         file_json["bloom_intensity"] = scene->bloomIntensity;
         const auto &ao = scene->ambientOcclusion;
         file_json["ambient_occlusion"] = {{"enabled", ao.enabled}, {"radius", ao.radius}, {"strength", ao.strength}};

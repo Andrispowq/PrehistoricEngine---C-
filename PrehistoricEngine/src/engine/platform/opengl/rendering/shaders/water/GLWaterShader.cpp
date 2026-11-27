@@ -1,5 +1,6 @@
 #include "Includes.hpp"
 #include "GLWaterShader.h"
+#include "platform/opengl/rendering/GLRenderer.h"
 
 #include "prehistoric/application/Application.h"
 
@@ -73,10 +74,13 @@ namespace Prehistoric {
 
 
         AddUniform("isCameraUnderWater");
+        AddUniform("waterVoxelBounds");
+        AddUniform("waterVoxelOptions");
     }
 
     void GLWaterShader::UpdateGlobalUniforms(Renderer *renderer) const {
         sceneRenderer = renderer;
+        static_cast<GLRenderer *>(renderer)->getVoxelPass()->BindWaterLighting(*this);
         Camera *camera = renderer->getCamera();
 
         SetUniform("viewProjection", camera->getViewProjectionMatrix());

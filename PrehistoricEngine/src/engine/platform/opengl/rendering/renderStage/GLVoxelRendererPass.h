@@ -47,9 +47,12 @@ namespace Prehistoric {
         bool CanUseResolution(int index) const;
 
         bool HasOccluders() const { return usesOccluders; }
+        GLuint GetOccluderTexture() const { return debugVolume; }
         bool UsesVoxelSunShadows() const { return HasOccluders() && settings.voxelSunShadows; }
 
         void BindOccluders(const GLShader &shader, uint32_t textureUnit) const;
+
+        void BindWaterLighting(const GLShader &shader) const;
 
     private:
         bool Initialise();
@@ -95,6 +98,8 @@ namespace Prehistoric {
         GLuint bounceSurfaces = 0;
         GLuint bounceVolumes[2] = {};
         std::unique_ptr<GLShader> screenShader;
+        std::unique_ptr<GLShader> terrainShader;
+        GLuint terrainParameters = 0;
         GLuint screenColour = 0, screenConfidence = 0;
         uint32_t screenWidth = 0, screenHeight = 0;
         GLuint indirectImage = 0;
