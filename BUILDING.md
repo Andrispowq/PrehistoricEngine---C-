@@ -398,8 +398,10 @@ volume; V displays occupied cells, with a dark background for empty space. Terra
 must be enabled with T to appear, and water never appears in occupancy view.
 On scene activation, a camera outside the existing volume places that volume near
 its starting view. The terrain demo uses an 800-unit volume to include the ground
-below its elevated camera. Ordinary camera movement does not move the volume;
-press C after travelling, and increase its width if distant terrain is excluded.
+below its elevated camera. **Follow camera (snapped)** is enabled by default and
+keeps the volume centred on the camera in whole-voxel increments. C places a fixed
+volume ahead of the view and disables following; editing its centre does the same.
+Enable following again in F8 or Render Settings → Voxel GI.
 A larger width at the same resolution means coarser voxels.
 For example, the editor's default terrain spans 6,000 units: a 400-unit volume
 does not cover distant hills. Widening it can diagnose missing coverage, but a
@@ -427,8 +429,8 @@ Run `python3 tests/temporal_render_smoke.py --render-controls --api Vulkan --app
 after building to exercise the shortcuts. Repeat with `--app PrehistoricEditor`
 to also create, save and render terrain/ocean through the menu action handler.
 Use `--build-dir build/macos-arm64` for the Apple Silicon build. Native OpenGL
-verification requires a supported PC. Camera-independent terrain voxelisation
-remains the next separate rendering change.
+verification requires a supported PC. Terrain contribution and reception are
+separate opt-in settings; both default to off.
 
 `--voxel-visual --default-scene --app Prehistoric` captures GI-off, GI-on and
 occupancy frames of the actual terrain demo, instead of the empty shortcut fixture.
@@ -599,21 +601,73 @@ also controls grid placement, GI strength, bounce count, directional filtering,
 voxel sun shadows and trace resolution. Disable bloom to isolate the emitters'
 indirect illumination.
 
-The compute pass conservatively budgets a single device-local storage buffer
-against the device's maximum descriptor range, a quarter of the device-local heap
-and a 768 MiB ceiling. A 128³
-lighting grid occupies about 89 MiB. Camera movement reuses the bake. The
+The compute pass conservatively budgets its storage grid and scrolling scratch
+buffer against the device's maximum descriptor range, a quarter of the device-local
+heap and a 768 MiB ceiling. At 128³ these buffers occupy about 97 MiB, excluding
+the filtered radiance textures. Sub-voxel camera movement reuses the bake. The
 receiver pass records mesh position and normal, and a surface-aware filter
 applies the traced irradiance during material shading. Timings are shown in
 milliseconds on queues that support timestamps. The main shading measurement
 includes the GI composite.
 
+## Camera-following voxel volume
+
+Stage one uses one dense volume on both backends. The centre snaps to the nearest
+voxel boundary on each axis. Turning the camera or moving within the current cell
+does not rebuild geometry. For a static mesh scene, crossing cell boundaries copies
+retained occupancy, material and emission cells into their new logical positions,
+clears exposed cells and voxelises only newly exposed regions. Voxelisation shaders
+reject retained triangles/cells; mesh submissions are still traversed, so this is
+not yet spatially culled scene submission. A one-cell shift of a 64³ grid exposes
+4,096 cells, or 1.56% of the volume.
+
+Lighting is refreshed across the volume after a scroll: a new occluder can affect
+shadows and bounces in retained regions. Occlusion/radiance mipmaps are rebuilt,
+and screen-space tracing continues every frame. Retained-cell copies and relighting
+still scale with volume size. This stage does not promise constant-cost movement.
+F8 shows whether the last geometry update reused, scrolled or rebuilt the volume,
+and how many cells required voxelisation, alongside the existing GPU timings.
+
+Resolution/width changes, non-integral manual shifts, teleports without overlap,
+mesh/material changes and object removal use a full rebuild. Terrain remains
+excluded by default. If explicitly enabled, its procedural/distance-dependent
+coverage uses the existing full-rebuild path when changed; incremental terrain
+scrolling is not part of this stage. Water remains a receiver only.
+
+The design follows the scrolling/invalidation principle demonstrated by
+[AMD Brixelizer](https://gpuopen.com/manuals/fidelityfx_sdk/techniques/brixelizer/).
+Its sparse distance-field bricks and separate dynamic cascades differ from this
+engine's dense radiance
+grids. [NVIDIA VXGI](https://developer.download.nvidia.com/assets/events/GDC15/GEFORCE/VXGI_Dynamic_Global_Illumination_GDC15.pdf)
+shows the larger clipmap direction. A toroidal address scheme would avoid copying
+retained cells, but would also change every hierarchy and tracing consumer. This
+stage keeps contiguous logical storage plus one scratch volume, preserving those
+interfaces. Multiple levels, blend zones, dirty-object regions and incremental
+lighting propagation remain future work.
+
+Validation commands after a full build:
+
+```sh
+c++ -std=c++17 -I . tests/voxel_scroll_math.cpp -o /tmp/voxel-scroll-math
+/tmp/voxel-scroll-math
+python3 tests/voxel_scroll_contract.py
+python3 tests/temporal_render_smoke.py --voxel-scroll --api Vulkan --app Prehistoric
+python3 tests/temporal_render_smoke.py --voxel-scroll --api Vulkan --app PrehistoricEditor
+```
+
+Add `--build-dir build/macos-arm64` for Apple Silicon. The GPU fixture compares
+scrolled occupancy, material, emission and base radiance against fresh full bakes,
+including diagonal movement, three lighting passes and directional mips. It also
+checks sub-cell/rotation reuse and resize/teleport/mutation fallbacks. These checks
+passed on native Vulkan; OpenGL shaders compile offline, but its GPU comparisons
+must still be run on a supported PC using `--api OpenGL`.
+
 ## Terrain voxel contribution and water reception
 
 **Render Settings → Voxel GI → Voxelise terrain** optionally adds terrain to the
 existing opaque voxel volume on OpenGL and Vulkan. It defaults to off and is saved
-as `voxelise_terrain` in world JSON. Terrain receives VXGI whenever GI is enabled,
-independently of whether it contributes geometry. Water receives a voxel reflection
+as `voxelise_terrain` in world JSON. **Terrain receives GI** is an independent
+opt-in switch, saved as `terrain_receives_gi`; it also defaults to off. Water receives a voxel reflection
 correction blended with its existing reflection capture; it never contributes
 occupancy, and its FFT simulation does not invalidate the voxel bake.
 
@@ -693,7 +747,8 @@ diffuse bounces. The additional bounces run during the radiance bake. Each
 propagation traces the preceding bounce and adds its output to the volume
 sampled by the fullscreen pass. Voxel size is the volume width divided by grid
 resolution. The default 400-unit cube covers the Sponza test world; scenes starting
-outside it reposition the cube once, and the terrain demo uses 800 units. The 512³ and 1024³ options depend on available
+outside it reposition the cube, and the terrain demo uses 800 units. Camera following
+is enabled by default; use a fixed volume for controlled comparisons. The 512³ and 1024³ options depend on available
 GPU memory and the selected bounce depth. Switching to a more expensive mode
 can select a smaller grid that fits the memory budget. Use a tighter volume for smaller scenes. Voxel
 settings are local to the renderer session. The menu also exposes the existing
@@ -713,10 +768,11 @@ diffuse bounces. Both modes use the same first-hit occlusion test. At 256³
 the directional chains add about 110 MiB to the voxel allocation. See the
 [VXGI improvement plan](docs/VXGI_PLAN.md) for references and A/B results.
 
-OpenGL caches the debug and GI volumes independently. Grid bounds, resolution,
-and changes to opaque mesh submissions, transforms, or sampled materials can
-invalidate a bake. GI uses a shadow map fitted to the voxel volume, so camera
-movement reuses both volumes. Changes to the same sun's direction, colour, or
+OpenGL caches geometry separately from lighting. Integer grid shifts retain
+overlapping geometry; changes to resolution, opaque mesh submissions, transforms
+or sampled materials rebuild coverage. GI uses a shadow map fitted to the voxel
+volume. With following disabled, camera movement reuses both volumes unless
+opt-in terrain detail displacement changes. Changes to the same sun's direction, colour, or
 intensity refresh the radiance volume at most once per
 `environmentMap.atmosphereRefreshSeconds` interval (10 seconds by default) while
 GI is active. A geometry change or a change of sun source can trigger an
@@ -741,13 +797,14 @@ face, and a screen-space filter smooths indirect light using receiver position
 and normal before the result is added to the scene. Local point lights still
 use the direct PBR lighting path.
 
-At trace depths above one, the bake stores one representative diffuse surface
-per voxel. At 256³ this adds a 64 MiB surface grid and up to two 146 MiB
-radiance volumes for propagation. Higher depth and resolution increase the
+Geometry capture stores one representative diffuse surface and emission value
+per voxel at every trace depth. Scrolling uses a single reusable R32UI scratch
+volume (64 MiB at 256³). Trace depths above one add up to two 146 MiB radiance
+volumes for propagation at 256³. Higher depth and resolution increase the
 cost of each bake.
 
-Terrain and water patches can receive the screen-space GI contribution through
-their surface buffers, while only opaque meshes populate the volume. Thin
+Terrain can opt into receiving GI; water receives voxel reflections in its
+surface shader. Opaque meshes populate the volume, with terrain contribution optional. Thin
 geometry can produce gaps at coarse resolutions. At 256³ the debug cache uses
 64 MiB, and GI uses about 210 MiB including its packed work texture.
 

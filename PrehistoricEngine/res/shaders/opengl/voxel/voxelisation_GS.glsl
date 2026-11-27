@@ -19,9 +19,16 @@ out Fragment
 
 uniform vec3 volumeMin;
 uniform float volumeExtent;
+uniform bool incremental;
+uniform vec3 scrollDelta;
+uniform int gridResolution;
+#include "shared/voxel/scroll.glsl"
 
 void main()
 {
+    if (incremental && retainedTriangle((vertices[0].position - volumeMin) * float(gridResolution) / volumeExtent,
+                (vertices[1].position - volumeMin) * float(gridResolution) / volumeExtent,
+                (vertices[2].position - volumeMin) * float(gridResolution) / volumeExtent, ivec3(scrollDelta), gridResolution)) return;
     vec3 axis = abs(cross(vertices[1].position - vertices[0].position,
                           vertices[2].position - vertices[0].position));
     for (int i = 0; i < 3; ++i)

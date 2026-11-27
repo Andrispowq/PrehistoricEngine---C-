@@ -9,6 +9,7 @@
 #include "prehistoric/application/Application.h"
 
 #include "prehistoric/common/rendering/TerrainVoxel.h"
+#include "prehistoric/common/rendering/VoxelScroll.h"
 #include <array>
 #include <chrono>
 #include <optional>
@@ -189,10 +190,12 @@ namespace Prehistoric {
         if (shadowDepth) glDeleteTextures(1, &shadowDepth);
         if (indirectImage) glDeleteTextures(1, &indirectImage);
         if (debugVolume) glDeleteTextures(1, &debugVolume);
-        if (packedRadiance) glDeleteTextures(1, &packedRadiance);
+        if (emissionVolume) glDeleteTextures(1, &emissionVolume);
         if (radianceVolume) glDeleteTextures(1, &radianceVolume);
         ReleaseDirectionalMips();
         ReleaseBounceVolumes();
+        glDeleteTextures(1, &bounceSurfaces);
+        glDeleteTextures(1, &scrollScratch);
     }
 
     bool GLVoxelRendererPass::Initialise() {
@@ -212,26 +215,36 @@ namespace Prehistoric {
             return program;
         };
 
-        resolveShader = loadCompute("opengl/voxel/voxel_resolve_CS.glsl");
+        injectShader = loadCompute("opengl/voxel/voxel_inject_CS.glsl");
+        scrollShader = loadCompute("opengl/voxel/voxel_scroll_CS.glsl");
         mipShader = loadCompute("opengl/voxel/voxel_mip_CS.glsl");
         cache->directionalMipShader = loadCompute("opengl/voxel/voxel_directional_mip_CS.glsl");
         compositeShader = loadCompute("opengl/voxel/voxel_view_CS.glsl");
         bounceShader = loadCompute("opengl/voxel/voxel_bounce_CS.glsl");
         occluderMipShader = loadCompute("opengl/voxel/voxel_occluder_mip_CS.glsl");
         filterShader = loadCompute("opengl/voxel/voxel_filter_CS.glsl");
-        if (!resolveShader || !mipShader || !cache->directionalMipShader || !compositeShader ||
+        if (!injectShader || !scrollShader || !mipShader || !cache->directionalMipShader || !compositeShader ||
             !bounceShader || !occluderMipShader || !filterShader)
             return false;
+        scrollShader->AddUniform("scrollDelta");
+        for (const char *uniform: {
+                 "sunDirection", "sunRadiance", "lightViewProjection", "shadowBias",
+                 "useVoxelSunShadows", "useTerrainOcclusion", "voxelOccluders", "voxelOcclusionMin",
+                 "voxelOcclusionExtent"
+             })
+            injectShader->AddUniform(uniform);
         cache->directionalMipShader->AddUniform("directionIndex");
         compositeShader->AddUniform("directionalMips");
         bounceShader->AddUniform("directionalMips");
         filterShader->AddUniform("useScreenReflections");
         filterShader->AddUniform("giStrength");
+        filterShader->AddUniform("terrainReceivesGI");
         filterShader->AddUniform("voxelSize");
         filterShader->AddUniform("traceStride");
         filterShader->AddUniform("volumeMin");
         filterShader->AddUniform("volumeExtent");
         compositeShader->AddUniform("traceStride");
+        compositeShader->AddUniform("terrainReceivesGI");
         bounceShader->AddUniform("writeNext");
         bounceShader->AddUniform("useEnvironment");
         filterShader->AddUniform("cameraPosition");
@@ -261,11 +274,14 @@ namespace Prehistoric {
         if (size == resolution) return;
         resolution = size;
         glDeleteTextures(1, &debugVolume);
-        glDeleteTextures(1, &packedRadiance);
+        glDeleteTextures(1, &emissionVolume);
         glDeleteTextures(1, &radianceVolume);
         ReleaseDirectionalMips();
         ReleaseBounceVolumes();
-        debugVolume = packedRadiance = radianceVolume = 0;
+        glDeleteTextures(1, &bounceSurfaces);
+        glDeleteTextures(1, &scrollScratch);
+        bounceSurfaces = scrollScratch = 0;
+        debugVolume = emissionVolume = radianceVolume = 0;
         cache->debug.reset();
         cache->radiance.reset();
 
@@ -366,9 +382,8 @@ namespace Prehistoric {
     }
 
     void GLVoxelRendererPass::ReleaseBounceVolumes() {
-        if (bounceSurfaces) glDeleteTextures(1, &bounceSurfaces);
         if (bounceVolumes[0]) glDeleteTextures(2, bounceVolumes);
-        bounceSurfaces = bounceVolumes[0] = bounceVolumes[1] = 0;
+        bounceVolumes[0] = bounceVolumes[1] = 0;
     }
 
     void GLVoxelRendererPass::PropagateBounces(int traceDepth) {
@@ -479,10 +494,10 @@ namespace Prehistoric {
         if (size > static_cast<uint64_t>(maxVolumeSize)) return false;
         const uint64_t cells = size * size * size;
         const uint64_t mipCells = cells * 8 / 7;
-        uint64_t bytes = 4 * mipCells; // Colour/occlusion hierarchy.
+        uint64_t bytes = 4 * mipCells + 12 * cells; // Colour/occlusion hierarchy.
         if (settings.globalIllumination) {
-            bytes += 4 * cells + 8 * mipCells;
-            if (settings.traceDepth > 1) bytes += 4 * cells + 8 * mipCells;
+            bytes += 8 * mipCells;
+            if (settings.traceDepth > 1) bytes += 8 * mipCells;
             if (settings.traceDepth > 2) bytes += 8 * mipCells;
             if (settings.directionalMips) bytes += 6 * 8 * (mipCells - cells);
         }
@@ -521,6 +536,7 @@ namespace Prehistoric {
         while (settings.resolutionIndex > 0 && !CanUseResolution(settings.resolutionIndex))
             --settings.resolutionIndex;
         SetResolution(Resolutions[settings.resolutionIndex]);
+        renderer->UpdateVoxelFollow(unsigned(resolution));
 
         RenderVolume(true);
         usesOccluders = true;
@@ -530,166 +546,175 @@ namespace Prehistoric {
     void GLVoxelRendererPass::RenderVolume(bool debugView) {
         const auto lighting = debugView ? LightingState{} : CaptureSun(*renderer);
         const int traceDepth = debugView ? 1 : std::clamp(settings.traceDepth, 1, MaxTraceDepth);
-        const bool captureBounceSurfaces = traceDepth > 1;
-        const bool voxelSunShadows = !debugView && UsesVoxelSunShadows();
         BakeInputs inputs{
-            settings.center, settings.extent, traceDepth, voxelSunShadows,
-            !debugView && settings.directionalMips,
-            captureBounceSurfaces
-                ? static_cast<GLRenderer *>(renderer)->getEnvironmentLighting().getEnvironmentMap()->getID()
-                : 0,
-            CaptureBatches(renderer->getModels3D(),
-                           debugView
-                               ? CaptureMode::DebugColour
-                               : CaptureMode::Radiance, captureBounceSurfaces),
-            {}
+            settings.center, settings.extent, traceDepth,
+            !debugView && UsesVoxelSunShadows(), !debugView && settings.directionalMips,
+            !debugView ? static_cast<GLRenderer *>(renderer)->getEnvironmentLighting().getEnvironmentMap()->getID() : 0,
+            CaptureBatches(renderer->getModels3D(), CaptureMode::Radiance, true), {}
         };
         const auto minimum = settings.center - Vector3f(settings.extent * 0.5f);
         inputs.terrains = CollectTerrainVoxels(*renderer, {minimum.x, minimum.y, minimum.z, settings.extent},
-                                               unsigned(resolution), !debugView);
-        if (lighting.source && !voxelSunShadows)
+                                               unsigned(resolution), true);
+        if (!debugView && lighting.source && !inputs.voxelSunShadows)
             inputs.transparentCasters = CaptureBatches(renderer->getModelsTransparency(), CaptureMode::ShadowCasters);
-
         auto &previous = debugView ? cache->debug : cache->radiance;
         if (previous && *previous == inputs) {
             if (debugView || lighting == cache->lighting) return;
             const auto interval = std::chrono::duration<float>(__EnvironmentMapConfig.atmosphereRefreshSeconds);
             if (lighting.source == cache->lighting.source && BakeClock::now() - cache->completed < interval) return;
         }
-
-        PR_PROFILE(debugView ? "Bake voxel colour and occlusion" : "Bake voxel radiance");
-        ScopedGpuTimer bakeTimer(cache->Timer(debugView ? GpuStage::Occluders : GpuStage::Injection));
-        const GLuint packedVolume = GetPackedVolume(debugView ? debugVolume : packedRadiance, debugView);
-
-        const GLuint empty = 0;
-        glClearTexImage(packedVolume, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, &empty);
-        glBindImageTexture(0, packedVolume, 0, GL_TRUE, 0, GL_READ_WRITE, GL_R32UI);
-        if (captureBounceSurfaces) {
+        ScopedGpuTimer timer(cache->Timer(debugView ? GpuStage::Occluders : GpuStage::Injection));
+        if (debugView) {
+            VoxelScroll scroll;
+            if (previous && inputs.terrains.empty()) {
+                auto comparison = inputs;
+                comparison.center = previous->center;
+                if (comparison == *previous)
+                    scroll = PlanVoxelScroll({
+                                                 previous->center.x, previous->center.y, previous->center.z,
+                                                 previous->extent
+                                             },
+                                             {settings.center.x, settings.center.y, settings.center.z, settings.extent},
+                                             unsigned(resolution));
+            }
+            GetPackedVolume(debugVolume, true);
             GetPackedVolume(bounceSurfaces);
-            glClearTexImage(bounceSurfaces, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, &empty);
-            glBindImageTexture(1, bounceSurfaces, 0, GL_TRUE, 0, GL_READ_WRITE, GL_R32UI);
-        } else if (!debugView) {
-            ReleaseBounceVolumes();
-        }
-
-        GLint viewport[4], drawFramebuffer, polygonMode[2];
-        glGetIntegerv(GL_VIEWPORT, viewport);
-        glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &drawFramebuffer);
-        glGetIntegerv(GL_POLYGON_MODE, polygonMode);
-        const bool culling = glIsEnabled(GL_CULL_FACE);
-        const bool scissor = glIsEnabled(GL_SCISSOR_TEST);
-        const bool rasterizerDiscard = glIsEnabled(GL_RASTERIZER_DISCARD);
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        glDisable(GL_CULL_FACE);
-        glDisable(GL_SCISSOR_TEST);
-        glDisable(GL_RASTERIZER_DISCARD);
-
-        const auto lightSpace = lighting.source && !voxelSunShadows
-                                    ? RenderSunShadow(lighting.direction)
-                                    : Matrix4f::Identity();
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
-        glViewport(0, 0, resolution, resolution);
-
-        auto *shader = static_cast<GLVoxelisationShader *>(voxelisationShader.pointer);
-        shader->Bind(nullptr);
-        shader->SetUniformi("injectRadiance", !debugView);
-        shader->SetUniformi("captureBounceSurfaces", captureBounceSurfaces);
-        glBindTextureUnit(1, shadowDepth);
-        shader->SetUniformi("useVoxelSunShadows", voxelSunShadows);
-        shader->SetUniformi("useTerrainOcclusion", !inputs.terrains.empty());
-        if (!debugView) {
-            BindOccluders(*shader, 8);
-            shader->SetUniform("sunDirection", lighting.direction);
-            shader->SetUniform("sunRadiance", lighting.radiance);
-            shader->SetUniform("lightViewProjection", lightSpace);
-            shader->SetUniformf("shadowBias", 1.5f * CubeDiagonal / (VoxelShadowSize * (CubeDiagonal + 1.0f)));
-        }
-        shader->SetUniform("volumeMin", settings.center - Vector3f(settings.extent * 0.5f));
-        shader->SetUniformf("volumeExtent", settings.extent);
-
-        for (const auto &[pipeline, batches]: renderer->getModels3D()) {
-            auto *buffer = static_cast<GLGraphicsPipeline *>(pipeline)->getVertexBuffer();
-            if (buffer->getType() != VertexBufferType::MESH) continue;
-            auto &model = static_cast<MeshVertexBuffer *>(buffer)->getModel();
-            buffer->Bind(nullptr);
-            for (const auto &[material, objects]: batches) {
-                for (uint32_t i = 0; i < buffer->getSubmeshCount(); ++i) {
-                    for (const auto *object: objects) {
-                        shader->SetSurface(GLVoxelisationShader::GetSurface(
-                            object->ResolveSubmeshMaterial(model, i, material), captureBounceSurfaces));
-                        shader->UpdateObjectUniforms(object->getParent());
-                        buffer->Draw(nullptr, i);
-                    }
+            GetPackedVolume(emissionVolume);
+            const GLuint volumes[] = {debugVolume, bounceSurfaces, emissionVolume};
+            const GLuint empty = 0;
+            for (GLuint volume: volumes) {
+                if (scroll.incremental) {
+                    GetPackedVolume(scrollScratch);
+                    glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
+                    glCopyImageSubData(volume, GL_TEXTURE_3D, 0, 0, 0, 0, scrollScratch, GL_TEXTURE_3D, 0, 0, 0, 0,
+                                       resolution, resolution, resolution);
+                    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+                    glBindImageTexture(0, scrollScratch, 0, GL_TRUE, 0, GL_READ_ONLY, GL_R32UI);
+                    glBindImageTexture(1, volume, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_R32UI);
+                    scrollShader->Bind(nullptr);
+                    scrollShader->SetUniform("scrollDelta",
+                                             Vector3f(float(scroll.delta[0]), float(scroll.delta[1]),
+                                                      float(scroll.delta[2])));
+                    glDispatchCompute((resolution + 3) / 4, (resolution + 3) / 4, (resolution + 3) / 4);
+                    scrollShader->Unbind();
+                    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_UPDATE_BARRIER_BIT);
+                } else glClearTexImage(volume, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, &empty);
+            }
+            for (unsigned i = 0; i < 3; ++i) glBindImageTexture(i, volumes[i], 0, GL_TRUE, 0, GL_READ_WRITE, GL_R32UI);
+            GLint viewport[4], drawFramebuffer, polygonMode[2];
+            glGetIntegerv(GL_VIEWPORT, viewport);
+            glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &drawFramebuffer);
+            glGetIntegerv(GL_POLYGON_MODE, polygonMode);
+            const bool culling = glIsEnabled(GL_CULL_FACE), scissor = glIsEnabled(GL_SCISSOR_TEST);
+            const bool discard = glIsEnabled(GL_RASTERIZER_DISCARD);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            glDisable(GL_CULL_FACE);
+            glDisable(GL_SCISSOR_TEST);
+            glDisable(GL_RASTERIZER_DISCARD);
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
+            glViewport(0, 0, resolution, resolution);
+            auto *shader = static_cast<GLVoxelisationShader *>(voxelisationShader.pointer);
+            shader->Bind(nullptr);
+            shader->SetUniform("volumeMin", minimum);
+            shader->SetUniformf("volumeExtent", settings.extent);
+            shader->SetUniformi("incremental", scroll.incremental);
+            shader->SetUniformi("gridResolution", resolution);
+            shader->SetUniform("scrollDelta",
+                               Vector3f(float(scroll.delta[0]), float(scroll.delta[1]), float(scroll.delta[2])));
+            for (const auto &[pipeline, batches]: renderer->getModels3D()) {
+                auto *buffer = static_cast<GLGraphicsPipeline *>(pipeline)->getVertexBuffer();
+                if (buffer->getType() != VertexBufferType::MESH) continue;
+                auto &model = static_cast<MeshVertexBuffer *>(buffer)->getModel();
+                buffer->Bind(nullptr);
+                for (const auto &[material, objects]: batches)
+                    for (uint32_t i = 0; i < buffer->getSubmeshCount(); ++i)
+                        for (const auto *object: objects) {
+                            shader->SetSurface(
+                                GLVoxelisationShader::GetSurface(object->ResolveSubmeshMaterial(model, i, material),
+                                                                 true));
+                            shader->UpdateObjectUniforms(object->getParent());
+                            buffer->Draw(nullptr, i);
+                        }
+                buffer->Unbind();
+            }
+            shader->Unbind();
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFramebuffer);
+            glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+            glPolygonMode(GL_FRONT_AND_BACK, polygonMode[0]);
+            if (culling) glEnable(GL_CULL_FACE);
+            if (scissor) glEnable(GL_SCISSOR_TEST);
+            if (discard) glEnable(GL_RASTERIZER_DISCARD);
+            if (!inputs.terrains.empty()) {
+                if (!terrainShader) {
+                    terrainShader = std::make_unique<GLShader>();
+                    terrainShader->AddShader(ResourceLoader::LoadShaderGL("opengl/voxel/terrain_CS.glsl"),
+                                             COMPUTE_SHADER);
+                    terrainShader->CompileShader();
+                    glGenBuffers(1, &terrainParameters);
                 }
-            }
-            buffer->Unbind();
-        }
-        shader->Unbind();
-        glBindTextureUnit(1, 0);
-
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFramebuffer);
-        glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
-        glPolygonMode(GL_FRONT_AND_BACK, polygonMode[0]);
-        if (culling) glEnable(GL_CULL_FACE);
-        if (scissor) glEnable(GL_SCISSOR_TEST);
-        if (rasterizerDiscard) glEnable(GL_RASTERIZER_DISCARD);
-
-        if (!inputs.terrains.empty()) {
-            if (!terrainShader) {
-                terrainShader = std::make_unique<GLShader>();
-                terrainShader->AddShader(ResourceLoader::LoadShaderGL("opengl/voxel/terrain_CS.glsl"), COMPUTE_SHADER);
-                terrainShader->CompileShader();
-                for (const char *name: {"sunDirection", "sunRadiance", "captureBounceSurfaces"}) terrainShader->
-                        AddUniform(name);
-                glGenBuffers(1, &terrainParameters);
-            }
-            terrainShader->Bind(nullptr);
-            terrainShader->SetUniform("sunDirection", lighting.direction);
-            terrainShader->SetUniform("sunRadiance", lighting.radiance);
-            terrainShader->SetUniformi("captureBounceSurfaces", captureBounceSurfaces);
-            glBindTextureUnit(12, debugView ? 0 : debugVolume);
-            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, terrainParameters);
-            for (const auto &terrain: inputs.terrains) {
-                glBindBuffer(GL_SHADER_STORAGE_BUFFER, terrainParameters);
-                glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(TerrainVoxelParameters), &terrain.parameters,
-                             GL_STREAM_DRAW);
-                for (unsigned i = 0; i < terrain.textures.size(); ++i) terrain.textures[i]->Bind(i);
-                const auto &region = terrain.parameters.region;
-                glDispatchCompute((unsigned(region[2]) + 7) / 8, (unsigned(region[3]) + 7) / 8, 1);
+                terrainShader->Bind(nullptr);
+                glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, terrainParameters);
+                for (const auto &terrain: inputs.terrains) {
+                    glBindBuffer(GL_SHADER_STORAGE_BUFFER, terrainParameters);
+                    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(TerrainVoxelParameters), &terrain.parameters,
+                                 GL_STREAM_DRAW);
+                    for (unsigned i = 0; i < terrain.textures.size(); ++i) terrain.textures[i]->Bind(i);
+                    const auto &region = terrain.parameters.region;
+                    glDispatchCompute((unsigned(region[2]) + 7) / 8, (unsigned(region[3]) + 7) / 8, 1);
+                }
+                glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, 0);
+                glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+                terrainShader->Unbind();
             }
             glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
-            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, 0);
-            glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-            glBindTextureUnit(12, 0);
-            terrainShader->Unbind();
-        }
-        if (debugView) {
             GenerateOccluderMips();
-            glBindImageTexture(0, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
-            previous = std::move(inputs);
-            return;
+            renderer->voxelUpdate.mode = scroll.incremental
+                                             ? Renderer::VoxelUpdate::Scrolled
+                                             : Renderer::VoxelUpdate::Rebuilt;
+            renderer->voxelUpdate.dirtyCells = scroll.incremental
+                                                   ? scroll.dirtyCells
+                                                   : uint64_t(resolution) * resolution * resolution;
+            cache->radiance.reset(); // Changed occlusion may affect light throughout the retained region.
+        } else {
+            AllocateRadianceVolume(radianceVolume, resolution);
+            GLint viewport[4], drawFramebuffer;
+            glGetIntegerv(GL_VIEWPORT, viewport);
+            glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &drawFramebuffer);
+            const auto lightSpace = lighting.source && !inputs.voxelSunShadows
+                                        ? RenderSunShadow(lighting.direction)
+                                        : Matrix4f::Identity();
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFramebuffer);
+            glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+            injectShader->Bind(nullptr);
+            BindOccluders(*injectShader, 8);
+            injectShader->SetUniform("sunDirection", lighting.direction);
+            injectShader->SetUniform("sunRadiance", lighting.radiance);
+            injectShader->SetUniform("lightViewProjection", lightSpace);
+            injectShader->SetUniformf("shadowBias", 1.5f * CubeDiagonal / (VoxelShadowSize * (CubeDiagonal + 1.0f)));
+            injectShader->SetUniformi("useVoxelSunShadows", inputs.voxelSunShadows);
+            injectShader->SetUniformi("useTerrainOcclusion", !inputs.terrains.empty());
+            glBindTextureUnit(1, shadowDepth);
+            glBindImageTexture(0, debugVolume, 0, GL_TRUE, 0, GL_READ_ONLY, GL_R32UI);
+            glBindImageTexture(1, bounceSurfaces, 0, GL_TRUE, 0, GL_READ_ONLY, GL_R32UI);
+            glBindImageTexture(2, emissionVolume, 0, GL_TRUE, 0, GL_READ_ONLY, GL_R32UI);
+            glBindImageTexture(3, radianceVolume, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+            glDispatchCompute((resolution + 3) / 4, (resolution + 3) / 4, (resolution + 3) / 4);
+            glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
+            injectShader->Unbind();
+            timer.Stop();
+            if (traceDepth > 1) {
+                ScopedGpuTimer bounceTimer(cache->Timer(GpuStage::Propagation));
+                PropagateBounces(traceDepth);
+            } else ReleaseBounceVolumes();
+            {
+                ScopedGpuTimer mipTimer(cache->Timer(GpuStage::RadianceMips));
+                GenerateRadianceMips(radianceVolume);
+            }
+            cache->lighting = lighting;
+            cache->completed = BakeClock::now();
         }
-
-        AllocateRadianceVolume(radianceVolume, resolution);
-        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-        glBindImageTexture(1, radianceVolume, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
-        resolveShader->Bind(nullptr);
-        glDispatchCompute(resolution / 4, resolution / 4, resolution / 4);
-        resolveShader->Unbind();
-        bakeTimer.Stop();
-        if (captureBounceSurfaces) {
-            ScopedGpuTimer timer(cache->Timer(GpuStage::Propagation));
-            PropagateBounces(traceDepth);
-        }
-        {
-            ScopedGpuTimer timer(cache->Timer(GpuStage::RadianceMips));
-            GenerateRadianceMips(radianceVolume);
-        }
-        glBindImageTexture(0, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F);
-        glBindImageTexture(1, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F);
+        for (unsigned i = 0; i < 4; ++i) glBindImageTexture(i, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
         previous = std::move(inputs);
-        cache->lighting = lighting;
-        cache->completed = BakeClock::now();
     }
 
     void GLVoxelRendererPass::AllocateIndirectImage(uint32_t width, uint32_t height) {
@@ -762,6 +787,7 @@ namespace Prehistoric {
 
         compositeShader->Bind(nullptr);
         compositeShader->SetUniformi("debugView", settings.debugView);
+        compositeShader->SetUniformi("terrainReceivesGI", renderer->terrainReceivesGI);
         compositeShader->SetUniform("volumeMin", settings.center - Vector3f(settings.extent * 0.5f));
         compositeShader->SetUniformf("volumeExtent", settings.extent);
         if (settings.debugView) {
@@ -783,7 +809,7 @@ namespace Prehistoric {
             auto &environment = static_cast<GLRenderer *>(renderer)->getEnvironmentLighting();
             environment.getEnvironmentMap()->Bind(5);
             main->getPositionMetallicImage()->Bind(1);
-            main->getAlbedoRoughnessImage()->Bind(2);
+            main->getBloomImage()->Bind(2);
             main->getNormalImage()->Bind(3);
             glBindImageTexture(1, indirectImage, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F);
             {
@@ -794,6 +820,8 @@ namespace Prehistoric {
             glBindImageTexture(1, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F);
 
             filterShader->Bind(nullptr);
+            main->getAlbedoRoughnessImage()->Bind(2);
+            filterShader->SetUniformi("terrainReceivesGI", renderer->terrainReceivesGI);
             filterShader->SetUniformi("useScreenReflections", renderer->screenSpaceReflections && screenConfidence);
             glBindImageTexture(1, screenConfidence, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R16F);
             filterShader->SetUniform("cameraPosition", renderer->getCamera()->getPosition());

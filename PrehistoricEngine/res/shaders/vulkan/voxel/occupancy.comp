@@ -15,6 +15,7 @@ layout(push_constant) uniform Surface
 };
 
 #include "../../shared/voxel/voxel_surface.glsl"
+#include "../../shared/voxel/scroll.glsl"
 
 vec2 projectCell(vec3 p, int axis) { return axis == 0 ? p.yz : (axis == 1 ? p.xz : p.xy); }
 
@@ -37,6 +38,7 @@ void main()
         vec3(vertices[base + 5], vertices[base + 6], vertices[base + 7]);
         uv[i] = vec2(vertices[base + 3], 1.0 - vertices[base + 4]);
     }
+    if ((range.w & 4u) != 0u && retainedTriangle(p[0], p[1], p[2], ivec3(material.yzw), size)) return;
     vec3 normal = abs(cross(p[1] - p[0], p[2] - p[0]));
     int axis = normal.x >= max(normal.y, normal.z) ? 0 : (normal.y >= normal.z ? 1 : 2);
     vec2 a = projectCell(p[0], axis), b = projectCell(p[1], axis), c = projectCell(p[2], axis);
@@ -57,6 +59,7 @@ void main()
         if (min(u, v) < 0 || u + v > 1) continue;
         ivec3 cell = ivec3(floor(p[0] + u * (p[1] - p[0]) + v * (p[2] - p[0])));
         if (any(lessThan(cell, ivec3(0))) || any(greaterThanEqual(cell, ivec3(size)))) continue;
+        if ((range.w & 4u) != 0u && retainedVoxel(cell, ivec3(material.yzw), size)) continue;
         vec4 texel =
         (range.w & 1u) != 0u ? textureGrad(albedoMap, uv[0] + u * du + v * dv, dx, dy) : vec4(1);
         if (texel.a < 0.5) continue;

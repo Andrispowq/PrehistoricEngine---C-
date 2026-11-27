@@ -1,5 +1,6 @@
 #include "Includes.hpp"
 #include "Renderer.h"
+#include "VoxelScroll.h"
 #include "ShadowCascades.h"
 #include "prehistoric/core/modules/atmosphere/Atmosphere.h"
 #include "prehistoric/core/resources/loaders/TextureLoader.h"
@@ -15,6 +16,19 @@
 #include "prehistoric/application/Application.h"
 
 namespace Prehistoric {
+    void Renderer::UpdateVoxelFollow(unsigned resolution) {
+        voxelUpdate = {};
+        if (!voxelFollowCamera || !resolution) return;
+        const auto bounds = GetVoxelVolume();
+        const auto eye = camera->getPosition();
+        const float cell = bounds.w / float(resolution);
+        const Vector3f center(SnapVoxelCenter(eye.x, cell), SnapVoxelCenter(eye.y, cell), SnapVoxelCenter(eye.z, cell));
+        if (center == Vector3f(bounds.x, bounds.y, bounds.z)) return;
+        const auto delta = center - Vector3f(bounds.x, bounds.y, bounds.z);
+        const bool teleport = std::max({std::abs(delta.x), std::abs(delta.y), std::abs(delta.z)}) >= bounds.w;
+        SetVoxelVolume(center, bounds.w, teleport);
+    }
+
     bool Renderer::IsCameraInsideVoxelVolume() const {
         const auto bounds = GetVoxelVolume();
         const auto delta = camera->getPosition() - Vector3f(bounds.x, bounds.y, bounds.z);

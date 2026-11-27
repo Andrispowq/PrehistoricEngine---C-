@@ -48,6 +48,9 @@ namespace Prehistoric {
 
         bool HasOccluders() const { return usesOccluders; }
         GLuint GetOccluderTexture() const { return debugVolume; }
+        GLuint GetSurfaceTexture() const { return bounceSurfaces; }
+        GLuint GetEmissionTexture() const { return emissionVolume; }
+        GLuint GetRadianceTexture() const { return radianceVolume; }
         bool UsesVoxelSunShadows() const { return HasOccluders() && settings.voxelSunShadows; }
 
         void BindOccluders(const GLShader &shader, uint32_t textureUnit) const;
@@ -93,7 +96,7 @@ namespace Prehistoric {
         int resolution = 0;
         GLuint framebuffer = 0;
         GLuint debugVolume = 0;
-        GLuint packedRadiance = 0;
+        GLuint emissionVolume = 0, scrollScratch = 0;
         GLuint radianceVolume = 0;
         GLuint bounceSurfaces = 0;
         GLuint bounceVolumes[2] = {};
@@ -109,7 +112,7 @@ namespace Prehistoric {
         GLuint shadowDepth = 0;
         ShaderHandle voxelisationShader;
         std::unique_ptr<GLShader> shadowShader;
-        std::unique_ptr<GLShader> resolveShader;
+        std::unique_ptr<GLShader> injectShader, scrollShader;
         std::unique_ptr<GLShader> mipShader;
         std::unique_ptr<GLShader> occluderMipShader;
         std::unique_ptr<GLShader> bounceShader;

@@ -39,8 +39,9 @@ public:
             }
         };
         if (index == std::size(keys)) {
-            if (scene->voxeliseTerrain != renderer->voxeliseTerrain) throw std::runtime_error(
-                "Terrain scene setting diverged");
+            if (scene->voxeliseTerrain != renderer->voxeliseTerrain)
+                throw std::runtime_error(
+                    "Terrain scene setting diverged");
 #ifdef PREHISTORIC_EDITOR_CONTROLS
             if (placementFrames++ == 0) {
                 if (vk) vk->voxelView = false;
@@ -63,6 +64,7 @@ public:
         }
         if (phase == 0) {
             if (index == 10) {
+                renderer->voxelFollowCamera = false;
                 const auto volume = renderer->GetVoxelVolume();
                 renderer->SetVoxelVolume({100000, 100000, 100000}, volume.w);
             }

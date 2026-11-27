@@ -12,10 +12,8 @@ namespace Prehistoric {
         CompileShader();
 
         for (const char *uniform: {
-                 "m_transform", "volumeMin", "volumeExtent", "albedo", "hasAlbedoMap", "emission", "injectRadiance",
-                 "sunDirection", "sunRadiance", "lightViewProjection", "shadowBias",
-                 "captureBounceSurfaces", "metallic", "useVoxelSunShadows", "useTerrainOcclusion",
-                 "voxelOccluders", "voxelOcclusionMin", "voxelOcclusionExtent"
+                 "m_transform", "volumeMin", "volumeExtent", "albedo", "hasAlbedoMap", "emission",
+                 "metallic", "incremental", "scrollDelta", "gridResolution"
              })
             AddUniform(uniform);
     }

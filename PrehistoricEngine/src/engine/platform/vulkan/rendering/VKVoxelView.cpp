@@ -22,7 +22,7 @@ namespace Prehistoric {
         const size_t pyramid = (8 * count - 1) / 7;
         // Occupancy pyramid, surface and emission, isotropic and six directional
         // half-float radiance chains, plus accumulation and next-bounce grids.
-        return sizeof(uint32_t) * (lighting ? 15 * pyramid - 6 * count + 1 : count);
+        return sizeof(uint32_t) * ((lighting ? 15 * pyramid - 6 * count + 1 : count) + count);
     }
 
     void VKVoxelView::Mark(VkCommandBuffer cmd, Timing stage, bool end) {
@@ -65,10 +65,11 @@ namespace Prehistoric {
                 create.queryCount = 2 * TimingCount;
                 CheckVoxel(vkCreateQueryPool(device, &create, nullptr, &timers));
             }
-            cells = std::make_unique<VKBuffer>(gpu, GridBytes(resolution, lighting),
-                                               VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-                                               VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                               VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+            cells = std::make_unique<VKBuffer>(
+                gpu, GridBytes(resolution, lighting) - size_t(resolution) * resolution * resolution * 4,
+                VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
             auto layout = [&](VkShaderStageFlags stage, uint32_t buffers, uint32_t images, uint32_t bytes,
                               VkDescriptorSetLayout &set,
                               VkPipelineLayout &pipeline) {
@@ -117,6 +118,35 @@ namespace Prehistoric {
                 CheckVoxel(result);
             };
             compute("vulkan/voxel/occupancy.spv", bakeLayout, bakePipeline);
+            scrollScratch = std::make_unique<VKBuffer>(gpu, size_t(resolution) * resolution * resolution * 4,
+                                                       VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+                                                       VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                                                       VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+            layout(VK_SHADER_STAGE_COMPUTE_BIT, 2, 0, 32, scrollSet, scrollLayout);
+            compute("vulkan/voxel/scroll.spv", scrollLayout, scrollPipeline);
+            VkDescriptorPoolSize scrollSize{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 2};
+            VkDescriptorPoolCreateInfo scrollCreate{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
+            scrollCreate.maxSets = 1;
+            scrollCreate.poolSizeCount = 1;
+            scrollCreate.pPoolSizes = &scrollSize;
+            CheckVoxel(vkCreateDescriptorPool(device, &scrollCreate, nullptr, &scrollPool));
+            VkDescriptorSetAllocateInfo scrollAlloc{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
+            scrollAlloc.descriptorPool = scrollPool;
+            scrollAlloc.descriptorSetCount = 1;
+            scrollAlloc.pSetLayouts = &scrollSet;
+            CheckVoxel(vkAllocateDescriptorSets(device, &scrollAlloc, &scrollInputs));
+            VkDescriptorBufferInfo scrollBuffers[] = {
+                {cells->getBuffer(), 0, cells->getSize()},
+                {scrollScratch->getBuffer(), 0, scrollScratch->getSize()}
+            };
+            for (unsigned i = 0; i < 2; ++i) {
+                VkWriteDescriptorSet write{
+                    VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, scrollInputs, i, 0, 1,
+                    VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, nullptr, &scrollBuffers[i]
+                };
+                vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
+            }
+
             VkDescriptorSetLayoutBinding terrainBindings[] = {
                 {0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr},
                 {1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr},
@@ -246,6 +276,10 @@ namespace Prehistoric {
     }
 
     void VKVoxelView::Release() {
+        vkDestroyDescriptorPool(device, scrollPool, nullptr);
+        vkDestroyPipeline(device, scrollPipeline, nullptr);
+        vkDestroyPipelineLayout(device, scrollLayout, nullptr);
+        vkDestroyDescriptorSetLayout(device, scrollSet, nullptr);
         for (const auto &texture: radianceTextures) {
             vkDestroyImageView(device, texture.view, nullptr);
             vkDestroyImage(device, texture.image, nullptr);
@@ -275,7 +309,7 @@ namespace Prehistoric {
                sampler == other.sampler && surface.model == other.surface.model &&
                surface.colour == other.surface.colour && metallic == other.metallic &&
                metallicSampler == other.metallicSampler && surface.material == other.surface.material &&
-               surface.grid == other.surface.grid && surface.range == other.surface.range;
+               surface.range == other.surface.range;
     }
 
     std::vector<VKVoxelView::Draw> VKVoxelView::Collect(VKRenderer &renderer, const Vec4 &grid) const {
@@ -323,7 +357,7 @@ namespace Prehistoric {
     }
 
     void VKVoxelView::Bake(VkCommandBuffer cmd, const std::vector<Draw> &draws,
-                           const std::vector<TerrainVoxelInput> &terrains) {
+                           const std::vector<TerrainVoxelInput> &terrains, const VoxelScroll &scroll) {
         const uint32_t count = static_cast<uint32_t>(draws.size());
         VkDescriptorBufferInfo grid{cells->getBuffer(), 0, cells->getSize()};
         const bool reuse = pool && previousTerrains.size() == terrains.size() &&
@@ -452,7 +486,8 @@ namespace Prehistoric {
         vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                              VK_PIPELINE_STAGE_TRANSFER_BIT,
                              0, 0, nullptr, 0, nullptr, 0, nullptr);
-        vkCmdFillBuffer(cmd, grid.buffer, 0, grid.range, 0);
+        if (scroll.incremental) ScrollGeometry(cmd, scroll);
+        else vkCmdFillBuffer(cmd, grid.buffer, 0, grid.range, 0);
         for (size_t i = 0; i < terrains.size(); ++i)
             vkCmdUpdateBuffer(cmd, terrainParameters[i]->getBuffer(), 0, sizeof(TerrainVoxelParameters),
                               &terrains[i].parameters);
@@ -467,6 +502,10 @@ namespace Prehistoric {
             const auto &draw = draws[i];
             vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, bakeLayout, 0, 1, &sets[i], 0, nullptr);
             auto params = draw.surface;
+            if (scroll.incremental) {
+                params.range[3] |= 4u;
+                for (unsigned axis = 0; axis < 3; ++axis) params.material[axis + 1] = float(scroll.delta[axis]);
+            }
             while (params.range[1]) {
                 const auto remaining = params.range[1];
                 params.range[1] = std::min(remaining, 65535u * 64);
@@ -492,6 +531,34 @@ namespace Prehistoric {
                              0, nullptr, 0, nullptr);
     }
 
+    void VKVoxelView::ScrollGeometry(VkCommandBuffer cmd, const VoxelScroll &scroll) {
+        const uint32_t count = resolution * resolution * resolution;
+        const uint32_t pyramid = (8 * count - 1) / 7;
+        const uint32_t offsets[] = {0, pyramid, pyramid + count};
+        auto barrier = [&](VkPipelineStageFlags source, VkPipelineStageFlags destination,
+                           VkAccessFlags writes, VkAccessFlags reads) {
+            VkMemoryBarrier memory{VK_STRUCTURE_TYPE_MEMORY_BARRIER, nullptr, writes, reads};
+            vkCmdPipelineBarrier(cmd, source, destination, 0, 1, &memory, 0, nullptr, 0, nullptr);
+        };
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, scrollPipeline);
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, scrollLayout, 0, 1, &scrollInputs, 0, nullptr);
+        for (unsigned layer = 0; layer < (lighting ? 3u : 1u); ++layer) {
+            barrier(VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+                    VK_ACCESS_MEMORY_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT);
+            VkBufferCopy copy{VkDeviceSize(offsets[layer]) * 4, 0, VkDeviceSize(count) * 4};
+            vkCmdCopyBuffer(cmd, cells->getBuffer(), scrollScratch->getBuffer(), 1, &copy);
+            barrier(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                    VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT);
+            int params[8] = {
+                scroll.delta[0], scroll.delta[1], scroll.delta[2], int(resolution), int(offsets[layer]), 0, 0, 0
+            };
+            vkCmdPushConstants(cmd, scrollLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(params), params);
+            vkCmdDispatch(cmd, (resolution + 3) / 4, (resolution + 3) / 4, (resolution + 3) / 4);
+        }
+        barrier(VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT);
+    }
+
     void VKVoxelView::Prepare(VkCommandBuffer cmd, VKRenderer &renderer) {
         const auto width = renderer.voxelExtent;
         const auto min = renderer.voxelCenter - Vector3f(width * 0.5f);
@@ -499,10 +566,20 @@ namespace Prehistoric {
         StartTimings(cmd, renderer);
         auto draws = Collect(renderer, grid);
         auto terrains = CollectTerrainVoxels(renderer, grid, resolution, lighting);
-        const bool geometryChanged = !pool || previous != draws || previousTerrains != terrains;
+        const bool sameGeometry = pool && previous == draws && previousTerrains == terrains;
+        const bool geometryChanged = !sameGeometry || previousGrid != grid;
+        VoxelScroll scroll;
+        if (sameGeometry && terrains.empty()) scroll = PlanVoxelScroll(previousGrid, grid, resolution);
         if (geometryChanged) {
             Mark(cmd, Geometry, false);
-            Bake(cmd, draws, terrains);
+            Bake(cmd, draws, terrains, scroll);
+            renderer.voxelUpdate.mode = scroll.incremental
+                                            ? Renderer::VoxelUpdate::Scrolled
+                                            : Renderer::VoxelUpdate::Rebuilt;
+            renderer.voxelUpdate.dirtyCells = scroll.incremental
+                                                  ? scroll.dirtyCells
+                                                  : uint64_t(resolution) * resolution * resolution;
+            previousGrid = grid;
             Mark(cmd, Geometry, true);
             previous = std::move(draws);
             previousTerrains = std::move(terrains);

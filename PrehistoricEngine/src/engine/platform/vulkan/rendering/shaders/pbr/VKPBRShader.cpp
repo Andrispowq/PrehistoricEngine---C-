@@ -174,7 +174,7 @@ namespace Prehistoric {
             SetUniform("voxelSettings", Vector4f(minimum, vk->voxelExtent), 0);
             SetUniform("voxelSettings", Vector4f(buffer ? float(vk->voxelResolution) : 0, vk->voxelStrength,
                                                  float(vk->voxelDirectional), float(vk->voxelSunShadows)), 16);
-            SetUniformi("voxelSettings", int(vk->voxelGI), 36);
+            SetUniformi("voxelSettings", int(vk->voxelGI && renderer->terrainReceivesGI), 36);
         }
         lights.erase(std::remove_if(lights.begin(), lights.end(), [&](const Light *light) {
             return !light->illuminates() || light == shadows.GetSun();

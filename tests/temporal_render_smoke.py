@@ -29,6 +29,8 @@ def main():
     parser.add_argument('--debug', type=int, choices=range(5), default=0)
     parser.add_argument('--water', action='store_true', help='Add water and exercise crossing the waterline')
     parser.add_argument('--render-controls', action='store_true', help='Exercise shared rendering keyboard shortcuts')
+    parser.add_argument('--voxel-scroll', action='store_true',
+                        help='Compare incremental voxel scrolling with full rebakes')
     parser.add_argument('--voxel-visual', action='store_true', help='Capture GI off/on and occupancy in the real scene')
     parser.add_argument('--default-scene', action='store_true', help='Keep the sample application startup scene')
     parser.add_argument('--terrain-voxels', action='store_true',
@@ -40,7 +42,8 @@ def main():
     parser.add_argument('--frames', type=int, default=120, help='Measured frames per benchmark mode')
     parser.add_argument('--moving-camera', action='store_true', help='Repeat a camera path in each benchmark mode')
     args = parser.parse_args()
-    if sum((args.render_controls, args.terrain_voxels, args.world_suite, args.benchmark, args.voxel_visual)) > 1:
+    if sum((args.render_controls, args.terrain_voxels, args.world_suite, args.benchmark, args.voxel_visual,
+            args.voxel_scroll)) > 1:
         parser.error('Choose only one smoke-test mode')
     if args.warmup < 2 or args.frames < 2:
         parser.error('--warmup and --frames must be at least 2')
@@ -55,7 +58,7 @@ def main():
     original = ROOT / args.app / 'src' / ('EditorApp.cpp' if args.app == 'PrehistoricEditor' else 'PrehistoricApp.cpp')
     source = output / 'TemporalApp.cpp'
     text = original.read_text()
-    driver = 'voxel_visual_driver.h' if args.voxel_visual else 'render_controls_driver.h' if args.render_controls else 'terrain_voxel_driver.h' if args.terrain_voxels else 'world_scene_driver.h' if args.world_suite else (
+    driver = 'voxel_scroll_driver.h' if args.voxel_scroll else 'voxel_visual_driver.h' if args.voxel_visual else 'render_controls_driver.h' if args.render_controls else 'terrain_voxel_driver.h' if args.terrain_voxels else 'world_scene_driver.h' if args.world_suite else (
         'temporal_benchmark_driver.h' if args.benchmark else 'temporal_render_driver.h')
     text = (f'#include "tests/{driver}"\n'
             'namespace { const bool temporalUnbufferedOutput = [] { '
@@ -76,6 +79,8 @@ def main():
         text = text.replace('new TemporalRenderDriver(', 'new RenderControlsDriver(')
     if args.render_controls and args.app == 'PrehistoricEditor':
         text = '#define PREHISTORIC_EDITOR_CONTROLS\n' + text
+    if args.voxel_scroll:
+        text = text.replace('new TemporalRenderDriver(', 'new VoxelScrollDriver(')
     if args.voxel_visual:
         text = text.replace('new TemporalRenderDriver(', 'new VoxelVisualDriver(')
     if args.default_scene:
@@ -138,7 +143,7 @@ def main():
                PREHISTORIC_ENGINE_RESOURCES=str(build / 'bin/engine-resources'),
                PREHISTORIC_SAMPLE_RESOURCES=str(build / 'bin/sample-resources'))
     if args.default_scene: env.pop('PREHISTORIC_WORLD', None)
-    if args.terrain_voxels or (args.render_controls and not args.world):
+    if args.voxel_scroll or args.terrain_voxels or (args.render_controls and not args.world):
         flat = output / 'flat.ppm'
         flat.write_bytes(b'P6\n16 16\n255\n' + bytes([128, 128, 128]) * 256)
         terrain = json.loads((ROOT / 'Prehistoric/res/config/terrain_1.json').read_text())
@@ -194,9 +199,9 @@ def main():
     log = (output / 'run.log').read_text(errors='replace')
     print(
         '\n'.join(line for line in log.splitlines() if
-                  'TEMPORAL' in line or 'WORLD ' in line or 'PROCEDURAL ' in line or 'TERRAIN ' in line or 'CONTROLS ' in line or 'VOXEL VISUAL' in line))
+                  'TEMPORAL' in line or 'WORLD ' in line or 'PROCEDURAL ' in line or 'TERRAIN ' in line or 'CONTROLS ' in line or 'VOXEL VISUAL' in line or 'VOXEL SCROLL' in line))
     if code or (
-            'VOXEL VISUAL PASS' if args.voxel_visual else 'CONTROLS PASS' if args.render_controls else 'TERRAIN PASS' if args.terrain_voxels else 'WORLD SUITE PASS' if args.world_suite else 'TEMPORAL PASS') not in log or 'Message severity: ERROR' in log:
+            'VOXEL SCROLL PASS' if args.voxel_scroll else 'VOXEL VISUAL PASS' if args.voxel_visual else 'CONTROLS PASS' if args.render_controls else 'TERRAIN PASS' if args.terrain_voxels else 'WORLD SUITE PASS' if args.world_suite else 'TEMPORAL PASS') not in log or 'Message severity: ERROR' in log:
         raise SystemExit(f'GPU smoke failed (exit {code}); see {output}/run.log')
     print('PASS: scripted application run, no reported Vulkan validation errors')
 

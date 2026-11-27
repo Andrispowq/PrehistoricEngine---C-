@@ -21,6 +21,7 @@ uniform vec3 cameraPosition;
 const float PI = 3.14159265359;
 #include "shared/pbr/lighting.glsl"
 uniform float giStrength;
+uniform bool terrainReceivesGI;
 uniform float voxelSize;
 uniform int traceStride;
 uniform vec3 volumeMin;
@@ -46,6 +47,7 @@ void main()
     vec3 F = FresnelSchlickRoughness(max(dot(normal, V), 0.0), mix(vec3(0.04), surface.rgb, metallic), surface.a);
     // Meshes store 1 + AO, terrain stores 3 + AO and applies AO to both ambient lobes.
     float encodedAO = texelFetch(emissionOcclusion, pixel, 0).a;
+    if (encodedAO >= 3.0 && !terrainReceivesGI) return;
     if (encodedAO < 0.0) return; // Water handles voxel reflections before Fresnel composition.
     vec4 scene = imageLoad(outputImage, pixel);
     if (encodedAO >= 1.0)

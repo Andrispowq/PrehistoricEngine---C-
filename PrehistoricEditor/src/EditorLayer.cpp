@@ -366,6 +366,11 @@ void EditorLayer::DrawVoxelSettings(Prehistoric::Renderer &renderer) {
         auto &width = vk ? vk->voxelExtent : settings->extent;
         auto &center = vk ? vk->voxelCenter : settings->center;
         ImGui::Checkbox("Voxel GI (G)", &gi);
+        if (ImGui::Checkbox("Follow camera (snapped)", &renderer.voxelFollowCamera)) renderer.ResetTemporalHistory();
+        if (ImGui::Checkbox("Terrain receives GI", &scene->terrainReceivesGI)) {
+            renderer.terrainReceivesGI = scene->terrainReceivesGI;
+            renderer.ResetTemporalHistory();
+        }
         if (ImGui::Checkbox("Voxelise terrain (T)", &scene->voxeliseTerrain)) {
             renderer.voxeliseTerrain = scene->voxeliseTerrain;
             renderer.ResetTemporalHistory();
@@ -394,7 +399,7 @@ void EditorLayer::DrawVoxelSettings(Prehistoric::Renderer &renderer) {
             }
             ImGui::EndCombo();
         }
-        ImGui::DragFloat3("Volume Center", &center.x, 1.0f);
+        if (ImGui::DragFloat3("Volume Center", &center.x, 1.0f)) renderer.voxelFollowCamera = false;
         ImGui::DragFloat("Volume Width", &width, 1.0f, 1.0f, 100000.0f, "%.1f", ImGuiSliderFlags_AlwaysClamp);
         ImGui::SliderFloat("GI Strength", vk ? &vk->voxelStrength : &settings->giStrength, 0.0f, 4.0f);
         ImGui::SliderInt("GI Trace Depth ([ / ])", vk ? &vk->voxelBounces : &settings->traceDepth, 1,

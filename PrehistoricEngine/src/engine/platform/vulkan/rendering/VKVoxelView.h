@@ -2,6 +2,7 @@
 
 #include "platform/vulkan/buffer/VKBuffer.h"
 #include <array>
+#include "prehistoric/common/rendering/VoxelScroll.h"
 #include "prehistoric/common/rendering/TerrainVoxel.h"
 
 namespace Prehistoric {
@@ -63,7 +64,8 @@ namespace Prehistoric {
 
         std::vector<Draw> Collect(VKRenderer &renderer, const Vec4 &grid) const;
 
-        void Bake(VkCommandBuffer cmd, const std::vector<Draw> &draws, const std::vector<TerrainVoxelInput> &terrains);
+        void Bake(VkCommandBuffer cmd, const std::vector<Draw> &draws, const std::vector<TerrainVoxelInput> &terrains,
+                  const VoxelScroll &scroll);
 
         void Release();
 
@@ -96,6 +98,15 @@ namespace Prehistoric {
 
         void StartTimings(VkCommandBuffer cmd, VKRenderer &renderer);
 
+        void ScrollGeometry(VkCommandBuffer cmd, const VoxelScroll &scroll);
+
+        Vec4 previousGrid{};
+        std::unique_ptr<VKBuffer> scrollScratch;
+        VkDescriptorPool scrollPool{};
+        VkDescriptorSetLayout scrollSet{};
+        VkPipelineLayout scrollLayout{};
+        VkPipeline scrollPipeline{};
+        VkDescriptorSet scrollInputs{};
         std::unique_ptr<VKBuffer> cells;
         VkDescriptorPool pool{};
         VkDescriptorSetLayout bakeSet{}, viewSet{};

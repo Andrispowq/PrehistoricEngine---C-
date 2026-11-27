@@ -63,7 +63,7 @@ namespace Prehistoric {
         virtual void RequestEnvironmentBake() = 0;
 
         virtual Vector4f GetVoxelVolume() const = 0; // Centre and width in world units.
-        virtual void SetVoxelVolume(const Vector3f &center, float width) = 0;
+        virtual void SetVoxelVolume(const Vector3f &center, float width, bool resetHistory = true) = 0;
 
         bool IsCameraInsideVoxelVolume() const;
 
@@ -71,6 +71,17 @@ namespace Prehistoric {
 
         bool screenSpaceReflections = false;
         bool voxeliseTerrain = false;
+        bool terrainReceivesGI = false;
+        bool voxelFollowCamera = true;
+
+        void UpdateVoxelFollow(unsigned resolution);
+
+        struct VoxelUpdate {
+            enum Mode { Reused, Scrolled, Rebuilt } mode = Reused;
+
+            uint64_t dirtyCells = 0;
+        } voxelUpdate;
+
         float bloomIntensity = 0.06f;
         AmbientOcclusionSettings ambientOcclusion;
         DepthOfFieldSettings depthOfField;

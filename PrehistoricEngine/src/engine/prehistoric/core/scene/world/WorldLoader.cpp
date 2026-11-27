@@ -471,6 +471,7 @@ namespace Prehistoric {
             }
             screenSpaceReflections = file_json.value("screen_space_reflections", false);
             voxeliseTerrain = file_json.value("voxelise_terrain", false);
+            terrainReceivesGI = file_json.value("terrain_receives_gi", false);
             bloomIntensity = std::max(0.0f, file_json.value("bloom_intensity", bloomIntensity));
             if (const auto ao = file_json.find("ambient_occlusion"); ao != file_json.end()) {
                 ambientOcclusion.enabled = ao->value("enabled", false);

@@ -46,11 +46,11 @@ namespace Prehistoric {
             return Vector4f(settings.center, settings.extent);
         }
 
-        void SetVoxelVolume(const Vector3f &center, float width) override {
+        void SetVoxelVolume(const Vector3f &center, float width, bool resetHistory = true) override {
             auto &settings = voxelPass->GetSettings();
             settings.center = center;
             settings.extent = std::max(1.0f, width);
-            ResetTemporalHistory();
+            if (resetHistory) ResetTemporalHistory();
         }
 
         void DrawBackground(Camera *camera);

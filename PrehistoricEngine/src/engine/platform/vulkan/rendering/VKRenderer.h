@@ -60,10 +60,10 @@ namespace Prehistoric {
         float voxelExtent = 400.0f;
         Vector4f GetVoxelVolume() const override { return Vector4f(voxelCenter, voxelExtent); }
 
-        void SetVoxelVolume(const Vector3f &center, float width) override {
+        void SetVoxelVolume(const Vector3f &center, float width, bool resetHistory = true) override {
             voxelCenter = center;
             voxelExtent = std::max(1.0f, width);
-            ResetTemporalHistory();
+            if (resetHistory) ResetTemporalHistory();
         }
 
         void RequestEnvironmentBake() override;

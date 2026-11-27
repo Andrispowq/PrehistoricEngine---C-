@@ -111,15 +111,17 @@ namespace Prehistoric {
         toggle(ImGuiKey_M, directional);
         toggle(ImGuiKey_J, shadows);
         if (shortcuts && ImGui::IsKeyPressed(ImGuiKey_C, false)) {
+            renderer->voxelFollowCamera = false;
             renderer->FrameVoxelVolume();
             changed = true;
         }
         if (shortcuts && ImGui::IsKeyPressed(ImGuiKey_V, false) && view)
             showRenderingControls = true;
         if (shortcuts && ImGui::IsKeyPressed(ImGuiKey_B, false)) {
-            if (vk) vk->voxelResolution = vk->SupportsVoxelResolution(vk->voxelResolution * 2)
-                                              ? vk->voxelResolution * 2
-                                              : 64;
+            if (vk)
+                vk->voxelResolution = vk->SupportsVoxelResolution(vk->voxelResolution * 2)
+                                          ? vk->voxelResolution * 2
+                                          : 64;
             else {
                 const int count = static_cast<int>(std::size(GLVoxelRendererPass::Resolutions));
                 for (int step = 1; step <= count; ++step) {
@@ -157,9 +159,20 @@ namespace Prehistoric {
                             directional ? "on" : "off");
                 ImGui::Text("J Voxel shadows: %s | [ / ] Trace depth: %d", shadows ? "on" : "off", bounces);
                 ImGui::TextUnformatted("E Wireframe | K Bloom");
+                if (ImGui::Checkbox("Follow camera (snapped)", &renderer->voxelFollowCamera)) renderer->
+                        ResetTemporalHistory();
+                if (ImGui::Checkbox("Terrain receives GI", &renderer->terrainReceivesGI)) {
+                    if (auto *scene = core->getScene()) scene->terrainReceivesGI = renderer->terrainReceivesGI;
+                    renderer->ResetTemporalHistory();
+                }
+                const char *modes[] = {"Reused", "Scrolled", "Full rebuild"};
+                ImGui::Text("Geometry: %s | Revoxelised cells: %llu", modes[renderer->voxelUpdate.mode],
+                            static_cast<unsigned long long>(renderer->voxelUpdate.dirtyCells));
+                ImGui::TextUnformatted("Coverage changes refresh lighting across the volume.");
                 auto bounds = renderer->GetVoxelVolume();
                 ImGui::TextUnformatted("C Place voxel volume around the current view");
                 bool boundsChanged = ImGui::DragFloat3("Volume centre", &bounds.x, 1.0f);
+                if (boundsChanged) renderer->voxelFollowCamera = false;
                 boundsChanged |= ImGui::DragFloat("Volume width", &bounds.w, 1.0f, 1.0f, 100000.0f,
                                                   "%.1f", ImGuiSliderFlags_AlwaysClamp);
                 if (boundsChanged) renderer->SetVoxelVolume({bounds.x, bounds.y, bounds.z}, bounds.w);

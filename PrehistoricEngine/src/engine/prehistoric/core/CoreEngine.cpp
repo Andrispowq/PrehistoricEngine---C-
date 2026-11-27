@@ -100,6 +100,7 @@ namespace Prehistoric {
         this->scene = scene;
         renderingEngine->getRenderer()->screenSpaceReflections = scene->screenSpaceReflections;
         renderingEngine->getRenderer()->voxeliseTerrain = scene->voxeliseTerrain;
+        renderingEngine->getRenderer()->terrainReceivesGI = scene->terrainReceivesGI;
         renderingEngine->getRenderer()->bloomIntensity = scene->bloomIntensity;
         renderingEngine->getRenderer()->ambientOcclusion = scene->ambientOcclusion;
         renderingEngine->getRenderer()->depthOfField = scene->depthOfField;

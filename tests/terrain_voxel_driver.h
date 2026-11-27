@@ -27,6 +27,8 @@ public:
         camera->setViewProjectionMatrix(camera->getProjectionMatrix() * camera->getViewMatrix());
         if (frame == 1) {
             renderer->temporal = {};
+            renderer->voxelFollowCamera = false;
+            renderer->terrainReceivesGI = scene->terrainReceivesGI = true;
             renderer->screenSpaceReflections = false;
             if (auto *vk = dynamic_cast<VKRenderer *>(renderer)) {
                 vk->voxelGI = true;
@@ -75,8 +77,9 @@ public:
             std::ifstream file("terrain-roundtrip.json");
             nlohmann::json saved;
             file >> saved;
-            if (!saved.value("voxelise_terrain", false)) throw
-                    std::runtime_error("Terrain voxel setting was not saved");
+            if (!saved.value("voxelise_terrain", false) || !saved.value("terrain_receives_gi", false))
+                throw
+                        std::runtime_error("Terrain voxel setting was not saved");
             terrain->Move({40, 0, 0});
         }
         if (frame == 12) {

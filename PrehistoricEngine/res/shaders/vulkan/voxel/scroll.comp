@@ -1,0 +1,17 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(std430, binding = 0) buffer Destination { uint cells[]; };
+layout(std430, binding = 1) readonly buffer Source { uint oldCells[]; };
+layout(push_constant) uniform Scroll { ivec4 shift; uvec4 layer; };
+#include "../../shared/voxel/scroll.glsl"
+void main()
+{
+    ivec3 p = ivec3(gl_GlobalInvocationID);
+    int size = shift.w;
+    if (any(greaterThanEqual(p, ivec3(size)))) return;
+    ivec3 old = p + shift.xyz;
+    uint value = 0u;
+    if (retainedVoxel(p, shift.xyz, size)) value = oldCells[old.x + size * (old.y + size * old.z)];
+    cells[layer.x + p.x + size * (p.y + size * p.z)] = value;
+}

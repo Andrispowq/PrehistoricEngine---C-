@@ -214,6 +214,7 @@ namespace Prehistoric {
         while ((voxelView || voxelGI || voxelSunShadows) && voxelResolution > 64 && !SupportsVoxelResolution(
                    voxelResolution))
             voxelResolution /= 2;
+        UpdateVoxelFollow(unsigned(voxelResolution));
         if (voxelView) {
             getDrawCommandBuffer()->BindBuffer();
             return;

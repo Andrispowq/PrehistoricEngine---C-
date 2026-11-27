@@ -5,10 +5,12 @@ layout(binding = 0, rgba32f) uniform writeonly image2D outputImage;
 layout(binding = 1, rgba16f) uniform writeonly image2D indirectImage;
 layout(binding = 0) uniform sampler3D radianceVolume;
 layout(binding = 1) uniform sampler2D positionMetallic;
+layout(binding = 2) uniform sampler2D emissionOcclusion;
 layout(binding = 3) uniform sampler2D normals;
 layout(binding = 4) uniform usampler3D packedVoxels;
 
 uniform bool debugView;
+uniform bool terrainReceivesGI;
 uniform vec3 volumeMin;
 uniform float volumeExtent;
 uniform mat4 inverseViewProjection;
@@ -21,7 +23,12 @@ const bool useEnvironment = true;
 
 const float voxelNearClip = -1.0;
 int voxelResolution() { return textureSize(packedVoxels, 0).x; }
-uint readVoxel(ivec3 cell) { return texelFetch(packedVoxels, cell, 0).r; }
+uint readVoxel(ivec3 cell)
+{
+    uint value = texelFetch(packedVoxels, cell, 0).r;
+    if (value == 0u) return 0u;
+    return packUnorm4x8(vec4(pow(unpackUnorm4x8(value).rgb, vec3(1.0 / 2.2)), 1));
+}
 #include "shared/voxel/view.glsl"
 
 void main()
@@ -38,7 +45,9 @@ void main()
 
     ivec2 receiver = min(pixel * traceStride + traceStride / 2, textureSize(normals, 0) - 1);
     vec4 surface = texelFetch(normals, receiver, 0);
-    if (surface.a < 0.99 || dot(surface.xyz, surface.xyz) < 0.01)
+    float encodedAO = texelFetch(emissionOcclusion, receiver, 0).a;
+    if (surface.a < 0.99 || dot(surface.xyz, surface.xyz) < 0.01 || encodedAO < 0 ||
+        (encodedAO >= 3 && !terrainReceivesGI))
     {
         imageStore(indirectImage, pixel, vec4(0));
         return;
