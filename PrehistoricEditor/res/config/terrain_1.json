@@ -1,5 +1,5 @@
 {
-    "heightmap": "res/textures/terrain/heightmaps/hm0.bmp",
+  "heightmap": "sample://textures/terrain/heightmaps/hm0.bmp",
     "location": [0, 0, 0],
     "materials":
     [
@@ -10,17 +10,17 @@
                 {
                     "name": "albedo",
                     "type": "texture",
-                    "value": "res/textures/prehistoric/Grass_DIF.prt"
+                  "value": "sample://textures/terrain/Old/Grass_DIF.jpg"
                 },
                 {
                     "name": "normal",
                     "type": "texture",
-                    "value": "res/textures/prehistoric/Grass_NRM.prt"
+                  "value": "sample://textures/terrain/Old/Grass_NRM.jpg"
                 },
                 {
                     "name": "mrot",
                     "type": "texture",
-                    "value": "res/textures/prehistoric/Grass_MROT.prt"
+                  "value": "sample://textures/terrain/Old/Grass_MROT.png"
                 },
                 {
                     "name": "mrot",
@@ -46,17 +46,17 @@
                 {
                     "name": "albedo",
                     "type": "texture",
-                    "value": "res/textures/prehistoric/Rock_DIF.prt"
+                  "value": "sample://textures/terrain/Old/Rock_DIF.jpg"
                 },
                 {
                     "name": "normal",
                     "type": "texture",
-                    "value": "res/textures/prehistoric/Rock_NRM.prt"
+                  "value": "sample://textures/terrain/Old/Rock_NRM.jpg"
                 },
                 {
                     "name": "mrot",
                     "type": "texture",
-                    "value": "res/textures/prehistoric/Rock_MROT.prt"
+                  "value": "sample://textures/terrain/Old/Rock_MROT.png"
                 },
                 {
                     "name": "mrot",
@@ -82,17 +82,17 @@
                 {
                     "name": "albedo",
                     "type": "texture",
-                    "value": "res/textures/prehistoric/icefield_DIF.prt"
+                  "value": "sample://textures/terrain/New/icefield_DIF.png"
                 },
                 {
                     "name": "normal",
                     "type": "texture",
-                    "value": "res/textures/prehistoric/icefield_NRM.prt"
+                  "value": "sample://textures/terrain/New/icefield_NRM.png"
                 },
                 {
                     "name": "mrot",
                     "type": "texture",
-                    "value": "res/textures/prehistoric/icefield_MROT.prt"
+                  "value": "sample://textures/terrain/New/icefield_MROT.png"
                 },
                 {
                     "name": "mrot",

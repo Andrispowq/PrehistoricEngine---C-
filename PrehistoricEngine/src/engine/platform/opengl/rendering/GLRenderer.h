@@ -41,6 +41,18 @@ namespace Prehistoric {
 
         void RequestEnvironmentBake() override;
 
+        Vector4f GetVoxelVolume() const override {
+            const auto &settings = voxelPass->GetSettings();
+            return Vector4f(settings.center, settings.extent);
+        }
+
+        void SetVoxelVolume(const Vector3f &center, float width) override {
+            auto &settings = voxelPass->GetSettings();
+            settings.center = center;
+            settings.extent = std::max(1.0f, width);
+            ResetTemporalHistory();
+        }
+
         void DrawBackground(Camera *camera);
 
         virtual Texture *getOutputTexture() const override { return hdrPass->getOutputImage().pointer; }

@@ -127,6 +127,11 @@ void EditorLayer::ImGUIRender() {
             ImGui::EndMenu();
         }
 
+        if (ImGui::BeginMenu("Objects")) {
+            scenePanel->DrawCreateMenu();
+            ImGui::EndMenu();
+        }
+
         if (ImGui::BeginMenu("Render Settings")) {
             DrawRenderSettings(*renderer);
             ImGui::EndMenu();
@@ -361,15 +366,16 @@ void EditorLayer::DrawVoxelSettings(Prehistoric::Renderer &renderer) {
         auto &width = vk ? vk->voxelExtent : settings->extent;
         auto &center = vk ? vk->voxelCenter : settings->center;
         ImGui::Checkbox("Voxel GI (G)", &gi);
-        if (ImGui::Checkbox("Voxelise terrain", &scene->voxeliseTerrain)) {
+        if (ImGui::Checkbox("Voxelise terrain (T)", &scene->voxeliseTerrain)) {
             renderer.voxeliseTerrain = scene->voxeliseTerrain;
             renderer.ResetTemporalHistory();
         }
-        if (ImGui::IsItemHovered()) ImGui::SetTooltip(
-            "Include terrain in voxel shadows and GI. Terrain receives GI independently of this setting.");
-        ImGui::Checkbox("Half-Resolution GI", vk ? &vk->voxelHalfResolution : &settings->halfResolution);
-        ImGui::Checkbox("Directional Voxel Mips", vk ? &vk->voxelDirectional : &settings->directionalMips);
-        ImGui::Checkbox("Voxel Sun Shadows", vk ? &vk->voxelSunShadows : &settings->voxelSunShadows);
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip(
+                "Include terrain in voxel shadows and GI. Terrain receives GI independently of this setting.");
+        ImGui::Checkbox("Half-Resolution GI (H)", vk ? &vk->voxelHalfResolution : &settings->halfResolution);
+        ImGui::Checkbox("Directional Voxel Mips (M)", vk ? &vk->voxelDirectional : &settings->directionalMips);
+        ImGui::Checkbox("Voxel Sun Shadows (J)", vk ? &vk->voxelSunShadows : &settings->voxelSunShadows);
         int resolution = vk ? vk->voxelResolution : VoxelPass::Resolutions[settings->resolutionIndex];
         const auto label = [](int size) { return std::to_string(size) + " cubed"; };
         if (ImGui::BeginCombo("Voxel Resolution (B)", label(resolution).c_str())) {
@@ -391,7 +397,7 @@ void EditorLayer::DrawVoxelSettings(Prehistoric::Renderer &renderer) {
         ImGui::DragFloat3("Volume Center", &center.x, 1.0f);
         ImGui::DragFloat("Volume Width", &width, 1.0f, 1.0f, 100000.0f, "%.1f", ImGuiSliderFlags_AlwaysClamp);
         ImGui::SliderFloat("GI Strength", vk ? &vk->voxelStrength : &settings->giStrength, 0.0f, 4.0f);
-        ImGui::SliderInt("GI Trace Depth", vk ? &vk->voxelBounces : &settings->traceDepth, 1,
+        ImGui::SliderInt("GI Trace Depth ([ / ])", vk ? &vk->voxelBounces : &settings->traceDepth, 1,
                          VoxelPass::MaxTraceDepth, "%d", ImGuiSliderFlags_AlwaysClamp);
         ImGui::Text("Voxel size %.2f", width / resolution);
     } else {

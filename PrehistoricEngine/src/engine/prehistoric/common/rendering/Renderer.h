@@ -62,6 +62,13 @@ namespace Prehistoric {
 
         virtual void RequestEnvironmentBake() = 0;
 
+        virtual Vector4f GetVoxelVolume() const = 0; // Centre and width in world units.
+        virtual void SetVoxelVolume(const Vector3f &center, float width) = 0;
+
+        bool IsCameraInsideVoxelVolume() const;
+
+        void FrameVoxelVolume();
+
         bool screenSpaceReflections = false;
         bool voxeliseTerrain = false;
         float bloomIntensity = 0.06f;

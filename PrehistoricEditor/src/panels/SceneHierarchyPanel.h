@@ -29,6 +29,10 @@ public:
 
     void ImGuiRender();
 
+    void DrawCreateMenu();
+
+    void CreateProceduralObject(bool terrain);
+
 private:
     void DrawGameObjectNode(Prehistoric::GameObject *object);
 

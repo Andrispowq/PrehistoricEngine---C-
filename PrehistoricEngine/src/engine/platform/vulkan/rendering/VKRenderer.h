@@ -58,6 +58,13 @@ namespace Prehistoric {
 
         Vector3f voxelCenter{0.0f};
         float voxelExtent = 400.0f;
+        Vector4f GetVoxelVolume() const override { return Vector4f(voxelCenter, voxelExtent); }
+
+        void SetVoxelVolume(const Vector3f &center, float width) override {
+            voxelCenter = center;
+            voxelExtent = std::max(1.0f, width);
+            ResetTemporalHistory();
+        }
 
         void RequestEnvironmentBake() override;
 

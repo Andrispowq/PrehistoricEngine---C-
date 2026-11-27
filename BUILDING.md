@@ -381,6 +381,63 @@ repairs are listed in the [rendering backlog](docs/RENDERING_BACKLOG.md).
 
 ## Editor render settings
 
+Both applications share rendering comparison shortcuts (OpenGL and Vulkan):
+
+| Key       | Action                                                                     |
+|-----------|----------------------------------------------------------------------------|
+| G / V / B | Toggle GI / voxel view / cycle supported grid resolutions                  |
+| T         | Toggle terrain voxel contribution (saved with the scene)                   |
+| H / M / J | Toggle half-resolution GI / directional mips / voxel sun shadows           |
+| [ / ]     | Decrease / increase GI trace depth                                         |
+| F8        | Show rendering settings, frame time and latest available voxel GPU timings |
+| C         | Reposition the voxel volume around the current view                        |
+| E / K     | Existing wireframe / bloom toggles                                         |
+
+F8 also exposes the volume centre and width. GI only affects receivers inside this
+volume; V displays occupied cells, with a dark background for empty space. Terrain
+must be enabled with T to appear, and water never appears in occupancy view.
+On scene activation, a camera outside the existing volume places that volume near
+its starting view. The terrain demo uses an 800-unit volume to include the ground
+below its elevated camera. Ordinary camera movement does not move the volume;
+press C after travelling, and increase its width if distant terrain is excluded.
+A larger width at the same resolution means coarser voxels.
+For example, the editor's default terrain spans 6,000 units: a 400-unit volume
+does not cover distant hills. Widening it can diagnose missing coverage, but a
+tighter volume positioned over the area being lit preserves more detail. A camera
+inside the volume does not guarantee that the visible surfaces are inside it.
+Voxel view automatically opens the coverage overlay; F8 can hide it again.
+
+The shared GI shortcuts ignore text entry and Ctrl/Alt/Command combinations, log
+their resulting settings and reset temporal history. Bake timings are the latest
+available measurements, not necessarily work performed in the current frame.
+The Vulkan sample now initializes the same ImGui input/overlay path as the editor;
+the overlay starts hidden. This reuses the existing integration, following the
+[Dear ImGui GLFW/Vulkan example](https://github.com/ocornut/imgui/blob/master/examples/example_glfw_vulkan/main.cpp),
+instead of adding a second set of GLFW callbacks or a separate sample-only handler.
+
+Use **Objects → Procedural → Terrain / Ocean** in the editor, or **Procedural**
+in the hierarchy's blank-space context menu. New instances use the current terrain
+or water defaults, receive unique names and become selected. Their horizontal
+centre is placed ahead of the camera; terrain retains its heightfield elevation,
+while the ocean starts ten world units below the camera. Terrain uses the editor's
+`res/config/terrain_1.json` preset and shared `sample://` textures. Transform,
+duplicate, delete and save them using the existing scene controls.
+
+Run `python3 tests/temporal_render_smoke.py --render-controls --api Vulkan --app Prehistoric`
+after building to exercise the shortcuts. Repeat with `--app PrehistoricEditor`
+to also create, save and render terrain/ocean through the menu action handler.
+Use `--build-dir build/macos-arm64` for the Apple Silicon build. Native OpenGL
+verification requires a supported PC. Camera-independent terrain voxelisation
+remains the next separate rendering change.
+
+`--voxel-visual --default-scene --app Prehistoric` captures GI-off, GI-on and
+occupancy frames of the actual terrain demo, instead of the empty shortcut fixture.
+For an editor world, use `--voxel-visual --app PrehistoricEditor --world <world.json>`.
+The Vulkan terrain demo was visually checked with nonempty coverage and visible
+GI contribution; a saved editor terrain/ocean scene reproduced missing coverage
+at 400 units and showed terrain when widened. These checks do not establish
+high-quality GI across the full 6,000-unit terrain at a low voxel resolution.
+
 The editor's **Render Settings** menu groups controls by purpose:
 
 | Section                  | Controls                                                                                                             |
@@ -635,8 +692,8 @@ volume center and width, GI strength, and **GI Trace Depth** from one to five
 diffuse bounces. The additional bounces run during the radiance bake. Each
 propagation traces the preceding bounce and adds its output to the volume
 sampled by the fullscreen pass. Voxel size is the volume width divided by grid
-resolution. The default 400-unit cube is centered at the origin and
-covers the Sponza test world. The 512³ and 1024³ options depend on available
+resolution. The default 400-unit cube covers the Sponza test world; scenes starting
+outside it reposition the cube once, and the terrain demo uses 800 units. The 512³ and 1024³ options depend on available
 GPU memory and the selected bounce depth. Switching to a more expensive mode
 can select a smaller grid that fits the memory budget. Use a tighter volume for smaller scenes. Voxel
 settings are local to the renderer session. The menu also exposes the existing

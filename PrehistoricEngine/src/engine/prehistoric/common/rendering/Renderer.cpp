@@ -15,6 +15,18 @@
 #include "prehistoric/application/Application.h"
 
 namespace Prehistoric {
+    bool Renderer::IsCameraInsideVoxelVolume() const {
+        const auto bounds = GetVoxelVolume();
+        const auto delta = camera->getPosition() - Vector3f(bounds.x, bounds.y, bounds.z);
+        const float half = bounds.w * 0.5f;
+        return std::abs(delta.x) < half && std::abs(delta.y) < half && std::abs(delta.z) < half;
+    }
+
+    void Renderer::FrameVoxelVolume() {
+        const float width = GetVoxelVolume().w;
+        SetVoxelVolume(camera->getPosition() - camera->getForward().normalise() * (width * 0.25f), width);
+    }
+
     bool Renderer::RequestSampleCount(unsigned samples) {
         const auto supported = GetSupportedSampleCounts();
         if (std::find(supported.begin(), supported.end(), samples) == supported.end()) return false;

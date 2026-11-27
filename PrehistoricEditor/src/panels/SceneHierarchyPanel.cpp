@@ -1,6 +1,8 @@
 #include "prehistoric/core/scene/Scene.h"
 #include "prehistoric/common/util/PlatformUtils.h"
 #include "SceneHierarchyPanel.h"
+#include "prehistoric/core/modules/terrain/Terrain.h"
+#include "prehistoric/core/modules/water/Water.h"
 
 #include "imgui.h"
 #include "imgui_internal.h"
@@ -38,6 +40,7 @@ void SceneHierarchyPanel::ImGuiRender() {
 
     // Right-click on blank space
     if (ImGui::BeginPopupContextWindow(0, 1, false)) {
+        DrawCreateMenu();
         if (ImGui::MenuItem("Create Empty Entity"))
             root->AddChild("Empty Entity", new Prehistoric::GameObject());
 
@@ -68,6 +71,46 @@ void SceneHierarchyPanel::ImGuiRender() {
     ImGui::End();
 }
 
+void SceneHierarchyPanel::DrawCreateMenu() {
+    if (!ImGui::BeginMenu("Procedural")) return;
+    const bool terrain = ImGui::MenuItem("Terrain");
+    const bool ocean = ImGui::MenuItem("Ocean");
+    if (terrain || ocean) CreateProceduralObject(terrain);
+    ImGui::EndMenu();
+}
+
+void SceneHierarchyPanel::CreateProceduralObject(bool terrain) {
+    using namespace Prehistoric;
+    try {
+        auto *core = Application::Get().getEngineLayer();
+        auto *rendering = core->getRenderingEngine();
+        auto *camera = rendering->getCamera();
+        const auto center = camera->getPosition() - camera->getForward() * 64.0f;
+        std::unique_ptr<GameObject> object;
+        const std::string base = terrain ? "Terrain" : "Ocean";
+        if (terrain) {
+            auto surface = std::make_unique<Terrain>(rendering->getWindow(), camera, core->getAssetManager(),
+                                                     "res/config/terrain_1.json");
+            const float width = surface->GetSettings().scaleXZ;
+            surface->SetPosition({center.x - width * 0.5f, 0, center.z - width * 0.5f});
+            object = std::move(surface);
+        } else {
+            object = std::make_unique<Water>(rendering->getWindow(), camera, core->getAssetManager(),
+                                             Vector3f(center.x, camera->getPosition().y - 10.0f, center.z));
+        }
+        std::string name = base;
+        for (unsigned suffix = 2; root->getChild(name); ++suffix) name = base + " " + std::to_string(suffix);
+        auto *placed = object.get();
+        scene->AddGameObject(name, placed);
+        object.release();
+        SelectViewportHit(placed, std::nullopt);
+        rendering->getRenderer()->ResetTemporalHistory();
+        actionError.clear();
+    } catch (const std::exception &error) {
+        actionError = std::string("Could not create procedural object: ") + error.what();
+    }
+}
+
 void SceneHierarchyPanel::DrawGameObjectNode(Prehistoric::GameObject *object) {
     if (object->IsGenerated()) return;
     std::string tag = object->getName();
@@ -86,6 +129,7 @@ void SceneHierarchyPanel::DrawGameObjectNode(Prehistoric::GameObject *object) {
     }
     bool opened = ImGui::TreeNodeEx((void *) object, flags, "%s", tag.c_str());
     if (revealSelection &&selectionContext
+
 
     
     ==

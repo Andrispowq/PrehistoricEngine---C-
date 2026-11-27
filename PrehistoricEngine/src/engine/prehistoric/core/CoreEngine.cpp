@@ -117,6 +117,11 @@ namespace Prehistoric {
             camera->Update(renderingEngine->getWindow(), 0.0f);
         }
 
+        // Scene cameras can be far from the origin (notably the terrain sample).
+        // Place the volume once; normal camera movement must not move/rebake it.
+        auto *renderer = renderingEngine->getRenderer();
+        if (!renderer->IsCameraInsideVoxelVolume()) renderer->FrameVoxelVolume();
+
         bool found = false;
         for (auto child: root->getChildrenByID()) {
             if (child.second == (Node *) sceneRoot) {

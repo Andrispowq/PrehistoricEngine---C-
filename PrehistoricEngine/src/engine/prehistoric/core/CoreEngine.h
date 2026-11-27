@@ -61,6 +61,7 @@ namespace Prehistoric {
 #endif
 
         inline GameObject *getRootObject() const { return root.get(); }
+        inline Scene *getScene() const { return scene; }
         inline GameObject *getSceneRoot() const { return sceneRoot; }
         inline AssembledAssetManager *getAssetManager() const { return manager.get(); }
 

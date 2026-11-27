@@ -30,6 +30,7 @@ namespace Prehistoric {
         void SetDarkThemeColors();
 
     private:
+        bool showRenderingControls = false;
         std::unique_ptr<VKImGui> vulkan;
     };
 };

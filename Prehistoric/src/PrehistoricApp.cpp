@@ -12,8 +12,8 @@ PrehistoricApp::PrehistoricApp()
     GameObject *audioRoot = new GameObject();
     engineLayer->getRootObject()->AddChild("audioRoot", audioRoot);
 
-    if (const char* worldFile = std::getenv("PREHISTORIC_WORLD"); worldFile && *worldFile) {
-        auto* rendering = engineLayer->getRenderingEngine();
+    if (const char *worldFile = std::getenv("PREHISTORIC_WORLD"); worldFile && *worldFile) {
+        auto *rendering = engineLayer->getRenderingEngine();
         scene = std::make_unique<Scene>(worldFile, rendering->getWindow(), rendering->getCamera(),
                                         engineLayer->getAssetManager());
         engineLayer->SetScene(scene.get());
@@ -43,6 +43,12 @@ PrehistoricApp::PrehistoricApp()
 
     engineLayer->SetScene(scene.get());
 
+    // This demo spans a 600-unit heightfield below an elevated camera. The
+    // smaller Sponza volume misses its ground and material display entirely.
+    auto *renderer = engineLayer->getRenderingEngine()->getRenderer();
+    renderer->SetVoxelVolume(cam->getPosition(), 800.0f);
+    renderer->FrameVoxelVolume();
+
     //AssembledAssetManager -> stores the primitives of rendering (Pipelines, Materials) in one place
     //AssetManager -> store the assembling blocks of the primitives (Textures, VertexBuffers, Shaders) in one place
     //Window -> used in a lot of primitives' creation, so it's worth having it around
@@ -52,7 +58,6 @@ PrehistoricApp::PrehistoricApp()
     Camera *camera = engineLayer->getRenderingEngine()->getCamera();
 
     if (__FrameworkConfig.api == OpenGL) {
-
         GLRenderer *rend = (GLRenderer *) Application::Get().getEngineLayer()->getRenderingEngine()->getRenderer();
 
         /*GUIElement* shadow_visualiser0 = new GUIElement(window, manager, Vector3f(-1), nullptr, 0, true);
